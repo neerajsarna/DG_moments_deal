@@ -16,6 +16,7 @@ namespace EquationGenerator
 		bool exists(vector<triplet> Row_Col_Value,const int row_index,const int col_index) const;
 
 	  protected:
+	  	virtual void build_Aminus1D() = 0;
 	  	void build_triplet(system_matrix &matrix_info,const string filename);
 	  	void build_matrix_from_triplet(system_matrix &matrix_info);
 	  	void print_matrix(const system_matrix matrix_info,const string filename);
@@ -113,25 +114,67 @@ namespace EquationGenerator
 	template<int dim> class generate_systemA:public Base_EquationGenerator<dim>,protected constants_SystemA
 	{
 		public:
-			generate_systemA();
+			enum Num_flux
+          	{Upwind, LLF};
+
+          	Num_flux num_flux;
+			generate_systemA(const enum Num_flux num_flux);
 			system_matrix A[dim];
 			system_matrix P;
 			system_matrix BC;
-			Full_matrix Aminus1D;
 
 			virtual void build_BCrhs(const Point<dim> p,const Point<dim> normal_vector,Vector<double> &bc_rhs) const;
 			virtual Sparse_matrix build_Projector(const Point<dim> normal_vector) const;
 			virtual Sparse_matrix build_InvProjector(const Point<dim> normal_vector) const;
 			virtual Full_matrix build_Aminus(const Point<dim> normal_vector) const;
+			Full_matrix build_Aminus_boundary(const Point<dim> normal_vector) const;
 			virtual void source_term(const vector<Point<dim>> &p,vector<Vector<double>> &value) const;		
 
 	  protected:
+	  		Full_matrix Aminus_1D_Int;
+	  		Full_matrix Aminus_1D_Bound;
+	  		virtual void build_Aminus1D();
 	  		string generate_filename_to_write(const string folder_name,const string filename);
 			virtual void build_P(system_matrix &P);
 			virtual void build_BC(system_matrix &BC);
 			virtual Point<dim> mirror(const Point<dim> normal_vector) const ;
+
 			/*virtual void build_Aminus1D(const Sparse_matrix Ax) const; */
 	};
+
+	template<int dim> void generate_systemA<dim>::build_Aminus1D()
+	{
+
+		assert(Aminus_1D_Bound.rows() == nEqn && Aminus_1D_Bound.cols() == nEqn);
+		assert(Aminus_1D_Int.rows() == nEqn && Aminus_1D_Int.cols() == nEqn);
+		
+		EigenSolver<MatrixXd> ES(A[0].matrix);
+  		MatrixXd vecs = ES.pseudoEigenvectors();
+  		VectorXd vals = ES.pseudoEigenvalueMatrix().diagonal();
+ 		double maxEV = vals.cwiseAbs().maxCoeff();
+
+ 		Aminus_1D_Bound = vecs*(vals.cwiseAbs()-vals).asDiagonal()*vecs.inverse();
+
+
+		switch (num_flux)
+		{
+			case Upwind:
+			{
+			 
+  			  	Aminus_1D_Int = Aminus_1D_Bound;
+				break;
+			}
+
+			case LLF:
+			{
+				 for (unsigned int i = 0 ; i < Aminus_1D_Int.rows() ; i++)
+					Aminus_1D_Int(i,i) = maxEV;
+
+				break;
+
+			}
+		}
+	}
 
 	template<int dim> void generate_systemA<dim>::source_term(const vector<Point<dim>> &p,vector<Vector<double>> &value) const
 	{
@@ -233,21 +276,17 @@ namespace EquationGenerator
 
 	template<int dim> Full_matrix generate_systemA<dim>::build_Aminus( const Point<dim> normal_vector) const
 	{
-		MatrixXd mat;
-		mat.resize(nEqn,nEqn);
-		double nx = normal_vector(0);
-		double ny = normal_vector(1);
-
-		mat << sqrt(0.6),-nx,-ny,-(sqrt(0.6)*(-1 + ny*ny)),2*sqrt(0.6)*nx*ny,sqrt(0.6)*ny*ny,
-		-nx,sqrt(5./3) + (-sqrt(5./3) + 1./sqrt(2))*ny*ny,nx*(sqrt(5./3)*ny - ny/sqrt(2)),-nx,-ny,0,
-		-ny,nx*(sqrt(5./3)*ny - ny/sqrt(2)),1./sqrt(2) + (sqrt(5./3) - 1./sqrt(2))*ny*ny,0,-nx,-ny,
-		(2 - 3*ny*ny)/sqrt(15),(-2*nx)/3.,ny/3.,((-1 + ny*ny)*(-2*sqrt(15) + 3*(-5*sqrt(2) + sqrt(15))*ny*ny))/15.,nx*ny*(-sqrt(2) + 4./sqrt(15) + (-2*sqrt(0.6) + 2*sqrt(2))*ny*ny),ny*ny*(-sqrt(2) + 2./sqrt(15) + (-sqrt(0.6) + sqrt(2))*ny*ny),
-		sqrt(0.6)*nx*ny,-ny/2.,-nx/2.,nx*ny*(sqrt(0.6) - 1./sqrt(2) + (-sqrt(0.6) + sqrt(2))*ny*ny),1./sqrt(2) + (2*(-5*sqrt(2) + sqrt(15))*ny*ny)/5. + (-2*sqrt(0.6) + 2*sqrt(2))*ny*ny*ny*ny,nx*(ny/sqrt(2) + (sqrt(0.6) - sqrt(2))*ny*ny*ny),    
-		(-1 + 3*ny*ny)/sqrt(15),nx/3.,(-2*ny)/3.,-((-1 + ny*ny)*(-sqrt(15) + 3*(-5*sqrt(2) + sqrt(15))*ny*ny))/15.,(nx*ny*(15*sqrt(2) - 2*sqrt(15) + 6*(-5*sqrt(2) + sqrt(15))*ny*ny))/15.,ny*ny*(sqrt(2) - 1./sqrt(15) + (sqrt(0.6) - sqrt(2))*ny*ny);
-
-		return( mat );
+		return( build_InvProjector(normal_vector) * Aminus_1D_Int * build_Projector(normal_vector) );
 	};
-	template<int dim> generate_systemA<dim>::generate_systemA()
+
+	template<int dim> Full_matrix generate_systemA<dim>::build_Aminus_boundary(const Point<dim> normal_vector) const
+	{
+		return( build_InvProjector(normal_vector) * Aminus_1D_Bound * build_Projector(normal_vector) );
+	};
+
+	template<int dim> generate_systemA<dim>::generate_systemA(const enum Num_flux num_flux)
+	:
+	num_flux(num_flux)
 	{
 		string system_dir;
 		string filename;
@@ -276,6 +315,10 @@ namespace EquationGenerator
 		BC.matrix.resize(nEqn,nEqn);
 		this->build_BC(BC);
 		this->print_matrix(BC,generate_filename_to_write(system_dir,filename));
+
+		Aminus_1D_Int.resize(nEqn,nEqn);
+		Aminus_1D_Bound.resize(nEqn,nEqn);
+		build_Aminus1D();
 
 		cout << "Done Reading Matrices......\n" << endl;
 	

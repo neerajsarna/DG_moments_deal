@@ -18,9 +18,10 @@ namespace SolverDG
 
     public:
         enum Refinement
-          {global,adaptive};
+          {global,adaptive,adaptive_kelly};
 
         Refinement refinement;
+     
         Solver_DG(const unsigned int p,const unsigned int mapping_order,const enum Refinement refinement);
         void run(const string mesh_to_read,const unsigned int refine_cycles);
 
@@ -114,6 +115,7 @@ namespace SolverDG
 
   template<int dim> Solver_DG<dim>::Solver_DG(const unsigned int p,const unsigned int mapping_order,const enum Refinement refinement)
   :
+  generate_systemA<dim>(generate_systemA<dim>::LLF),
   finite_element(FE_DGQ<dim>(p),this->nEqn),
   dof_handler(triangulation),
   ngp(p+1),

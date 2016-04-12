@@ -43,10 +43,10 @@ RM = /Applications/CMake.app/Contents/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /Users/neerajsarna/sciebo/deal_play/advection_equation/DG_moments_Meshworker
+CMAKE_SOURCE_DIR = /Users/neerajsarna/sciebo/DG_moments_deal
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /Users/neerajsarna/sciebo/deal_play/advection_equation/DG_moments_Meshworker
+CMAKE_BINARY_DIR = /Users/neerajsarna/sciebo/DG_moments_deal
 
 # Utility rule file for release.
 
@@ -54,9 +54,9 @@ CMAKE_BINARY_DIR = /Users/neerajsarna/sciebo/deal_play/advection_equation/DG_mom
 include CMakeFiles/release.dir/progress.make
 
 CMakeFiles/release:
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/Users/neerajsarna/sciebo/deal_play/advection_equation/DG_moments_Meshworker/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Switch CMAKE_BUILD_TYPE to Release"
-	/Applications/CMake.app/Contents/bin/cmake -DCMAKE_BUILD_TYPE=Release /Users/neerajsarna/sciebo/deal_play/advection_equation/DG_moments_Meshworker
-	/Applications/CMake.app/Contents/bin/cmake --build /Users/neerajsarna/sciebo/deal_play/advection_equation/DG_moments_Meshworker --target all
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/Users/neerajsarna/sciebo/DG_moments_deal/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Switch CMAKE_BUILD_TYPE to Release"
+	/Applications/CMake.app/Contents/bin/cmake -DCMAKE_BUILD_TYPE=Release /Users/neerajsarna/sciebo/DG_moments_deal
+	/Applications/CMake.app/Contents/bin/cmake --build /Users/neerajsarna/sciebo/DG_moments_deal --target all
 
 release: CMakeFiles/release
 release: CMakeFiles/release.dir/build.make
@@ -73,6 +73,6 @@ CMakeFiles/release.dir/clean:
 .PHONY : CMakeFiles/release.dir/clean
 
 CMakeFiles/release.dir/depend:
-	cd /Users/neerajsarna/sciebo/deal_play/advection_equation/DG_moments_Meshworker && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /Users/neerajsarna/sciebo/deal_play/advection_equation/DG_moments_Meshworker /Users/neerajsarna/sciebo/deal_play/advection_equation/DG_moments_Meshworker /Users/neerajsarna/sciebo/deal_play/advection_equation/DG_moments_Meshworker /Users/neerajsarna/sciebo/deal_play/advection_equation/DG_moments_Meshworker /Users/neerajsarna/sciebo/deal_play/advection_equation/DG_moments_Meshworker/CMakeFiles/release.dir/DependInfo.cmake --color=$(COLOR)
+	cd /Users/neerajsarna/sciebo/DG_moments_deal && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /Users/neerajsarna/sciebo/DG_moments_deal /Users/neerajsarna/sciebo/DG_moments_deal /Users/neerajsarna/sciebo/DG_moments_deal /Users/neerajsarna/sciebo/DG_moments_deal /Users/neerajsarna/sciebo/DG_moments_deal/CMakeFiles/release.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/release.dir/depend
 

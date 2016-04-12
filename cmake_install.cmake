@@ -1,4 +1,4 @@
-# Install script for directory: /Users/neerajsarna/sciebo/deal_play/advection_equation/DG_moments_Meshworker
+# Install script for directory: /Users/neerajsarna/sciebo/DG_moments_deal
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -35,5 +35,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/Users/neerajsarna/sciebo/deal_play/advection_equation/DG_moments_Meshworker/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/Users/neerajsarna/sciebo/DG_moments_deal/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

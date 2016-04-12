@@ -4,7 +4,7 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
-  "/Users/neerajsarna/sciebo/deal_play/advection_equation/DG_moments_Meshworker/main.cc" "/Users/neerajsarna/sciebo/deal_play/advection_equation/DG_moments_Meshworker/CMakeFiles/mycode.dir/main.cc.o"
+  "/Users/neerajsarna/sciebo/DG_moments_deal/main.cc" "/Users/neerajsarna/sciebo/DG_moments_deal/CMakeFiles/mycode.dir/main.cc.o"
   )
 set(CMAKE_CXX_COMPILER_ID "Clang")
 

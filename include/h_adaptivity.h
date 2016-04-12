@@ -98,7 +98,10 @@ template<int dim> void Solver_DG<dim>::h_adapt()
           for (; cell != endc ; cell ++)
             for (unsigned int face = 0 ; face < GeometryInfo<dim>::faces_per_cell ; face ++)
               if (cell->face(face)->at_boundary())
+              {
+                cell->clear_coarsen_flag();
                 cell->set_refine_flag();
+              }
 
             triangulation.execute_coarsening_and_refinement();        
 
@@ -125,7 +128,10 @@ template<int dim> void Solver_DG<dim>::h_adapt()
           for (; cell != endc ; cell ++)
             for (unsigned int face = 0 ; face < GeometryInfo<dim>::faces_per_cell ; face ++)
               if (cell->face(face)->at_boundary())
+              {
+                cell->clear_coarsen_flag();
                 cell->set_refine_flag();
+              }
           
 
           triangulation.execute_coarsening_and_refinement();      

@@ -149,7 +149,7 @@ template<int dim> void Solver_DG<dim>::integrate_boundary_term(DoFInfo &dinfo,
                   this->build_BCrhs(fe_v.quadrature_point(q),fe_v.normal_vector(q),boundary_rhs_value);
 
                   // build the matrices needed
-                  Eigen::MatrixXd Am = this->build_Aminus(fe_v.normal_vector(q));
+                  Eigen::MatrixXd Am = this->build_Aminus_boundary(fe_v.normal_vector(q));
                   Sparse_matrix Projector = this->build_Projector(fe_v.normal_vector(q));
                   Sparse_matrix Inv_Projector = this->build_InvProjector(fe_v.normal_vector(q));
 

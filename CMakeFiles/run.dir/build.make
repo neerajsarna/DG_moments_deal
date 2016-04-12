@@ -43,10 +43,10 @@ RM = /Applications/CMake.app/Contents/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /Users/neerajsarna/sciebo/deal_play/advection_equation/DG_moments_Meshworker
+CMAKE_SOURCE_DIR = /Users/neerajsarna/sciebo/DG_moments_deal
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /Users/neerajsarna/sciebo/deal_play/advection_equation/DG_moments_Meshworker
+CMAKE_BINARY_DIR = /Users/neerajsarna/sciebo/DG_moments_deal
 
 # Utility rule file for run.
 
@@ -54,7 +54,7 @@ CMAKE_BINARY_DIR = /Users/neerajsarna/sciebo/deal_play/advection_equation/DG_mom
 include CMakeFiles/run.dir/progress.make
 
 CMakeFiles/run:
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/Users/neerajsarna/sciebo/deal_play/advection_equation/DG_moments_Meshworker/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Run with Release configuration"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/Users/neerajsarna/sciebo/DG_moments_deal/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Run with Release configuration"
 	./mycode
 
 run: CMakeFiles/run
@@ -72,6 +72,6 @@ CMakeFiles/run.dir/clean:
 .PHONY : CMakeFiles/run.dir/clean
 
 CMakeFiles/run.dir/depend:
-	cd /Users/neerajsarna/sciebo/deal_play/advection_equation/DG_moments_Meshworker && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /Users/neerajsarna/sciebo/deal_play/advection_equation/DG_moments_Meshworker /Users/neerajsarna/sciebo/deal_play/advection_equation/DG_moments_Meshworker /Users/neerajsarna/sciebo/deal_play/advection_equation/DG_moments_Meshworker /Users/neerajsarna/sciebo/deal_play/advection_equation/DG_moments_Meshworker /Users/neerajsarna/sciebo/deal_play/advection_equation/DG_moments_Meshworker/CMakeFiles/run.dir/DependInfo.cmake --color=$(COLOR)
+	cd /Users/neerajsarna/sciebo/DG_moments_deal && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /Users/neerajsarna/sciebo/DG_moments_deal /Users/neerajsarna/sciebo/DG_moments_deal /Users/neerajsarna/sciebo/DG_moments_deal /Users/neerajsarna/sciebo/DG_moments_deal /Users/neerajsarna/sciebo/DG_moments_deal/CMakeFiles/run.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/run.dir/depend
 

@@ -23,13 +23,13 @@ int main(int argc,char **argv)
 
 	const int dim = 2;
 	const int refine_cycles = 4;			// total number of refinement cycles
-	const int p = 2;
+	const int p = 1;
 	const string mesh_file_name = "mesh/mesh_file";
 	const unsigned int mapping_order = 2;
 
 	start_t = clock();
 
-	Solver_DG<dim> solver(p,mapping_order,Solver_DG<dim>::adaptive);
+	Solver_DG<dim> solver(p,mapping_order,Solver_DG<dim>::global);
 
 	solver.run(mesh_file_name,refine_cycles);
 
