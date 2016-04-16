@@ -102,7 +102,6 @@ template<int dim> void Solver_DG<dim>::integrate_cell_term (DoFInfo &dinfo,
 		component[i] = fe_in_cell.system_to_component_index(i).first;
 
 	for(unsigned int q = 0 ;q < fe_v.n_quadrature_points ; q++)
-      {
        for (unsigned int i = 0 ; i < fe_v.dofs_per_cell ; i++)
        {
           for (unsigned int j = 0 ; j < fe_v.dofs_per_cell  ; j++)
@@ -123,7 +122,7 @@ template<int dim> void Solver_DG<dim>::integrate_cell_term (DoFInfo &dinfo,
           }     
        
        }
-      }      
+        
 
 }
 

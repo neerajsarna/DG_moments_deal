@@ -23,15 +23,44 @@ int main(int argc,char **argv)
 
 	const int dim = 2;
 	const int refine_cycles = 4;			// total number of refinement cycles
-	const int p = 1;
+	const int p = 2;
 	const string mesh_file_name = "mesh/mesh_file";
 	const unsigned int mapping_order = 2;
+	
+	enum System_Types
+	{systemA,systemB};
+
+	System_Types system_type = systemB;
 
 	start_t = clock();
 
-	Solver_DG<dim> solver(p,mapping_order,Solver_DG<dim>::global);
+	switch(system_type)
+	{
+		case systemA:
+		{
+			const unsigned int nEqnA = 6;
+			exact_solutionA<dim> exact_solutionA(nEqnA);
 
-	solver.run(mesh_file_name,refine_cycles);
+			Solver_DG<dim> solver(p,mapping_order,Solver_DG<dim>::global,&exact_solutionA);
+			solver.run(mesh_file_name,refine_cycles);
+
+			break;
+		}
+
+		case systemB:
+		{
+			const unsigned int nEqnB = 10;
+			exact_solutionB<dim> exact_solutionB(nEqnB);
+
+			Solver_DG<dim> solver(p,mapping_order,
+								 Solver_DG<dim>::global,&exact_solutionB);
+
+			solver.run(mesh_file_name,refine_cycles);
+
+			break;
+		}
+	}
+
 
 	end_t = clock();
 

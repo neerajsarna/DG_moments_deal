@@ -90,7 +90,7 @@ mycode_EXTERNAL_OBJECTS =
 
 mycode: CMakeFiles/mycode.dir/main.cc.o
 mycode: CMakeFiles/mycode.dir/build.make
-mycode: /Applications/deal.II.app/Contents/Resources/lib/libdeal_II.8.3.0.dylib
+mycode: /Applications/deal.II.app/Contents/Resources/lib/libdeal_II.g.8.3.0.dylib
 mycode: /usr/lib/libbz2.dylib
 mycode: /usr/lib/libz.dylib
 mycode: /Applications/deal.II.app/Contents/Resources/opt/trilinos-ba77c1f/lib/libtrilinoscouplings.dylib

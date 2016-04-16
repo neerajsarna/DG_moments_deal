@@ -7,7 +7,7 @@ namespace SolverDG
   using namespace PostProc;
   using namespace ExactSolution;
 
-  template<int dim> class Solver_DG:protected generate_systemA<dim>,
+  template<int dim> class Solver_DG:protected generate_systemB<dim>,
                                     protected mesh_generation<dim>,
                                     protected Base_PostProc<dim>
   {
@@ -21,8 +21,10 @@ namespace SolverDG
           {global,adaptive,adaptive_kelly};
 
         Refinement refinement;
-     
-        Solver_DG(const unsigned int p,const unsigned int mapping_order,const enum Refinement refinement);
+
+        Solver_DG(const unsigned int p,const unsigned int mapping_order,
+                  const enum Refinement refinement,const Base_ExactSolution<dim> *exact_solution);
+
         void run(const string mesh_to_read,const unsigned int refine_cycles);
 
     private:
@@ -46,13 +48,27 @@ namespace SolverDG
         void solve();
         void h_adapt();
 
+      // variables and functions for meshworker
+      void assemble_rhs();
 
+      void integrate_cell_term (DoFInfo &dinfo,
+                                   CellInfo &info);
+      void integrate_boundary_term (DoFInfo &dinfo,
+                                       CellInfo &info);
+      void integrate_face_term (DoFInfo &dinfo1,
+                                   DoFInfo &dinfo2,
+                                   CellInfo &info1,
+                                   CellInfo &info2);
+
+     void assemble_system_meshworker();
+
+     // variable for post processing
+        const Base_ExactSolution<dim> *exact_solution;
         ConvergenceTable convergence_table;
         virtual void print_convergence_table(const string filename);
         virtual void error_evaluation(const Vector<double> solution);
-          /*void output_solution_at_vertex(const Triangulation<dim> triangulation,const string filename)const ;
-          void output_exact_solution_at_vertex(const Function<dim> exact_solution,const string filename)const ;
-          void output_error_at_vertext(const string filename)const;*/
+        virtual void output_solution_details(const Triangulation<dim> &triangulation,const string file_solution
+                                                ,const string file_exact,const string file_error)const ;
 
       struct output_files
       {
@@ -68,20 +84,6 @@ namespace SolverDG
       void prescribe_filenames(output_files &output_file_names,const unsigned int p);
 
 
-      // variables and functions for meshworker
-      void assemble_rhs();
-
-      void integrate_cell_term (DoFInfo &dinfo,
-                                   CellInfo &info);
-      void integrate_boundary_term (DoFInfo &dinfo,
-                                       CellInfo &info);
-      void integrate_face_term (DoFInfo &dinfo1,
-                                   DoFInfo &dinfo2,
-                                   CellInfo &info1,
-                                   CellInfo &info2);
-
-     void assemble_system_meshworker();
-
         
   };
 
@@ -93,6 +95,18 @@ namespace SolverDG
         {
           output_file_names.file_for_convergence_tables = this->sub_directory_names[2] + "/convergence_table_global_degree_"
                                                           + to_string(p);
+
+          output_file_names.file_for_num_solution = this->sub_directory_names[1] + "/numerical_solution_global_degree_"
+                                                          + to_string(p)+"_DOF_"+to_string(dof_handler.n_dofs());
+
+
+          output_file_names.file_for_exact_solution = this->sub_directory_names[1] + "/exact_solution_global_degree_"
+                                                          + to_string(p)+"_DOF_"+to_string(dof_handler.n_dofs());
+
+
+          output_file_names.file_for_error = this->sub_directory_names[1] + "/error_global_degree_"
+                                                          + to_string(p)+"_DOF_"+to_string(dof_handler.n_dofs());
+
           break;                
         }
 
@@ -100,6 +114,17 @@ namespace SolverDG
         {
           output_file_names.file_for_convergence_tables = this->sub_directory_names[2] + "/convergence_table_adaptive_degree_"
                                                           + to_string(p);
+
+          output_file_names.file_for_num_solution = this->sub_directory_names[1] + "/numerical_solution_adaptive_degree_"
+                                                          + to_string(p)+"_DOF_"+to_string(dof_handler.n_dofs());
+
+          output_file_names.file_for_exact_solution = this->sub_directory_names[1] + "/exact_solution_adaptive_degree_"
+                                                          + to_string(p)+"_DOF_"+to_string(dof_handler.n_dofs());
+
+
+          output_file_names.file_for_error = this->sub_directory_names[1] + "/error_adaptive_degree_"
+                                                          + to_string(p)+"_DOF_"+to_string(dof_handler.n_dofs());
+
           break;
         }
 
@@ -107,29 +132,43 @@ namespace SolverDG
           {
           output_file_names.file_for_convergence_tables = this->sub_directory_names[2] + "/convergence_table_adaptive_kelly_degree_"
                                                           + to_string(p);
+          
+          output_file_names.file_for_num_solution = this->sub_directory_names[1] + "/numerical_solution_adaptive_kelly_degree_"
+                                                          + to_string(p)+"_DOF_"+to_string(dof_handler.n_dofs());
+
+          output_file_names.file_for_exact_solution = this->sub_directory_names[1] + "/exact_solution_adaptive_kelly_degree_"
+                                                          + to_string(p)+"_DOF_"+to_string(dof_handler.n_dofs());
+
+          output_file_names.file_for_error = this->sub_directory_names[1] + "/error_adaptive_kelly_degree_"
+                                                          + to_string(p)+"_DOF_"+to_string(dof_handler.n_dofs());
+
           break;
         }      
     }
     
   }
 
-  template<int dim> Solver_DG<dim>::Solver_DG(const unsigned int p,const unsigned int mapping_order,const enum Refinement refinement)
+  template<int dim> Solver_DG<dim>::Solver_DG(const unsigned int p,const unsigned int mapping_order,
+                                              const enum Refinement refinement,const Base_ExactSolution<dim> *exact_solution)
   :
-  generate_systemA<dim>(generate_systemA<dim>::LLF),
+  generate_systemB<dim>(generate_systemB<dim>::Upwind),
   finite_element(FE_DGQ<dim>(p),this->nEqn),
   dof_handler(triangulation),
   ngp(p+1),
   ngp_face(p+1),
   refinement(refinement),
   mapping(mapping_order),
-  mesh_generation<dim>(mesh_generation<dim>::generate_internal)
+  mesh_generation<dim>(mesh_generation<dim>::generate_internal),
+  exact_solution(exact_solution)
   {
-    prescribe_filenames(output_file_names,p);
+
   }
 
   template<int dim> void Solver_DG<dim>::run(const string mesh_to_read,const unsigned int refine_cycles)
   {
 
+    cout << "Solving for: " << this->nEqn << " equations " << endl;
+          
      for (unsigned int i = 0 ; i < refine_cycles; i++)
      {
        cout << "Start of Cycle: " << i << endl;
@@ -152,10 +191,15 @@ namespace SolverDG
 
        if (i == refine_cycles - 1)
        {
+
+        prescribe_filenames(output_file_names,finite_element.degree);
         string file_for_grid;
         file_for_grid = this->sub_directory_names[0] + "/grid_"+"_DOF_" + to_string(dof_handler.n_dofs());
         //mesh_generation<dim>::print_grid(triangulation,file_for_grid);
         print_convergence_table(output_file_names.file_for_convergence_tables);
+        output_solution_details(triangulation,output_file_names.file_for_num_solution,
+                                output_file_names.file_for_exact_solution,
+                                output_file_names.file_for_error);
        }
      }
 
@@ -178,10 +222,10 @@ namespace SolverDG
 
   }
 
-  #include "assemble.h"
   #include "solve.h"
   #include "h_adaptivity.h"
   #include "error_evaluator.h"
   #include "print_convergence_table.h"
   #include "assemble_system_meshworker.h"
+  #include "output_routines.h"
 }

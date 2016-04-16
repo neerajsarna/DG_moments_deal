@@ -8,7 +8,7 @@ template<int dim> void Solver_DG<dim>::error_evaluation(const Vector<double> sol
 
         // computation of L2 error
         VectorTools::integrate_difference (mapping,dof_handler,solution,
-          ExactSolution::exact_solutionA<dim>(this->nEqn),
+          *exact_solution,
           error_per_cell,
           QGauss<dim>(ngp),
           VectorTools::L2_norm,&weight);  
@@ -18,7 +18,7 @@ template<int dim> void Solver_DG<dim>::error_evaluation(const Vector<double> sol
         // computation of L_inifinity error
         error_per_cell = 0;
         VectorTools::integrate_difference (mapping,dof_handler,solution,
-          ExactSolution::exact_solutionA<dim>(this->nEqn),
+          *exact_solution,
           error_per_cell,
           QGauss<dim>(ngp),
           VectorTools::Linfty_norm,&weight);  
