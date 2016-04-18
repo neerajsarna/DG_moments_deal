@@ -128,7 +128,7 @@ template<int dim> void Solver_DG<dim>::integrate_cell_term (DoFInfo &dinfo,
 template<int dim> void Solver_DG<dim>::integrate_boundary_term(DoFInfo &dinfo,
                                        CellInfo &info)
 {
-	  const FEValuesBase<dim> &fe_v = info.fe_values();
+/*	  const FEValuesBase<dim> &fe_v = info.fe_values();
 	  FullMatrix<double> &cell_matrix = dinfo.matrix(0).matrix;
   	  Vector<double> &cell_rhs = dinfo.vector(0).block(0);
 	  const std::vector<double> &Jacobian_face = fe_v.get_JxW_values ();
@@ -171,7 +171,7 @@ template<int dim> void Solver_DG<dim>::integrate_boundary_term(DoFInfo &dinfo,
 
                   }
 
-                }
+                }*/
 }
 
 template<int dim> void Solver_DG<dim>::integrate_face_term(DoFInfo &dinfo1,

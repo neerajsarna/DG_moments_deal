@@ -166,8 +166,6 @@ namespace SolverDG
 
   template<int dim> void Solver_DG<dim>::run(const string mesh_to_read,const unsigned int refine_cycles)
   {
-    TimerOutput timer (std::cout, TimerOutput::summary,
-                   TimerOutput::wall_times);
 
     TimerOutput timer (std::cout, TimerOutput::summary,
                    TimerOutput::wall_times);
@@ -197,7 +195,7 @@ namespace SolverDG
 	  timer.leave_subsection();
           cout << "assemblation completed...." << endl;
 
-          cout << "solving the system...." << endl;
+ /*         cout << "solving the system...." << endl;
 	  timer.enter_subsection("solving the system");
           solve();
 	  timer.leave_subsection();
@@ -218,7 +216,7 @@ namespace SolverDG
         output_solution_details(triangulation,output_file_names.file_for_num_solution,
                                 output_file_names.file_for_exact_solution,
                                 output_file_names.file_for_error);
-       }
+       }*/
      }
 
   }
