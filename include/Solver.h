@@ -169,9 +169,6 @@ namespace SolverDG
     TimerOutput timer (std::cout, TimerOutput::summary,
                    TimerOutput::wall_times);
 
-    TimerOutput timer (std::cout, TimerOutput::summary,
-                   TimerOutput::wall_times);
-    
     cout << "Solving for: " << this->nEqn << " equations " << endl;
           
      for (unsigned int i = 0 ; i < refine_cycles; i++)
