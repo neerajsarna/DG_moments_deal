@@ -10,12 +10,12 @@
 			system_matrix P;
 			system_matrix BC;
 
-			virtual void build_BCrhs(const Point<dim> p,const Point<dim> normal_vector,Vector<double> &bc_rhs) const;
-			virtual Sparse_matrix build_Projector(const Point<dim> normal_vector) const;
-			virtual Sparse_matrix build_InvProjector(const Point<dim> normal_vector) const;
-			virtual Full_matrix build_Aminus(const Point<dim> normal_vector) const;
-			Full_matrix build_Aminus_boundary(const Point<dim> normal_vector) const;
-			virtual void source_term(const vector<Point<dim>> &p,vector<Vector<double>> &value) const;		
+			virtual void build_BCrhs(const Tensor<1,dim,double> p,const Tensor<1,dim,double> normal_vector,Vector<double> &bc_rhs) ;
+			virtual Sparse_matrix build_Projector(const Tensor<1,dim,double> normal_vector) ;
+			virtual Sparse_matrix build_InvProjector(const Tensor<1,dim,double> normal_vector) ;
+			virtual Full_matrix build_Aminus(const Tensor<1,dim,double> normal_vector) ;
+			Full_matrix build_Aminus_boundary(const Tensor<1,dim,double> normal_vector) ;
+			virtual void source_term(const vector<Point<dim>> &p,vector<Vector<double>> &value) ;		
 
 	  protected:
 	  		Full_matrix Aminus_1D_Int;
@@ -24,7 +24,7 @@
 	  		string generate_filename_to_write(const string folder_name,const string filename);
 			virtual void build_P(system_matrix &P);
 			virtual void build_BC(system_matrix &BC);
-			virtual Point<dim> mirror(const Point<dim> normal_vector) const ;
+			virtual Tensor<1,dim,double> mirror(const Tensor<1,dim,double> normal_vector) ;
 
 			/*virtual void build_Aminus1D(const Sparse_matrix Ax) const; */
 	};
@@ -63,7 +63,7 @@
 		}
 	}
 
-	template<int dim> void generate_systemA<dim>::source_term(const vector<Point<dim>> &p,vector<Vector<double>> &value) const
+	template<int dim> void generate_systemA<dim>::source_term(const vector<Point<dim>> &p,vector<Vector<double>> &value) 
 	{
 		assert(value.size() == p.size());
 
@@ -109,10 +109,10 @@
 		    matrix_info.matrix.coeffRef(5,5) = 1.0;			
 	}
 	
-	template<int dim> void generate_systemA<dim>::build_BCrhs(const Point<dim> p,const Point<dim> normal_vector,Vector<double> &bc_rhs) const
+	template<int dim> void generate_systemA<dim>::build_BCrhs(const Tensor<1,dim,double> p,const Tensor<1,dim,double> normal_vector,Vector<double> &bc_rhs) 
 	{
 		assert(bc_rhs.size() == nEqn);
-		double norm = sqrt(p.square());
+		double norm = p.norm();
 
 		  if( norm > 0.7 ) {
  		   bc_rhs(1) = chi*theta1;  // is chi \alpha and same with zeta
@@ -123,19 +123,22 @@
  
 	}
 
-	template<int dim> Point<dim> generate_systemA<dim>::mirror(const Point<dim> normal_vector)const
+	template<int dim> Tensor<1,dim,double> generate_systemA<dim>::mirror(const Tensor<1,dim,double> normal_vector)
 	{
-		Point<dim> mirrored_vector(normal_vector(0),-normal_vector(1));
+		double nx = normal_vector[0], ny = normal_vector[1];
+		Tensor<1,dim,double> mirrored_vector;
+		mirrored_vector[0] = nx;
+		mirrored_vector[1] = -ny;
 		return mirrored_vector;
 	}
 
-	template<int dim> Sparse_matrix generate_systemA<dim>::build_Projector(const Point<dim> normal_vector) const
+	template<int dim> Sparse_matrix generate_systemA<dim>::build_Projector(const Tensor<1,dim,double> normal_vector) 
 	{
 		Sparse_matrix Projector;
 		Projector.resize(nEqn,nEqn);
 
-		double nx = normal_vector(0);
-		double ny = normal_vector(1);
+		double nx = normal_vector[0];
+		double ny = normal_vector[1];
 		assert(Projector.rows() == nEqn || Projector.cols() == nEqn);
 
 		  Projector.coeffRef(0,0) = 1.0;
@@ -156,17 +159,17 @@
  
 	}
 
-	template<int dim> Sparse_matrix generate_systemA<dim>::build_InvProjector(const Point<dim> normal_vector) const
+	template<int dim> Sparse_matrix generate_systemA<dim>::build_InvProjector(const Tensor<1,dim,double> normal_vector) 
 	{
 		return( build_Projector( mirror(normal_vector) ) );
 	}
 
-	template<int dim> Full_matrix generate_systemA<dim>::build_Aminus( const Point<dim> normal_vector) const
+	template<int dim> Full_matrix generate_systemA<dim>::build_Aminus( const Tensor<1,dim,double> normal_vector) 
 	{
 		return( build_InvProjector(normal_vector) * Aminus_1D_Int * build_Projector(normal_vector) );
 	};
 
-	template<int dim> Full_matrix generate_systemA<dim>::build_Aminus_boundary(const Point<dim> normal_vector) const
+	template<int dim> Full_matrix generate_systemA<dim>::build_Aminus_boundary(const Tensor<1,dim,double> normal_vector) 
 	{
 		return( build_InvProjector(normal_vector) * Aminus_1D_Bound * build_Projector(normal_vector) );
 	};

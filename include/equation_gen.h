@@ -8,12 +8,12 @@ namespace EquationGenerator
 	{
 		// 
 	  public:	
-		virtual Sparse_matrix build_Projector(const Point<dim> normal_vector) const = 0;
-		virtual Sparse_matrix build_InvProjector(const Point<dim> normal_vector) const = 0;
-		virtual MatrixXd build_Aminus(const Point<dim> normal_vector) const =0;
-		virtual void build_BCrhs(const Point<dim> p,const Point<dim> normal_vector,Vector<double> &bc_rhs)const = 0;
-		virtual void source_term(const vector<Point<dim>> &p,vector<Vector<double>> &value) const = 0;
-		bool exists(vector<triplet> Row_Col_Value,const int row_index,const int col_index) const;
+		virtual Sparse_matrix build_Projector(const Tensor<1,dim,double> normal_vector) = 0;
+		virtual Sparse_matrix build_InvProjector(const Tensor<1,dim,double> normal_vector) = 0;
+		virtual MatrixXd build_Aminus(const Tensor<1,dim,double> normal_vector)  =0;
+		virtual void build_BCrhs(const Tensor<1,dim,double> p,const Tensor<1,dim,double> normal_vector,Vector<double> &bc_rhs) = 0;
+		virtual void source_term(const vector<Point<dim>> &p,vector<Vector<double>> &value) = 0;
+		bool exists(vector<triplet> Row_Col_Value,const int row_index,const int col_index) ;
 
 	  protected:
 	  	virtual void build_Aminus1D() = 0;
@@ -22,7 +22,7 @@ namespace EquationGenerator
 	  	void print_matrix(const system_matrix matrix_info,const string filename);
 		virtual void build_P(system_matrix &P) = 0;
 		virtual void build_BC(system_matrix &BC) = 0;
-		virtual Point<dim> mirror(const Point<dim> normal_vector) const = 0;
+		virtual Tensor<1,dim,double> mirror(const Tensor<1,dim,double> normal_vector)  = 0;
 		/*virtual void build_Aminus1D(const Sparse_matrix Ax) const = 0; */
 	};
 
@@ -76,7 +76,7 @@ namespace EquationGenerator
 
 	}
 
-	template<int dim> bool Base_EquationGenerator<dim>::exists(vector<triplet> Row_Col_Value,const int row_index,const int col_index) const
+	template<int dim> bool Base_EquationGenerator<dim>::exists(vector<triplet> Row_Col_Value,const int row_index,const int col_index) 
 	{
 		assert(Row_Col_Value.size() != 0);
 		vector<triplet>::iterator it = Row_Col_Value.begin(),it_end = Row_Col_Value.end();
