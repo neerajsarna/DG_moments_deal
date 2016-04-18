@@ -167,6 +167,9 @@ namespace SolverDG
   template<int dim> void Solver_DG<dim>::run(const string mesh_to_read,const unsigned int refine_cycles)
   {
 
+    TimerOutput timer (std::cout, TimerOutput::summary,
+                   TimerOutput::wall_times);
+    
     cout << "Solving for: " << this->nEqn << " equations " << endl;
           
      for (unsigned int i = 0 ; i < refine_cycles; i++)
