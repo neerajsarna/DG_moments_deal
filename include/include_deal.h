@@ -7,6 +7,7 @@
 #include <deal.II/base/tensor_function.h>
 #include <deal.II/base/work_stream.h>
 #include <deal.II/base/multithread_info.h>
+#include <deal.II/base/timer.h>
 
 
 #include <deal.II/lac/vector.h>

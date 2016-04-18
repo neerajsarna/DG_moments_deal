@@ -63,6 +63,7 @@ template<int dim> void Solver_DG<dim>::assemble_system_meshworker()
 	MeshWorker::Assembler::SystemSimple<TrilinosWrappers::SparseMatrix, Vector<double>> assembler;
 	assembler.initialize(global_matrix, system_rhs);
 
+	rhs_task.join();
 
 	  MeshWorker::loop<dim, dim, MeshWorker::DoFInfo<dim>, MeshWorker::IntegrationInfoBox<dim> >
   												(dof_handler.begin_active(), dof_handler.end(),
@@ -82,8 +83,6 @@ template<int dim> void Solver_DG<dim>::assemble_system_meshworker()
    												 	std_cxx11::_3,
    												 	std_cxx11::_4),
    												 assembler);
-
-  	rhs_task.join();
 }
 
 
@@ -108,13 +107,13 @@ template<int dim> void Solver_DG<dim>::integrate_cell_term (DoFInfo &dinfo,
           {
             // loop over convection
             for (unsigned int k = 0 ;k < dim ; k ++)
-                if (this->exists(this->A[k].Row_Col_Value,component[i],component[j]))
+             //   if (this->exists(this->A[k].Row_Col_Value,component[i],component[j]))
                       cell_matrix(i,j) += fe_v.shape_value(i,q) * this->A[k].matrix.coeffRef(component[i],component[j]) 
                                           * fe_v.shape_grad(j,q)[k] * Jacobians_interior[q];
                 
                   
             // loop over production
-            if (this->exists(this->P.Row_Col_Value,component[i],component[j]))
+            //if (this->exists(this->P.Row_Col_Value,component[i],component[j]))
                 cell_matrix(i,j) += fe_v.shape_value(i,q) * this->P.matrix.coeffRef(component[i],component[j]) 
                                     * fe_v.shape_value(j,q) * Jacobians_interior[q];
 

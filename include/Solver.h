@@ -166,6 +166,8 @@ namespace SolverDG
 
   template<int dim> void Solver_DG<dim>::run(const string mesh_to_read,const unsigned int refine_cycles)
   {
+    TimerOutput timer (std::cout, TimerOutput::summary,
+                   TimerOutput::wall_times);
 
     cout << "Solving for: " << this->nEqn << " equations " << endl;
           
@@ -173,21 +175,34 @@ namespace SolverDG
      {
        cout << "Start of Cycle: " << i << endl;
        if(i == 0)
+	{
+	  timer.enter_subsection("mesh_generation");
           mesh_generation<dim>::generate_mesh(triangulation,boundary,mesh_to_read);
-       else
+       	  timer.leave_subsection();
+	}
+	else
           h_adapt();
-
+	
+	  timer.enter_subsection("distributing dof");
           distribute_dof_allocate_matrix();
+	  timer.leave_subsection();
 
+	  cout << "Solving for " << dof_handler.n_dofs() << " Dof" << endl;
           cout << "assembling the matrix...." << endl;
+	  timer.enter_subsection("assemblation");
           assemble_system_meshworker();
+	  timer.leave_subsection();
           cout << "assemblation completed...." << endl;
 
           cout << "solving the system...." << endl;
+	  timer.enter_subsection("solving the system");
           solve();
+	  timer.leave_subsection();
           cout << "done solving";
 
+	  timer.enter_subsection("error evaluation");
           error_evaluation(solution);
+	  timer.leave_subsection();
 
        if (i == refine_cycles - 1)
        {
