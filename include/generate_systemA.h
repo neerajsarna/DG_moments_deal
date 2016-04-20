@@ -118,7 +118,7 @@
  		   bc_rhs(1) = chi*theta1;  // is chi \alpha and same with zeta
   		  } else {
     		bc_rhs(1) = chi*theta0;
-    		bc_rhs(4) = uW*normal_vector(1);
+    		bc_rhs(4) = uW*normal_vector[1];
   		  }; 
  
 	}

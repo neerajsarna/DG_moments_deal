@@ -4,6 +4,8 @@ namespace EquationGenerator
 	using namespace std;
 	using namespace Basics;
 
+	
+
 	template<int dim> class Base_EquationGenerator
 	{
 		// 

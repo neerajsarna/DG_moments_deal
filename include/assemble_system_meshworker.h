@@ -63,10 +63,12 @@ template<int dim> void Solver_DG<dim>::assemble_system_meshworker()
 	MeshWorker::Assembler::SystemSimple<TrilinosWrappers::SparseMatrix, Vector<double>> assembler;
 	assembler.initialize(global_matrix, system_rhs);
 
-	rhs_task.join();
 
-	  MeshWorker::loop<dim, dim, MeshWorker::DoFInfo<dim>, MeshWorker::IntegrationInfoBox<dim> >
-  												(dof_handler.begin_active(), dof_handler.end(),
+	typename DoFHandler<dim>::active_cell_iterator cell = dof_handler.begin_active();
+	typename DoFHandler<dim>::active_cell_iterator endc = dof_handler.end();
+	  
+	MeshWorker::loop<dim, dim, MeshWorker::DoFInfo<dim>, MeshWorker::IntegrationInfoBox<dim> >
+  												(cell, endc,
    												 dof_info, info_box,
    												 std_cxx11::bind(&Solver_DG<dim>::integrate_cell_term,
    												 	this,
@@ -83,6 +85,7 @@ template<int dim> void Solver_DG<dim>::assemble_system_meshworker()
    												 	std_cxx11::_3,
    												 	std_cxx11::_4),
    												 assembler);
+     rhs_task.join();
 }
 
 
@@ -107,13 +110,13 @@ template<int dim> void Solver_DG<dim>::integrate_cell_term (DoFInfo &dinfo,
           {
             // loop over convection
             for (unsigned int k = 0 ;k < dim ; k ++)
-             //   if (this->exists(this->A[k].Row_Col_Value,component[i],component[j]))
+                if (this->exists(this->A[k].Row_Col_Value,component[i],component[j]))
                       cell_matrix(i,j) += fe_v.shape_value(i,q) * this->A[k].matrix.coeffRef(component[i],component[j]) 
                                           * fe_v.shape_grad(j,q)[k] * Jacobians_interior[q];
                 
                   
             // loop over production
-            //if (this->exists(this->P.Row_Col_Value,component[i],component[j]))
+            if (this->exists(this->P.Row_Col_Value,component[i],component[j]))
                 cell_matrix(i,j) += fe_v.shape_value(i,q) * this->P.matrix.coeffRef(component[i],component[j]) 
                                     * fe_v.shape_value(j,q) * Jacobians_interior[q];
 
@@ -121,6 +124,7 @@ template<int dim> void Solver_DG<dim>::integrate_cell_term (DoFInfo &dinfo,
           }     
        
        }
+
         
 
 }
@@ -128,7 +132,7 @@ template<int dim> void Solver_DG<dim>::integrate_cell_term (DoFInfo &dinfo,
 template<int dim> void Solver_DG<dim>::integrate_boundary_term(DoFInfo &dinfo,
                                        CellInfo &info)
 {
-/*	  const FEValuesBase<dim> &fe_v = info.fe_values();
+	  const FEValuesBase<dim> &fe_v = info.fe_values();
 	  FullMatrix<double> &cell_matrix = dinfo.matrix(0).matrix;
   	  Vector<double> &cell_rhs = dinfo.vector(0).block(0);
 	  const std::vector<double> &Jacobian_face = fe_v.get_JxW_values ();
@@ -160,7 +164,7 @@ template<int dim> void Solver_DG<dim>::integrate_boundary_term(DoFInfo &dinfo,
                   {
                     for (unsigned int j = 0 ; j < dofs_per_cell ; j ++)
                         cell_matrix(i,j) += 0.5 * fe_v.shape_value(i,q) 
-                                            * (Am(component[i],component[j])-Am_invP_BC_P(component[i],component[j]))
+                                           * (Am(component[i],component[j])-Am_invP_BC_P(component[i],component[j]))
                                             * fe_v.shape_value(j,q) * Jacobian_face[q];                                    
                       
 
@@ -171,7 +175,7 @@ template<int dim> void Solver_DG<dim>::integrate_boundary_term(DoFInfo &dinfo,
 
                   }
 
-                }*/
+                }
 }
 
 template<int dim> void Solver_DG<dim>::integrate_face_term(DoFInfo &dinfo1,

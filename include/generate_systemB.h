@@ -132,6 +132,8 @@
 		double nxnx = nx*nx, nyny = ny*ny;
 		Sparse_matrix T(nEqn,nEqn);
 
+		mutex_deal.acquire();
+
 		T.coeffRef(0,0) = 1.0;
 		T.coeffRef(1,1) = nx;
 		T.coeffRef(1,2) = ny;
@@ -163,7 +165,8 @@
 		T.coeffRef(9,8) = -3*ny*nxnx;
 		T.coeffRef(9,9) = nx*nxnx;
 
-		T.makeCompressed();
+
+		mutex_deal.release();
 		return( T );
 	};
 

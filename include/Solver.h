@@ -7,7 +7,7 @@ namespace SolverDG
   using namespace PostProc;
   using namespace ExactSolution;
 
-  template<int dim> class Solver_DG:protected generate_systemB<dim>,
+  template<int dim> class Solver_DG:protected generate_systemA<dim>,
                                     protected mesh_generation<dim>,
                                     protected Base_PostProc<dim>
   {
@@ -151,7 +151,7 @@ namespace SolverDG
   template<int dim> Solver_DG<dim>::Solver_DG(const unsigned int p,const unsigned int mapping_order,
                                               const enum Refinement refinement,const Base_ExactSolution<dim> *exact_solution)
   :
-  generate_systemB<dim>(generate_systemB<dim>::Upwind),
+  generate_systemA<dim>(generate_systemA<dim>::Upwind),
   finite_element(FE_DGQ<dim>(p),this->nEqn),
   dof_handler(triangulation),
   ngp(p+1),
@@ -179,7 +179,8 @@ namespace SolverDG
 	{
 	  timer.enter_subsection("mesh_generation");
           mesh_generation<dim>::generate_mesh(triangulation,boundary,mesh_to_read);
-       	  timer.leave_subsection();
+	  cout << "no of cells in the initial mesh" << triangulation.n_cells() << endl;  
+     	  timer.leave_subsection();
 	}
 	else
           h_adapt();
@@ -188,14 +189,16 @@ namespace SolverDG
           distribute_dof_allocate_matrix();
 	  timer.leave_subsection();
 
-	  cout << "Solving for " << dof_handler.n_dofs() << " Dof" << endl;
-          cout << "assembling the matrix...." << endl;
+	  cout << "Solving for " << dof_handler.n_dofs() << " Dof" << " and " << triangulation.n_active_cells() << " Cells" <<  endl;
+          fflush(stdout);
+
+	  cout << "assembling the matrix...." << endl;
 	  timer.enter_subsection("assemblation");
           assemble_system_meshworker();
 	  timer.leave_subsection();
           cout << "assemblation completed...." << endl;
 
- /*         cout << "solving the system...." << endl;
+          /*cout << "solving the system...." << endl;
 	  timer.enter_subsection("solving the system");
           solve();
 	  timer.leave_subsection();
@@ -212,10 +215,10 @@ namespace SolverDG
         string file_for_grid;
         file_for_grid = this->sub_directory_names[0] + "/grid_"+"_DOF_" + to_string(dof_handler.n_dofs());
         //mesh_generation<dim>::print_grid(triangulation,file_for_grid);
-        print_convergence_table(output_file_names.file_for_convergence_tables);
-        output_solution_details(triangulation,output_file_names.file_for_num_solution,
-                                output_file_names.file_for_exact_solution,
-                                output_file_names.file_for_error);
+        //print_convergence_table(output_file_names.file_for_convergence_tables);
+        //output_solution_details(triangulation,output_file_names.file_for_num_solution,
+        //                        output_file_names.file_for_exact_solution,
+        //                        output_file_names.file_for_error);
        }*/
      }
 
