@@ -80,7 +80,7 @@
 	// for the present system, BC will be taken up from Mathematica assuming that chi is 1.0
 	template<int dim> void generate_systemB<dim>::build_BC(system_matrix &BC)
 	{
-		;
+		
 	}
 
 	template<int dim> string generate_systemB<dim>::generate_filename_to_write(const string folder_name,const string filename)
@@ -168,7 +168,7 @@
 
 		mutex_deal.release();
 		return( T );
-	};
+	}
 
 	template<int dim> Sparse_matrix generate_systemB<dim>::build_InvProjector(const Tensor<1,dim,double> normal_vector) 
 	{
@@ -178,12 +178,12 @@
 	template<int dim> Full_matrix generate_systemB<dim>::build_Aminus( const Tensor<1,dim,double> normal_vector) 
 	{
 		return( build_InvProjector(normal_vector) * Aminus_1D_Int * build_Projector(normal_vector) );
-	};
+	}
 
 	template<int dim> Full_matrix generate_systemB<dim>::build_Aminus_boundary(const Tensor<1,dim,double> normal_vector) 
 	{
 		return( build_InvProjector(normal_vector) * Aminus_1D_Bound * build_Projector(normal_vector) );
-	};
+	}
 
 
 	template<int dim> generate_systemB<dim>::generate_systemB(const enum Num_flux num_flux)

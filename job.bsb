@@ -1,0 +1,35 @@
+#!/usr/bin/env zsh
+
+#BSUB -J "Job[1-1]"
+
+#BSUB -o /home/ns179556/DG_moments_deal/stdout.txt
+
+#BSUB -W 2:30
+
+#BSUB -M 8000
+
+#BSUB -N -u neerajsarna587@gmail.com
+
+echo LSB_JOBINDEX: $LSB_JOBINDEX
+
+case "$LSB_JOBINDEX" in
+	1)
+		mycode.out 1 > "output$LSB_JOBINDEX"
+	;;
+	2)
+		mycode.out 4 > "output$LSB_JOBINDEX"
+	;;
+	
+	3)
+		mycode.out 8 > "output$LSB_JOBINDEX"
+	;;	
+	
+	4)
+		mycode.out 16 > "output$LSB_JOBINDEX"
+	;;	
+	
+	5)
+		mycode.out 32 > "output$LSB_JOBINDEX"
+	;;
+
+esac

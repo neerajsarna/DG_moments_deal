@@ -21,7 +21,7 @@ namespace ExactSolution
 	template<int dim> Base_ExactSolution<dim>::Base_ExactSolution(const unsigned int nEqn)
 	:
 	Function<dim>(nEqn)
-	{;};
+	{}
 
 
 	template<int dim> double Base_ExactSolution<dim>::BI(const int n,const double x) const

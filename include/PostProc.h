@@ -17,7 +17,7 @@ namespace PostProc
 
 	template<int dim> Base_PostProc<dim>::Base_PostProc()
 	{
-	};
+	}
 
 
 }

@@ -1,5 +1,5 @@
 #setting the (name of the target
-SET(TARGET "poisson_DG")
+SET(TARGET "moment_DG")
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.8)
 
@@ -34,8 +34,8 @@ ADD_DEFINITIONS(${G++_COVERAGE_COMPILE_FLAGS3})
 ADD_DEFINITIONS(${G++_COVERAGE_COMPILE_FLAGS4})
 ADD_DEFINITIONS(${G++_COVERAGE_COMPILE_FLAGS5})
 #adding the executables
-ADD_EXECUTABLE(mycode main.cc)
-DEAL_II_SETUP_TARGET(mycode)
+ADD_EXECUTABLE(mycode.out main.cc)
+DEAL_II_SETUP_TARGET(mycode.out)
 
 
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/include)
@@ -54,6 +54,6 @@ ADD_CUSTOM_TARGET(debug
   COMMENT "Switch CMAKE_BUILD_TYPE to Debug"
   )
   
-ADD_CUSTOM_TARGET(run COMMAND mycode
+ADD_CUSTOM_TARGET(run COMMAND mycode.out
  COMMENT "Run with ${CMAKE_BUILD_TYPE} configuration"  )
 

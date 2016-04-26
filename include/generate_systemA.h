@@ -167,12 +167,12 @@
 	template<int dim> Full_matrix generate_systemA<dim>::build_Aminus( const Tensor<1,dim,double> normal_vector) 
 	{
 		return( build_InvProjector(normal_vector) * Aminus_1D_Int * build_Projector(normal_vector) );
-	};
+	}
 
 	template<int dim> Full_matrix generate_systemA<dim>::build_Aminus_boundary(const Tensor<1,dim,double> normal_vector) 
 	{
 		return( build_InvProjector(normal_vector) * Aminus_1D_Bound * build_Projector(normal_vector) );
-	};
+	}
 
 	template<int dim> generate_systemA<dim>::generate_systemA(const enum Num_flux num_flux)
 	:

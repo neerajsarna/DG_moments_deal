@@ -24,6 +24,7 @@ template<int dim> void Solver_DG<dim>::assemble_system()
       const unsigned int total_ngp_face = face_quadrature.size();
 
       typename DoFHandler<dim>::active_cell_iterator cell = dof_handler.begin_active(), endc = dof_handler.end();
+      typename DoFHandler<dim>::active_cell_iterator endc_trial = cell++;
       typename DoFHandler<dim>::cell_iterator neighbor;
 
       vector<types::global_dof_index> local_dof_indices(dofs_per_cell);
@@ -49,7 +50,7 @@ template<int dim> void Solver_DG<dim>::assemble_system()
       
       // end of vector to make computation faster
 
-      for (; cell != endc ; cell++) 
+      for (; cell != endc_trial ; cell++) 
       {
         cell_matrix = 0;
         cell_rhs = 0;
@@ -86,7 +87,17 @@ template<int dim> void Solver_DG<dim>::assemble_system()
         
 
        }
-      }      
+      }
+	
+	cout << "from assemble.h" << endl;
+	for(unsigned int i = 0 ; i < dofs_per_cell ; i ++)
+	{
+		for (unsigned int j = 0 ; j < dofs_per_cell ; j ++)
+			cout << cell_matrix(i,j) << " " ;      
+
+		cout << endl;
+	}
+	abort();
 
         cell->get_dof_indices(local_dof_indices);
 

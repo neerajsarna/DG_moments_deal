@@ -75,7 +75,7 @@ namespace EquationGenerator
 
 		matrix_info.matrix.setFromTriplets(matrix_info.Row_Col_Value.begin(), matrix_info.Row_Col_Value.end());
 		cout << "done developing matrix......" << endl;
-
+		
 	}
 
 	template<int dim> bool Base_EquationGenerator<dim>::exists(vector<triplet> Row_Col_Value,const int row_index,const int col_index) 
