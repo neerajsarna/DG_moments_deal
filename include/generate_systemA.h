@@ -34,28 +34,33 @@
 
 		assert(Aminus_1D_Bound.rows() == nEqn && Aminus_1D_Bound.cols() == nEqn);
 		assert(Aminus_1D_Int.rows() == nEqn && Aminus_1D_Int.cols() == nEqn);
-		
+
+		Aminus_1D_Bound.setZero();
+		Aminus_1D_Int.setZero();
+
 		EigenSolver<MatrixXd> ES(A[0].matrix);
   		MatrixXd vecs = ES.pseudoEigenvectors();
   		VectorXd vals = ES.pseudoEigenvalueMatrix().diagonal();
  		double maxEV = vals.cwiseAbs().maxCoeff();
 
- 		Aminus_1D_Bound = vecs*(vals.cwiseAbs()-vals).asDiagonal()*vecs.inverse();
+ 		
 
 
 		switch (num_flux)
 		{
 			case Upwind:
 			{
-			 
+				Aminus_1D_Bound = vecs*(vals.cwiseAbs()-vals).asDiagonal()*vecs.inverse();	 
   			  	Aminus_1D_Int = Aminus_1D_Bound;
 				break;
 			}
 
 			case LLF:
 			{
-				 for (unsigned int i = 0 ; i < Aminus_1D_Int.rows() ; i++)
-					Aminus_1D_Int(i,i) = maxEV;
+				 for (unsigned int i = 0 ; i < Aminus_1D_Bound.rows() ; i++)
+					Aminus_1D_Bound(i,i) = fabs(maxEV);
+
+				Aminus_1D_Int = Aminus_1D_Bound;
 
 				break;
 

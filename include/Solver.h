@@ -153,7 +153,7 @@ namespace SolverDG
   template<int dim> Solver_DG<dim>::Solver_DG(const unsigned int p,const unsigned int mapping_order,
                                               const enum Refinement refinement,const Base_ExactSolution<dim> *exact_solution)
   :
-  generate_systemA<dim>(generate_systemA<dim>::Upwind),
+  generate_systemA<dim>(generate_systemA<dim>::LLF),
   finite_element(FE_DGQ<dim>(p),this->nEqn),
   dof_handler(triangulation),
   ngp(p+1),
@@ -167,6 +167,8 @@ namespace SolverDG
 
   template<int dim> void Solver_DG<dim>::run(const string mesh_to_read,const unsigned int refine_cycles)
   {
+    TimerOutput timer (std::cout, TimerOutput::summary,
+                   TimerOutput::wall_times);
 
     cout << "Solving for: " << this->nEqn << " equations " << endl;
           
