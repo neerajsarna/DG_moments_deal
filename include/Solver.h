@@ -7,7 +7,7 @@ namespace SolverDG
   using namespace PostProc;
   using namespace ExactSolution;
 
-  template<int dim> class Solver_DG:protected generate_systemB<dim>,
+  template<int dim> class Solver_DG:protected generate_systemA<dim>,
                                     protected mesh_generation<dim>,
                                     protected Base_PostProc<dim>
   {
@@ -48,7 +48,8 @@ namespace SolverDG
         void solve();
         void h_adapt();
 
-      // variables and functions for meshworker
+  
+    // variables and functions for meshworker
       void assemble_rhs();
 
       void integrate_cell_term (DoFInfo &dinfo,
@@ -62,7 +63,8 @@ namespace SolverDG
 
      void assemble_system_meshworker();
 
-     // variable for post processing
+
+    // variable for post processing
         const Base_ExactSolution<dim> *exact_solution;
         ConvergenceTable convergence_table;
         virtual void print_convergence_table(const string filename);
@@ -70,6 +72,7 @@ namespace SolverDG
         virtual void output_solution_details(const Triangulation<dim> &triangulation,const string file_solution
                                                 ,const string file_exact,const string file_error)const ;
 
+	
       struct output_files
       {
         string file_for_convergence_tables;
@@ -82,7 +85,6 @@ namespace SolverDG
       output_files output_file_names;
 
       void prescribe_filenames(output_files &output_file_names,const unsigned int p);
-
 
         
   };
@@ -151,7 +153,7 @@ namespace SolverDG
   template<int dim> Solver_DG<dim>::Solver_DG(const unsigned int p,const unsigned int mapping_order,
                                               const enum Refinement refinement,const Base_ExactSolution<dim> *exact_solution)
   :
-  generate_systemB<dim>(generate_systemB<dim>::Upwind),
+  generate_systemA<dim>(generate_systemA<dim>::Upwind),
   finite_element(FE_DGQ<dim>(p),this->nEqn),
   dof_handler(triangulation),
   ngp(p+1),
@@ -161,13 +163,10 @@ namespace SolverDG
   mesh_generation<dim>(mesh_generation<dim>::generate_internal),
   exact_solution(exact_solution)
   {
-
   }
 
   template<int dim> void Solver_DG<dim>::run(const string mesh_to_read,const unsigned int refine_cycles)
   {
-    TimerOutput timer (std::cout, TimerOutput::summary,
-                   TimerOutput::wall_times);
 
     cout << "Solving for: " << this->nEqn << " equations " << endl;
           
@@ -178,7 +177,8 @@ namespace SolverDG
 	{
 	  timer.enter_subsection("mesh_generation");
           mesh_generation<dim>::generate_mesh(triangulation,boundary,mesh_to_read);
-       	  timer.leave_subsection();
+	  cout << "no of cells in the initial mesh" << triangulation.n_cells() << endl;  
+     	  timer.leave_subsection();
 	}
 	else
           h_adapt();
@@ -187,9 +187,11 @@ namespace SolverDG
           distribute_dof_allocate_matrix();
 	  timer.leave_subsection();
 
-	  cout << "Solving for " << dof_handler.n_dofs() << " Dof" << endl;
-          cout << "assembling the matrix...." << endl;
+	cout << "Total #DOF: " << dof_handler.n_dofs() << endl;
+
+	  cout << "assembling the matrix...." << endl;
 	  timer.enter_subsection("assemblation");
+	  //assemble_system();
           assemble_system_meshworker();
 	  timer.leave_subsection();
           cout << "assemblation completed...." << endl;
@@ -212,9 +214,9 @@ namespace SolverDG
         file_for_grid = this->sub_directory_names[0] + "/grid_"+"_DOF_" + to_string(dof_handler.n_dofs());
         //mesh_generation<dim>::print_grid(triangulation,file_for_grid);
         print_convergence_table(output_file_names.file_for_convergence_tables);
-        output_solution_details(triangulation,output_file_names.file_for_num_solution,
-                                output_file_names.file_for_exact_solution,
-                                output_file_names.file_for_error);
+        //output_solution_details(triangulation,output_file_names.file_for_num_solution,
+        //                        output_file_names.file_for_exact_solution,
+        //                        output_file_names.file_for_error);
        }
      }
 
@@ -241,6 +243,7 @@ namespace SolverDG
   #include "h_adaptivity.h"
   #include "error_evaluator.h"
   #include "print_convergence_table.h"
+//  #include "assemble.h"
   #include "assemble_system_meshworker.h"
   #include "output_routines.h"
 }

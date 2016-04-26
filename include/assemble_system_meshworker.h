@@ -63,15 +63,17 @@ template<int dim> void Solver_DG<dim>::assemble_system_meshworker()
 	MeshWorker::Assembler::SystemSimple<TrilinosWrappers::SparseMatrix, Vector<double>> assembler;
 	assembler.initialize(global_matrix, system_rhs);
 
-	rhs_task.join();
 
-	  MeshWorker::loop<dim, dim, MeshWorker::DoFInfo<dim>, MeshWorker::IntegrationInfoBox<dim> >
-  												(dof_handler.begin_active(), dof_handler.end(),
+	typename DoFHandler<dim>::active_cell_iterator cell = dof_handler.begin_active();
+	typename DoFHandler<dim>::active_cell_iterator endc = dof_handler.end();
+
+	  
+	MeshWorker::loop<dim, dim, MeshWorker::DoFInfo<dim>, MeshWorker::IntegrationInfoBox<dim> >
+  												(cell, endc,
    												 dof_info, info_box,
    												 std_cxx11::bind(&Solver_DG<dim>::integrate_cell_term,
-   												 	this,
-   												 	std_cxx11::_1,
-   												 	std_cxx11::_2),
+														this,
+														std_cxx11::_1,std_cxx11::_2),
    												 std_cxx11::bind(&Solver_DG<dim>::integrate_boundary_term,
    												 	this,
    												 	std_cxx11::_1,
@@ -83,45 +85,70 @@ template<int dim> void Solver_DG<dim>::assemble_system_meshworker()
    												 	std_cxx11::_3,
    												 	std_cxx11::_4),
    												 assembler);
+     rhs_task.join();
 }
 
 
 template<int dim> void Solver_DG<dim>::integrate_cell_term (DoFInfo &dinfo,
-                                   							CellInfo &info)
+                                   			CellInfo &info)
 {
 	const FEValuesBase<dim> &fe_v = info.fe_values();
 	FullMatrix<double> &cell_matrix = dinfo.matrix(0).matrix;
 	const std::vector<double> &Jacobians_interior = fe_v.get_JxW_values ();
 	const FiniteElement<dim> &fe_in_cell = info.finite_element();
 
-	const unsigned int dofs_per_cell = fe_v.dofs_per_cell;
-	std::vector<unsigned int> component(dofs_per_cell);
+	const unsigned int dofs_per_cell = fe_in_cell.dofs_per_cell;
+	const unsigned int components_per_cell  = fe_in_cell.n_components();
+	const unsigned int indices_per_cell = dofs_per_cell/components_per_cell;
+	vector<vector<double>> component_to_system(components_per_cell,vector<double> (indices_per_cell));
 
-	for (unsigned int i = 0 ; i < dofs_per_cell ; i ++)
-		component[i] = fe_in_cell.system_to_component_index(i).first;
+	for (unsigned int i = 0 ; i < components_per_cell ; i ++)
+		for (unsigned int j = 0 ; j < indices_per_cell ; j ++)
+			component_to_system[i][j] = fe_in_cell.component_to_system_index(i,j); 
+	
 
-	for(unsigned int q = 0 ;q < fe_v.n_quadrature_points ; q++)
-       for (unsigned int i = 0 ; i < fe_v.dofs_per_cell ; i++)
-       {
-          for (unsigned int j = 0 ; j < fe_v.dofs_per_cell  ; j++)
-          {
-            // loop over convection
-            for (unsigned int k = 0 ;k < dim ; k ++)
-             //   if (this->exists(this->A[k].Row_Col_Value,component[i],component[j]))
-                      cell_matrix(i,j) += fe_v.shape_value(i,q) * this->A[k].matrix.coeffRef(component[i],component[j]) 
-                                          * fe_v.shape_grad(j,q)[k] * Jacobians_interior[q];
-                
-                  
-            // loop over production
-            //if (this->exists(this->P.Row_Col_Value,component[i],component[j]))
-                cell_matrix(i,j) += fe_v.shape_value(i,q) * this->P.matrix.coeffRef(component[i],component[j]) 
-                                    * fe_v.shape_value(j,q) * Jacobians_interior[q];
+	for (unsigned int q = 0 ; q < fe_v.n_quadrature_points ; q++)
+	{
+		double jacobian_value = Jacobians_interior[q];
+		
+		for (unsigned int index_test = 0 ; index_test < indices_per_cell ; index_test++)
+		  for (unsigned int index_sol = 0 ; index_sol < indices_per_cell ; index_sol++ )
+		  {
+			for (unsigned int space = 0 ; space < dim ; space++)
+		   		for (unsigned int m = 0 ; m < this->A[space].matrix.outerSize(); m++)
+				{
+					const int dof_test = component_to_system[m][index_test];
+					const double shape_value_test = fe_v.shape_value(dof_test,q);
 
-            
-          }     
-       
-       }
-        
+					for (Sparse_matrix::InnerIterator n(this->A[space].matrix,m); n ; ++n)
+	
+					{
+						int dof_sol = component_to_system[n.col()][index_sol];
+						double grad_value_sol = fe_v.shape_grad(dof_sol,q)[space];
+
+						cell_matrix(dof_test,dof_sol) += shape_value_test * n.value()
+								* grad_value_sol * jacobian_value;	
+					}
+				}
+			for (unsigned int m = 0 ; m < this->P.matrix.outerSize(); m++)
+			{
+				const int dof_test = component_to_system[m][index_test];
+				const double shape_value_test = fe_v.shape_value(dof_test,q);
+
+				for (Sparse_matrix::InnerIterator n(this->P.matrix,m); n ; ++n)
+					{
+						const int dof_sol = component_to_system[n.col()][index_sol];
+						const double shape_value_sol = fe_v.shape_value(dof_sol,q);
+
+						cell_matrix(dof_test,dof_sol) += shape_value_test * n.value()
+								* shape_value_sol * jacobian_value;	
+					}
+			}
+
+		 }
+		
+	}
+
 
 }
 
@@ -143,6 +170,7 @@ template<int dim> void Solver_DG<dim>::integrate_boundary_term(DoFInfo &dinfo,
 
   	  for (unsigned int q = 0 ; q < fe_v.n_quadrature_points ; q++)
                 {
+		  const double jacobian_value = Jacobian_face[q];
                   Vector<double> boundary_rhs_value(this->nEqn);
                   this->build_BCrhs(fe_v.quadrature_point(q),fe_v.normal_vector(q),boundary_rhs_value);
 
@@ -158,15 +186,17 @@ template<int dim> void Solver_DG<dim>::integrate_boundary_term(DoFInfo &dinfo,
 
                   for (unsigned int i = 0 ; i < dofs_per_cell ; i ++)
                   {
+		    const double shape_value_test = fe_v.shape_value(i,q);
+ 
                     for (unsigned int j = 0 ; j < dofs_per_cell ; j ++)
-                        cell_matrix(i,j) += 0.5 * fe_v.shape_value(i,q) 
-                                            * (Am(component[i],component[j])-Am_invP_BC_P(component[i],component[j]))
-                                            * fe_v.shape_value(j,q) * Jacobian_face[q];                                    
+                        cell_matrix(i,j) += 0.5 * shape_value_test
+                                           * (Am(component[i],component[j])-Am_invP_BC_P(component[i],component[j]))
+                                            * fe_v.shape_value(j,q) * jacobian_value;                                    
                       
 
                     for (unsigned int j = 0 ; j < Am_invP.cols() ; j++)
-                     cell_rhs(i) -= 0.5 * fe_v.shape_value(i,q) 
-                                    * Am_invP(component[i],j) * boundary_rhs_value[j] * Jacobian_face[q];
+                     cell_rhs(i) -= 0.5 * shape_value_test 
+                                    * Am_invP(component[i],j) * boundary_rhs_value[j] * jacobian_value;
 
 
                   }
@@ -201,25 +231,32 @@ template<int dim> void Solver_DG<dim>::integrate_face_term(DoFInfo &dinfo1,
                   // build the matrices needed
     Eigen::MatrixXd Am = this->build_Aminus(fe_v.normal_vector(q));
     Eigen::MatrixXd Am_neighbor = this->build_Aminus(-fe_v.normal_vector(q));
-
+    double jacobian_value = Jacobian_face[q];
 
     for (unsigned int i = 0 ; i < dofs_per_cell ; i ++)
+    {
+      const double shape_value_test = fe_v.shape_value(i,q);
+      const double shape_value_test_neighbor = fe_v_neighbor.shape_value(i,q);
+
       for (unsigned int j = 0 ; j < dofs_per_cell ; j ++)
       {
-        u1_v1(i,j) += 0.5 * fe_v.shape_value(i,q) * Am(component[i],component[j]) 
-        * fe_v.shape_value(j,q) * Jacobian_face[q];
+	const double shape_value_sol = fe_v.shape_value(j,q);
+	const double shape_value_neighbor = fe_v_neighbor.shape_value(j,q);
 
-        u2_v1(i,j) -= 0.5 * fe_v.shape_value(i,q) * Am(component[i],component[j]) 
-        * fe_v_neighbor.shape_value(j,q) * Jacobian_face[q];
+        u1_v1(i,j) += 0.5 * shape_value_test * Am(component[i],component[j]) 
+        * shape_value_sol * jacobian_value;
 
-        u2_v2(i,j) += 0.5 * fe_v_neighbor.shape_value(i,q) * Am_neighbor(component[i],component[j])
-        * fe_v_neighbor.shape_value(j,q) * Jacobian_face[q];
+        u2_v1(i,j) -= 0.5 * shape_value_test * Am(component[i],component[j]) 
+        * shape_value_neighbor * jacobian_value;
 
-        u1_v2(i,j) -= 0.5 * fe_v_neighbor.shape_value(i,q) * Am_neighbor(component[i],component[j]) 
-        * fe_v.shape_value(j,q) * Jacobian_face[q];
+        u2_v2(i,j) += 0.5 * shape_value_test_neighbor * Am_neighbor(component[i],component[j])
+        * shape_value_neighbor * jacobian_value;
+
+        u1_v2(i,j) -= 0.5 * shape_value_test_neighbor * Am_neighbor(component[i],component[j]) 
+        * shape_value_sol * jacobian_value;
 
       }
-
+    }
     }
 
 }
