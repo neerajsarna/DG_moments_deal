@@ -26,7 +26,7 @@ int main(int argc,char **argv)
 	//MultithreadInfo::set_thread_limit(num_threads);
 
 	const int dim = 2;
-	const int refine_cycles = 5;			// total number of refinement cycles
+	const int refine_cycles = 7;			// total number of refinement cycles
 	const int p = 2;
 	const string mesh_file_name = "mesh/mesh_file";
 	const unsigned int mapping_order = 2;
