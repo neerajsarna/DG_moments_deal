@@ -153,7 +153,7 @@ namespace SolverDG
   template<int dim> Solver_DG<dim>::Solver_DG(const unsigned int p,const unsigned int mapping_order,
                                               const enum Refinement refinement,const Base_ExactSolution<dim> *exact_solution)
   :
-  generate_systemA<dim>(generate_systemA<dim>::LLF),
+  generate_systemA<dim>(generate_systemA<dim>::Upwind),
   finite_element(FE_DGQ<dim>(p),this->nEqn),
   dof_handler(triangulation),
   ngp(p+1),

@@ -57,7 +57,7 @@ namespace Basics
 			 " A1 " + to_string(A1) +	
 			 " A2 " + to_string(A2);
 
-			 main_output_dir = "outputs_inner_circle_outer_square";
+			 main_output_dir = "outputs";
 			 unsigned int num_outputs = 5;
 			 sub_directory_names.resize(num_outputs);
 
