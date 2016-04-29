@@ -72,8 +72,8 @@ Solver_DG<system_type,num_flux,dim>
 
 
 	typename DoFHandler<dim>::active_cell_iterator cell = dof_handler.begin_active();
-	typename DoFHandler<dim>::active_cell_iterator endc = cell;
-  endc++;
+	typename DoFHandler<dim>::active_cell_iterator endc = dof_handler.end();
+
 
 	MeshWorker::loop<dim, dim, MeshWorker::DoFInfo<dim>, MeshWorker::IntegrationInfoBox<dim> >
   												(cell, endc,
@@ -198,6 +198,7 @@ Solver_DG<system_type,num_flux,dim>
 
                   Eigen::MatrixXd Am_invP = Am * Inv_Projector;
 
+
                   for (unsigned int i = 0 ; i < dofs_per_cell ; i ++)
                   {
 		                const double shape_value_test = fe_v.shape_value(i,q);
@@ -216,14 +217,6 @@ Solver_DG<system_type,num_flux,dim>
 
                 }
 
-      
-  for (unsigned int i = 0 ; i < dofs_per_cell ; i ++)
-  {
-    for (unsigned int j = 0 ; j < dofs_per_cell ; j++)
-      cout << cell_matrix(i,j) << " ";
-
-    cout << "\n" ;
-  }
 }
 
 template<int system_type,int num_flux,int dim>

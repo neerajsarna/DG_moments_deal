@@ -54,7 +54,7 @@ CMAKE_BINARY_DIR = /Users/neerajsarna/sciebo/DG_moments_deal
 include CMakeFiles/run.dir/progress.make
 
 CMakeFiles/run:
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/Users/neerajsarna/sciebo/DG_moments_deal/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Run with Debug configuration"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/Users/neerajsarna/sciebo/DG_moments_deal/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Run with Release configuration"
 	./mycode.out
 
 run: CMakeFiles/run

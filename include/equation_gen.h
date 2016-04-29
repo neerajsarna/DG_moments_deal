@@ -51,8 +51,8 @@ namespace EquationGenerator
 	  									const Vector<double> x,Vector<double> &result) const;
 		void generate_matrices(equation_data &system_data,const unsigned int system_id);
 		Tensor<1,dim,double> mirror(const Tensor<1,dim,double> normal_vector) const;			
-		void build_Aminus1D(Full_matrix Aminus_1D_Int,
-							Full_matrix Aminus_1D_Bound,
+		void build_Aminus1D(Full_matrix &Aminus_1D_Int,
+							Full_matrix &Aminus_1D_Bound,
 							const unsigned int system_id);										
 		void build_P(system_matrix &P,const unsigned int system_id);												
 		void build_BC(system_matrix &BC,const unsigned int system_id);											

@@ -147,9 +147,6 @@ source_term(const vector<Point<dim>> &p,
 				{
 					for (unsigned int i = 0 ; i < value.size() ; i++)
 					{
-						cout << "from un symmetric source term " << endl;
-						fflush(stdout);
-						
 						double norm = sqrt(p[i].square());
 						value[i] = 0;
 						value[i][0] = (A0 + A2*norm*norm + A1*p[i][0]/norm);	
@@ -211,8 +208,8 @@ Full_matrix Base_EquationGenerator<system_type,num_flux,dim>
 
 template<int system_type,int num_flux,int dim> 
 void Base_EquationGenerator<system_type,num_flux,dim>
-::build_Aminus1D(Full_matrix Aminus_1D_Int,
-				Full_matrix Aminus_1D_Bound,
+::build_Aminus1D(Full_matrix &Aminus_1D_Int,
+				Full_matrix &Aminus_1D_Bound,
 				const unsigned int system_id)
 {
 	assert(Aminus_1D_Bound.rows() == num_equations.total_nEqn[system_id] 
