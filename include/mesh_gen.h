@@ -57,6 +57,7 @@ namespace Mesh_Handler
         GridGenerator::hyper_shell (triangulation,
           center, inner_radius, outer_radius,
           10);
+
         triangulation.set_all_manifold_ids_on_boundary(0);
         triangulation.set_manifold(0,boundary);
         triangulation.refine_global(3);
