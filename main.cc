@@ -22,7 +22,6 @@ int main(int argc,char **argv)
 	const unsigned int num_threads = atoi(argv[1]);
 
 	Utilities::MPI::MPI_InitFinalize mpi_initialization(argc, argv,num_threads);
-	MultithreadInfo::set_thread_limit(num_threads);
 
 	const int dim = 2;
 	const int refine_cycles = 1;			// total number of refinement cycles
