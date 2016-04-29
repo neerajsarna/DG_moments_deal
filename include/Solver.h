@@ -3,13 +3,11 @@ namespace SolverDG
   using namespace dealii;
   using namespace std;
   using namespace Mesh_Handler;
-  using namespace EquationGenerator;
   using namespace PostProc;
-  using namespace ExactSolution;
 
-  template<int dim> class Solver_DG:protected generate_systemA<dim>,
-                                    protected mesh_generation<dim>,
-                                    protected Base_PostProc<dim>
+  template<int system_type ,int num_flux,int dim> class Solver_DG:protected mesh_generation<dim>,
+                                                                  protected Base_PostProc<dim>,
+                                                                  protected Base_Basics
   {
 
     typedef MeshWorker::DoFInfo<dim> DoFInfo;
@@ -23,11 +21,20 @@ namespace SolverDG
         Refinement refinement;
 
         Solver_DG(const unsigned int p,const unsigned int mapping_order,
-                  const enum Refinement refinement,const Base_ExactSolution<dim> *exact_solution);
+                  const enum Refinement refinement,
+                   EquationGenerator::Base_EquationGenerator<system_type,num_flux,dim> *system_of_equations,
+                  const ExactSolution::Base_ExactSolution<system_type,num_flux,dim> *exact_solution,
+                  const unsigned int solve_system);
 
         void run(const string mesh_to_read,const unsigned int refine_cycles);
 
     private:
+        EquationGenerator::Base_EquationGenerator<system_type,num_flux,dim> *equation_system_data;
+        const ExactSolution::Base_ExactSolution<system_type,num_flux,dim> *exact_solution;
+
+        const unsigned int solve_system;
+        const unsigned int nEqn;
+
         SphericalManifold<dim> boundary;
         Triangulation<dim> triangulation;
         FESystem<dim> finite_element;
@@ -65,7 +72,6 @@ namespace SolverDG
 
 
     // variable for post processing
-        const Base_ExactSolution<dim> *exact_solution;
         ConvergenceTable convergence_table;
         virtual void print_convergence_table(const string filename);
         virtual void error_evaluation(const Vector<double> solution);
@@ -84,29 +90,28 @@ namespace SolverDG
 
       output_files output_file_names;
 
-      void prescribe_filenames(output_files &output_file_names,const unsigned int p);
-
-        
+      void prescribe_filenames(output_files &output_file_names,const unsigned int p);        
   };
 
-  template<int dim> void Solver_DG<dim>::prescribe_filenames(output_files &output_file_names,const unsigned int p)
+  template<int system_type ,int num_flux,int dim> void 
+  Solver_DG<system_type ,num_flux,dim>::prescribe_filenames(output_files &output_file_names,const unsigned int p)
   {
     switch(refinement)
     {
         case global:
         {
-          output_file_names.file_for_convergence_tables = this->sub_directory_names[2] + "/convergence_table_global_degree_"
+          output_file_names.file_for_convergence_tables = sub_directory_names[2] + "/convergence_table_global_degree_"
                                                           + to_string(p);
 
-          output_file_names.file_for_num_solution = this->sub_directory_names[1] + "/numerical_solution_global_degree_"
+          output_file_names.file_for_num_solution = sub_directory_names[1] + "/numerical_solution_global_degree_"
                                                           + to_string(p)+"_DOF_"+to_string(dof_handler.n_dofs());
 
 
-          output_file_names.file_for_exact_solution = this->sub_directory_names[1] + "/exact_solution_global_degree_"
+          output_file_names.file_for_exact_solution = sub_directory_names[1] + "/exact_solution_global_degree_"
                                                           + to_string(p)+"_DOF_"+to_string(dof_handler.n_dofs());
 
 
-          output_file_names.file_for_error = this->sub_directory_names[1] + "/error_global_degree_"
+          output_file_names.file_for_error = sub_directory_names[1] + "/error_global_degree_"
                                                           + to_string(p)+"_DOF_"+to_string(dof_handler.n_dofs());
 
           break;                
@@ -114,17 +119,17 @@ namespace SolverDG
 
         case adaptive:
         {
-          output_file_names.file_for_convergence_tables = this->sub_directory_names[2] + "/convergence_table_adaptive_degree_"
+          output_file_names.file_for_convergence_tables = sub_directory_names[2] + "/convergence_table_adaptive_degree_"
                                                           + to_string(p);
 
-          output_file_names.file_for_num_solution = this->sub_directory_names[1] + "/numerical_solution_adaptive_degree_"
+          output_file_names.file_for_num_solution = sub_directory_names[1] + "/numerical_solution_adaptive_degree_"
                                                           + to_string(p)+"_DOF_"+to_string(dof_handler.n_dofs());
 
-          output_file_names.file_for_exact_solution = this->sub_directory_names[1] + "/exact_solution_adaptive_degree_"
+          output_file_names.file_for_exact_solution = sub_directory_names[1] + "/exact_solution_adaptive_degree_"
                                                           + to_string(p)+"_DOF_"+to_string(dof_handler.n_dofs());
 
 
-          output_file_names.file_for_error = this->sub_directory_names[1] + "/error_adaptive_degree_"
+          output_file_names.file_for_error = sub_directory_names[1] + "/error_adaptive_degree_"
                                                           + to_string(p)+"_DOF_"+to_string(dof_handler.n_dofs());
 
           break;
@@ -132,16 +137,16 @@ namespace SolverDG
 
         case adaptive_kelly:
           {
-          output_file_names.file_for_convergence_tables = this->sub_directory_names[2] + "/convergence_table_adaptive_kelly_degree_"
+          output_file_names.file_for_convergence_tables = sub_directory_names[2] + "/convergence_table_adaptive_kelly_degree_"
                                                           + to_string(p);
           
-          output_file_names.file_for_num_solution = this->sub_directory_names[1] + "/numerical_solution_adaptive_kelly_degree_"
+          output_file_names.file_for_num_solution = sub_directory_names[1] + "/numerical_solution_adaptive_kelly_degree_"
                                                           + to_string(p)+"_DOF_"+to_string(dof_handler.n_dofs());
 
-          output_file_names.file_for_exact_solution = this->sub_directory_names[1] + "/exact_solution_adaptive_kelly_degree_"
+          output_file_names.file_for_exact_solution = sub_directory_names[1] + "/exact_solution_adaptive_kelly_degree_"
                                                           + to_string(p)+"_DOF_"+to_string(dof_handler.n_dofs());
 
-          output_file_names.file_for_error = this->sub_directory_names[1] + "/error_adaptive_kelly_degree_"
+          output_file_names.file_for_error = sub_directory_names[1] + "/error_adaptive_kelly_degree_"
                                                           + to_string(p)+"_DOF_"+to_string(dof_handler.n_dofs());
 
           break;
@@ -150,38 +155,51 @@ namespace SolverDG
     
   }
 
-  template<int dim> Solver_DG<dim>::Solver_DG(const unsigned int p,const unsigned int mapping_order,
-                                              const enum Refinement refinement,const Base_ExactSolution<dim> *exact_solution)
+  template<int system_type ,int num_flux,int dim> 
+  Solver_DG<system_type ,num_flux,dim>::Solver_DG(const unsigned int p,
+                                                  const unsigned int mapping_order,
+                                                  const enum Refinement refinement,
+                                                  EquationGenerator::Base_EquationGenerator<system_type ,num_flux,dim> *system_of_equations,
+                                                  const ExactSolution::Base_ExactSolution<system_type,num_flux,dim> *exact_solution,
+                                                  const unsigned int solve_system)
   :
-  generate_systemA<dim>(generate_systemA<dim>::LLF),
-  finite_element(FE_DGQ<dim>(p),this->nEqn),
+  exact_solution(exact_solution),
+  solve_system(solve_system),
+  nEqn(system_of_equations->system_data[solve_system].nEqn),
+  finite_element(FE_DGQ<dim>(p),system_of_equations->system_data[solve_system].nEqn),
   dof_handler(triangulation),
   ngp(p+1),
   ngp_face(p+1),
   refinement(refinement),
   mapping(mapping_order),
-  mesh_generation<dim>(mesh_generation<dim>::generate_internal),
-  exact_solution(exact_solution)
+  mesh_generation<dim>(mesh_generation<dim>::generate_internal)
   {
+    cout << "from RUN" << system_of_equations->tau << endl;
+    equation_system_data = system_of_equations;
+    cout << "from constructor solver" << equation_system_data->tau << endl;
   }
 
-  template<int dim> void Solver_DG<dim>::run(const string mesh_to_read,const unsigned int refine_cycles)
+  template<int system_type ,int num_flux,int dim> 
+  void 
+  Solver_DG<system_type ,num_flux,dim>::run(const string mesh_to_read,
+                                         const unsigned int refine_cycles)
   {
+
     TimerOutput timer (std::cout, TimerOutput::summary,
                    TimerOutput::wall_times);
 
-    cout << "Solving for: " << this->nEqn << " equations " << endl;
+    cout << "Solving for: " << nEqn << " equations " << endl;
           
      for (unsigned int i = 0 ; i < refine_cycles; i++)
      {
        cout << "Start of Cycle: " << i << endl;
        if(i == 0)
-	{
+	   {  
 	  timer.enter_subsection("mesh_generation");
           mesh_generation<dim>::generate_mesh(triangulation,boundary,mesh_to_read);
 	  cout << "no of cells in the initial mesh" << triangulation.n_cells() << endl;  
      	  timer.leave_subsection();
-	}
+	   }
 	else
           h_adapt();
 	
@@ -193,12 +211,11 @@ namespace SolverDG
 
 	  cout << "assembling the matrix...." << endl;
 	  timer.enter_subsection("assemblation");
-	  //assemble_system();
           assemble_system_meshworker();
 	  timer.leave_subsection();
           cout << "assemblation completed...." << endl;
 
-          cout << "solving the system...." << endl;
+ /*   cout << "solving the system...." << endl;
 	  timer.enter_subsection("solving the system");
           solve();
 	  timer.leave_subsection();
@@ -216,15 +233,17 @@ namespace SolverDG
         file_for_grid = this->sub_directory_names[0] + "/grid_"+"_DOF_" + to_string(dof_handler.n_dofs());
         //mesh_generation<dim>::print_grid(triangulation,file_for_grid);
         print_convergence_table(output_file_names.file_for_convergence_tables);
-        //output_solution_details(triangulation,output_file_names.file_for_num_solution,
-        //                        output_file_names.file_for_exact_solution,
-        //                        output_file_names.file_for_error);
-       }
+        output_solution_details(triangulation,output_file_names.file_for_num_solution,
+                                output_file_names.file_for_exact_solution,
+                                output_file_names.file_for_error);
+       }*/
      }
 
   }
 
-  template<int dim> void Solver_DG<dim>::distribute_dof_allocate_matrix()
+  template<int system_type,int num_flux,int dim> 
+  void 
+  Solver_DG<system_type,num_flux,dim>::distribute_dof_allocate_matrix()
   {
     dof_handler.distribute_dofs(finite_element);
 

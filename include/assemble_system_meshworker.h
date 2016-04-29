@@ -1,5 +1,8 @@
-template<int dim> void Solver_DG<dim>::assemble_rhs()
+template<int system_type,int num_flux,int dim>
+void 
+Solver_DG<system_type,num_flux,dim>::assemble_rhs()
 {
+
 	const QGauss<dim> quadrature(ngp);
 	const UpdateFlags update_flags  = update_values | update_JxW_values | update_quadrature_points;
 
@@ -10,9 +13,9 @@ template<int dim> void Solver_DG<dim>::assemble_rhs()
 	const unsigned int dofs_per_cell = finite_element.dofs_per_cell;
     
     vector<types::global_dof_index> local_dof_indices(dofs_per_cell);
-	Vector<double> cell_rhs(dofs_per_cell);
-	vector<double> Jacobians_interior(total_ngp);
-	vector<Vector<double>> source_term_value(total_ngp,Vector<double>(this->nEqn));
+	 Vector<double> cell_rhs(dofs_per_cell);
+	 vector<double> Jacobians_interior(total_ngp);
+	 vector<Vector<double>> source_term_value(total_ngp,Vector<double>(nEqn));
     Vector<double> component(dofs_per_cell);
 
     for (unsigned int i = 0 ; i < dofs_per_cell ; i++)
@@ -23,7 +26,7 @@ template<int dim> void Solver_DG<dim>::assemble_rhs()
       	cell_rhs = 0;
       	fe_v.reinit(cell);
         Jacobians_interior = fe_v.get_JxW_values();      	
-        this->source_term(fe_v.get_quadrature_points(),source_term_value);
+        equation_system_data->source_term(fe_v.get_quadrature_points(),source_term_value,solve_system);
 
       	for (unsigned int q = 0 ; q < total_ngp ; q++)
       		for (unsigned int i = 0 ; i < dofs_per_cell ; i ++)
@@ -35,12 +38,16 @@ template<int dim> void Solver_DG<dim>::assemble_rhs()
               system_rhs(local_dof_indices[i]) += cell_rhs(i);
 
       }
+    
 }
 
-template<int dim> void Solver_DG<dim>::assemble_system_meshworker()
+template<int system_type,int num_flux,int dim>
+void 
+Solver_DG<system_type,num_flux,dim>
+::assemble_system_meshworker()
 {
 	// first we will assemble the right hand side 
-	Threads::Task<> rhs_task = Threads::new_task (&Solver_DG<dim>::assemble_rhs,
+	Threads::Task<> rhs_task = Threads::new_task (&Solver_DG<system_type,num_flux,dim>::assemble_rhs,
                                                 *this);
 
 
@@ -65,20 +72,20 @@ template<int dim> void Solver_DG<dim>::assemble_system_meshworker()
 
 
 	typename DoFHandler<dim>::active_cell_iterator cell = dof_handler.begin_active();
-	typename DoFHandler<dim>::active_cell_iterator endc = dof_handler.end();
+	typename DoFHandler<dim>::active_cell_iterator endc = cell;
+  endc++;
 
-	  
 	MeshWorker::loop<dim, dim, MeshWorker::DoFInfo<dim>, MeshWorker::IntegrationInfoBox<dim> >
   												(cell, endc,
    												 dof_info, info_box,
-   												 std_cxx11::bind(&Solver_DG<dim>::integrate_cell_term,
+   												 std_cxx11::bind(&Solver_DG<system_type,num_flux,dim>::integrate_cell_term,
 														this,
 														std_cxx11::_1,std_cxx11::_2),
-   												 std_cxx11::bind(&Solver_DG<dim>::integrate_boundary_term,
+   												 std_cxx11::bind(&Solver_DG<system_type,num_flux,dim>::integrate_boundary_term,
    												 	this,
    												 	std_cxx11::_1,
    												 	std_cxx11::_2),
-   												 std_cxx11::bind(&Solver_DG<dim>::integrate_face_term,
+   												 std_cxx11::bind(&Solver_DG<system_type,num_flux,dim>::integrate_face_term,
    												 	this,
    												 	std_cxx11::_1,
    												 	std_cxx11::_2,
@@ -89,9 +96,12 @@ template<int dim> void Solver_DG<dim>::assemble_system_meshworker()
 }
 
 
-template<int dim> void Solver_DG<dim>::integrate_cell_term (DoFInfo &dinfo,
+template<int system_type,int num_flux,int dim>
+ void 
+ Solver_DG<system_type,num_flux,dim>::integrate_cell_term (DoFInfo &dinfo,
                                    			CellInfo &info)
 {
+  
 	const FEValuesBase<dim> &fe_v = info.fe_values();
 	FullMatrix<double> &cell_matrix = dinfo.matrix(0).matrix;
 	const std::vector<double> &Jacobians_interior = fe_v.get_JxW_values ();
@@ -115,12 +125,12 @@ template<int dim> void Solver_DG<dim>::integrate_cell_term (DoFInfo &dinfo,
 		  for (unsigned int index_sol = 0 ; index_sol < indices_per_cell ; index_sol++ )
 		  {
 			for (unsigned int space = 0 ; space < dim ; space++)
-		   		for (unsigned int m = 0 ; m < this->A[space].matrix.outerSize(); m++)
+		   		for (unsigned int m = 0 ; m < equation_system_data->system_data[solve_system].A[space].matrix.outerSize(); m++)
 				{
 					const int dof_test = component_to_system[m][index_test];
 					const double shape_value_test = fe_v.shape_value(dof_test,q);
 
-					for (Sparse_matrix::InnerIterator n(this->A[space].matrix,m); n ; ++n)
+					for (Sparse_matrix::InnerIterator n(equation_system_data->system_data[solve_system].A[space].matrix,m); n ; ++n)
 	
 					{
 						int dof_sol = component_to_system[n.col()][index_sol];
@@ -130,12 +140,12 @@ template<int dim> void Solver_DG<dim>::integrate_cell_term (DoFInfo &dinfo,
 								* grad_value_sol * jacobian_value;	
 					}
 				}
-			for (unsigned int m = 0 ; m < this->P.matrix.outerSize(); m++)
+			for (unsigned int m = 0 ; m < equation_system_data->system_data[solve_system].P.matrix.outerSize(); m++)
 			{
 				const int dof_test = component_to_system[m][index_test];
 				const double shape_value_test = fe_v.shape_value(dof_test,q);
 
-				for (Sparse_matrix::InnerIterator n(this->P.matrix,m); n ; ++n)
+				for (Sparse_matrix::InnerIterator n(equation_system_data->system_data[solve_system].P.matrix,m); n ; ++n)
 					{
 						const int dof_sol = component_to_system[n.col()][index_sol];
 						const double shape_value_sol = fe_v.shape_value(dof_sol,q);
@@ -152,42 +162,45 @@ template<int dim> void Solver_DG<dim>::integrate_cell_term (DoFInfo &dinfo,
 
 }
 
-template<int dim> void Solver_DG<dim>::integrate_boundary_term(DoFInfo &dinfo,
-                                       CellInfo &info)
+template<int system_type,int num_flux,int dim> 
+void 
+Solver_DG<system_type,num_flux,dim>
+::integrate_boundary_term(DoFInfo &dinfo,
+                          CellInfo &info)
 {
-	  const FEValuesBase<dim> &fe_v = info.fe_values();
-	  FullMatrix<double> &cell_matrix = dinfo.matrix(0).matrix;
-  	  Vector<double> &cell_rhs = dinfo.vector(0).block(0);
-	  const std::vector<double> &Jacobian_face = fe_v.get_JxW_values ();
-	
-	const FiniteElement<dim> &fe_in_cell = info.finite_element();
+ const FEValuesBase<dim> &fe_v = info.fe_values();
+ FullMatrix<double> &cell_matrix = dinfo.matrix(0).matrix;
+ Vector<double> &cell_rhs = dinfo.vector(0).block(0);
+ const std::vector<double> &Jacobian_face = fe_v.get_JxW_values ();
 
-	const unsigned int dofs_per_cell = fe_v.dofs_per_cell;
-	std::vector<unsigned int> component(dofs_per_cell);
+ const FiniteElement<dim> &fe_in_cell = info.finite_element();
 
-	for (unsigned int i = 0 ; i < dofs_per_cell ; i ++)
-		component[i] = fe_in_cell.system_to_component_index(i).first;
+ const unsigned int dofs_per_cell = fe_v.dofs_per_cell;
+ std::vector<unsigned int> component(dofs_per_cell);
+
+ for (unsigned int i = 0 ; i < dofs_per_cell ; i ++)
+  component[i] = fe_in_cell.system_to_component_index(i).first;
 
   	  for (unsigned int q = 0 ; q < fe_v.n_quadrature_points ; q++)
                 {
-		  const double jacobian_value = Jacobian_face[q];
+		              const double jacobian_value = Jacobian_face[q];
                   Vector<double> boundary_rhs_value(this->nEqn);
-                  this->build_BCrhs(fe_v.quadrature_point(q),fe_v.normal_vector(q),boundary_rhs_value);
+                  equation_system_data->build_BCrhs(fe_v.quadrature_point(q),fe_v.normal_vector(q),
+                                                  boundary_rhs_value,solve_system);
 
                   // build the matrices needed
-                  Eigen::MatrixXd Am = this->build_Aminus_boundary(fe_v.normal_vector(q));
-                  Sparse_matrix Projector = this->build_Projector(fe_v.normal_vector(q));
-                  Sparse_matrix Inv_Projector = this->build_InvProjector(fe_v.normal_vector(q));
+                  Eigen::MatrixXd Am = equation_system_data->build_Aminus(fe_v.normal_vector(q),solve_system);
+                  Sparse_matrix Projector = equation_system_data->build_Projector(fe_v.normal_vector(q),solve_system);
+                  Sparse_matrix Inv_Projector = equation_system_data->build_InvProjector(fe_v.normal_vector(q),solve_system);
 
                   Eigen::MatrixXd Am_invP_BC_P = Am * Inv_Projector 
-                                                * this->BC.matrix * Projector;
+                                                * equation_system_data->system_data[solve_system].BC.matrix * Projector;
 
                   Eigen::MatrixXd Am_invP = Am * Inv_Projector;
 
                   for (unsigned int i = 0 ; i < dofs_per_cell ; i ++)
                   {
-		    const double shape_value_test = fe_v.shape_value(i,q);
- 
+		                const double shape_value_test = fe_v.shape_value(i,q);
                     for (unsigned int j = 0 ; j < dofs_per_cell ; j ++)
                         cell_matrix(i,j) += 0.5 * shape_value_test
                                            * (Am(component[i],component[j])-Am_invP_BC_P(component[i],component[j]))
@@ -202,13 +215,26 @@ template<int dim> void Solver_DG<dim>::integrate_boundary_term(DoFInfo &dinfo,
                   }
 
                 }
+
+      
+  for (unsigned int i = 0 ; i < dofs_per_cell ; i ++)
+  {
+    for (unsigned int j = 0 ; j < dofs_per_cell ; j++)
+      cout << cell_matrix(i,j) << " ";
+
+    cout << "\n" ;
+  }
 }
 
-template<int dim> void Solver_DG<dim>::integrate_face_term(DoFInfo &dinfo1,
-                                   DoFInfo &dinfo2,
-                                   CellInfo &info1,
-                                   CellInfo &info2)
+template<int system_type,int num_flux,int dim>
+void 
+Solver_DG<system_type,num_flux,dim>
+::integrate_face_term(DoFInfo &dinfo1,
+                      DoFInfo &dinfo2,
+                      CellInfo &info1,
+                      CellInfo &info2)
 {
+  
 	const FEValuesBase<dim> &fe_v = info1.fe_values();
 	const FEValuesBase<dim> &fe_v_neighbor = info2.fe_values();
 
@@ -229,8 +255,8 @@ template<int dim> void Solver_DG<dim>::integrate_face_term(DoFInfo &dinfo1,
   for (unsigned int q = 0 ; q < fe_v.n_quadrature_points ; q++)
   {
                   // build the matrices needed
-    Eigen::MatrixXd Am = this->build_Aminus(fe_v.normal_vector(q));
-    Eigen::MatrixXd Am_neighbor = this->build_Aminus(-fe_v.normal_vector(q));
+    Eigen::MatrixXd Am = equation_system_data->build_Aminus(fe_v.normal_vector(q),solve_system);
+    Eigen::MatrixXd Am_neighbor = equation_system_data->build_Aminus(-fe_v.normal_vector(q),solve_system);
     double jacobian_value = Jacobian_face[q];
 
     for (unsigned int i = 0 ; i < dofs_per_cell ; i ++)
@@ -240,23 +266,23 @@ template<int dim> void Solver_DG<dim>::integrate_face_term(DoFInfo &dinfo1,
 
       for (unsigned int j = 0 ; j < dofs_per_cell ; j ++)
       {
-	const double shape_value_sol = fe_v.shape_value(j,q);
-	const double shape_value_neighbor = fe_v_neighbor.shape_value(j,q);
+	       const double shape_value_sol = fe_v.shape_value(j,q);
+	       const double shape_value_neighbor = fe_v_neighbor.shape_value(j,q);
 
-        u1_v1(i,j) += 0.5 * shape_value_test * Am(component[i],component[j]) 
-        * shape_value_sol * jacobian_value;
+          u1_v1(i,j) += 0.5 * shape_value_test * Am(component[i],component[j]) 
+                        * shape_value_sol * jacobian_value;
 
-        u2_v1(i,j) -= 0.5 * shape_value_test * Am(component[i],component[j]) 
-        * shape_value_neighbor * jacobian_value;
+          u2_v1(i,j) -= 0.5 * shape_value_test * Am(component[i],component[j]) 
+                        * shape_value_neighbor * jacobian_value;
 
-        u2_v2(i,j) += 0.5 * shape_value_test_neighbor * Am_neighbor(component[i],component[j])
-        * shape_value_neighbor * jacobian_value;
+          u2_v2(i,j) += 0.5 * shape_value_test_neighbor * Am_neighbor(component[i],component[j])
+                        * shape_value_neighbor * jacobian_value;
 
-        u1_v2(i,j) -= 0.5 * shape_value_test_neighbor * Am_neighbor(component[i],component[j]) 
-        * shape_value_sol * jacobian_value;
+          u1_v2(i,j) -= 0.5 * shape_value_test_neighbor * Am_neighbor(component[i],component[j]) 
+                        * shape_value_sol * jacobian_value;
 
       }
     }
-    }
+  }
 
 }

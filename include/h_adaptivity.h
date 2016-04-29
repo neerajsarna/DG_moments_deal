@@ -1,4 +1,6 @@
-template<int dim> void Solver_DG<dim>::h_adapt()
+template<int system_type,int num_flux,int dim> 
+void 
+Solver_DG<system_type,num_flux,dim>::h_adapt()
 {
   switch(refinement)
   {
@@ -28,7 +30,7 @@ template<int dim> void Solver_DG<dim>::h_adapt()
         Point<dim> this_center = fe_midpoint.quadrature_point(0);
 
         vector<Vector<double>> this_midpoint_value(1);
-        this_midpoint_value[0].reinit(this->nEqn);
+        this_midpoint_value[0].reinit(nEqn);
 
         fe_midpoint.get_function_values (solution,
           this_midpoint_value);
@@ -61,7 +63,7 @@ template<int dim> void Solver_DG<dim>::h_adapt()
             fe_midpoint.reinit(neighbor);
 
             vector<Vector<double>> neighbor_midpoint_value(1);
-            neighbor_midpoint_value[0].reinit(this->nEqn);
+            neighbor_midpoint_value[0].reinit(nEqn);
 
             const Point<dim> neighbor_center = fe_midpoint.quadrature_point(0);
 
