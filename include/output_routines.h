@@ -1,5 +1,10 @@
-template<int dim> void Solver_DG<dim>::output_solution_details(const Triangulation<dim> &triangulation,const string file_solution
-															 ,const string file_exact, const string file_error)const 
+template<int force_type,int system_type,int num_flux,int dim>
+void
+Solver_DG<force_type,system_type,num_flux,dim>
+::output_solution_details(const Triangulation<dim> &triangulation,
+							const string file_solution,
+						const string file_exact,
+						 const string file_error)const 
 {
 	typename Triangulation<dim>::active_cell_iterator cell = triangulation.begin_active(), endc = triangulation.end();
 

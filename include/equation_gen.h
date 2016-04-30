@@ -6,29 +6,61 @@ namespace EquationGenerator
 
 	
 
-	template<int dim> class Base_EquationGenerator
+	template<int force_type,int system_type,int num_flux,int dim>
+	class Base_EquationGenerator:public Base_Basics
 	{
-		// 
-	  public:	
-		virtual Sparse_matrix build_Projector(const Tensor<1,dim,double> normal_vector) = 0;
-		virtual Sparse_matrix build_InvProjector(const Tensor<1,dim,double> normal_vector) = 0;
-		virtual MatrixXd build_Aminus(const Tensor<1,dim,double> normal_vector)  =0;
-		virtual void build_BCrhs(const Tensor<1,dim,double> p,const Tensor<1,dim,double> normal_vector,Vector<double> &bc_rhs) = 0;
-		virtual void source_term(const vector<Point<dim>> &p,vector<Vector<double>> &value) = 0;
-		bool exists(vector<triplet> Row_Col_Value,const int row_index,const int col_index) ;
+	   public:
+		const nEqn_data num_equations;
 
+
+	  struct equation_data
+	  {
+	  		bool is_symmetric;
+	  		unsigned int nEqn;
+			system_matrix A[dim];
+			system_matrix P;
+			system_matrix BC;
+			system_matrix S;
+			system_matrix Ax;
+
+	  		Full_matrix Aminus_1D_Int;
+	  		Full_matrix Aminus_1D_Bound;
+	  };
+
+		
+	  
+	  		Base_EquationGenerator(nEqn_data const&num_equations);
+	  		vector<equation_data> system_data;
+
+	  		void build_BCrhs(const Tensor<1,dim,double> p,
+							const Tensor<1,dim,double> normal_vector,Vector<double> &bc_rhs,
+							const unsigned int system_id) const; 
+
+			Sparse_matrix build_Projector(const Tensor<1,dim,double> normal_vector,const unsigned int system_id) const;
+			void source_term(const vector<Point<dim>> &p,vector<Vector<double>> &value,const unsigned int system_id);
+			Sparse_matrix build_InvProjector(const Tensor<1,dim,double> normal_vector,
+											const unsigned int system_id) const;		
+			Full_matrix build_Aminus(const Tensor<1,dim,double> normal_vector,
+										const unsigned int system_id) ;		
+	
 	  protected:
-	  	virtual void build_Aminus1D() = 0;
 	  	void build_triplet(system_matrix &matrix_info,const string filename);
 	  	void build_matrix_from_triplet(system_matrix &matrix_info);
 	  	void print_matrix(const system_matrix matrix_info,const string filename);
-		virtual void build_P(system_matrix &P) = 0;
-		virtual void build_BC(system_matrix &BC) = 0;
-		virtual Tensor<1,dim,double> mirror(const Tensor<1,dim,double> normal_vector)  = 0;
-		/*virtual void build_Aminus1D(const Sparse_matrix Ax) const = 0; */
+	  	void Sparse_matrix_dot_Vector(const  system_matrix matrix_info,
+	  									const Vector<double> x,Vector<double> &result) const;
+		void generate_matrices(equation_data &system_data,const unsigned int system_id);
+		Tensor<1,dim,double> mirror(const Tensor<1,dim,double> normal_vector) const;			
+		void build_Aminus1D(Full_matrix &Aminus_1D_Int,
+							Full_matrix &Aminus_1D_Bound,
+							const unsigned int system_id);										
+		void build_P(system_matrix &P,const unsigned int system_id);												
+		void build_BC(system_matrix &BC,const unsigned int system_id);											
 	};
 
-	template<int dim> void Base_EquationGenerator<dim>::build_triplet(system_matrix &matrix_info,const string filename)
+	template<int force_type,int system_type,int num_flux,int dim> 
+	void Base_EquationGenerator<force_type,system_type,num_flux,dim>::
+	build_triplet(system_matrix &matrix_info,const string filename)
 	{
 
 		cout << "......reading triplet from: " << filename << endl;
@@ -63,36 +95,23 @@ namespace EquationGenerator
 		}
 
 		assert(counter == nz);
-		cout << "done reading triplet..." << endl;
 
 	}
 
-	template<int dim> void Base_EquationGenerator<dim>::build_matrix_from_triplet(system_matrix &matrix_info)
+	template<int force_type,int system_type,int num_flux,int dim>
+	void Base_EquationGenerator<force_type,system_type, num_flux, dim>::
+	build_matrix_from_triplet(system_matrix &matrix_info)
 	{
 		cout << "developing matrix from triplet......" << endl;
 		assert(matrix_info.Row_Col_Value.size() != 0);
 		assert(matrix_info.matrix.cols() != 0 || matrix_info.matrix.rows() != 0);
-
 		matrix_info.matrix.setFromTriplets(matrix_info.Row_Col_Value.begin(), matrix_info.Row_Col_Value.end());
-		cout << "done developing matrix......" << endl;
 		
 	}
 
-	template<int dim> bool Base_EquationGenerator<dim>::exists(vector<triplet> Row_Col_Value,const int row_index,const int col_index) 
-	{
-		assert(Row_Col_Value.size() != 0);
-		vector<triplet>::iterator it = Row_Col_Value.begin(),it_end = Row_Col_Value.end();
-
-		for (; it != it_end ;it++)
-			if (row_index == it->row() && col_index == it->col())
-				return true;
-			
-		return false;
-
-	}
-
-
-	template<int dim> void Base_EquationGenerator<dim>::print_matrix(system_matrix matrix_info,const string filename_to_write)
+	template<int force_type,int system_type,int num_flux,int dim> 
+	void Base_EquationGenerator<force_type,system_type,num_flux,dim>::
+	print_matrix(system_matrix matrix_info,const string filename_to_write)
 	{
     	FILE *fp;
     	fp = fopen(filename_to_write.c_str(),"w+");
@@ -112,8 +131,39 @@ namespace EquationGenerator
 		cout << "writting the read matrices to: " << filename_to_write<< "\n" << endl;
 	}
 
+	template<int force_type,int system_type,int num_flux,int dim> 
+	void Base_EquationGenerator<force_type,system_type,num_flux,dim>
+	::Sparse_matrix_dot_Vector(const  system_matrix matrix_info,
+								const Vector<double> x,Vector<double> &result) const
+	{
+		assert(x.size() != 0 || result.size() !=0 || 
+				matrix_info.matrix.rows() != 0 || matrix_info.matrix.cols());
 
-	#include "generate_systemA.h"
-	#include "generate_systemB.h"
+		assert(matrix_info.matrix.IsRowMajor);
+
+		for (unsigned int m = 0 ; m < matrix_info.matrix.outerSize(); m++)
+		{
+			result(m) = 0;
+			for (Sparse_matrix::InnerIterator n(matrix_info.matrix,m); n ; ++n)
+				result(m) += n.value() * x(n.col());
+		}
+	}
+
+
+	template<int force_type,int system_type,int num_flux,int dim>
+	 Base_EquationGenerator<force_type,system_type,num_flux,dim>
+	 ::Base_EquationGenerator(nEqn_data const&num_equations)
+	 :
+	 num_equations(num_equations)
+	{
+		system_data.resize(num_equations.no_of_total_systems);
+
+		for (unsigned int i = 0 ; i < num_equations.no_of_total_systems ; i++)
+			generate_matrices(system_data[i],i);
+					
+	}
+
+	#include "develop_systems.h"
+//	#include "generate_systemB.h"
 	
 }

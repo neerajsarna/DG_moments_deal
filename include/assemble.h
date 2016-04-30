@@ -89,16 +89,6 @@ template<int dim> void Solver_DG<dim>::assemble_system()
        }
       }
 	
-	cout << "from assemble.h" << endl;
-	for(unsigned int i = 0 ; i < dofs_per_cell ; i ++)
-	{
-		for (unsigned int j = 0 ; j < dofs_per_cell ; j ++)
-			cout << cell_matrix(i,j) << " " ;      
-
-		cout << endl;
-	}
-	abort();
-
         cell->get_dof_indices(local_dof_indices);
 
             for(unsigned int face  = 0; face< GeometryInfo<dim>::faces_per_cell; face++ )
@@ -106,9 +96,7 @@ template<int dim> void Solver_DG<dim>::assemble_system()
             
               fe_v_face.reinit(cell,face);
               Jacobian_face = fe_v_face.get_JxW_values();
-
               
-
               u1_v1 = 0;
               u1_v2 = 0;
               u2_v1 = 0;

@@ -1,13 +1,15 @@
 #include <iostream>
 #include "EigenSetup.h"
+#include "basic_data_structures.h"
 #include <fstream>
 #include <cmath>
 
+#define NDEBUG
 #include "include_deal.h"
 dealii::Threads::Mutex mutex_deal;
 #include "Basics.h"
-#include "exact_solution.h"
 #include "equation_gen.h"
+#include "exact_solution.h"
 #include "mesh_gen.h"
 #include "PostProc.h"
 #include "Solver.h"
@@ -15,7 +17,7 @@ dealii::Threads::Mutex mutex_deal;
 
 using namespace dealii;
 using namespace std;
-using namespace SolverDG;
+
 
 int main(int argc,char **argv)
 {
@@ -29,38 +31,30 @@ int main(int argc,char **argv)
 	const string mesh_file_name = "mesh/mesh_file";
 	const unsigned int mapping_order = 2;
 	
-	enum System_Types
-	{systemA,systemB};
+	nEqn_data num_equations;
+	num_equations.no_of_total_systems = 2;
+	num_equations.total_nEqn.resize(num_equations.no_of_total_systems);
 
-	System_Types system_type = systemB;
+	num_equations.total_nEqn[0] = 6;
+	num_equations.total_nEqn[1] = 10;
 
-	switch(system_type)
-	{
-		case systemA:
-		{
-			const unsigned int nEqnA = 6;
-			exact_solutionA<dim> exact_solutionA(nEqnA);
+	num_equations.system_id_nEqn[0] = 'A';
+	num_equations.system_id_nEqn[1] = 'B';
 
-			Solver_DG<dim> solver(p,mapping_order,Solver_DG<dim>::global,&exact_solutionA);
-			solver.run(mesh_file_name,refine_cycles);
+	const unsigned int solve_system = 1;				// id of the system we wish to solve
+	const System_Type system_type = un_symmetric;
+	const Num_Flux num_flux = Upwind;
+	const Force_Type force_type = type2;
 
-			break;
-		}
+	EquationGenerator::Base_EquationGenerator<force_type,system_type,num_flux,dim> system_of_equations(num_equations);
+	ExactSolution::Base_ExactSolution<dim> exact_solution(solve_system,
+															num_equations.total_nEqn[solve_system]);
 
-		case systemB:
-		{
-			const unsigned int nEqnB = 10;
-			exact_solutionB<dim> exact_solutionB(nEqnB);
-
-			Solver_DG<dim> solver(p,mapping_order,
-								 Solver_DG<dim>::global,&exact_solutionB);
-
-			solver.run(mesh_file_name,refine_cycles);
-
-			break;
-		}
-	}
-
-
+	SolverDG::Solver_DG<force_type,system_type,num_flux,dim> solver(p,mapping_order,
+															SolverDG::Solver_DG<force_type,system_type,num_flux,dim>::global,
+															&system_of_equations,
+															&exact_solution,
+															solve_system);
+	solver.run(mesh_file_name,refine_cycles);
 }
 	
