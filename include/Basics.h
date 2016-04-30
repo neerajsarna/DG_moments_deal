@@ -17,6 +17,7 @@ namespace Basics
 		double chi;
 		double theta0;
 		double theta1; 
+		double kappa;
 		double uW;
 		double A0;
 		double A1;
@@ -27,15 +28,15 @@ namespace Basics
 
 	Base_Basics::Base_Basics()
 	{
-
+				kappa = 0;
 				tau = 0.10;
 				zeta = 1.0;					//zeta
 				chi = 1.0;
 				theta0 = 2.0;
 				theta1 = 1.0; 
-				uW = 0.1;
+				uW = 0.0;
 				A0 = 0.0;
-				A1 = 0.2;
+				A1 = 0.0;
 				A2 = 0.1;
 
 			 main_output_dir = "outputs";

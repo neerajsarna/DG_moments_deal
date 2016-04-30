@@ -17,7 +17,24 @@ void Base_EquationGenerator<system_type,num_flux,dim>::build_BC(system_matrix &m
   			matrix_info.matrix.coeffRef(3,3) = 1.0;
   			matrix_info.matrix.coeffRef(4,2) = chi;
 		    matrix_info.matrix.coeffRef(5,5) = 1.0;			
+			break;
+		}
 
+		case 1:
+		{
+			assert(num_equations.total_nEqn[system_id] == 10);
+
+			matrix_info.matrix.coeffRef(0,0) = 1.0;
+  			matrix_info.matrix.coeffRef(1,0) = chi;
+  			matrix_info.matrix.coeffRef(2,2) = 1.0;
+  			matrix_info.matrix.coeffRef(3,3) = 1.0;
+  			matrix_info.matrix.coeffRef(4,2) = chi;
+		    matrix_info.matrix.coeffRef(4,7) = 2 * chi;			
+		    matrix_info.matrix.coeffRef(5,5) = 1.0;
+		    matrix_info.matrix.coeffRef(6,3) = chi;
+		    matrix_info.matrix.coeffRef(7,7) = 1;
+		    matrix_info.matrix.coeffRef(8,5) = chi;
+		    matrix_info.matrix.coeffRef(9,9) = 1.0;
 			break;
 		}
 
@@ -60,11 +77,15 @@ build_Projector(const Tensor<1,dim,double> normal_vector,const unsigned int syst
 
 		double nx = normal_vector[0];
 		double ny = normal_vector[1];
+		double nxnx = nx * nx;
+		double nyny = ny * ny;
 		assert(Projector.rows() == system_data[system_id].nEqn 
 				|| Projector.cols() == system_data[system_id].nEqn);
 
 	switch(system_id)
 	{
+
+		// Details for system-A
 		case 0:
 		{
 			assert(num_equations.total_nEqn[system_id] == 6);
@@ -85,6 +106,45 @@ build_Projector(const Tensor<1,dim,double> normal_vector,const unsigned int syst
 			Projector.coeffRef(5,5) = nx*nx;
 			return Projector;
 			break;
+		}
+
+		// Details for system-B
+		case 1:
+		{
+		assert(num_equations.total_nEqn[system_id] == 10);
+
+		Projector.coeffRef(0,0) = 1.0;
+		Projector.coeffRef(1,1) = nx;
+		Projector.coeffRef(1,2) = ny;
+		Projector.coeffRef(2,1) = -ny;
+		Projector.coeffRef(2,2) = nx;
+		Projector.coeffRef(3,3) = nxnx;
+		Projector.coeffRef(3,4) = 2*nx*ny;
+		Projector.coeffRef(3,5) = nyny;
+		Projector.coeffRef(4,3) = -nx*ny;
+		Projector.coeffRef(4,4) = nxnx-nyny;
+		Projector.coeffRef(4,5) = nx*ny;
+		Projector.coeffRef(5,3) = nyny;
+		Projector.coeffRef(5,4) = -2*nx*ny;
+		Projector.coeffRef(5,5) = nxnx;
+		Projector.coeffRef(6,6) = nx*nxnx;
+		Projector.coeffRef(6,7) = 3*ny*nxnx;
+		Projector.coeffRef(6,8) = 3*nx*nyny;
+		Projector.coeffRef(6,9) = ny*nyny;
+		Projector.coeffRef(7,6) = -ny*nxnx;
+		Projector.coeffRef(7,7) = nx*nxnx - 2*nx*nyny;
+		Projector.coeffRef(7,8) = 2*ny*nxnx - ny*nyny;
+		Projector.coeffRef(7,9) = nx*nyny;
+		Projector.coeffRef(8,6) = nx*nyny;
+		Projector.coeffRef(8,7) = -2*ny*nxnx + ny*nyny;
+		Projector.coeffRef(8,8) = nx*nxnx - 2*nx*nyny;
+		Projector.coeffRef(8,9) = ny*nxnx;
+		Projector.coeffRef(9,6) = -ny*nyny;
+		Projector.coeffRef(9,7) = 3*nx*nyny;
+		Projector.coeffRef(9,8) = -3*ny*nxnx;
+		Projector.coeffRef(9,9) = nx*nxnx;
+		return Projector;
+		break;
 		}
 	}
 
@@ -114,6 +174,21 @@ build_BCrhs(const Tensor<1,dim,double> p,
 			case 0:
 			{
 				assert(num_equations.total_nEqn[system_id] == 6);
+
+				if( norm > 0.7 ) 
+ 		   			bc_rhs(1) = chi*theta1;  // is chi \alpha and same with zeta
+		  		else 
+		  		{
+    				bc_rhs(1) = chi*theta0;
+    				bc_rhs(4) = uW*normal_vector[1];
+  		  		}; 
+
+				break;
+			}
+
+			case 1:
+			{
+				assert(num_equations.total_nEqn[system_id] == 10);
 
 				if( norm > 0.7 ) 
  		   			bc_rhs(1) = chi*theta1;  // is chi \alpha and same with zeta
@@ -159,12 +234,46 @@ source_term(const vector<Point<dim>> &p,
 				{	
 					for (unsigned int i = 0 ; i < value.size() ; i ++)
 					{
-						cout << "from symmetric source term " << endl;
-						fflush(stdout);
-
 						Vector<double> force_value(num_equations.total_nEqn[system_id]);
 						double norm = sqrt(p[i].square());
 						force_value[0] = (A0 + A2*norm*norm + A1*p[i][0]/norm);		
+						Sparse_matrix_dot_Vector(system_data[system_id].S, force_value,value[i]);
+					}
+
+					break;
+				}
+			}
+			break;
+		}
+
+		case 1:
+		{
+			assert(num_equations.total_nEqn[system_id] == 10);
+
+			switch(system_type)
+			{
+				case un_symmetric:
+				{
+					for (unsigned int i = 0 ; i < value.size() ; i++)
+					{
+						double r = sqrt(p[i].square());
+						value[i] = 0;
+						value[i][0] = A0 + A2 * r * r + A1*(1.0-5.0/18*r*r/(tau*tau))*p[i][0] / r;
+					}
+
+					break;
+				}
+
+				case symmetric:
+				{	
+					assert(1 == 0);
+					for (unsigned int i = 0 ; i < value.size() ; i ++)
+					{
+
+						Vector<double> force_value(num_equations.total_nEqn[system_id]);
+						double r = sqrt(p[i].square());
+
+						force_value[0] = A0 + A2 * r * r + A1*(1.0-5.0/18*r*r/(tau*tau))*p[i][0]/r;
 						Sparse_matrix_dot_Vector(system_data[system_id].S, force_value,value[i]);
 					}
 
@@ -191,6 +300,7 @@ Full_matrix Base_EquationGenerator<system_type,num_flux,dim>
 
 			case symmetric:
 			{
+				assert(num_equations.total_nEqn[system_id] == 10);
 				Eigen::MatrixXd SAn = system_data[system_id].S.matrix * build_InvProjector(normal_vector,system_id) 
 										* system_data[system_id].Ax.matrix *  build_Projector(normal_vector,system_id);
 
@@ -298,16 +408,18 @@ void Base_EquationGenerator<system_type,num_flux,dim>::generate_matrices(equatio
 						system_data.Aminus_1D_Bound,
 						system_id);
 
-		filename = system_dir + to_string(system_data.nEqn) + "S.txt";
-		system_data.S.matrix.resize(system_data.nEqn,system_data.nEqn);
-		build_triplet(system_data.S,filename);
-		build_matrix_from_triplet(system_data.S);
-		print_matrix(system_data.S,generate_filename_to_write(system_dir,filename));
-
 		switch(system_type)
 		{
 			case symmetric:
 			{
+				assert(num_equations.total_nEqn[system_id] == 10); // symmetric system not implemented for B type
+
+				filename = system_dir + to_string(system_data.nEqn) + "S.txt";
+				system_data.S.matrix.resize(system_data.nEqn,system_data.nEqn);
+				build_triplet(system_data.S,filename);
+				build_matrix_from_triplet(system_data.S);
+				print_matrix(system_data.S,generate_filename_to_write(system_dir,filename));
+
 				system_data.Ax.matrix = system_data.A[0].matrix;
 				for (unsigned int i = 0 ; i < dim ; i ++)
 					system_data.A[i].matrix = system_data.S.matrix * system_data.A[i].matrix;

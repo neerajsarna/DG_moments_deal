@@ -17,7 +17,8 @@ namespace ExactSolution
 			double s_r(const double ,const double ) const;
 			double s_phi(const double r,const double ) const;
 			double thetaP(const double r,const double) const ;			
-			double C1, C2, C3, C4, K1, K2, lambda1;
+			double C0, C1, C2, C3, C4, K1, K2, K3, K4, K7, K8, 
+        			lambda1, lambda2, lambda3;
 			const unsigned int nEqn;
 			const unsigned int system_id;
 	};
@@ -83,6 +84,73 @@ namespace ExactSolution
 				break;
 
 			}
+
+			case 1:
+			{
+				assert(nEqn == 10);
+				if( fabs(tau - 0.01) < 1e-5 )
+				{
+					C0 = -23.216704086856847;
+					C1= 0.; 
+					C2 = 0.;
+					C3 = 6.489101153848549;
+					K1 = 0.;
+					K2 = 0.;
+					K3 = -1.2300374620579039e18;
+					K4 = -4.1431183805377506e-81;
+					K7 = 0.;
+					K8 = 0.;
+				}
+
+
+				if( fabs(tau - 0.1) < 1e-5 )
+				{
+					C0 = 1.8572099974915603;
+					C1 = 0.;
+					C2 = 0.;
+					C3 = 0.10322985310279324;
+					K1 = 0.;
+					K2 = 0.;
+					K3 = -0.8821623999826842;
+					K4 = -3.124572666491822e-9;
+					K7 = 0.;
+					K8 = 0.;
+				}
+
+				if( fabs(tau - 1.0) < 1e-5 )
+				{
+
+					C0 = 1.8378924710991469;
+					C1 = 0.;
+					C2 = 0.;
+					C3 = -0.1680773374037424;
+					K1 = 0.;
+					K2 = 0.;
+					K3 = 0.13618194331758396;
+					K4 = -0.4397130699425769;
+					K7 = 0.;
+					K8 = 0.;
+				}
+
+				if( fabs(tau - 10.0) < 1e-5 )
+				{
+					C0 = 642.4671720371373;
+					C1 = 0.;
+					C2 = 0.;
+					C3 = -0.0279282371834904;
+					K1 = 0.;
+					K2 = 0.;
+					K3 = 0.021731572883326996;
+					K4 = -641.1814793927525;
+					K7 = 0.;
+					K8 = 0.;
+				}
+
+				lambda1 = sqrt(15*zeta/(15+16*zeta));
+				lambda2 = sqrt(5.0/6.0);
+				lambda3 = sqrt(3.0/2.0);
+				break;
+			}
 		}
 	}
 
@@ -101,6 +169,19 @@ s_r(const double r,const double phi) const
 				return (this->A0 * r * this->tau)/2. - C4*pow(r,-1) + cos(phi) * (-C2 + (2 * this->A1 * r * this->tau)/3. + C1*pow(r,-2) - 
 						K2*BI(1,r*lambda1)*pow(2,0.5)*pow(r,-1) + K1*BK(1,r*lambda1)*pow(2,0.5)*pow(r,-1))
 						+ (this->A2 * pow(r,3) * pow(this->tau,3))/4.;
+
+				break;
+			}
+
+			case 1:
+			{
+				assert(nEqn == 10);
+
+		      return (A0*r*tau)/2. - C3*pow(r,-1) + (A2*pow(r,3)*pow(tau,3))/4. + 
+      			cos(phi) * (K7*BI(1,lambda1*r)*pow(r,-1) + K8 * BK(1,lambda1*r)*pow(r,-1)
+      			 - (2*A1*r*tau*(-9 + pow(r,2)))/27. - C2*pow(zeta,-1) + 
+      			C1*pow(r,-2)*pow(zeta,-1));
+
 
 				break;
 			}
@@ -128,6 +209,18 @@ s_phi(const double r,const double phi) const
 
 				break;
 			}
+
+			case 1:
+			{
+				assert(nEqn == 10);
+
+		      return  -((K7*lambda1*(this->BI(0,lambda1*r) + this->BI(2,lambda1*r)))/2. - 
+      				(K8*lambda1*(this->BK(0,lambda1*r) + this->BK(2,lambda1*r)))/2. 
+      				- (A1*r*tau*(-18 + pow(r,2)))/54. - C2*pow(zeta,-1) - 
+			        C1*pow(r,-2)*pow(zeta,-1))*sin(phi);
+
+				break;
+			}
 		}
 
 		assert(1 == 0);
@@ -150,6 +243,16 @@ thetaP(const double r,const double phi) const
 
 				break;
 			}
+
+			case 1:
+			{
+				assert(nEqn == 10);
+
+      			return C0 + K4*this->BI(0,lambda2*r) + K3*this->BK(0,lambda2*r) + C3*zeta*log(r) - (A0*tau*zeta*pow(r,2))/4. + 
+			      cos(phi)*(C2*r + K1*this->BI(1,lambda2*r) + K2*this->BK(1,lambda2*r) + C1*pow(r,-1) + 
+      			(A1*tau*(-20 + zeta*(-18 + pow(r,2)))*pow(r,2))/54.) + (A2*pow(r,2)*(64 - 3*zeta*pow(r,2))*pow(tau,3))/48.;
+				break;
+			}
 		}
 
 		assert(1 == 0);
@@ -162,25 +265,18 @@ void
 Base_ExactSolution<system_type,num_flux,dim>::
 vector_value(const Point<dim> &p,Vector<double> &value) const
 	{
-		switch(system_id)
-		{
-			case 0:
-			{
-				double r = sqrt(p.square());
-				double phi = atan2(p[1],p[0]);
-				r /= this->tau;
 
-				value[0] =  thetaP(r,phi);		
-				value[1] = cos(phi) * s_r(r,phi) - sin(phi) * s_phi(r,phi);
-				value[2] = sin(phi) * s_r(r,phi) + cos(phi) * s_phi(r,phi);								
+		double r = sqrt(p.square());
+		double phi = atan2(p[1],p[0]);
+		r /= this->tau;
 
-				for (unsigned int i = 3 ; i < nEqn ; i++)
-					value[i] = 0; 
+		value[0] =  thetaP(r,phi);		
+		value[1] = cos(phi) * s_r(r,phi) - sin(phi) * s_phi(r,phi);
+		value[2] = sin(phi) * s_r(r,phi) + cos(phi) * s_phi(r,phi);								
 
-				break;
-			}
+		for (unsigned int i = 3 ; i < nEqn ; i++)
+			value[i] = 0; 
 
-		}
 	}
 
  template<int system_type,int num_flux,int dim> 
