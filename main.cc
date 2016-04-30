@@ -24,15 +24,15 @@ int main(int argc,char **argv)
 	Utilities::MPI::MPI_InitFinalize mpi_initialization(argc, argv,num_threads);
 
 	const int dim = 2;
-	const int refine_cycles = 1;			// total number of refinement cycles
-	const int p = 2;
+	const int refine_cycles = 4;			// total number of refinement cycles
+	const int p = 1;
 	const string mesh_file_name = "mesh/mesh_file";
-	const unsigned int mapping_order = 3;
+	const unsigned int mapping_order = 2;
 	
 	enum System_Types
 	{systemA,systemB};
 
-	System_Types system_type = systemA;
+	System_Types system_type = systemB;
 
 	switch(system_type)
 	{

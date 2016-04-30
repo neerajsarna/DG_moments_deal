@@ -7,7 +7,7 @@ namespace SolverDG
   using namespace PostProc;
   using namespace ExactSolution;
 
-  template<int dim> class Solver_DG:protected generate_systemA<dim>,
+  template<int dim> class Solver_DG:protected generate_systemB<dim>,
                                     protected mesh_generation<dim>,
                                     protected Base_PostProc<dim>
   {
@@ -153,7 +153,7 @@ namespace SolverDG
   template<int dim> Solver_DG<dim>::Solver_DG(const unsigned int p,const unsigned int mapping_order,
                                               const enum Refinement refinement,const Base_ExactSolution<dim> *exact_solution)
   :
-  generate_systemA<dim>(generate_systemA<dim>::Upwind),
+  generate_systemB<dim>(generate_systemB<dim>::Upwind),
   finite_element(FE_DGQ<dim>(p),this->nEqn),
   dof_handler(triangulation),
   ngp(p+1),
@@ -176,13 +176,13 @@ namespace SolverDG
      {
        cout << "Start of Cycle: " << i << endl;
        if(i == 0)
-	{
-	  timer.enter_subsection("mesh_generation");
+    	{
+	       timer.enter_subsection("mesh_generation");
           mesh_generation<dim>::generate_mesh(triangulation,boundary,mesh_to_read);
-	  cout << "no of cells in the initial mesh" << triangulation.n_cells() << endl;  
-     	  timer.leave_subsection();
-	}
-	else
+	       cout << "no of cells in the initial mesh" << triangulation.n_cells() << endl;  
+     	    timer.leave_subsection();
+	     }
+	     else
           h_adapt();
 	
 	  timer.enter_subsection("distributing dof");
@@ -215,7 +215,7 @@ namespace SolverDG
         string file_for_grid;
         file_for_grid = this->sub_directory_names[0] + "/grid_"+"_DOF_" + to_string(dof_handler.n_dofs());
         //mesh_generation<dim>::print_grid(triangulation,file_for_grid);
-        //print_convergence_table(output_file_names.file_for_convergence_tables);
+        print_convergence_table(output_file_names.file_for_convergence_tables);
         //output_solution_details(triangulation,output_file_names.file_for_num_solution,
          //                       output_file_names.file_for_exact_solution,
           //                      output_file_names.file_for_error);
