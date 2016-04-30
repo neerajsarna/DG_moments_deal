@@ -60,6 +60,7 @@ namespace Mesh_Handler
 
         triangulation.set_all_manifold_ids_on_boundary(0);
         triangulation.set_manifold(0,boundary);
+	triangulation.refine_global(3);
         break;
       }
 
