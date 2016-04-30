@@ -9,8 +9,8 @@ SET(G++_COVERAGE_COMPILE_FLAGS3 "-Wno-pedantic")
 SET(G++_COVERAGE_COMPILE_FLAGS4 "-Wno-reorder")
 SET(G++_CONVERAGE_COMPILE_FLAGS5 "-Wno-missing-field-initializers")
 
-#SET(DEAL_II_DIR "/Applications/deal.II.app/Contents/Resources/lib/cmake")
-SET(DEAL_II_DIR "/home/ns179556/dealii/lib/cmake")
+SET(DEAL_II_DIR "/Applications/deal.II.app/Contents/Resources/lib/cmake")
+#SET(DEAL_II_DIR "/home/ns179556/dealii/lib/cmake")
 
 FIND_PACKAGE(deal.II 8.3 QUIET
   HINTS ${deal.II_DIR} ${DEAL_II_DIR} ../ ../../ $ENV{DEAL_II_DIR}
@@ -37,8 +37,8 @@ DEAL_II_SETUP_TARGET(mycode.out)
 
 
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/include)
-#INCLUDE_DIRECTORIES(/usr/local/include/eigen)
-INCLUDE_DIRECTORIES(/home/ns179556/eigen)
+INCLUDE_DIRECTORIES(/usr/local/include/eigen)
+#INCLUDE_DIRECTORIES(/home/ns179556/eigen)
 
 ADD_CUSTOM_TARGET(release
   COMMAND ${CMAKE_COMMAND} -DCMAKE_BUILD_TYPE=Release ${CMAKE_SOURCE_DIR}
