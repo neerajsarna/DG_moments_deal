@@ -1,7 +1,7 @@
 
-template<int system_type,int num_flux,int dim> 
+template<int force_type,int system_type,int num_flux,int dim> 
 void 
-Solver_DG<system_type,num_flux,dim>
+Solver_DG<force_type,system_type,num_flux,dim>
 ::solve()
          {
           SolverControl           solver_control (10000, 1e-10);

@@ -10,3 +10,6 @@ enum System_Type
 
 enum Num_Flux
 {Upwind, LLF};
+
+enum Force_Type
+{type1,type2};

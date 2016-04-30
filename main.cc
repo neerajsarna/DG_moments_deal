@@ -26,7 +26,7 @@ int main(int argc,char **argv)
 	Utilities::MPI::MPI_InitFinalize mpi_initialization(argc, argv,num_threads);
 
 	const int dim = 2;
-	const int refine_cycles = 4;			// total number of refinement cycles
+	const int refine_cycles = 1;			// total number of refinement cycles
 	const int p = 1;
 	const string mesh_file_name = "mesh/mesh_file";
 	const unsigned int mapping_order = 2;
@@ -34,20 +34,24 @@ int main(int argc,char **argv)
 	nEqn_data num_equations;
 	num_equations.no_of_total_systems = 2;
 	num_equations.total_nEqn.resize(num_equations.no_of_total_systems);
+
 	num_equations.total_nEqn[0] = 6;
 	num_equations.total_nEqn[1] = 10;
+
 	num_equations.system_id_nEqn[0] = 'A';
 	num_equations.system_id_nEqn[1] = 'B';
 
 	const unsigned int solve_system = 1;				// id of the system we wish to solve
 	const System_Type system_type = un_symmetric;
 	const Num_Flux num_flux = Upwind;
+	const Force_Type force_type = type2;
 
-	EquationGenerator::Base_EquationGenerator<system_type,num_flux,dim> system_of_equations(num_equations);
-	ExactSolution::Base_ExactSolution<system_type,num_flux,dim> exact_solution(solve_system,
-																				num_equations.total_nEqn[solve_system]);
-	SolverDG::Solver_DG<system_type,num_flux,dim> solver(p,mapping_order,
-															SolverDG::Solver_DG<system_type,num_flux,dim>::global,
+	EquationGenerator::Base_EquationGenerator<force_type,system_type,num_flux,dim> system_of_equations(num_equations);
+	ExactSolution::Base_ExactSolution<dim> exact_solution(solve_system,
+															num_equations.total_nEqn[solve_system]);
+
+	SolverDG::Solver_DG<force_type,system_type,num_flux,dim> solver(p,mapping_order,
+															SolverDG::Solver_DG<force_type,system_type,num_flux,dim>::global,
 															&system_of_equations,
 															&exact_solution,
 															solve_system);

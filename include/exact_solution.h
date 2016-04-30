@@ -4,8 +4,8 @@ namespace ExactSolution
 	using namespace dealii;
 	using namespace EquationGenerator;
 
-	template<int system_type,int num_flux,int dim> class Base_ExactSolution:public Function<dim>,
-																			protected Base_Basics
+	template<int dim> class Base_ExactSolution:public Function<dim>,
+												protected Base_Basics
 	{
 		public:
 			Base_ExactSolution(const unsigned int system_id,const unsigned int nEqn);
@@ -23,8 +23,8 @@ namespace ExactSolution
 			const unsigned int system_id;
 	};
 
-	template<int system_type,int num_flux,int dim> 
-	Base_ExactSolution<system_type,num_flux,dim>
+	template<int dim> 
+	Base_ExactSolution<dim>
 	::Base_ExactSolution(const unsigned int system_id,const unsigned int nEqn)
 	:
 	nEqn(nEqn),
@@ -155,9 +155,9 @@ namespace ExactSolution
 	}
 
 
-template<int system_type,int num_flux,int dim> 
+template<int dim> 
 double 
-Base_ExactSolution<system_type,num_flux,dim>::
+Base_ExactSolution<dim>::
 s_r(const double r,const double phi) const
 	{
 		switch(system_id)
@@ -192,9 +192,9 @@ s_r(const double r,const double phi) const
 
 	}
 
-template<int system_type,int num_flux,int dim> 
+template<int dim> 
 double 
-Base_ExactSolution<system_type,num_flux,dim>::
+Base_ExactSolution<dim>::
 s_phi(const double r,const double phi) const
 	{
 		switch(system_id)
@@ -227,9 +227,9 @@ s_phi(const double r,const double phi) const
 		return 0;
 	}
 
-template<int system_type,int num_flux,int dim> 
+template<int dim> 
 double 
-Base_ExactSolution<system_type,num_flux,dim>::
+Base_ExactSolution<dim>::
 thetaP(const double r,const double phi) const
 	{
 		switch(system_id)
@@ -260,9 +260,9 @@ thetaP(const double r,const double phi) const
 
 	}
 
-template<int system_type,int num_flux,int dim> 
+template<int dim> 
 void 
-Base_ExactSolution<system_type,num_flux,dim>::
+Base_ExactSolution<dim>::
 vector_value(const Point<dim> &p,Vector<double> &value) const
 	{
 
@@ -279,17 +279,18 @@ vector_value(const Point<dim> &p,Vector<double> &value) const
 
 	}
 
- template<int system_type,int num_flux,int dim> 
+ template<int dim> 
  double
- Base_ExactSolution<system_type,num_flux,dim>::
+ Base_ExactSolution<dim>::
  BI(const int n,const double x) const
 	{
 				return boost::math::cyl_bessel_i(n,x);
 	}
 
- template<int system_type,int num_flux,int dim> 
+ template<int dim> 
  double
- Base_ExactSolution<system_type,num_flux,dim>::BK(const int n,const double x) const
+ Base_ExactSolution<dim>
+ ::BK(const int n,const double x) const
 	{
 		return boost::math::cyl_bessel_k(n,x);
 	}

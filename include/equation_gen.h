@@ -6,7 +6,7 @@ namespace EquationGenerator
 
 	
 
-	template<int system_type,int num_flux,int dim>
+	template<int force_type,int system_type,int num_flux,int dim>
 	class Base_EquationGenerator:public Base_Basics
 	{
 	   public:
@@ -58,8 +58,8 @@ namespace EquationGenerator
 		void build_BC(system_matrix &BC,const unsigned int system_id);											
 	};
 
-	template<int system_type,int num_flux,int dim> 
-	void Base_EquationGenerator<system_type,num_flux,dim>::
+	template<int force_type,int system_type,int num_flux,int dim> 
+	void Base_EquationGenerator<force_type,system_type,num_flux,dim>::
 	build_triplet(system_matrix &matrix_info,const string filename)
 	{
 
@@ -95,25 +95,22 @@ namespace EquationGenerator
 		}
 
 		assert(counter == nz);
-		cout << "done reading triplet..." << endl;
 
 	}
 
-	template<int system_type,int num_flux,int dim>
-	void Base_EquationGenerator<system_type, num_flux, dim>::
+	template<int force_type,int system_type,int num_flux,int dim>
+	void Base_EquationGenerator<force_type,system_type, num_flux, dim>::
 	build_matrix_from_triplet(system_matrix &matrix_info)
 	{
 		cout << "developing matrix from triplet......" << endl;
 		assert(matrix_info.Row_Col_Value.size() != 0);
 		assert(matrix_info.matrix.cols() != 0 || matrix_info.matrix.rows() != 0);
-
 		matrix_info.matrix.setFromTriplets(matrix_info.Row_Col_Value.begin(), matrix_info.Row_Col_Value.end());
-		cout << "done developing matrix......" << endl;
 		
 	}
 
-	template<int system_type,int num_flux,int dim> 
-	void Base_EquationGenerator<system_type,num_flux,dim>::
+	template<int force_type,int system_type,int num_flux,int dim> 
+	void Base_EquationGenerator<force_type,system_type,num_flux,dim>::
 	print_matrix(system_matrix matrix_info,const string filename_to_write)
 	{
     	FILE *fp;
@@ -134,9 +131,10 @@ namespace EquationGenerator
 		cout << "writting the read matrices to: " << filename_to_write<< "\n" << endl;
 	}
 
-	template<int system_type,int num_flux,int dim> 
-	void Base_EquationGenerator<system_type,num_flux,dim>::Sparse_matrix_dot_Vector(const  system_matrix matrix_info,
-														const Vector<double> x,Vector<double> &result) const
+	template<int force_type,int system_type,int num_flux,int dim> 
+	void Base_EquationGenerator<force_type,system_type,num_flux,dim>
+	::Sparse_matrix_dot_Vector(const  system_matrix matrix_info,
+								const Vector<double> x,Vector<double> &result) const
 	{
 		assert(x.size() != 0 || result.size() !=0 || 
 				matrix_info.matrix.rows() != 0 || matrix_info.matrix.cols());
@@ -152,8 +150,9 @@ namespace EquationGenerator
 	}
 
 
-	template<int system_type,int num_flux,int dim>
-	 Base_EquationGenerator<system_type,num_flux,dim>::Base_EquationGenerator(nEqn_data const&num_equations)
+	template<int force_type,int system_type,int num_flux,int dim>
+	 Base_EquationGenerator<force_type,system_type,num_flux,dim>
+	 ::Base_EquationGenerator(nEqn_data const&num_equations)
 	 :
 	 num_equations(num_equations)
 	{
