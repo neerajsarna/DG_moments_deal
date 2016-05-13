@@ -30,7 +30,7 @@ namespace Basics
 	{
 
 		// variables corresponding to exact solution for system-A
-			/*tau = 0.10;
+			tau = 0.10;
 			zeta = 1.0;					//zeta
 			chi = 1.0;
 			theta0 = 2.0;
@@ -38,10 +38,10 @@ namespace Basics
 			uW = 0.1;
 			A0 = 0.0;
 			A1 = 0.2;
-			A2 = 0.1;*/
+			A2 = 0.1;
 
 		// variables corresponding to exact solution for system-B
-			tau = 0.10;
+	/*		tau = 0.10;
 			zeta = 1.0;					//zeta
 			kappa = 0.0;
 			chi = 1.0;
@@ -51,7 +51,7 @@ namespace Basics
 
 			A0 = 0.0;
 			A1 = 0.0;
-			A2 = 0.1;
+			A2 = 0.1;*/
 
 
 			 parameters =

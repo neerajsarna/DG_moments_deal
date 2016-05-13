@@ -26,7 +26,7 @@ int main(int argc,char **argv)
 	Utilities::MPI::MPI_InitFinalize mpi_initialization(argc, argv,num_threads);
 
 	const int dim = 2;
-	const int refine_cycles = 4;			// total number of refinement cycles
+	const int refine_cycles = 5;			// total number of refinement cycles
 	const int p = 1;
 	const string mesh_file_name = "mesh/mesh_file";
 	const unsigned int mapping_order = 2;
@@ -41,10 +41,10 @@ int main(int argc,char **argv)
 	num_equations.system_id_nEqn[0] = 'A';
 	num_equations.system_id_nEqn[1] = 'B';
 
-	const unsigned int solve_system = 1;				// id of the system we wish to solve
+	const unsigned int solve_system = 0;				// id of the system we wish to solve
 	const System_Type system_type = un_symmetric;
 	const Num_Flux num_flux = Upwind;
-	const Force_Type force_type = type2;
+	const Force_Type force_type = type1;
 
 	EquationGenerator::Base_EquationGenerator<force_type,system_type,num_flux,dim> system_of_equations(num_equations);
 	ExactSolution::Base_ExactSolution<dim> exact_solution(solve_system,

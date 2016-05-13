@@ -6,11 +6,11 @@ Solver_DG<force_type,system_type,num_flux,dim>
          {
           SolverControl           solver_control (10000, 1e-10);
           
-          /*TrilinosWrappers::SolverDirect::AdditionalData additional_data;
+          TrilinosWrappers::SolverDirect::AdditionalData additional_data(false,"Amesos_Pardiso");
           TrilinosWrappers::SolverDirect solver(solver_control,additional_data);
-          solver.solve (global_matrix, solution,system_rhs);*/
+          solver.solve (global_matrix, solution,system_rhs);
 
-          TrilinosWrappers::SolverGMRES::AdditionalData additional_data;
+          /*TrilinosWrappers::SolverGMRES::AdditionalData additional_data;
           TrilinosWrappers::SolverGMRES  solver (solver_control,additional_data);
 
           TrilinosWrappers::PreconditionILU preconditioner;
@@ -18,6 +18,6 @@ Solver_DG<force_type,system_type,num_flux,dim>
           preconditioner.initialize(global_matrix,additional_data_PC);
         
           solver.solve (global_matrix, solution,system_rhs,preconditioner);
-          
+          */
 
         }
