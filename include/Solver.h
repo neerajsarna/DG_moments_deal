@@ -4,10 +4,14 @@ namespace SolverDG
   using namespace std;
   using namespace Mesh_Handler;
   using namespace PostProc;
-
+  
+  /*void pardiso(void *, MKL_INT *, MKL_INT *,MKL_INT *, MKL_INT *,
+               MKL_INT *,void *, MKL_INT *, MKL_INT *, MKL_INT *, MKL_INT *,
+               MKL_INT *, MKL_INT *, MKL_INT *, MKL_INT *, MKL_INT *);*/
+ 
   template<int force_type,int system_type ,int num_flux,int dim> class Solver_DG:protected mesh_generation<dim>,
-                                                                  protected Base_PostProc<dim>,
-                                                                  protected Base_Basics
+                                                                                 protected Base_PostProc<dim>,
+                                                                                 protected Base_Basics
   {
 
     typedef MeshWorker::DoFInfo<dim> DoFInfo;
@@ -17,6 +21,9 @@ namespace SolverDG
     public:
         enum Refinement
           {global,adaptive,adaptive_kelly};
+
+        enum Solver_Type
+          {Trilinos_Direct,Trilinos_GMRES,Pardiso};
 
         Refinement refinement;
 
@@ -40,6 +47,7 @@ namespace SolverDG
         FESystem<dim> finite_element;
         DoFHandler<dim> dof_handler;
 
+        SparsityPattern sparsity_pattern;
         TrilinosWrappers::SparseMatrix global_matrix;
 
         Vector<double> solution;
@@ -51,7 +59,10 @@ namespace SolverDG
 
         void distribute_dof_allocate_matrix(); 
         void assemble_system();
-        void solve();
+        void solve(const enum Solver_Type solver_type);
+        void PardisoSolve(MKL_INT mtype, MKL_INT n, MKL_INT *ia, MKL_INT *ja, void *A, int nz,
+                     void *b, void *x, void *pt, MKL_INT phase, MKL_INT *iparm);
+        
         void h_adapt();
 
   
@@ -217,7 +228,7 @@ namespace SolverDG
 
     cout << "solving the system...." << endl;
 	  timer.enter_subsection("solving the system");
-          solve();
+          solve(Pardiso);
 	  timer.leave_subsection();
           cout << "done solving";
 

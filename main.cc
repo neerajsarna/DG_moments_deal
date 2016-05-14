@@ -6,6 +6,7 @@
 
 #define NDEBUG
 #include "include_deal.h"
+#include "mkl.h"
 dealii::Threads::Mutex mutex_deal;
 #include "Basics.h"
 #include "equation_gen.h"
