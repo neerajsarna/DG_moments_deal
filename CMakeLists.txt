@@ -7,13 +7,16 @@ SET(G++_COVERAGE_COMPILE_FLAGS "-Wno-unused-local-typedefs")
 SET(G++_COVERAGE_COMPILE_FLAGS2 "-pg")
 SET(G++_COVERAGE_COMPILE_FLAGS3 "-Wno-pedantic")
 SET(G++_COVERAGE_COMPILE_FLAGS4 "-Wno-reorder")
-SET(G++_CONVERAGE_COMPILE_FLAGS5 "-Wno-missing-field-initializers")
-SET(G++_CONVERAGE_COMPILE_FLAGS6 "-DMKL_ILP64 -m64")
+SET(G++_COVERAGE_COMPILE_FLAGS5 "-Wno-missing-field-initializers")
+SET(G++_COVERAGE_COMPILE_FLAGS6 "-DMKL_ILP64 -m64 -v")
+SET(G++_COVERGE_COMPILE_FLAGS7 " -Wl,--no-as-needed ")
 
-SET(DEAL_II_DIR "/Applications/deal.II.app/Contents/Resources/lib/cmake")
-SET(MKL_DIR "/opt/intel//compilers_and_libraries_2016.3.170/mac/mkl")
-SET(HOME_DIR "/usr/lib")
-#SET(DEAL_II_DIR "/home/ns179556/dealii/lib/cmake")
+
+
+#SET(DEAL_II_DIR "/Applications/deal.II.app/Contents/Resources/lib/cmake")
+#SET(MKL_DIR "/opt/intel//compilers_and_libraries_2016.3.170/mac/mkl")
+SET(MKL_DIR "/opt/intel/Compiler/16.0/2.181/rwthlnk/mkl/")
+SET(DEAL_II_DIR "/home/ns179556/dealii/lib/cmake")
 
 FIND_PACKAGE(deal.II 8.3 QUIET
   HINTS ${deal.II_DIR} ${DEAL_II_DIR} ../ ../../ $ENV{DEAL_II_DIR}
@@ -34,17 +37,20 @@ ADD_DEFINITIONS(${G++_COVERAGE_COMPILE_FLAGS2})
 ADD_DEFINITIONS(${G++_COVERAGE_COMPILE_FLAGS3})
 ADD_DEFINITIONS(${G++_COVERAGE_COMPILE_FLAGS4})
 ADD_DEFINITIONS(${G++_COVERAGE_COMPILE_FLAGS5})
+ADD_DEFINITIONS(${G++_COVERAGE_COMPILE_FLAGS6})
+ADD_DEFINITIONS(${G++_COVERAGE_COMPILE_FLAGS7})
 #adding the executables
 ADD_EXECUTABLE(mycode.out main.cc)
 
 
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/include)
-INCLUDE_DIRECTORIES(/usr/local/include/eigen)
-#INCLUDE_DIRECTORIES(/home/ns179556/eigen)
+#INCLUDE_DIRECTORIES(/usr/local/include/eigen)
+INCLUDE_DIRECTORIES(/home/ns179556/eigen)
 INCLUDE_DIRECTORIES(${MKL_DIR}/include)
 
-LINK_DIRECTORIES(${MKL_DIR}/lib)
-TARGET_LINK_LIBRARIES(mycode.out libmkl_intel_ilp64.dylib libmkl_core.dylib libmkl_intel_thread.dylib libpthread.dylib libdl.dylib)
+LINK_DIRECTORIES(${MKL_DIR}/lib/intel64_lin)
+#TARGET_LINK_LIBRARIES(mycode.out libmkl_intel_ilp64.dylib libmkl_core.dylib libmkl_intel_thread.dylib libpthread.dylib libdl.dylib)
+TARGET_LINK_LIBRARIES(mycode.out libmkl_intel_ilp64.so libmkl_core.so libmkl_intel_thread.so libpthread.so libdl.so libmkl_blacs_intelmpi_ilp64.so)
 
 DEAL_II_SETUP_TARGET(mycode.out)
 ADD_CUSTOM_TARGET(release
