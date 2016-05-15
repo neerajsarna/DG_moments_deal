@@ -7,8 +7,8 @@ SET(G++_COVERAGE_COMPILE_FLAGS "-Wno-unused-local-typedefs")
 SET(G++_COVERAGE_COMPILE_FLAGS2 "-pg")
 SET(G++_COVERAGE_COMPILE_FLAGS3 "-Wno-pedantic")
 SET(G++_COVERAGE_COMPILE_FLAGS4 "-Wno-reorder")
-SET(G++_CONVERAGE_COMPILE_FLAGS5 "-Wno-missing-field-initializers")
-SET(G++_CONVERAGE_COMPILE_FLAGS6 "-DMKL_ILP64 -m64")
+SET(G++_COVERAGE_COMPILE_FLAGS5 "-Wno-missing-field-initializers")
+SET(G++_COVERAGE_COMPILE_FLAGS6 "-DMKL_ILP64 -m64")
 
 SET(DEAL_II_DIR "/Applications/deal.II.app/Contents/Resources/lib/cmake")
 SET(MKL_DIR "/opt/intel//compilers_and_libraries_2016.3.170/mac/mkl")
@@ -34,6 +34,7 @@ ADD_DEFINITIONS(${G++_COVERAGE_COMPILE_FLAGS2})
 ADD_DEFINITIONS(${G++_COVERAGE_COMPILE_FLAGS3})
 ADD_DEFINITIONS(${G++_COVERAGE_COMPILE_FLAGS4})
 ADD_DEFINITIONS(${G++_COVERAGE_COMPILE_FLAGS5})
+ADD_DEFINITIONS(${G++_COVERAGE_COMPILE_FLAGS6})
 #adding the executables
 ADD_EXECUTABLE(mycode.out main.cc)
 

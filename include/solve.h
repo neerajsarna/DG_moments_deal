@@ -36,12 +36,13 @@ Solver_DG<force_type,system_type,num_flux,dim>
             {
               system_matrix temp_global_matrix;
 
-              temp_global_matrix.Row_Col_Value.reserve(global_matrix.n_nonzero_elements());
-              temp_global_matrix.matrix.resize(global_matrix.m(),global_matrix.n());
+              const unsigned int size_temp_matrix = global_matrix.m();
+              const unsigned int non_zero_in_system_matrix = global_matrix.n_nonzero_elements();
 
-              for (unsigned int i = 0 ; i < global_matrix.m(); i++)
-                temp_global_matrix.matrix.coeffRef(i,i) = 1;
-             /* for (unsigned int row = 0 ; row < global_matrix.m(); row++)
+              temp_global_matrix.Row_Col_Value.reserve(non_zero_in_system_matrix);
+              temp_global_matrix.matrix.resize(size_temp_matrix,size_temp_matrix);
+
+              for (unsigned int row = 0 ; row < global_matrix.m(); row++)
               {
                 typename TrilinosWrappers::SparseMatrix::const_iterator it = global_matrix.begin(row),
                                                                         it_end = global_matrix.end(row);
@@ -55,45 +56,45 @@ Solver_DG<force_type,system_type,num_flux,dim>
               global_matrix.clear();
               temp_global_matrix.matrix.setFromTriplets(temp_global_matrix.Row_Col_Value.begin(),
                                                         temp_global_matrix.Row_Col_Value.end());
-              temp_global_matrix.Row_Col_Value.clear();*/
+              temp_global_matrix.Row_Col_Value.clear();
+              temp_global_matrix.matrix.makeCompressed();
 
-              MKL_INT iparm[64];
-              MKL_INT mtype = 11;       // unsymmetric real matrix
-              MKL_INT phase;
+              const unsigned int n_rows = temp_global_matrix.matrix.rows();
+              const unsigned int nnz = temp_global_matrix.matrix.nonZeros();
 
-              void *pt[64];
-
-              for(int i=0; i<64; i++ ) pt[i]=0;
-
-              phase = -11;;               // setup phase
-              PardisoSolve(mtype, temp_global_matrix.matrix.rows(), (MKL_INT *)temp_global_matrix.matrix.outerIndexPtr(),
-                           (MKL_INT *)temp_global_matrix.matrix.innerIndexPtr(), temp_global_matrix.matrix.valuePtr(), 
-                          temp_global_matrix.matrix.nonZeros(), &system_rhs(0), &solution(0), pt, phase, iparm);
-
-              phase = 11;                 // symbolic factorization
-              PardisoSolve(mtype, temp_global_matrix.matrix.rows(), (MKL_INT *)temp_global_matrix.matrix.outerIndexPtr(),
-                           (MKL_INT *)temp_global_matrix.matrix.innerIndexPtr(), temp_global_matrix.matrix.valuePtr(), 
-                          temp_global_matrix.matrix.nonZeros(), &system_rhs(0), &solution(0), pt, phase, iparm);
-
-              phase = 22;               // numerical factorization
-              PardisoSolve(mtype, temp_global_matrix.matrix.rows(), (MKL_INT *)temp_global_matrix.matrix.outerIndexPtr(),
-                           (MKL_INT *)temp_global_matrix.matrix.innerIndexPtr(), temp_global_matrix.matrix.valuePtr(), 
-                          temp_global_matrix.matrix.nonZeros(), &system_rhs(0), &solution(0), pt, phase, iparm);
+              MKL_INT *ia;
+              MKL_INT *ja;
               
-              phase = 33;             //Solve the system
-              PardisoSolve(mtype, temp_global_matrix.matrix.rows(), (MKL_INT *)temp_global_matrix.matrix.outerIndexPtr(),
-                           (MKL_INT *)temp_global_matrix.matrix.innerIndexPtr(), temp_global_matrix.matrix.valuePtr(), 
-                          temp_global_matrix.matrix.nonZeros(), &system_rhs(0), &solution(0), pt, phase, iparm);
-              
+
+              ia = (MKL_INT*)calloc(n_rows+1,sizeof(MKL_INT));
+              ja = (MKL_INT*)calloc(nnz,sizeof(MKL_INT));
+
+
+              for (unsigned int i = 0 ; i < n_rows + 1 ; i++)
+                ia[i]  = temp_global_matrix.matrix.outerIndexPtr()[i] + 1;
+            
+
+              for (unsigned int j = 0 ; j < nnz ; j ++)
+                ja[j] = temp_global_matrix.matrix.innerIndexPtr()[j] + 1;
+
+              PardisoSolve(ia,ja,
+                            temp_global_matrix.matrix.valuePtr(),&system_rhs(0),&solution(0),n_rows);
+
+              free(ia);
+              free(ja);
+
               break;
             }
           }
+
+          
 
 
 
         }
 
 
+/*
 template<int force_type,int system_type,int num_flux,int dim> 
 void 
 Solver_DG<force_type,system_type,num_flux,dim>
@@ -111,25 +112,13 @@ Solver_DG<force_type,system_type,num_flux,dim>
   msglvl = 0;  // 1 = Print statistical information in file 
   error = 0;   // Initialize error flag 
   
-/*  MKL_INT *ia, *ja;
-  ia = (MKL_INT *)malloc(sizeof(MKL_INT)*nz);
-  ja = (MKL_INT *)malloc(sizeof(MKL_INT)*nz);
-  for( int i=0; i<nz; i++ ) {
-    ia[i] = (MKL_INT)ia0[i];
-    ja[i] = (MKL_INT)ja0[i];
-  };*/
-  
+
   printf( " PardisoSolve :" );
   switch( phase ) 
   {
     case( -11 ):
       printf( " Setup Phase \n" );
-      /*
-      printf("\nINTERNAL: The matrix is given by: ");fflush(stdout);
-      for (i = 0; i < nz; i+=1) {
-        printf("\n i=%d, j=%d, A(i,j)=%f", ia[i], ja[i], ((double*)A)[i] );fflush(stdout);
-      };  printf ("\n");
-      */
+
       
       // Pardiso control parameters.  
       for (i = 0; i < 64; i++) iparm[i] = 0;             
@@ -196,4 +185,118 @@ Solver_DG<force_type,system_type,num_flux,dim>
   };
 };
 
+}*/
+
+template<int force_type,int system_type,int num_flux,int dim> 
+void 
+Solver_DG<force_type,system_type,num_flux,dim>
+::PardisoSolve(MKL_INT *ia,MKL_INT *ja,double *a,double *b,double *x,MKL_INT n)
+{
+      MKL_INT mtype = 11;       
+
+    double bs[n], res, res0;
+    MKL_INT nrhs = 1;     
+    void *pt[64];
+
+    
+    MKL_INT iparm[64];
+    MKL_INT maxfct, mnum, phase, error, msglvl;
+    
+    MKL_INT i, j;
+    double ddum;          
+    MKL_INT idum;         
+    char *uplo;
+
+    for ( i = 0; i < 64; i++ )
+        iparm[i] = 0;
+
+    iparm[0] = 1;         /* No solver default */
+    iparm[1] = 2;         /* Fill-in reordering from METIS */
+    iparm[3] = 0;         /* No iterative-direct algorithm */
+    iparm[4] = 0;         /* No user fill-in reducing permutation */
+    iparm[5] = 0;         /* Write solution into x */
+    iparm[6] = 0;         /* Not in use */
+    iparm[7] = 2;         /* Max numbers of iterative refinement steps */
+    iparm[8] = 0;         /* Not in use */
+    iparm[9] = 15;        /* Perturb the pivot elements with 1E-13 */
+    iparm[10] = 1;        /* Use nonsymmetric permutation and scaling MPS */
+    iparm[11] = 0;        /* Conjugate transposed/transpose solve */
+    iparm[12] = 1;        /* Maximum weighted matching algorithm is switched-on (default for non-symmetric) */
+    iparm[13] = 0;        /* Output: Number of perturbed pivots */
+    iparm[14] = 0;        /* Not in use */
+    iparm[15] = 0;        /* Not in use */
+    iparm[16] = 0;        /* Not in use */
+    iparm[17] = -1;       /* Output: Number of nonzeros in the factor LU */
+    iparm[18] = -1;       /* Output: Mflops for LU factorization */
+    iparm[19] = 0;        /* Output: Numbers of CG Iterations */
+  
+    maxfct = 1;           /* Maximum number of numerical factorizations. */
+    mnum = 1;         /* Which factorization to use. */
+    msglvl = 0;           /* Print statistical information in file */
+    error = 0;            /* Initialize error flag */
+
+    for ( i = 0; i < 64; i++ )
+        pt[i] = 0;
+
+    // Symbolic Factorization
+    phase = 11;
+    PARDISO (pt, &maxfct, &mnum, &mtype, &phase,
+             &n, a, ia, ja, &idum, &nrhs, iparm, &msglvl, &ddum, &ddum, &error);
+    if ( error != 0 )
+    {
+        printf ("\nERROR during symbolic factorization: %lld", error);
+        exit (1);
+    }
+    printf ("\nReordering completed ... ");
+
+    // Numerical Factorization
+    phase = 22;
+    PARDISO (pt, &maxfct, &mnum, &mtype, &phase,
+             &n, a, ia, ja, &idum, &nrhs, iparm, &msglvl, &ddum, &ddum, &error);
+    if ( error != 0 )
+    {
+        printf ("\nERROR during numerical factorization: %lld", error);
+        exit (2);
+    }
+    printf ("\nFactorization completed ... ");
+
+    // Solving the system
+    phase = 33;
+
+    iparm[11] = 0;        /* Conjugate transposed/transpose solve */
+    uplo = "non-transposed";
+    
+    printf ("\n\nSolving %s system...\n", uplo);
+    pardiso (pt, &maxfct, &mnum, &mtype, &phase,
+       &n, a, ia, ja, &idum, &nrhs, iparm, &msglvl, b, x, &error);
+
+    if ( error != 0 )
+    {
+        printf ("\nERROR during solution: %lld", error);
+        exit (3);
+    }
+
+    printf ("\n");
+// Compute residual
+    mkl_dcsrgemv (uplo, &n, a, ia, ja, x, bs);
+    res = 0.0;
+    res0 = 0.0;
+    for ( j = 1; j <= n; j++ )
+    {
+        res += (bs[j - 1] - b[j - 1]) * (bs[j - 1] - b[j - 1]);
+        res0 += b[j - 1] * b[j - 1];
+    }
+    res = sqrt (res) / sqrt (res0);
+    printf ("\nRelative residual = %e\n", res);
+// Check residual
+    if ( res > 1e-10 )
+    {
+        printf ("Error: residual is too high!\n");
+        exit (10);
+    }
+    
+    phase = -1;           /* Release internal memory. */
+    PARDISO (pt, &maxfct, &mnum, &mtype, &phase,
+             &n, &ddum, ia, ja, &idum, &nrhs,
+             iparm, &msglvl, &ddum, &ddum, &error);
 }
