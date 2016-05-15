@@ -4,17 +4,14 @@
 #include <fstream>
 #include <cmath>
 
-#define NDEBUG
 #include "include_deal.h"
 #include "mkl.h"
-dealii::Threads::Mutex mutex_deal;
 #include "Basics.h"
 #include "equation_gen.h"
 #include "exact_solution.h"
 #include "mesh_gen.h"
 #include "PostProc.h"
 #include "Solver.h"
-#include <time.h>
 
 using namespace dealii;
 using namespace std;
@@ -27,7 +24,7 @@ int main(int argc,char **argv)
 	Utilities::MPI::MPI_InitFinalize mpi_initialization(argc, argv,num_threads);
 
 	const int dim = 2;
-	const int refine_cycles = 5;			// total number of refinement cycles
+	const int refine_cycles = 1;			// total number of refinement cycles
 	const int p = 1;
 	const string mesh_file_name = "mesh/mesh_file";
 	const unsigned int mapping_order = 2;

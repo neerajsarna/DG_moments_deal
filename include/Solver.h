@@ -60,8 +60,9 @@ namespace SolverDG
         void distribute_dof_allocate_matrix(); 
         void assemble_system();
         void solve(const enum Solver_Type solver_type);
-        void PardisoSolve(MKL_INT mtype, MKL_INT n, MKL_INT *ia, MKL_INT *ja, void *A, int nz,
-                     void *b, void *x, void *pt, MKL_INT phase, MKL_INT *iparm);
+        /*void PardisoSolve(MKL_INT mtype, MKL_INT n, MKL_INT *ia, MKL_INT *ja, void *A, int nz,
+                     void *b, void *x, void *pt, MKL_INT phase, MKL_INT *iparm);*/
+        void PardisoSolve(MKL_INT *ia,MKL_INT *ja,double *a,double *b,double *x,MKL_INT n);
         
         void h_adapt();
 
