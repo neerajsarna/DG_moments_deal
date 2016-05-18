@@ -1,33 +1,32 @@
 # The set of languages for which implicit dependencies are needed:
-set(CMAKE_DEPENDS_LANGUAGES
+SET(CMAKE_DEPENDS_LANGUAGES
   "CXX"
   )
 # The set of files for implicit dependencies of each language:
-set(CMAKE_DEPENDS_CHECK_CXX
-  "/Users/neerajsarna/sciebo/DG_moments_deal/main.cc" "/Users/neerajsarna/sciebo/DG_moments_deal/CMakeFiles/mycode.out.dir/main.cc.o"
+SET(CMAKE_DEPENDS_CHECK_CXX
+  "/home/ns179556/DG_moments_deal/main.cc" "/home/ns179556/DG_moments_deal/CMakeFiles/mycode.out.dir/main.cc.o"
   )
-set(CMAKE_CXX_COMPILER_ID "Clang")
-
-# The include file search paths:
-set(CMAKE_CXX_TARGET_INCLUDE_PATH
-  "include"
-  "/usr/local/include/eigen"
-  "/opt/intel/compilers_and_libraries_2016.3.170/mac/mkl/include"
-  "/Applications/deal.II.app/Contents/Resources/include"
-  "/Applications/deal.II.app/Contents/Resources/include/deal.II/bundled"
-  "/Applications/deal.II.app/Contents/Resources/opt/openmpi-1.6.5/include"
-  "/Applications/deal.II.app/Contents/Resources/opt/trilinos-ba77c1f/include"
-  "/Applications/deal.II.app/Contents/Resources/opt/boost-1.58.0/include"
-  "/Applications/deal.II.app/Contents/Resources/opt/petsc-9fbf19a/include"
-  "/Applications/deal.II.app/Contents/Resources/opt/sundials-2.6.1/include"
-  "/Applications/deal.II.app/Contents/Resources/opt/oce-f6d3095/include/oce"
-  "/Applications/deal.II.app/Contents/Resources/opt/p4est-fb278b3/include"
-  "/Applications/deal.II.app/Contents/Resources/opt/slepc-d8e80ab/include"
-  )
+SET(CMAKE_CXX_COMPILER_ID "GNU")
 
 # Targets to which this target links.
-set(CMAKE_TARGET_LINKED_INFO_FILES
+SET(CMAKE_TARGET_LINKED_INFO_FILES
   )
 
-# Fortran module output directory.
-set(CMAKE_Fortran_TARGET_MODULE_DIR "")
+# The include file search paths:
+SET(CMAKE_C_TARGET_INCLUDE_PATH
+  "include"
+  "/home/ns179556/eigen"
+  "/opt/intel/mkl/11.3.2.181/compilers_and_libraries_2016.2.181/linux/mkl/include"
+  "/home/ns179556/dealii/include"
+  "/home/ns179556/dealii/include/deal.II/bundled"
+  "/opt/MPI/openmpi-1.10.2/linux/gcc_4.8.5/include/openmpi/opal/mca/hwloc/hwloc191/hwloc/include"
+  "/opt/MPI/openmpi-1.10.2/linux/gcc_4.8.5/include/openmpi/opal/mca/event/libevent2021/libevent"
+  "/opt/MPI/openmpi-1.10.2/linux/gcc_4.8.5/include/openmpi/opal/mca/event/libevent2021/libevent/include"
+  "/opt/MPI/openmpi-1.10.2/linux/gcc_4.8.5/include"
+  "/opt/MPI/openmpi-1.10.2/linux/gcc_4.8.5/include/openmpi"
+  "/home/ns179556/trilinos/include"
+  "/usr/include/suitesparse"
+  )
+SET(CMAKE_CXX_TARGET_INCLUDE_PATH ${CMAKE_C_TARGET_INCLUDE_PATH})
+SET(CMAKE_Fortran_TARGET_INCLUDE_PATH ${CMAKE_C_TARGET_INCLUDE_PATH})
+SET(CMAKE_ASM_TARGET_INCLUDE_PATH ${CMAKE_C_TARGET_INCLUDE_PATH})
