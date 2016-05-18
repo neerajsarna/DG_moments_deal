@@ -58,7 +58,6 @@ namespace Mesh_Handler
           center, inner_radius, outer_radius,
           10);
 
-	triangulation.refine_global(6);
         triangulation.set_all_manifold_ids_on_boundary(0);
         triangulation.set_manifold(0,boundary);
         break;
