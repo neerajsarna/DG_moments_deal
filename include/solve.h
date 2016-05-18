@@ -36,48 +36,17 @@ Solver_DG<force_type,system_type,num_flux,dim>
 
             case Pardiso:
             {
-	      cout << "Using Pardiso" << endl;
-              system_matrix temp_global_matrix;
+              const long long int n_rows = global_matrix.m();
+              const long long int nnz = global_matrix.n_nonzero_elements();
 
-              const unsigned int size_temp_matrix = global_matrix.m();
-              const unsigned int non_zero_in_system_matrix = global_matrix.n_nonzero_elements();
+              cout << "Memory by original matrix " << global_matrix.memory_consumption() * 1e-9<< endl;
+              cout << "Generating data for pardiso " << endl;
 
-              temp_global_matrix.Row_Col_Value.reserve(non_zero_in_system_matrix);
-              temp_global_matrix.matrix.resize(size_temp_matrix,size_temp_matrix);
-
-	      typename TrilinosWrappers::SparseMatrix::const_iterator it = global_matrix.begin(), it_end = global_matrix.end();
-	   
-	      cout << "trial start " << endl;
-   	      for(; it != it_end ; it++)
-	      {}
-	      cout << "trial end " << endl;
-
-	/*      cout<< "copying system matrix..." << endl;
-              for (long long  int row = 0 ; row < global_matrix.m(); row++)
-              {
-                 it = global_matrix.begin(row);
-                                                                        it_end = global_matrix.end(row);
-
-                for (; it != it_end ; it++)
-		{}
-        //          temp_global_matrix.Row_Col_Value.push_back(triplet(it->row(),it->column(),it->value()));
-
-
-              }*/
-
-	     cout << "done copying " << endl;
-	     fflush(stdout);
-              global_matrix.clear();
-              temp_global_matrix.matrix.setFromTriplets(temp_global_matrix.Row_Col_Value.begin(),
-                                                        temp_global_matrix.Row_Col_Value.end());
-              temp_global_matrix.Row_Col_Value.clear();
-	      cout << "done clearing data " << endl;
-
-	      cout << "copying to MKL_INT" << endl;
-              temp_global_matrix.matrix.makeCompressed();
-
-              const unsigned int n_rows = temp_global_matrix.matrix.rows();
-              const unsigned int nnz = temp_global_matrix.matrix.nonZeros();
+             const Epetra_CrsMatrix temp_system_matrix = global_matrix.trilinos_matrix();
+              Epetra_CrsMatrix temp_system_matrix2 = temp_system_matrix;
+              Epetra_IntSerialDenseVector row_ptr = temp_system_matrix2.ExpertExtractIndexOffset();
+              Epetra_IntSerialDenseVector col_ind = temp_system_matrix2.ExpertExtractIndices();
+              double *values = temp_system_matrix2.ExpertExtractValues();
 
               MKL_INT *ia;
               MKL_INT *ja;
@@ -87,17 +56,21 @@ Solver_DG<force_type,system_type,num_flux,dim>
               ja = (MKL_INT*)calloc(nnz,sizeof(MKL_INT));
 
 
-              for (long long int i = 0 ; i < n_rows + 1 ; i++)
-                ia[i]  = temp_global_matrix.matrix.outerIndexPtr()[i] + 1;
+              for (long int i = 0 ; i < n_rows + 1 ; i++)
+                ia[i]  = row_ptr[i];
             
 
-              for (long long int j = 0 ; j < nnz ; j ++)
-                ja[j] = temp_global_matrix.matrix.innerIndexPtr()[j] + 1;
+              for (long int j = 0 ; j < nnz ; j ++)
+                ja[j] = col_ind[j];
+
+              global_matrix.clear();
+
+              cout << "Data generation completed" << endl;
 
 	      cout << "Done copying to MKL_INT " << endl;
 	      cout << "entering pardiso " << endl;
               PardisoSolve(ia,ja,
-                            temp_global_matrix.matrix.valuePtr(),&system_rhs(0),&solution(0),n_rows);
+                            values,&system_rhs(0),&solution(0),n_rows);
 
               free(ia);
               free(ja);
@@ -213,12 +186,9 @@ Solver_DG<force_type,system_type,num_flux,dim>
 {
       MKL_INT mtype = 11;       
 
-    double *bs;
-    double  res, res0;
     MKL_INT nrhs = 1;     
     void *pt[64];
 
-    bs = (double*)calloc(n,sizeof(double));    
 
     MKL_INT iparm[64];
     MKL_INT maxfct, mnum, phase, error, msglvl;
@@ -250,7 +220,8 @@ Solver_DG<force_type,system_type,num_flux,dim>
     iparm[17] = -1;       /* Output: Number of nonzeros in the factor LU */
     iparm[18] = -1;       /* Output: Mflops for LU factorization */
     iparm[19] = 0;        /* Output: Numbers of CG Iterations */
-  
+    iparm[34] = 1;
+
     maxfct = 1;           /* Maximum number of numerical factorizations. */
     mnum = 1;         /* Which factorization to use. */
     msglvl = 0;           /* Print statistical information in file */
@@ -298,28 +269,13 @@ Solver_DG<force_type,system_type,num_flux,dim>
     }
 
     printf ("\n");
-// Compute residual
-    mkl_dcsrgemv (uplo, &n, a, ia, ja, x, bs);
-    res = 0.0;
-    res0 = 0.0;
-    for ( j = 1; j <= n; j++ )
-    {
-        res += (bs[j - 1] - b[j - 1]) * (bs[j - 1] - b[j - 1]);
-        res0 += b[j - 1] * b[j - 1];
-    }
-    res = sqrt (res) / sqrt (res0);
-    printf ("\nRelative residual = %e\n", res);
-// Check residual
-    if ( res > 1e-10 )
-    {
-        printf ("Error: residual is too high!\n");
-        exit (10);
-    }
-    
+    cout << "Solving complete " << endl;
+    fflush(stdout);
+
+   
     phase = -1;           /* Release internal memory. */
     PARDISO (pt, &maxfct, &mnum, &mtype, &phase,
              &n, &ddum, ia, ja, &idum, &nrhs,
              iparm, &msglvl, &ddum, &ddum, &error);
 
-   free(bs);
 }

@@ -11,11 +11,19 @@ IF(NOT DEFINED CMAKE_INSTALL_CONFIG_NAME)
   IF(BUILD_TYPE)
     STRING(REGEX REPLACE "^[^A-Za-z0-9_]+" ""
            CMAKE_INSTALL_CONFIG_NAME "${BUILD_TYPE}")
+<<<<<<< HEAD
   ELSE(BUILD_TYPE)
     SET(CMAKE_INSTALL_CONFIG_NAME "Debug")
   ENDIF(BUILD_TYPE)
   MESSAGE(STATUS "Install configuration: \"${CMAKE_INSTALL_CONFIG_NAME}\"")
 ENDIF(NOT DEFINED CMAKE_INSTALL_CONFIG_NAME)
+=======
+  else()
+    set(CMAKE_INSTALL_CONFIG_NAME "Release")
+  endif()
+  message(STATUS "Install configuration: \"${CMAKE_INSTALL_CONFIG_NAME}\"")
+endif()
+>>>>>>> origin/implementing_pardiso
 
 # Set the component getting installed.
 IF(NOT CMAKE_INSTALL_COMPONENT)
