@@ -9,6 +9,7 @@ Solver_DG<force_type,system_type,num_flux,dim>
           {
             case Trilinos_Direct:
             {
+		cout << "using Direct" << endl;
                 SolverControl           solver_control (10000, 1e-10);
           
                 TrilinosWrappers::SolverDirect::AdditionalData additional_data;
@@ -20,6 +21,7 @@ Solver_DG<force_type,system_type,num_flux,dim>
 
             case Trilinos_GMRES:
             {
+	      cout << "using GMRES" << endl;
               SolverControl           solver_control (10000, 1e-10);
               TrilinosWrappers::SolverGMRES::AdditionalData additional_data;
               TrilinosWrappers::SolverGMRES  solver (solver_control,additional_data);
@@ -34,6 +36,7 @@ Solver_DG<force_type,system_type,num_flux,dim>
 
             case Pardiso:
             {
+	      cout << "Using Pardiso" << endl;
               system_matrix temp_global_matrix;
 
               const unsigned int size_temp_matrix = global_matrix.m();
@@ -42,21 +45,35 @@ Solver_DG<force_type,system_type,num_flux,dim>
               temp_global_matrix.Row_Col_Value.reserve(non_zero_in_system_matrix);
               temp_global_matrix.matrix.resize(size_temp_matrix,size_temp_matrix);
 
-              for (unsigned int row = 0 ; row < global_matrix.m(); row++)
+	      typename TrilinosWrappers::SparseMatrix::const_iterator it = global_matrix.begin(), it_end = global_matrix.end();
+	   
+	      cout << "trial start " << endl;
+   	      for(; it != it_end ; it++)
+	      {}
+	      cout << "trial end " << endl;
+
+	/*      cout<< "copying system matrix..." << endl;
+              for (long long  int row = 0 ; row < global_matrix.m(); row++)
               {
-                typename TrilinosWrappers::SparseMatrix::const_iterator it = global_matrix.begin(row),
+                 it = global_matrix.begin(row);
                                                                         it_end = global_matrix.end(row);
 
                 for (; it != it_end ; it++)
-                  temp_global_matrix.Row_Col_Value.push_back(triplet(it->row(),it->column(),it->value()));
+		{}
+        //          temp_global_matrix.Row_Col_Value.push_back(triplet(it->row(),it->column(),it->value()));
 
 
-              }
+              }*/
 
+	     cout << "done copying " << endl;
+	     fflush(stdout);
               global_matrix.clear();
               temp_global_matrix.matrix.setFromTriplets(temp_global_matrix.Row_Col_Value.begin(),
                                                         temp_global_matrix.Row_Col_Value.end());
               temp_global_matrix.Row_Col_Value.clear();
+	      cout << "done clearing data " << endl;
+
+	      cout << "copying to MKL_INT" << endl;
               temp_global_matrix.matrix.makeCompressed();
 
               const unsigned int n_rows = temp_global_matrix.matrix.rows();
@@ -70,13 +87,15 @@ Solver_DG<force_type,system_type,num_flux,dim>
               ja = (MKL_INT*)calloc(nnz,sizeof(MKL_INT));
 
 
-              for (unsigned int i = 0 ; i < n_rows + 1 ; i++)
+              for (long long int i = 0 ; i < n_rows + 1 ; i++)
                 ia[i]  = temp_global_matrix.matrix.outerIndexPtr()[i] + 1;
             
 
-              for (unsigned int j = 0 ; j < nnz ; j ++)
+              for (long long int j = 0 ; j < nnz ; j ++)
                 ja[j] = temp_global_matrix.matrix.innerIndexPtr()[j] + 1;
 
+	      cout << "Done copying to MKL_INT " << endl;
+	      cout << "entering pardiso " << endl;
               PardisoSolve(ia,ja,
                             temp_global_matrix.matrix.valuePtr(),&system_rhs(0),&solution(0),n_rows);
 
@@ -194,11 +213,13 @@ Solver_DG<force_type,system_type,num_flux,dim>
 {
       MKL_INT mtype = 11;       
 
-    double bs[n], res, res0;
+    double *bs;
+    double  res, res0;
     MKL_INT nrhs = 1;     
     void *pt[64];
 
-    
+    bs = (double*)calloc(n,sizeof(double));    
+
     MKL_INT iparm[64];
     MKL_INT maxfct, mnum, phase, error, msglvl;
     
@@ -299,4 +320,6 @@ Solver_DG<force_type,system_type,num_flux,dim>
     PARDISO (pt, &maxfct, &mnum, &mtype, &phase,
              &n, &ddum, ia, ja, &idum, &nrhs,
              iparm, &msglvl, &ddum, &ddum, &error);
+
+   free(bs);
 }
