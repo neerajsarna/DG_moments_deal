@@ -20,7 +20,8 @@ namespace EquationGenerator
 			system_matrix A[dim];
 			system_matrix P;
 			system_matrix BC;
-			system_matrix S;
+			system_matrix S_half;			// sqrt(S)
+			system_matrix S_half_inv;
 			system_matrix Ax;
 
 	  		Full_matrix Aminus_1D_Int;
@@ -37,6 +38,7 @@ namespace EquationGenerator
 							const unsigned int system_id) const; 
 
 			Sparse_matrix build_Projector(const Tensor<1,dim,double> normal_vector,const unsigned int system_id) const;
+
 			void source_term(const vector<Point<dim>> &p,vector<Vector<double>> &value,const unsigned int system_id);
 			Sparse_matrix build_InvProjector(const Tensor<1,dim,double> normal_vector,
 											const unsigned int system_id) const;		
@@ -47,8 +49,7 @@ namespace EquationGenerator
 	  	void build_triplet(system_matrix &matrix_info,const string filename);
 	  	void build_matrix_from_triplet(system_matrix &matrix_info);
 	  	void print_matrix(const system_matrix matrix_info,const string filename);
-	  	void Sparse_matrix_dot_Vector(const  system_matrix matrix_info,
-	  									const Vector<double> x,Vector<double> &result) const;
+
 		void generate_matrices(equation_data &system_data,const unsigned int system_id);
 		Tensor<1,dim,double> mirror(const Tensor<1,dim,double> normal_vector) const;			
 		void build_Aminus1D(Full_matrix &Aminus_1D_Int,
@@ -131,31 +132,15 @@ namespace EquationGenerator
 		cout << "writting the read matrices to: " << filename_to_write<< "\n" << endl;
 	}
 
-	template<int force_type,int system_type,int num_flux,int dim> 
-	void Base_EquationGenerator<force_type,system_type,num_flux,dim>
-	::Sparse_matrix_dot_Vector(const  system_matrix matrix_info,
-								const Vector<double> x,Vector<double> &result) const
-	{
-		assert(x.size() != 0 || result.size() !=0 || 
-				matrix_info.matrix.rows() != 0 || matrix_info.matrix.cols());
 
-		assert(matrix_info.matrix.IsRowMajor);
-
-		for (unsigned int m = 0 ; m < matrix_info.matrix.outerSize(); m++)
-		{
-			result(m) = 0;
-			for (Sparse_matrix::InnerIterator n(matrix_info.matrix,m); n ; ++n)
-				result(m) += n.value() * x(n.col());
-		}
-	}
-
-
+	/*The constructor of the class*/
 	template<int force_type,int system_type,int num_flux,int dim>
 	 Base_EquationGenerator<force_type,system_type,num_flux,dim>
 	 ::Base_EquationGenerator(nEqn_data const&num_equations)
 	 :
 	 num_equations(num_equations)
 	{
+		cout << "loading " << num_equations.no_of_total_systems << " systems" << endl;
 		system_data.resize(num_equations.no_of_total_systems);
 
 		for (unsigned int i = 0 ; i < num_equations.no_of_total_systems ; i++)

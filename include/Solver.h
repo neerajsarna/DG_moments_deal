@@ -30,14 +30,14 @@ namespace SolverDG
         Solver_DG(const unsigned int p,const unsigned int mapping_order,
                   const enum Refinement refinement,
                    EquationGenerator::Base_EquationGenerator<force_type,system_type,num_flux,dim> *system_of_equations,
-                  const ExactSolution::Base_ExactSolution<dim> *exact_solution,
+                  const ExactSolution::Base_ExactSolution<dim,system_type> *exact_solution,
                   const unsigned int solve_system);
 
         void run(const string mesh_to_read,const unsigned int refine_cycles);
 
     private:
         EquationGenerator::Base_EquationGenerator<force_type,system_type,num_flux,dim> *equation_system_data;
-        const ExactSolution::Base_ExactSolution<dim> *exact_solution;
+        const ExactSolution::Base_ExactSolution<dim,system_type> *exact_solution;
 
         const unsigned int solve_system;
         const unsigned int nEqn;
@@ -172,23 +172,21 @@ namespace SolverDG
                                                   const unsigned int mapping_order,
                                                   const enum Refinement refinement,
                                                   EquationGenerator::Base_EquationGenerator<force_type,system_type ,num_flux,dim> *system_of_equations,
-                                                  const ExactSolution::Base_ExactSolution<dim> *exact_solution,
+                                                  const ExactSolution::Base_ExactSolution<dim,system_type> *exact_solution,
                                                   const unsigned int solve_system)
   :
+  mesh_generation<dim>(mesh_generation<dim>::generate_internal),
+  refinement(refinement),
   exact_solution(exact_solution),
   solve_system(solve_system),
   nEqn(system_of_equations->system_data[solve_system].nEqn),
   finite_element(FE_DGQ<dim>(p),system_of_equations->system_data[solve_system].nEqn),
   dof_handler(triangulation),
-  ngp(p+1),
-  ngp_face(p+1),
-  refinement(refinement),
   mapping(mapping_order),
-  mesh_generation<dim>(mesh_generation<dim>::generate_internal)
+  ngp(p+1),
+  ngp_face(p+1)
   {
-    cout << "from RUN" << system_of_equations->tau << endl;
     equation_system_data = system_of_equations;
-    cout << "from constructor solver" << equation_system_data->tau << endl;
   }
 
   template<int force_type,int system_type ,int num_flux,int dim> 
@@ -244,8 +242,8 @@ namespace SolverDG
         string file_for_grid;
         file_for_grid = this->sub_directory_names[0] + "/grid_"+"_DOF_" + to_string(dof_handler.n_dofs());
         //mesh_generation<dim>::print_grid(triangulation,file_for_grid);
-        /*print_convergence_table(output_file_names.file_for_convergence_tables);
-        output_solution_details(triangulation,output_file_names.file_for_num_solution,
+        print_convergence_table(output_file_names.file_for_convergence_tables);
+        /*output_solution_details(triangulation,output_file_names.file_for_num_solution,
                                 output_file_names.file_for_exact_solution,
                                 output_file_names.file_for_error);*/
        }

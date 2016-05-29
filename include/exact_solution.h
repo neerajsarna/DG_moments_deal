@@ -4,14 +4,16 @@ namespace ExactSolution
 	using namespace dealii;
 	using namespace EquationGenerator;
 
-	template<int dim> class Base_ExactSolution:public Function<dim>,
+	template<int dim,int system_type> class Base_ExactSolution:public Function<dim>,
 												protected Base_Basics
 	{
 		public:
-			Base_ExactSolution(const unsigned int system_id,const unsigned int nEqn);
+			Base_ExactSolution(const unsigned int system_id,const unsigned int nEqn,
+							  const system_matrix S_half);
 			virtual void vector_value(const Point<dim> &p,Vector<double> &value) const;
 
 		protected:
+			const system_matrix S_half;
 			double BI(const int n,const double x) const; 
 			double BK(const int n,const double x) const;
 			double s_r(const double ,const double ) const;
@@ -23,13 +25,15 @@ namespace ExactSolution
 			const unsigned int system_id;
 	};
 
-	template<int dim> 
-	Base_ExactSolution<dim>
-	::Base_ExactSolution(const unsigned int system_id,const unsigned int nEqn)
+	template<int dim,int system_type> 
+	Base_ExactSolution<dim,system_type>
+	::Base_ExactSolution(const unsigned int system_id,const unsigned int nEqn,
+					     const system_matrix S_half)
 	:
+	Function<dim>(nEqn),
+	S_half(S_half),
 	nEqn(nEqn),
-	system_id(system_id),
-	Function<dim>(nEqn)
+	system_id(system_id)
 	{
 		switch(system_id)
 		{
@@ -155,16 +159,16 @@ namespace ExactSolution
 	}
 
 
-template<int dim> 
+template<int dim,int system_type> 
 double 
-Base_ExactSolution<dim>::
+Base_ExactSolution<dim,system_type>::
 s_r(const double r,const double phi) const
 	{
 		switch(system_id)
 		{
 			case 0:
 			{
-				assert(nEqn == 6);
+				Assert(nEqn == 6,ExcNotImplemented());
 
 				return (this->A0 * r * this->tau)/2. - C4*pow(r,-1) + cos(phi) * (-C2 + (2 * this->A1 * r * this->tau)/3. + C1*pow(r,-2) - 
 						K2*BI(1,r*lambda1)*pow(2,0.5)*pow(r,-1) + K1*BK(1,r*lambda1)*pow(2,0.5)*pow(r,-1))
@@ -175,7 +179,7 @@ s_r(const double r,const double phi) const
 
 			case 1:
 			{
-				assert(nEqn == 10);
+				Assert(nEqn == 10,ExcNotImplemented());
 
 		      return (A0*r*tau)/2. - C3*pow(r,-1) + (A2*pow(r,3)*pow(tau,3))/4. + 
       			cos(phi) * (K7*BI(1,lambda1*r)*pow(r,-1) + K8 * BK(1,lambda1*r)*pow(r,-1)
@@ -192,16 +196,16 @@ s_r(const double r,const double phi) const
 
 	}
 
-template<int dim> 
+template<int dim,int system_type> 
 double 
-Base_ExactSolution<dim>::
+Base_ExactSolution<dim,system_type>::
 s_phi(const double r,const double phi) const
 	{
 		switch(system_id)
 		{
 			case 0:
 			{
-				assert(nEqn == 6);
+				Assert(nEqn == 6,ExcNotImplemented());
 
 				return (C2 - (this->A1 * r * this->tau)/3. + C1*pow(r,-2) + 
 					K2*(BI(0,lambda1 * r) * pow(this->zeta,0.5) + BI(2,lambda1 * r) * pow(this->zeta,0.5)) + 
@@ -212,7 +216,7 @@ s_phi(const double r,const double phi) const
 
 			case 1:
 			{
-				assert(nEqn == 10);
+				Assert(nEqn == 10,ExcNotImplemented());
 
 		      return  -((K7*lambda1*(this->BI(0,lambda1*r) + this->BI(2,lambda1*r)))/2. - 
       				(K8*lambda1*(this->BK(0,lambda1*r) + this->BK(2,lambda1*r)))/2. 
@@ -227,9 +231,9 @@ s_phi(const double r,const double phi) const
 		return 0;
 	}
 
-template<int dim> 
+template<int dim,int system_type> 
 double 
-Base_ExactSolution<dim>::
+Base_ExactSolution<dim,system_type>::
 thetaP(const double r,const double phi) const
 	{
 		switch(system_id)
@@ -260,9 +264,9 @@ thetaP(const double r,const double phi) const
 
 	}
 
-template<int dim> 
+template<int dim,int system_type> 
 void 
-Base_ExactSolution<dim>::
+Base_ExactSolution<dim,system_type>::
 vector_value(const Point<dim> &p,Vector<double> &value) const
 	{
 
@@ -277,19 +281,32 @@ vector_value(const Point<dim> &p,Vector<double> &value) const
 		for (unsigned int i = 3 ; i < nEqn ; i++)
 			value[i] = 0; 
 
+		switch(system_type)
+		{
+			case un_symmetric:
+				break;
+
+			case symmetric:
+			{
+				Assert(nEqn != 10, ExcNotImplemented());
+				Sparse_matrix_dot_Vector(S_half,value);
+				break;
+			}
+		}
+
 	}
 
- template<int dim> 
+ template<int dim,int system_type> 
  double
- Base_ExactSolution<dim>::
+ Base_ExactSolution<dim,system_type>::
  BI(const int n,const double x) const
 	{
 				return boost::math::cyl_bessel_i(n,x);
 	}
 
- template<int dim> 
+ template<int dim,int system_type> 
  double
- Base_ExactSolution<dim>
+ Base_ExactSolution<dim,system_type>
  ::BK(const int n,const double x) const
 	{
 		return boost::math::cyl_bessel_k(n,x);

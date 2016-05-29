@@ -196,7 +196,7 @@ Solver_DG<force_type,system_type,num_flux,dim>
     MKL_INT i, j;
     double ddum;          
     MKL_INT idum;         
-    char *uplo;
+    string uplo;
 
     for ( i = 0; i < 64; i++ )
         iparm[i] = 0;
@@ -258,7 +258,7 @@ Solver_DG<force_type,system_type,num_flux,dim>
     iparm[11] = 0;        /* Conjugate transposed/transpose solve */
     uplo = "non-transposed";
     
-    printf ("\n\nSolving %s system...\n", uplo);
+    printf ("\n\nSolving %s system...\n", uplo.c_str());
     pardiso (pt, &maxfct, &mnum, &mtype, &phase,
        &n, a, ia, ja, &idum, &nrhs, iparm, &msglvl, b, x, &error);
 

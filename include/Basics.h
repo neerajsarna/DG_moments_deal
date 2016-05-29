@@ -2,8 +2,9 @@
 namespace Basics
 {
 
-	struct stat st = {0};
+	struct stat st = { .st_dev = 0 };
 	using namespace std;
+	using namespace dealii;
 	class Base_Basics
 	{
 		// physical constants
@@ -24,6 +25,8 @@ namespace Basics
 		string main_output_dir;
 		vector<string> sub_directory_names;
 		string generate_filename_to_write(const string system_dir,string filename);
+		void Sparse_matrix_dot_Vector(const  system_matrix matrix_info,
+	  								  Vector<double> &x) const;
 	};
 
 	Base_Basics::Base_Basics()
@@ -65,7 +68,7 @@ namespace Basics
 			 " A1 " + to_string(A1) +	
 			 " A2 " + to_string(A2);
 
-			 main_output_dir = "outputs_systemB";
+			 main_output_dir = "outputs_trial";
 			 unsigned int num_outputs = 5;
 			 sub_directory_names.resize(num_outputs);
 
@@ -107,6 +110,29 @@ namespace Basics
 		file_to_write += "/" + filename.erase(position_to_erase,len_to_erase);
 
 		return(file_to_write);
+	}
+
+	void Base_Basics
+	::Sparse_matrix_dot_Vector(const  system_matrix matrix_info,
+								 Vector<double> &x) const
+	{
+		Assert(x.size() != 0 || 
+			   matrix_info.matrix.rows() != 0 ||
+			   matrix_info.matrix.cols(),ExcNotInitialized());
+
+		Assert(matrix_info.matrix.IsRowMajor,ExcInternalError());
+
+		Vector<double> result(x.size());
+
+		for (unsigned int m = 0 ; m < matrix_info.matrix.outerSize(); m++)
+		{
+			result(m) = 0;
+			for (Sparse_matrix::InnerIterator n(matrix_info.matrix,m); n ; ++n)
+				result(m) += n.value() * x(n.col());
+		}
+
+		for (unsigned int i = 0 ; i < result.size() ; i ++)
+			x(i) = result(i);
 	}
 
 }

@@ -15,6 +15,20 @@ Solver_DG<force_type,system_type,num_flux,dim>::error_evaluation(const Vector<do
           QGauss<dim>(ngp),
           VectorTools::L2_norm,&weight);  
 
+        switch(system_type)
+        {
+          case symmetric:
+          {
+            Assert(nEqn != 10,ExcNotImplemented());
+            error_per_cell /= sqrt(2);
+            break;
+          }
+          case un_symmetric:
+          {
+            break;
+          }
+        }
+
         const double L2_error = error_per_cell.l2_norm();
 
         // computation of L_inifinity error
@@ -24,6 +38,20 @@ Solver_DG<force_type,system_type,num_flux,dim>::error_evaluation(const Vector<do
           error_per_cell,
           QGauss<dim>(ngp),
           VectorTools::Linfty_norm,&weight);  
+        
+        switch(system_type)
+        {
+          case symmetric:
+          {
+            Assert(nEqn != 10,ExcNotImplemented());
+            error_per_cell /= sqrt(2);
+            break;
+          }
+          case un_symmetric:
+          {
+            break;
+          }
+        }
 
         const double Linfty_error = error_per_cell.linfty_norm();
                 

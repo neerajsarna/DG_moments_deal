@@ -80,8 +80,9 @@ Sparse_matrix Base_EquationGenerator<force_type,system_type,num_flux,dim>
 		double ny = normal_vector[1];
 		double nxnx = nx * nx;
 		double nyny = ny * ny;
-		assert(Projector.rows() == system_data[system_id].nEqn 
-				|| Projector.cols() == system_data[system_id].nEqn);
+
+		Assert(Projector.rows() == system_data[system_id].nEqn 
+				|| Projector.cols() == system_data[system_id].nEqn,ExcNotInitialized());
 
 	switch(system_id)
 	{
@@ -89,67 +90,114 @@ Sparse_matrix Base_EquationGenerator<force_type,system_type,num_flux,dim>
 		// Details for system-A
 		case 0:
 		{
-			assert(num_equations.total_nEqn[system_id] == 6);
+			Assert(num_equations.total_nEqn[system_id] == 6,ExcNotImplemented());
 
-			Projector.coeffRef(0,0) = 1.0;
-			Projector.coeffRef(1,1) = nx;
-			Projector.coeffRef(1,2) = ny;
-			Projector.coeffRef(2,1) = -ny;
-			Projector.coeffRef(2,2) = nx;
-			Projector.coeffRef(3,3) = nx*nx;
-			Projector.coeffRef(3,4) = 2*nx*ny;
-			Projector.coeffRef(3,5) = ny*ny;
-			Projector.coeffRef(4,3) = -nx*ny;
-			Projector.coeffRef(4,4) = nx*nx-ny*ny;
-			Projector.coeffRef(4,5) = nx*ny;
-			Projector.coeffRef(5,3) = ny*ny;
-			Projector.coeffRef(5,4) = -2*nx*ny;
-			Projector.coeffRef(5,5) = nx*nx;
-			return Projector;
+			switch(system_type)
+			{
+				case un_symmetric:
+				{
+					Projector.coeffRef(0,0) = 1.0;
+					Projector.coeffRef(1,1) = nx;
+					Projector.coeffRef(1,2) = ny;
+					Projector.coeffRef(2,1) = -ny;
+					Projector.coeffRef(2,2) = nx;
+					Projector.coeffRef(3,3) = nx*nx;
+					Projector.coeffRef(3,4) = 2*nx*ny;
+					Projector.coeffRef(3,5) = ny*ny;
+					Projector.coeffRef(4,3) = -nx*ny;
+					Projector.coeffRef(4,4) = nx*nx-ny*ny;
+					Projector.coeffRef(4,5) = nx*ny;
+					Projector.coeffRef(5,3) = ny*ny;
+					Projector.coeffRef(5,4) = -2*nx*ny;
+					Projector.coeffRef(5,5) = nx*nx;
+					
+					break;					
+				}
+
+				case symmetric:
+				{
+					Projector.coeffRef(0,0) = 1.0/sqrt(2);
+					Projector.coeffRef(1,1) = nx/sqrt(2);
+					Projector.coeffRef(1,2) = ny/sqrt(2);
+					Projector.coeffRef(2,1) = -ny/sqrt(2);
+					Projector.coeffRef(2,2) = nx/sqrt(2);
+					Projector.coeffRef(3,3) = ((3 + sqrt(3))*nx*nx + (-3 + sqrt(3))*ny*ny)/(6 * sqrt(2));
+					Projector.coeffRef(3,4) = nx*ny;
+					Projector.coeffRef(3,5) = ((-3 + sqrt(3))*nx*nx + (3 + sqrt(3))*ny*ny)/(6 * sqrt(2));
+					Projector.coeffRef(4,3) = -nx*ny/sqrt(2);
+					Projector.coeffRef(4,4) = (nx*nx-ny*ny)/2;
+					Projector.coeffRef(4,5) = nx*ny/sqrt(2);
+					Projector.coeffRef(5,3) = ((-3 + sqrt(3))*nx*nx + (3 + sqrt(3))*ny*ny)/(6 * sqrt(2));
+					Projector.coeffRef(5,4) = -nx*ny;
+					Projector.coeffRef(5,5) = ((3 + sqrt(3))*nx*nx + (-3 + sqrt(3))*ny*ny)/(6 * sqrt(2));
+					
+					break;		
+
+				}
+
+			}
+		
 			break;
+			
+
 		}
 
 		// Details for system-B
 		case 1:
 		{
-		assert(num_equations.total_nEqn[system_id] == 10);
+			Assert(num_equations.total_nEqn[system_id] == 10,ExcNotImplemented());
 
-		Projector.coeffRef(0,0) = 1.0;
-		Projector.coeffRef(1,1) = nx;
-		Projector.coeffRef(1,2) = ny;
-		Projector.coeffRef(2,1) = -ny;
-		Projector.coeffRef(2,2) = nx;
-		Projector.coeffRef(3,3) = nxnx;
-		Projector.coeffRef(3,4) = 2*nx*ny;
-		Projector.coeffRef(3,5) = nyny;
-		Projector.coeffRef(4,3) = -nx*ny;
-		Projector.coeffRef(4,4) = nxnx-nyny;
-		Projector.coeffRef(4,5) = nx*ny;
-		Projector.coeffRef(5,3) = nyny;
-		Projector.coeffRef(5,4) = -2*nx*ny;
-		Projector.coeffRef(5,5) = nxnx;
-		Projector.coeffRef(6,6) = nx*nxnx;
-		Projector.coeffRef(6,7) = 3*ny*nxnx;
-		Projector.coeffRef(6,8) = 3*nx*nyny;
-		Projector.coeffRef(6,9) = ny*nyny;
-		Projector.coeffRef(7,6) = -ny*nxnx;
-		Projector.coeffRef(7,7) = nx*nxnx - 2*nx*nyny;
-		Projector.coeffRef(7,8) = 2*ny*nxnx - ny*nyny;
-		Projector.coeffRef(7,9) = nx*nyny;
-		Projector.coeffRef(8,6) = nx*nyny;
-		Projector.coeffRef(8,7) = -2*ny*nxnx + ny*nyny;
-		Projector.coeffRef(8,8) = nx*nxnx - 2*nx*nyny;
-		Projector.coeffRef(8,9) = ny*nxnx;
-		Projector.coeffRef(9,6) = -ny*nyny;
-		Projector.coeffRef(9,7) = 3*nx*nyny;
-		Projector.coeffRef(9,8) = -3*ny*nxnx;
-		Projector.coeffRef(9,9) = nx*nxnx;
-		return Projector;
-		break;
+			switch(system_type)
+			{
+				case un_symmetric:
+				{
+					Projector.coeffRef(0,0) = 1.0;
+					Projector.coeffRef(1,1) = nx;
+					Projector.coeffRef(1,2) = ny;
+					Projector.coeffRef(2,1) = -ny;
+					Projector.coeffRef(2,2) = nx;
+					Projector.coeffRef(3,3) = nxnx;
+					Projector.coeffRef(3,4) = 2*nx*ny;
+					Projector.coeffRef(3,5) = nyny;
+					Projector.coeffRef(4,3) = -nx*ny;
+					Projector.coeffRef(4,4) = nxnx-nyny;
+					Projector.coeffRef(4,5) = nx*ny;
+					Projector.coeffRef(5,3) = nyny;
+					Projector.coeffRef(5,4) = -2*nx*ny;
+					Projector.coeffRef(5,5) = nxnx;
+					Projector.coeffRef(6,6) = nx*nxnx;
+					Projector.coeffRef(6,7) = 3*ny*nxnx;
+					Projector.coeffRef(6,8) = 3*nx*nyny;
+					Projector.coeffRef(6,9) = ny*nyny;
+					Projector.coeffRef(7,6) = -ny*nxnx;
+					Projector.coeffRef(7,7) = nx*nxnx - 2*nx*nyny;
+					Projector.coeffRef(7,8) = 2*ny*nxnx - ny*nyny;
+					Projector.coeffRef(7,9) = nx*nyny;
+					Projector.coeffRef(8,6) = nx*nyny;
+					Projector.coeffRef(8,7) = -2*ny*nxnx + ny*nyny;
+					Projector.coeffRef(8,8) = nx*nxnx - 2*nx*nyny;
+					Projector.coeffRef(8,9) = ny*nxnx;
+					Projector.coeffRef(9,6) = -ny*nyny;
+					Projector.coeffRef(9,7) = 3*nx*nyny;
+					Projector.coeffRef(9,8) = -3*ny*nxnx;
+					Projector.coeffRef(9,9) = nx*nxnx;
+
+
+					break;
+				}
+
+				case symmetric:
+				{
+					Assert(1 == 0,ExcNotImplemented());
+					break;
+				}
+
+			}
+			
+			break;
 		}
 	}
 
-	assert( 1 == 0);
 	return Projector;
 }
 
@@ -157,7 +205,81 @@ template<int force_type,int system_type,int num_flux,int dim>
 Sparse_matrix Base_EquationGenerator<force_type,system_type, num_flux,dim>::
 build_InvProjector(const Tensor<1,dim,double> normal_vector,const unsigned int system_id) const
 {
-			return( build_Projector( mirror(normal_vector) ,system_id) );
+	Sparse_matrix Inv_Projector;
+	Inv_Projector.resize(system_data[system_id].nEqn,system_data[system_id].nEqn);
+
+	double nx = normal_vector[0];
+	double ny = normal_vector[1];
+	double nxnx = nx * nx;
+	double nyny = ny * ny;
+
+	Assert(Inv_Projector.rows() == system_data[system_id].nEqn 
+			|| Inv_Projector.cols() == system_data[system_id].nEqn,
+			ExcNotInitialized());
+
+	switch(system_id)
+	{
+		case 0:
+		{
+			Assert(num_equations.total_nEqn[system_id] == 6,ExcNotImplemented());
+			switch(system_type)
+			{
+				case un_symmetric:
+				{
+					Inv_Projector = build_Projector(mirror(normal_vector),system_id);
+					break;
+				}
+
+				case symmetric:
+				{
+					Inv_Projector.coeffRef(0,0) = sqrt(2);
+
+					Inv_Projector.coeffRef(1,1) = sqrt(2) * nx;
+					Inv_Projector.coeffRef(1,2) = -sqrt(2) * ny;
+					Inv_Projector.coeffRef(2,1) = sqrt(2) * ny;
+					Inv_Projector.coeffRef(2,2) = sqrt(2) * nx;
+
+					Inv_Projector.coeffRef(3,3) = ((1 + sqrt(3))*nx*nx + (-1 + sqrt(3))*ny*ny)/sqrt(2);
+					Inv_Projector.coeffRef(3,4) = -2 * sqrt(2) * nx*ny;
+					Inv_Projector.coeffRef(3,5) = ((-1 + sqrt(3))*nx*nx + (1 + sqrt(3))*ny*ny)/sqrt(2);
+
+					Inv_Projector.coeffRef(4,3) = 2 * nx * ny;
+					Inv_Projector.coeffRef(4,4) = 2 * (nx*nx-ny*ny);
+					Inv_Projector.coeffRef(4,5) = -2 * nx * ny;
+
+					Inv_Projector.coeffRef(5,3) = ((-1 + sqrt(3))*nx*nx + (1 + sqrt(3))*ny*ny)/sqrt(2);
+					Inv_Projector.coeffRef(5,4) = 2 * sqrt(2) * nx * ny ;
+					Inv_Projector.coeffRef(5,5) = ((1 + sqrt(3))*nx*nx + (-1 + sqrt(3))*ny*ny)/sqrt(2);
+					break;
+				}
+			}
+
+			break;
+
+		}
+		case 1:
+		{
+			Assert(num_equations.total_nEqn[system_id] == 10,ExcNotImplemented());
+			switch(system_type)
+			{
+				case un_symmetric:
+				{
+					Inv_Projector = build_Projector(mirror(normal_vector),system_id);
+					break;
+				}
+
+				case symmetric:
+				{
+					Assert(1 == 0, ExcNotImplemented());
+					break;
+				}
+			}
+			break;
+		}
+	}
+
+	return Inv_Projector;
+			
 }
 
 template<int force_type,int system_type,int num_flux,int dim> 
@@ -210,114 +332,71 @@ void Base_EquationGenerator<force_type,system_type,num_flux,dim>
 			vector<Vector<double>> &value,
 			const unsigned int system_id)
 {
-	assert(value.size() == p.size());
+	AssertDimension(value.size(),p.size());
 
 	switch(force_type)
 	{
 		case type1:
 		{
-
-			switch(system_type)
+			for (unsigned int i = 0 ; i < value.size() ; i++)
 			{
-				case un_symmetric:
-				{
-					for (unsigned int i = 0 ; i < value.size() ; i++)
-					{
-						double norm = sqrt(p[i].square());
-						value[i] = 0;
-						value[i][0] = (A0 + A2*norm*norm + A1*p[i][0]/norm);	
-					}
-
-					break;
-				}
-
-				case symmetric:
-				{	
-					if (num_equations.total_nEqn[system_id] == 10)
-						assert(1 == 0);
-
-					for (unsigned int i = 0 ; i < value.size() ; i ++)
-					{
-						Vector<double> force_value(num_equations.total_nEqn[system_id]);
-						double norm = sqrt(p[i].square());
-						force_value[0] = (A0 + A2*norm*norm + A1*p[i][0]/norm);		
-						Sparse_matrix_dot_Vector(system_data[system_id].S, force_value,value[i]);
-					}
-
-					break;
-				}
+				double norm = sqrt(p[i].square());
+				value[i] = 0;
+				value[i][0] = (A0 + A2*norm*norm + A1*p[i][0]/norm);	
 			}
 			break;
 		}
-
 		case type2:
 		{
-
-			switch(system_type)
+			for (unsigned int i = 0 ; i < value.size() ; i++)
 			{
-				case un_symmetric:
-				{
-					for (unsigned int i = 0 ; i < value.size() ; i++)
-					{
-						double r = sqrt(p[i].square());
-						value[i] = 0;
-						value[i][0] = A0 + A2 * r * r + A1*(1.0-5.0/18*r*r/(tau*tau))*p[i][0] / r;
-					}
-
-					break;
-				}
-
-				case symmetric:
-				{	
-					if (num_equations.total_nEqn[system_id] == 10)
-						assert(1 == 0);
-
-					for (unsigned int i = 0 ; i < value.size() ; i ++)
-					{
-
-						Vector<double> force_value(num_equations.total_nEqn[system_id]);
-						double r = sqrt(p[i].square());
-
-						force_value[0] = A0 + A2 * r * r + A1*(1.0-5.0/18*r*r/(tau*tau))*p[i][0]/r;
-						Sparse_matrix_dot_Vector(system_data[system_id].S, force_value,value[i]);
-					}
-
-					break;
-				}
+				double r = sqrt(p[i].square());
+				value[i] = 0;
+				value[i][0] = A0 + A2 * r * r + A1*(1.0-5.0/18*r*r/(tau*tau))*p[i][0] / r;
 			}
 			break;
 		}
 	}
+
+	switch(system_type)
+	{
+		case symmetric:
+		{
+			switch(system_id)
+			{
+				case 0:
+				{
+
+					for (unsigned int i = 0 ; i < value.size() ; i ++)
+						Sparse_matrix_dot_Vector(system_data[system_id].S_half,value[i]);
+
+					break;
+				}
+				case 1:
+				{
+					Assert(1 == 0,ExcNotImplemented());
+					break;
+				}
+			}
+			
+
+			break;
+		}
+		case un_symmetric:
+			break;
+		
+	}
+
 }
 
 template<int force_type,int system_type,int num_flux,int dim> 
 Full_matrix Base_EquationGenerator<force_type,system_type,num_flux,dim>
 ::build_Aminus(const Tensor<1,dim,double> normal_vector,const unsigned int system_id)
 {
-		switch(system_type)
-		{
-			case un_symmetric:
-			{
-				return( build_InvProjector(normal_vector,system_id) 
-						* system_data[system_id].Aminus_1D_Int * build_Projector(normal_vector,system_id) );		
-				break;
-			}
 
-			case symmetric:
-			{
-				assert(num_equations.total_nEqn[system_id] == 10);
-				Eigen::MatrixXd SAn = system_data[system_id].S.matrix * build_InvProjector(normal_vector,system_id) 
-										* system_data[system_id].Ax.matrix *  build_Projector(normal_vector,system_id);
-
-				EigenSolver<MatrixXd> ES(SAn);
-				MatrixXd vecs = ES.pseudoEigenvectors();
-				VectorXd vals = ES.pseudoEigenvalueMatrix().diagonal();
-
-				Eigen::MatrixXd Aminus_SAn = vecs*(vals.cwiseAbs()-vals).asDiagonal()*vecs.inverse();
-				return(Aminus_SAn);
-				break;
-			}
-		}
+	return( build_InvProjector(normal_vector,system_id) 
+			* system_data[system_id].Aminus_1D_Int 
+			* build_Projector(normal_vector,system_id) );		
 
 }
 
@@ -327,11 +406,13 @@ void Base_EquationGenerator<force_type,system_type,num_flux,dim>
 				Full_matrix &Aminus_1D_Bound,
 				const unsigned int system_id)
 {
-	assert(Aminus_1D_Bound.rows() == num_equations.total_nEqn[system_id] 
-			&& Aminus_1D_Bound.cols() == num_equations.total_nEqn[system_id] );
+	Assert(Aminus_1D_Bound.rows() == num_equations.total_nEqn[system_id] 
+			&& Aminus_1D_Bound.cols() == num_equations.total_nEqn[system_id],
+			ExcNotInitialized());
 
-	assert(Aminus_1D_Int.rows() == num_equations.total_nEqn[system_id]  
-			&& Aminus_1D_Int.cols() == num_equations.total_nEqn[system_id] );
+	Assert(Aminus_1D_Int.rows() == num_equations.total_nEqn[system_id]  
+			&& Aminus_1D_Int.cols() == num_equations.total_nEqn[system_id],
+			ExcNotInitialized());
 
 	Aminus_1D_Bound.setZero();
 	Aminus_1D_Int.setZero();
@@ -417,19 +498,29 @@ void Base_EquationGenerator<force_type,system_type,num_flux,dim>::generate_matri
 		{
 			case symmetric:
 			{
-				assert(num_equations.total_nEqn[system_id] == 10); // symmetric system not implemented for B type
+				Assert(num_equations.total_nEqn[system_id] != 10,
+					   ExcNotImplemented()); // symmetric system not implemented for B type
 
-				filename = system_dir + to_string(system_data.nEqn) + "S.txt";
-				system_data.S.matrix.resize(system_data.nEqn,system_data.nEqn);
-				build_triplet(system_data.S,filename);
-				build_matrix_from_triplet(system_data.S);
-				print_matrix(system_data.S,generate_filename_to_write(system_dir,filename));
+				filename = system_dir + to_string(system_data.nEqn) + "S_half.txt";
+
+				system_data.S_half.matrix.resize(system_data.nEqn,system_data.nEqn);
+				build_triplet(system_data.S_half,filename);
+				build_matrix_from_triplet(system_data.S_half);
+				print_matrix(system_data.S_half,generate_filename_to_write(system_dir,filename));
+
+
+				filename = system_dir + to_string(system_data.nEqn) + "S_half_inv.txt";
+
+				system_data.S_half_inv.matrix.resize(system_data.nEqn,system_data.nEqn);
+				build_triplet(system_data.S_half_inv,filename);
+				build_matrix_from_triplet(system_data.S_half_inv);
+				print_matrix(system_data.S_half_inv,generate_filename_to_write(system_dir,filename));
 
 				system_data.Ax.matrix = system_data.A[0].matrix;
 				for (unsigned int i = 0 ; i < dim ; i ++)
-					system_data.A[i].matrix = system_data.S.matrix * system_data.A[i].matrix;
+					system_data.A[i].matrix = system_data.S_half.matrix * system_data.A[i].matrix * system_data.S_half_inv.matrix;
 
-				system_data.P.matrix = system_data.S.matrix * system_data.P.matrix;
+				system_data.P.matrix = system_data.S_half.matrix * system_data.P.matrix * system_data.S_half_inv.matrix;
 				break;
 			}
 
