@@ -227,7 +227,7 @@ namespace SolverDG
 
 	   cout << "solving the system...." << endl;
 	  timer.enter_subsection("solving the system");
-          solve(Trilinos_GMRES);
+          solve(Pardiso);
 	  timer.leave_subsection();
           cout << "done solving";
 

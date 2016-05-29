@@ -25,7 +25,7 @@ int main(int argc,char **argv)
 
 	const int dim = 2;
 	const int refine_cycles = 5;			// total number of refinement cycles
-	const int p = 1;
+	const int p = 2;
 	const string mesh_file_name = "mesh/mesh_file";
 	const unsigned int mapping_order = 3;
 	
@@ -40,7 +40,7 @@ int main(int argc,char **argv)
 	//num_equations.system_id_nEqn[1] = 'B';
 
 	const unsigned int solve_system = 0;				// id of the system we wish to solve
-	const System_Type system_type = symmetric;
+	const System_Type system_type = un_symmetric;
 	const Num_Flux num_flux = Upwind;
 	const Force_Type force_type = type1;
 

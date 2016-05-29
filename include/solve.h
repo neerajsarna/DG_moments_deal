@@ -201,26 +201,27 @@ Solver_DG<force_type,system_type,num_flux,dim>
     for ( i = 0; i < 64; i++ )
         iparm[i] = 0;
 
-    iparm[0] = 1;         /* No solver default */
-    iparm[1] = 2;         /* Fill-in reordering from METIS */
-    iparm[3] = 0;         /* No iterative-direct algorithm */
-    iparm[4] = 0;         /* No user fill-in reducing permutation */
-    iparm[5] = 0;         /* Write solution into x */
-    iparm[6] = 0;         /* Not in use */
-    iparm[7] = 2;         /* Max numbers of iterative refinement steps */
-    iparm[8] = 0;         /* Not in use */
-    iparm[9] = 15;        /* Perturb the pivot elements with 1E-13 */
-    iparm[10] = 1;        /* Use nonsymmetric permutation and scaling MPS */
-    iparm[11] = 0;        /* Conjugate transposed/transpose solve */
-    iparm[12] = 1;        /* Maximum weighted matching algorithm is switched-on (default for non-symmetric) */
-    iparm[13] = 0;        /* Output: Number of perturbed pivots */
-    iparm[14] = 0;        /* Not in use */
-    iparm[15] = 0;        /* Not in use */
-    iparm[16] = 0;        /* Not in use */
-    iparm[17] = -1;       /* Output: Number of nonzeros in the factor LU */
-    iparm[18] = -1;       /* Output: Mflops for LU factorization */
-    iparm[19] = 0;        /* Output: Numbers of CG Iterations */
-    iparm[34] = 1;
+      iparm[0] = 1; // No solver default  
+      iparm[1] = 3; // Fill-in reordering from METIS  
+      iparm[2] = 3; // Numbers of processors, value of OMP_NUM_THREADS  
+      iparm[3] = 0; // No iterative-direct algorithm  
+      iparm[4] = 0; // No user fill-in reducing permutation  
+      iparm[5] = 0; // 0 = Write solution into x  
+      iparm[6] = 0; // Not in use  
+      iparm[7] = 200; // Max numbers of iterative refinement steps  
+      iparm[8] = 0; // Not in use  
+      iparm[9] = 13; // Perturb the pivot elements with 1E-13  
+      iparm[10] = 1; // 1 = Use nonsymmetric permutation and scaling MPS  
+      iparm[11] = 0; // Not in use  
+      iparm[12] = 0; // 1 = Maximum weighted matching algorithm is switched-on (default for non-symmetric)  
+      iparm[13] = 0; // Output: Number of perturbed pivots  
+      iparm[14] = 0; // Not in use  
+      iparm[15] = 0; // Not in use  
+      iparm[16] = 0; // Not in use  
+      iparm[17] = -1; // Output: Number of nonzeros in the factor LU  
+      iparm[18] = -1; // Output: Mflops for LU factorization  
+      iparm[19] = 0; // Output: Numbers of CG Iterations  
+      iparm[34] = 1; // 0= one-based indices, 1= zero-besed indices  
 
     maxfct = 1;           /* Maximum number of numerical factorizations. */
     mnum = 1;         /* Which factorization to use. */
