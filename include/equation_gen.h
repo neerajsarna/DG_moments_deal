@@ -6,12 +6,13 @@ namespace EquationGenerator
 
 	
 
-	template<int force_type,int system_type,int num_flux,int dim>
+	template<int num_flux,int dim>
 	class Base_EquationGenerator:public Base_Basics
 	{
 	   public:
 		const nEqn_data num_equations;
-
+		const System_Type system_type;
+		const Force_Type force_type;
 
 	  struct equation_data
 	  {
@@ -30,7 +31,10 @@ namespace EquationGenerator
 
 		
 	  
-	  		Base_EquationGenerator(nEqn_data const&num_equations);
+	  		Base_EquationGenerator(nEqn_data const&num_equations,
+	  							   physical_data &physical_constants,
+	  							   string &output_dir);
+
 	  		vector<equation_data> system_data;
 
 	  		void build_BCrhs(const Tensor<1,dim,double> p,
@@ -59,8 +63,8 @@ namespace EquationGenerator
 		void build_BC(system_matrix &BC,const unsigned int system_id);											
 	};
 
-	template<int force_type,int system_type,int num_flux,int dim> 
-	void Base_EquationGenerator<force_type,system_type,num_flux,dim>::
+	template<int num_flux,int dim> 
+	void Base_EquationGenerator<num_flux,dim>::
 	build_triplet(system_matrix &matrix_info,const string filename)
 	{
 
@@ -99,8 +103,8 @@ namespace EquationGenerator
 
 	}
 
-	template<int force_type,int system_type,int num_flux,int dim>
-	void Base_EquationGenerator<force_type,system_type, num_flux, dim>::
+	template<int num_flux,int dim>
+	void Base_EquationGenerator< num_flux, dim>::
 	build_matrix_from_triplet(system_matrix &matrix_info)
 	{
 		cout << "developing matrix from triplet......" << endl;
@@ -110,8 +114,8 @@ namespace EquationGenerator
 		
 	}
 
-	template<int force_type,int system_type,int num_flux,int dim> 
-	void Base_EquationGenerator<force_type,system_type,num_flux,dim>::
+	template< int num_flux,int dim> 
+	void Base_EquationGenerator<num_flux,dim>::
 	print_matrix(system_matrix matrix_info,const string filename_to_write)
 	{
     	FILE *fp;
@@ -134,11 +138,16 @@ namespace EquationGenerator
 
 
 	/*The constructor of the class*/
-	template<int force_type,int system_type,int num_flux,int dim>
-	 Base_EquationGenerator<force_type,system_type,num_flux,dim>
-	 ::Base_EquationGenerator(nEqn_data const&num_equations)
+	template<int num_flux,int dim>
+	 Base_EquationGenerator<num_flux,dim>
+	 ::Base_EquationGenerator(nEqn_data const&num_equations,
+	 					      physical_data &physical_constants,
+	 					      string &output_dir)
 	 :
-	 num_equations(num_equations)
+	 Base_Basics(physical_constants,output_dir),
+	 num_equations(num_equations),
+	 system_type(num_equations.system_type),
+	 force_type(num_equations.force_type)
 	{
 		cout << "loading " << num_equations.no_of_total_systems << " systems" << endl;
 		system_data.resize(num_equations.no_of_total_systems);

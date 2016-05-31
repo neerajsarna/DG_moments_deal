@@ -1,7 +1,7 @@
 
-template<int force_type,int system_type,int num_flux,int dim> 
+template<int num_flux,int dim> 
 void 
-Solver_DG<force_type,system_type,num_flux,dim>
+Solver_DG<num_flux,dim>
 ::solve(const enum Solver_Type solver_type)
          {
 
@@ -87,9 +87,9 @@ Solver_DG<force_type,system_type,num_flux,dim>
 
 
 /*
-template<int force_type,int system_type,int num_flux,int dim> 
+template<int num_flux,int dim> 
 void 
-Solver_DG<force_type,system_type,num_flux,dim>
+Solver_DG<num_flux,dim>
 ::PardisoSolve(MKL_INT mtype, MKL_INT n, MKL_INT *ia, MKL_INT *ja, void *A, int nz,
                      void *b, void *x, void *pt, MKL_INT phase, MKL_INT *iparm)
 {
@@ -179,9 +179,9 @@ Solver_DG<force_type,system_type,num_flux,dim>
 
 }*/
 
-template<int force_type,int system_type,int num_flux,int dim> 
+template<int num_flux,int dim> 
 void 
-Solver_DG<force_type,system_type,num_flux,dim>
+Solver_DG<num_flux,dim>
 ::PardisoSolve(MKL_INT *ia,MKL_INT *ja,double *a,double *b,double *x,MKL_INT n)
 {
       MKL_INT mtype = 11;       

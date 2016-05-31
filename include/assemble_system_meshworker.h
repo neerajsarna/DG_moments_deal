@@ -1,6 +1,6 @@
-template<int force_type,int system_type,int num_flux,int dim>
+template<int num_flux,int dim>
 void 
-Solver_DG<force_type,system_type,num_flux,dim>::assemble_rhs()
+Solver_DG<num_flux,dim>::assemble_rhs()
 {
 
 	const QGauss<dim> quadrature(ngp);
@@ -41,13 +41,13 @@ Solver_DG<force_type,system_type,num_flux,dim>::assemble_rhs()
     
 }
 
-template<int force_type,int system_type,int num_flux,int dim>
+template<int num_flux,int dim>
 void 
-Solver_DG<force_type,system_type,num_flux,dim>
+Solver_DG<num_flux,dim>
 ::assemble_system_meshworker()
 {
 	// first we will assemble the right hand side 
-	Threads::Task<> rhs_task = Threads::new_task (&Solver_DG<force_type,system_type,num_flux,dim>::assemble_rhs,
+	Threads::Task<> rhs_task = Threads::new_task (&Solver_DG<num_flux,dim>::assemble_rhs,
                                                 *this);
 
 
@@ -78,14 +78,14 @@ Solver_DG<force_type,system_type,num_flux,dim>
 	MeshWorker::loop<dim, dim, MeshWorker::DoFInfo<dim>, MeshWorker::IntegrationInfoBox<dim> >
   												(cell, endc,
    												 dof_info, info_box,
-   												 std_cxx11::bind(&Solver_DG<force_type,system_type,num_flux,dim>::integrate_cell_term,
+   												 std_cxx11::bind(&Solver_DG<num_flux,dim>::integrate_cell_term,
 														this,
 														std_cxx11::_1,std_cxx11::_2),
-   												 std_cxx11::bind(&Solver_DG<force_type,system_type,num_flux,dim>::integrate_boundary_term,
+   												 std_cxx11::bind(&Solver_DG<num_flux,dim>::integrate_boundary_term,
    												 	this,
    												 	std_cxx11::_1,
    												 	std_cxx11::_2),
-   												 std_cxx11::bind(&Solver_DG<force_type,system_type,num_flux,dim>::integrate_face_term,
+   												 std_cxx11::bind(&Solver_DG<num_flux,dim>::integrate_face_term,
    												 	this,
    												 	std_cxx11::_1,
    												 	std_cxx11::_2,
@@ -96,9 +96,9 @@ Solver_DG<force_type,system_type,num_flux,dim>
 }
 
 
-template<int force_type,int system_type,int num_flux,int dim>
+template<int num_flux,int dim>
  void 
- Solver_DG<force_type,system_type,num_flux,dim>::integrate_cell_term (DoFInfo &dinfo,
+ Solver_DG<num_flux,dim>::integrate_cell_term (DoFInfo &dinfo,
                                    			CellInfo &info)
 {
   
@@ -162,9 +162,9 @@ template<int force_type,int system_type,int num_flux,int dim>
 
 }
 
-template<int force_type,int system_type,int num_flux,int dim> 
+template<int num_flux,int dim> 
 void 
-Solver_DG<force_type,system_type,num_flux,dim>
+Solver_DG<num_flux,dim>
 ::integrate_boundary_term(DoFInfo &dinfo,
                           CellInfo &info)
 {
@@ -219,9 +219,9 @@ Solver_DG<force_type,system_type,num_flux,dim>
 
 }
 
-template<int force_type,int system_type,int num_flux,int dim>
+template<int num_flux,int dim>
 void 
-Solver_DG<force_type,system_type,num_flux,dim>
+Solver_DG<num_flux,dim>
 ::integrate_face_term(DoFInfo &dinfo1,
                       DoFInfo &dinfo2,
                       CellInfo &info1,

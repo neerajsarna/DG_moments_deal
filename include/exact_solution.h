@@ -4,16 +4,22 @@ namespace ExactSolution
 	using namespace dealii;
 	using namespace EquationGenerator;
 
-	template<int dim,int system_type> class Base_ExactSolution:public Function<dim>,
+	template<int dim> class Base_ExactSolution:public Function<dim>,
 												protected Base_Basics
 	{
 		public:
 			Base_ExactSolution(const unsigned int system_id,const unsigned int nEqn,
-							  const system_matrix S_half);
+							  const system_matrix S_half,
+							  const System_Type system_type,
+							  physical_data &physical_constants,
+							  string &output_dir);
+
 			virtual void vector_value(const Point<dim> &p,Vector<double> &value) const;
 
 		protected:
+			const System_Type system_type;
 			const system_matrix S_half;
+
 			double BI(const int n,const double x) const; 
 			double BK(const int n,const double x) const;
 			double s_r(const double ,const double ) const;
@@ -25,12 +31,18 @@ namespace ExactSolution
 			const unsigned int system_id;
 	};
 
-	template<int dim,int system_type> 
-	Base_ExactSolution<dim,system_type>
-	::Base_ExactSolution(const unsigned int system_id,const unsigned int nEqn,
-					     const system_matrix S_half)
+	template<int dim> 
+	Base_ExactSolution<dim>
+	::Base_ExactSolution(const unsigned int system_id,
+						 const unsigned int nEqn,
+					     const system_matrix S_half,
+					     const System_Type system_type,
+					     physical_data &physical_constants,
+					     string &output_dir)
 	:
 	Function<dim>(nEqn),
+	Base_Basics(physical_constants,output_dir),
+	system_type(system_type),
 	S_half(S_half),
 	nEqn(nEqn),
 	system_id(system_id)
@@ -159,9 +171,9 @@ namespace ExactSolution
 	}
 
 
-template<int dim,int system_type> 
+template<int dim> 
 double 
-Base_ExactSolution<dim,system_type>::
+Base_ExactSolution<dim>::
 s_r(const double r,const double phi) const
 	{
 		switch(system_id)
@@ -196,9 +208,9 @@ s_r(const double r,const double phi) const
 
 	}
 
-template<int dim,int system_type> 
+template<int dim> 
 double 
-Base_ExactSolution<dim,system_type>::
+Base_ExactSolution<dim>::
 s_phi(const double r,const double phi) const
 	{
 		switch(system_id)
@@ -231,9 +243,9 @@ s_phi(const double r,const double phi) const
 		return 0;
 	}
 
-template<int dim,int system_type> 
+template<int dim> 
 double 
-Base_ExactSolution<dim,system_type>::
+Base_ExactSolution<dim>::
 thetaP(const double r,const double phi) const
 	{
 		switch(system_id)
@@ -264,9 +276,9 @@ thetaP(const double r,const double phi) const
 
 	}
 
-template<int dim,int system_type> 
+template<int dim> 
 void 
-Base_ExactSolution<dim,system_type>::
+Base_ExactSolution<dim>::
 vector_value(const Point<dim> &p,Vector<double> &value) const
 	{
 
@@ -296,17 +308,17 @@ vector_value(const Point<dim> &p,Vector<double> &value) const
 
 	}
 
- template<int dim,int system_type> 
+ template<int dim> 
  double
- Base_ExactSolution<dim,system_type>::
+ Base_ExactSolution<dim>::
  BI(const int n,const double x) const
 	{
 				return boost::math::cyl_bessel_i(n,x);
 	}
 
- template<int dim,int system_type> 
+ template<int dim> 
  double
- Base_ExactSolution<dim,system_type>
+ Base_ExactSolution<dim>
  ::BK(const int n,const double x) const
 	{
 		return boost::math::cyl_bessel_k(n,x);

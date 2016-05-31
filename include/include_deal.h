@@ -8,6 +8,7 @@
 #include <deal.II/base/work_stream.h>
 #include <deal.II/base/multithread_info.h>
 #include <deal.II/base/timer.h>
+#include <deal.II/base/parameter_handler.h>
 
 
 #include <deal.II/lac/vector.h>
@@ -66,3 +67,4 @@
 #include <sstream>
 #include <string>
 #include <sys/stat.h>
+#include <list>

@@ -1,6 +1,6 @@
-template<int force_type,int system_type,int num_flux,int dim> 
+template<int num_flux,int dim> 
 void 
-Solver_DG<force_type,system_type,num_flux,dim>::h_adapt()
+Solver_DG<num_flux,dim>::h_adapt()
 {
   switch(refinement)
   {

@@ -1,6 +1,6 @@
-template<int force_type,int system_type,int num_flux,int dim> 
+template<int num_flux,int dim> 
 void 
-Solver_DG<force_type,system_type,num_flux,dim>::error_evaluation(const Vector<double> solution)
+Solver_DG<num_flux,dim>::error_evaluation(const Vector<double> solution)
       {
 
         unsigned int component = 0;                                                // the component for which the error has to be computed
@@ -15,7 +15,7 @@ Solver_DG<force_type,system_type,num_flux,dim>::error_evaluation(const Vector<do
           QGauss<dim>(ngp),
           VectorTools::L2_norm,&weight);  
 
-        switch(system_type)
+        switch(equation_system_data->system_type)
         {
           case symmetric:
           {
@@ -39,7 +39,7 @@ Solver_DG<force_type,system_type,num_flux,dim>::error_evaluation(const Vector<do
           QGauss<dim>(ngp),
           VectorTools::Linfty_norm,&weight);  
         
-        switch(system_type)
+        switch(equation_system_data->system_type)
         {
           case symmetric:
           {

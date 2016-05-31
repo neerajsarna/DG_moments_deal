@@ -26,6 +26,7 @@ CMakeFiles/mycode.out.dir/main.cc.o: /Applications/deal.II.app/Contents/Resource
 CMakeFiles/mycode.out.dir/main.cc.o: /Applications/deal.II.app/Contents/Resources/include/deal.II/base/multithread_info.h
 CMakeFiles/mycode.out.dir/main.cc.o: /Applications/deal.II.app/Contents/Resources/include/deal.II/base/numbers.h
 CMakeFiles/mycode.out.dir/main.cc.o: /Applications/deal.II.app/Contents/Resources/include/deal.II/base/parallel.h
+CMakeFiles/mycode.out.dir/main.cc.o: /Applications/deal.II.app/Contents/Resources/include/deal.II/base/parameter_handler.h
 CMakeFiles/mycode.out.dir/main.cc.o: /Applications/deal.II.app/Contents/Resources/include/deal.II/base/partitioner.h
 CMakeFiles/mycode.out.dir/main.cc.o: /Applications/deal.II.app/Contents/Resources/include/deal.II/base/point.h
 CMakeFiles/mycode.out.dir/main.cc.o: /Applications/deal.II.app/Contents/Resources/include/deal.II/base/polynomial.h
@@ -1486,6 +1487,7 @@ CMakeFiles/mycode.out.dir/main.cc.o: /Applications/deal.II.app/Contents/Resource
 CMakeFiles/mycode.out.dir/main.cc.o: /Applications/deal.II.app/Contents/Resources/include/deal.II/bundled/boost/preprocessor/variadic/elem.hpp
 CMakeFiles/mycode.out.dir/main.cc.o: /Applications/deal.II.app/Contents/Resources/include/deal.II/bundled/boost/preprocessor/variadic/size.hpp
 CMakeFiles/mycode.out.dir/main.cc.o: /Applications/deal.II.app/Contents/Resources/include/deal.II/bundled/boost/preprocessor/variadic/to_seq.hpp
+CMakeFiles/mycode.out.dir/main.cc.o: /Applications/deal.II.app/Contents/Resources/include/deal.II/bundled/boost/property_tree/ptree_fwd.hpp
 CMakeFiles/mycode.out.dir/main.cc.o: /Applications/deal.II.app/Contents/Resources/include/deal.II/bundled/boost/range.hpp
 CMakeFiles/mycode.out.dir/main.cc.o: /Applications/deal.II.app/Contents/Resources/include/deal.II/bundled/boost/range/algorithm/equal.hpp
 CMakeFiles/mycode.out.dir/main.cc.o: /Applications/deal.II.app/Contents/Resources/include/deal.II/bundled/boost/range/begin.hpp
@@ -2633,8 +2635,10 @@ CMakeFiles/mycode.out.dir/main.cc.o: include/error_evaluator.h
 CMakeFiles/mycode.out.dir/main.cc.o: include/exact_solution.h
 CMakeFiles/mycode.out.dir/main.cc.o: include/h_adaptivity.h
 CMakeFiles/mycode.out.dir/main.cc.o: include/include_deal.h
+CMakeFiles/mycode.out.dir/main.cc.o: include/input_parameters.h
 CMakeFiles/mycode.out.dir/main.cc.o: include/mesh_gen.h
 CMakeFiles/mycode.out.dir/main.cc.o: include/output_routines.h
+CMakeFiles/mycode.out.dir/main.cc.o: include/parse_command_line.h
 CMakeFiles/mycode.out.dir/main.cc.o: include/print_convergence_table.h
 CMakeFiles/mycode.out.dir/main.cc.o: include/solve.h
 

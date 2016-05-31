@@ -1,6 +1,6 @@
-template<int force_type,int system_type,int num_flux,int dim>
+template<int num_flux,int dim>
 void
-Solver_DG<force_type,system_type,num_flux,dim>
+Solver_DG<num_flux,dim>
 ::output_solution_details(const Triangulation<dim> &triangulation,
 							const string file_solution,
 						const string file_exact,

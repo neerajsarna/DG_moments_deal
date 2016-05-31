@@ -6,6 +6,8 @@
 
 #include "include_deal.h"
 #include "mkl.h"
+#include "parse_command_line.h"
+#include "input_parameters.h"
 #include "Basics.h"
 #include "equation_gen.h"
 #include "exact_solution.h"
@@ -23,37 +25,48 @@ int main(int argc,char **argv)
 
 	Utilities::MPI::MPI_InitFinalize mpi_initialization(argc, argv,num_threads);
 
+	parse_command_line commmand_line_parser(argc,argv);
+	string input_file_name;
+	commmand_line_parser.read_input_filename(input_file_name);
+
+	Input_parameters::parameter_handling container_parameter;
+	container_parameter.read_input_file(input_file_name);
+
 	const int dim = 2;
-	const int refine_cycles = 5;			// total number of refinement cycles
-	const int p = 2;
-	const string mesh_file_name = "mesh/mesh_file";
-	const unsigned int mapping_order = 3;
-	
+	string mesh_file_name = "mesh/mesh_file";
+	string output_dir_name;
+
+	numerical_data numerical_constants;
 	nEqn_data num_equations;
-	num_equations.no_of_total_systems = 1;
-	num_equations.total_nEqn.resize(num_equations.no_of_total_systems);
+	physical_data physical_constants;
 
-	num_equations.total_nEqn[0] = 6;
-	//num_equations.total_nEqn[1] = 10;
+	container_parameter.read_numerical_constants(numerical_constants);
+	container_parameter.read_system_data(num_equations);
+	container_parameter.read_physical_constants(physical_constants);
+	container_parameter.read_output_dir_name(output_dir_name);
 
-	num_equations.system_id_nEqn[0] = 'A';
-	//num_equations.system_id_nEqn[1] = 'B';
-
-	const unsigned int solve_system = 0;				// id of the system we wish to solve
-	const System_Type system_type = un_symmetric;
 	const Num_Flux num_flux = Upwind;
-	const Force_Type force_type = type1;
 
-	EquationGenerator::Base_EquationGenerator<force_type,system_type,num_flux,dim> system_of_equations(num_equations);
-	ExactSolution::Base_ExactSolution<dim,system_type> exact_solution(solve_system,
-															num_equations.total_nEqn[solve_system],
-															system_of_equations.system_data[solve_system].S_half);
+	EquationGenerator::Base_EquationGenerator<num_flux,dim> system_of_equations(num_equations,
+																				physical_constants,
+																				output_dir_name);
 
-	SolverDG::Solver_DG<force_type,system_type,num_flux,dim> solver(p,mapping_order,
-															SolverDG::Solver_DG<force_type,system_type,num_flux,dim>::global,
-															&system_of_equations,
-															&exact_solution,
-															solve_system);
-	solver.run(mesh_file_name,refine_cycles);
+	ExactSolution::Base_ExactSolution<dim> exact_solution(num_equations.system_to_solve,
+															num_equations.total_nEqn[num_equations.system_to_solve],
+															system_of_equations.system_data[num_equations.system_to_solve].S_half,
+															num_equations.system_type,
+															physical_constants,
+															output_dir_name);
+
+	SolverDG::Solver_DG<num_flux,dim> solver(numerical_constants.p,
+									         numerical_constants.mapping_order,
+											 SolverDG::Solver_DG<num_flux,dim>::global,
+											  &system_of_equations,
+											  &exact_solution,
+											 num_equations.system_to_solve,
+											 physical_constants,
+											 output_dir_name);
+
+	solver.run(mesh_file_name,numerical_constants.refine_cycles);
 }
 	

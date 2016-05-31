@@ -1,5 +1,5 @@
-template<int force_type,int system_type,int num_flux,int dim> 
-void Base_EquationGenerator<force_type,system_type,num_flux,dim>
+template<int num_flux,int dim> 
+void Base_EquationGenerator<num_flux,dim>
 ::build_BC(system_matrix &matrix_info,const unsigned int system_id)
 {
 	assert(matrix_info.matrix.cols() == num_equations.total_nEqn[system_id] 
@@ -43,8 +43,8 @@ void Base_EquationGenerator<force_type,system_type,num_flux,dim>
 
 }
 
-template<int force_type,int system_type,int num_flux,int dim> 
-void Base_EquationGenerator<force_type,system_type,num_flux,dim>
+template<int num_flux,int dim> 
+void Base_EquationGenerator<num_flux,dim>
 ::build_P(system_matrix &matrix_info,const unsigned int system_id)
 {
 	assert(matrix_info.matrix.cols() == num_equations.total_nEqn[system_id] 
@@ -57,8 +57,8 @@ void Base_EquationGenerator<force_type,system_type,num_flux,dim>
 
 }
 
-template<int force_type,int system_type,int num_flux,int dim> 
-Tensor<1,dim,double> Base_EquationGenerator<force_type,system_type,num_flux,dim>
+template<int num_flux,int dim> 
+Tensor<1,dim,double> Base_EquationGenerator<num_flux,dim>
 ::mirror(const Tensor<1,dim,double> normal_vector) const
 {
 		double nx = normal_vector[0], ny = normal_vector[1];
@@ -69,8 +69,8 @@ Tensor<1,dim,double> Base_EquationGenerator<force_type,system_type,num_flux,dim>
 		return mirrored_vector;
 }
 
-template<int force_type,int system_type,int num_flux,int dim> 
-Sparse_matrix Base_EquationGenerator<force_type,system_type,num_flux,dim>
+template<int num_flux,int dim> 
+Sparse_matrix Base_EquationGenerator<num_flux,dim>
 ::build_Projector(const Tensor<1,dim,double> normal_vector,const unsigned int system_id) const
 {
 		Sparse_matrix Projector;
@@ -201,8 +201,8 @@ Sparse_matrix Base_EquationGenerator<force_type,system_type,num_flux,dim>
 	return Projector;
 }
 
-template<int force_type,int system_type,int num_flux,int dim> 
-Sparse_matrix Base_EquationGenerator<force_type,system_type, num_flux,dim>::
+template<int num_flux,int dim> 
+Sparse_matrix Base_EquationGenerator< num_flux,dim>::
 build_InvProjector(const Tensor<1,dim,double> normal_vector,const unsigned int system_id) const
 {
 	Sparse_matrix Inv_Projector;
@@ -282,8 +282,8 @@ build_InvProjector(const Tensor<1,dim,double> normal_vector,const unsigned int s
 			
 }
 
-template<int force_type,int system_type,int num_flux,int dim> 
-void Base_EquationGenerator<force_type,system_type,num_flux,dim>::
+template<int num_flux,int dim> 
+void Base_EquationGenerator<num_flux,dim>::
 build_BCrhs(const Tensor<1,dim,double> p,
 			const Tensor<1,dim,double> normal_vector,
 			Vector<double> &bc_rhs,
@@ -326,8 +326,8 @@ build_BCrhs(const Tensor<1,dim,double> p,
 		}
 }
 
-template<int force_type,int system_type,int num_flux,int dim> 
-void Base_EquationGenerator<force_type,system_type,num_flux,dim>
+template<int num_flux,int dim> 
+void Base_EquationGenerator<num_flux,dim>
 ::source_term(const vector<Point<dim>> &p,
 			vector<Vector<double>> &value,
 			const unsigned int system_id)
@@ -389,8 +389,8 @@ void Base_EquationGenerator<force_type,system_type,num_flux,dim>
 
 }
 
-template<int force_type,int system_type,int num_flux,int dim> 
-Full_matrix Base_EquationGenerator<force_type,system_type,num_flux,dim>
+template<int num_flux,int dim> 
+Full_matrix Base_EquationGenerator<num_flux,dim>
 ::build_Aminus(const Tensor<1,dim,double> normal_vector,const unsigned int system_id)
 {
 
@@ -400,8 +400,8 @@ Full_matrix Base_EquationGenerator<force_type,system_type,num_flux,dim>
 
 }
 
-template<int force_type,int system_type,int num_flux,int dim> 
-void Base_EquationGenerator<force_type,system_type,num_flux,dim>
+template<int num_flux,int dim> 
+void Base_EquationGenerator<num_flux,dim>
 ::build_Aminus1D(Full_matrix &Aminus_1D_Int,
 				Full_matrix &Aminus_1D_Bound,
 				const unsigned int system_id)
@@ -446,8 +446,8 @@ void Base_EquationGenerator<force_type,system_type,num_flux,dim>
 
 }
 
-template<int force_type,int system_type,int num_flux,int dim> 
-void Base_EquationGenerator<force_type,system_type,num_flux,dim>::generate_matrices(equation_data &system_data,
+template<int num_flux,int dim> 
+void Base_EquationGenerator<num_flux,dim>::generate_matrices(equation_data &system_data,
 																		const unsigned int system_id)
 {
 		if (system_type == 0)

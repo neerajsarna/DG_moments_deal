@@ -9,9 +9,9 @@ namespace SolverDG
                MKL_INT *,void *, MKL_INT *, MKL_INT *, MKL_INT *, MKL_INT *,
                MKL_INT *, MKL_INT *, MKL_INT *, MKL_INT *, MKL_INT *);*/
  
-  template<int force_type,int system_type ,int num_flux,int dim> class Solver_DG:protected mesh_generation<dim>,
-                                                                                 protected Base_PostProc<dim>,
-                                                                                 protected Base_Basics
+  template<int num_flux,int dim> class Solver_DG:protected mesh_generation<dim>,
+                                                                protected Base_PostProc<dim>,
+                                                                protected Base_Basics
   {
 
     typedef MeshWorker::DoFInfo<dim> DoFInfo;
@@ -29,15 +29,17 @@ namespace SolverDG
 
         Solver_DG(const unsigned int p,const unsigned int mapping_order,
                   const enum Refinement refinement,
-                   EquationGenerator::Base_EquationGenerator<force_type,system_type,num_flux,dim> *system_of_equations,
-                  const ExactSolution::Base_ExactSolution<dim,system_type> *exact_solution,
-                  const unsigned int solve_system);
+                   EquationGenerator::Base_EquationGenerator<num_flux,dim> *system_of_equations,
+                  const ExactSolution::Base_ExactSolution<dim> *exact_solution,
+                  const unsigned int solve_system,
+                  physical_data &physical_constants,
+                  string &output_dir);
 
         void run(const string mesh_to_read,const unsigned int refine_cycles);
 
     private:
-        EquationGenerator::Base_EquationGenerator<force_type,system_type,num_flux,dim> *equation_system_data;
-        const ExactSolution::Base_ExactSolution<dim,system_type> *exact_solution;
+        EquationGenerator::Base_EquationGenerator<num_flux,dim> *equation_system_data;
+        const ExactSolution::Base_ExactSolution<dim> *exact_solution;
 
         const unsigned int solve_system;
         const unsigned int nEqn;
@@ -104,8 +106,8 @@ namespace SolverDG
       void prescribe_filenames(output_files &output_file_names,const unsigned int p);        
   };
 
-  template<int force_type,int system_type ,int num_flux,int dim> void 
-  Solver_DG<force_type,system_type ,num_flux,dim>
+  template<int num_flux,int dim> void 
+  Solver_DG<num_flux,dim>
   ::prescribe_filenames(output_files &output_file_names,const unsigned int p)
   {
     switch(refinement)
@@ -167,15 +169,18 @@ namespace SolverDG
     
   }
 
-  template<int force_type,int system_type ,int num_flux,int dim> 
-  Solver_DG<force_type,system_type ,num_flux,dim>::Solver_DG(const unsigned int p,
+  template<int num_flux,int dim> 
+  Solver_DG<num_flux,dim>::Solver_DG(const unsigned int p,
                                                   const unsigned int mapping_order,
                                                   const enum Refinement refinement,
-                                                  EquationGenerator::Base_EquationGenerator<force_type,system_type ,num_flux,dim> *system_of_equations,
-                                                  const ExactSolution::Base_ExactSolution<dim,system_type> *exact_solution,
-                                                  const unsigned int solve_system)
+                                                  EquationGenerator::Base_EquationGenerator<num_flux,dim> *system_of_equations,
+                                                  const ExactSolution::Base_ExactSolution<dim> *exact_solution,
+                                                  const unsigned int solve_system,
+                                                  physical_data &physical_constants,
+                                                  string &output_dir)
   :
   mesh_generation<dim>(mesh_generation<dim>::generate_internal),
+  Base_Basics(physical_constants,output_dir),
   refinement(refinement),
   exact_solution(exact_solution),
   solve_system(solve_system),
@@ -189,9 +194,9 @@ namespace SolverDG
     equation_system_data = system_of_equations;
   }
 
-  template<int force_type,int system_type ,int num_flux,int dim> 
+  template<int num_flux,int dim> 
   void 
-  Solver_DG<force_type,system_type ,num_flux,dim>::run(const string mesh_to_read,
+  Solver_DG<num_flux,dim>::run(const string mesh_to_read,
                                                        const unsigned int refine_cycles)
   {
 
@@ -251,9 +256,9 @@ namespace SolverDG
 
   }
 
-  template<int force_type,int system_type,int num_flux,int dim> 
+  template<int num_flux,int dim> 
   void 
-  Solver_DG<force_type,system_type,num_flux,dim>::distribute_dof_allocate_matrix()
+  Solver_DG<num_flux,dim>::distribute_dof_allocate_matrix()
   {
     dof_handler.distribute_dofs(finite_element);
 
