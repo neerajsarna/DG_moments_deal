@@ -8,11 +8,15 @@ enum Num_Flux
 enum Force_Type
 {type1,type2};
 
+enum Refinement
+    {global,adaptive,adaptive_kelly};
+
 struct numerical_data
 {
 	int p;
 	int mapping_order;
 	int refine_cycles;
+	Refinement refinement;
 };
 
 struct nEqn_data

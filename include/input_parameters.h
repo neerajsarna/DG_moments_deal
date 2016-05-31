@@ -45,6 +45,11 @@ namespace Input_parameters
 								  "1",
 								  Patterns::Integer(1,10),
 								  "total number of h refinement cycles");
+
+				prm.declare_entry("type of refinement",
+								  "0",
+								  Patterns::Integer(0,5),
+								  "Type of refinement to be used");
 			}
 			prm.leave_subsection();
 
@@ -52,57 +57,57 @@ namespace Input_parameters
 			{
 				prm.declare_entry("tau",
 								  "0.1",
-								  Patterns::Double(0.1,10),
+								  Patterns::Double(0.001,10),
 								  "The knudsen number");
 
 				prm.declare_entry("zeta",
 								   "1.0",
-								   Patterns::Double(1.0,2.0),
+								   Patterns::Double(0.0,20.0),
 								   "Boundary condition handling");
 
 
 				prm.declare_entry("chi",
 								  "1.0",
-								  Patterns::Double(1.0,2.0),
+								  Patterns::Double(0.0,20.0),
 								  "Boundary condition handling");
 			
 				prm.declare_entry("theta0",
 								  "2.0",
-								  Patterns::Double(1.0,2.0),
+								  Patterns::Double(0.001,20.0),
 								  "Temperature of inner wall");
 
 		
 				prm.declare_entry("theta1",
 								  "1.0",
-								  Patterns::Double(1.0,2.0),
+								  Patterns::Double(0.001,20.0),
 								  "Temperature of outer wall");
 
 				
 				prm.declare_entry("uW",
 								  "0.1",
-								  Patterns::Double(0.1,10),
+								  Patterns::Double(0.0,10.0),
 								  "Wall velocity");
 
 
 				
 				prm.declare_entry("A0",
 								  "0.0",
-								  Patterns::Double(0,1.0),
+								  Patterns::Double(0,10.0),
 								  "Coefficient in the force");
 
 				prm.declare_entry("A1",
 								  "0.0",
-								  Patterns::Double(0.0,2.0),
+								  Patterns::Double(0.0,20.0),
 								  "Coefficient in the force");
 				
 				prm.declare_entry("A2",
 								  "0.1",
-								  Patterns::Double(0.0,0.1),
+								  Patterns::Double(0.0,10.0),
 								  "Coefficient in the force");
 
 				prm.declare_entry("kappa",
 								   "0.0",
-								  Patterns::Double(),
+								  Patterns::Double(0,100.0),
 								  "Coefficient for the boundary");
 			}
 			prm.leave_subsection();
@@ -158,6 +163,7 @@ namespace Input_parameters
 			numerical_constants.p = prm.get_integer("polynomial degree");
 			numerical_constants.mapping_order = prm.get_integer("mapping order");
 			numerical_constants.refine_cycles = prm.get_integer("total h refinement cycles");
+			numerical_constants.refinement = (Refinement)prm.get_integer("type of refinement");
 		}
 		prm.leave_subsection();
 	}

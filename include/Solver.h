@@ -19,8 +19,6 @@ namespace SolverDG
 
 
     public:
-        enum Refinement
-          {global,adaptive,adaptive_kelly};
 
         enum Solver_Type
           {Trilinos_Direct,Trilinos_GMRES,Pardiso};

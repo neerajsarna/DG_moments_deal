@@ -47,9 +47,9 @@ namespace ExactSolution
 	nEqn(nEqn),
 	system_id(system_id)
 	{
-		switch(system_id)
+		switch(nEqn)
 		{
-			case 0:
+			case 6:
 			{
 				assert(nEqn == 6);
 				if( fabs(this->tau - 0.01) < 1e-5 )
@@ -101,7 +101,7 @@ namespace ExactSolution
 
 			}
 
-			case 1:
+			case 10:
 			{
 				assert(nEqn == 10);
 				if( fabs(tau - 0.01) < 1e-5 )
@@ -176,9 +176,9 @@ double
 Base_ExactSolution<dim>::
 s_r(const double r,const double phi) const
 	{
-		switch(system_id)
+		switch(nEqn)
 		{
-			case 0:
+			case 6:
 			{
 				Assert(nEqn == 6,ExcNotImplemented());
 
@@ -189,7 +189,7 @@ s_r(const double r,const double phi) const
 				break;
 			}
 
-			case 1:
+			case 10:
 			{
 				Assert(nEqn == 10,ExcNotImplemented());
 
@@ -213,9 +213,9 @@ double
 Base_ExactSolution<dim>::
 s_phi(const double r,const double phi) const
 	{
-		switch(system_id)
+		switch(nEqn)
 		{
-			case 0:
+			case 6:
 			{
 				Assert(nEqn == 6,ExcNotImplemented());
 
@@ -226,7 +226,7 @@ s_phi(const double r,const double phi) const
 				break;
 			}
 
-			case 1:
+			case 10:
 			{
 				Assert(nEqn == 10,ExcNotImplemented());
 
@@ -248,9 +248,9 @@ double
 Base_ExactSolution<dim>::
 thetaP(const double r,const double phi) const
 	{
-		switch(system_id)
+		switch(nEqn)
 		{
-			case 0:
+			case 6:
 			{
 				assert(nEqn == 6);
 				return C3 + C4 * this->zeta * log(r) - (this->A0 * this->tau * this->zeta * pow(r,2))/4. + 
@@ -260,7 +260,7 @@ thetaP(const double r,const double phi) const
 				break;
 			}
 
-			case 1:
+			case 10:
 			{
 				assert(nEqn == 10);
 

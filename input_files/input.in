@@ -1,0 +1,58 @@
+
+subsection Numerical Constants
+	set polynomial degree = 1
+	set mapping order = 2 
+	set total h refinement cycles = 5
+	# global = 0
+	# adaptive = 1
+	# adaptive_kelly = 2
+	set type of refinement = 0
+end
+
+
+#subsection Physical Constants
+# constants corresponding to exact solution for system A
+#	set	tau = 0.10
+#	set	zeta = 1.0				
+#	set	chi = 1.0
+#	set	theta0 = 2.0
+#	set theta1 = 1.0
+
+#CAUTION CAUTION CAUTION: uW = 1 * tau
+#	set	uW = 0.1
+#	set	A0 = 0.0
+#	set	A1 = 0.2
+#	set	A2 = 0.1
+#	set kappa  = 0.0
+#end
+
+
+# parameters corresponding to system B
+ subsection Physical Constants
+ set 			tau = 0.10
+ set			zeta = 1.0		
+ set			kappa = 0.0
+ set			chi = 1.0
+ set			theta0 = 2.0
+ set			theta1 = 1.0 
+ set			uW = 0.0
+
+ set			A0 = 0.0
+ set			A1 = 0.0
+ set			A2 = 0.1
+ end
+
+subsection System Properties
+	set total systems to load = 1
+	set equations in the system = 10
+
+	# 0 for symmetric and 1 for un symmetric
+	set symmetric or un symmetric = 1
+
+	# 0 for force of systemA,1 for force of systemB
+	set force type = 1
+end
+
+subsection Output Directory Name
+	set Main Output Directory = "output_trial"
+end

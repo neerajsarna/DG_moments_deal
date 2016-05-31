@@ -60,7 +60,7 @@ int main(int argc,char **argv)
 
 	SolverDG::Solver_DG<num_flux,dim> solver(numerical_constants.p,
 									         numerical_constants.mapping_order,
-											 SolverDG::Solver_DG<num_flux,dim>::global,
+											 numerical_constants.refinement,
 											  &system_of_equations,
 											  &exact_solution,
 											 num_equations.system_to_solve,

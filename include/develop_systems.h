@@ -3,13 +3,15 @@ void Base_EquationGenerator<num_flux,dim>
 ::build_BC(system_matrix &matrix_info,const unsigned int system_id)
 {
 	assert(matrix_info.matrix.cols() == num_equations.total_nEqn[system_id] 
-				|| matrix_info.matrix.rows() == num_equations.total_nEqn[system_id]);
+		   || matrix_info.matrix.rows() == num_equations.total_nEqn[system_id]);
 
-	switch(system_id)
+	const unsigned int neqn_local = num_equations.total_nEqn[system_id];
+
+	switch(neqn_local)
 	{
-		case 0:
+		case 6:
 		{
-			assert(num_equations.total_nEqn[system_id] == 6);
+			assert(neqn_local == 6);
 
 			matrix_info.matrix.coeffRef(0,0) = 1.0;
   			matrix_info.matrix.coeffRef(1,0) = chi;
@@ -21,9 +23,9 @@ void Base_EquationGenerator<num_flux,dim>
 			break;
 		}
 
-		case 1:
+		case 10:
 		{
-			assert(num_equations.total_nEqn[system_id] == 10);
+			assert(neqn_local == 10);
 
 			matrix_info.matrix.coeffRef(0,0) = 1.0;
   			matrix_info.matrix.coeffRef(1,0) = chi;
@@ -84,14 +86,15 @@ Sparse_matrix Base_EquationGenerator<num_flux,dim>
 		Assert(Projector.rows() == system_data[system_id].nEqn 
 				|| Projector.cols() == system_data[system_id].nEqn,ExcNotInitialized());
 
-	switch(system_id)
+		const unsigned int neqn_local = num_equations.total_nEqn[system_id];
+
+	switch(neqn_local)
 	{
 
 		// Details for system-A
-		case 0:
+		case 6:
 		{
-			Assert(num_equations.total_nEqn[system_id] == 6,ExcNotImplemented());
-
+			
 			switch(system_type)
 			{
 				case un_symmetric:
@@ -143,10 +146,9 @@ Sparse_matrix Base_EquationGenerator<num_flux,dim>
 		}
 
 		// Details for system-B
-		case 1:
+		case 10:
 		{
-			Assert(num_equations.total_nEqn[system_id] == 10,ExcNotImplemented());
-
+			
 			switch(system_type)
 			{
 				case un_symmetric:
@@ -217,11 +219,12 @@ build_InvProjector(const Tensor<1,dim,double> normal_vector,const unsigned int s
 			|| Inv_Projector.cols() == system_data[system_id].nEqn,
 			ExcNotInitialized());
 
-	switch(system_id)
+	const unsigned int neqn_local = num_equations.total_nEqn[system_id];
+
+	switch(neqn_local)
 	{
-		case 0:
+		case 6:
 		{
-			Assert(num_equations.total_nEqn[system_id] == 6,ExcNotImplemented());
 			switch(system_type)
 			{
 				case un_symmetric:
@@ -257,9 +260,8 @@ build_InvProjector(const Tensor<1,dim,double> normal_vector,const unsigned int s
 			break;
 
 		}
-		case 1:
+		case 10:
 		{
-			Assert(num_equations.total_nEqn[system_id] == 10,ExcNotImplemented());
 			switch(system_type)
 			{
 				case un_symmetric:
@@ -291,13 +293,13 @@ build_BCrhs(const Tensor<1,dim,double> p,
 {
 		assert(bc_rhs.size() == num_equations.total_nEqn[system_id]);
 		double norm = p.norm();
+		const unsigned int neqn_local = num_equations.total_nEqn[system_id];
 
-		switch(system_id)
+		switch(neqn_local)
 		{
-			case 0:
+			case 6:
 			{
-				assert(num_equations.total_nEqn[system_id] == 6);
-
+				
 				if( norm > 0.7 ) 
  		   			bc_rhs(1) = chi*theta1;  // is chi \alpha and same with zeta
 		  		else 
@@ -309,10 +311,9 @@ build_BCrhs(const Tensor<1,dim,double> p,
 				break;
 			}
 
-			case 1:
+			case 10:
 			{
-				assert(num_equations.total_nEqn[system_id] == 10);
-
+				
 				if( norm > 0.7 ) 
  		   			bc_rhs(1) = chi*theta1;  // is chi \alpha and same with zeta
 		  		else 
