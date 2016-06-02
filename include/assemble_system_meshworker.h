@@ -194,7 +194,13 @@ Solver_DG<num_flux,dim>
                   Eigen::MatrixXd Am_invP_BC_P = Am * Inv_Projector 
                                                 * equation_system_data->system_data[solve_system].BC.matrix * Projector;
 
+<<<<<<< HEAD
                   Eigen::MatrixXd Am_invP = Am * Inv_Projector;
+=======
+        Eigen::MatrixXd Am_invP_B_hat_P = Am * Inv_Projector 
+                                      * equation_system_data->system_data[solve_system].B_hat 
+                                      * Projector;
+>>>>>>> parent of 566d0df... updated assemblation
 
 
                   for (unsigned int i = 0 ; i < dofs_per_cell ; i ++)
