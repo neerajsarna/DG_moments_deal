@@ -13,7 +13,6 @@ namespace EquationGenerator
 		const nEqn_data num_equations;
 		const System_Type system_type;
 		const Force_Type force_type;
-		const BC_type bc_type;
 
 	  struct equation_data
 	  {
@@ -25,11 +24,7 @@ namespace EquationGenerator
 			system_matrix S_half;			// sqrt(S)
 			system_matrix S_half_inv;
 			system_matrix Ax;
-			
-			system_matrix B;					// BU = g
-			Full_matrix B_tilde_inv;				// Inv(B.X_minus)
-			Full_matrix B_hat;					// X_minus.inverse(B_tilde).B
-			Full_matrix X_minus;
+
 	  		Full_matrix Aminus_1D_Int;
 	  		Full_matrix Aminus_1D_Bound;
 	  };
@@ -65,17 +60,7 @@ namespace EquationGenerator
 							Full_matrix &Aminus_1D_Bound,
 							const unsigned int system_id);										
 		void build_P(system_matrix &P,const unsigned int system_id);												
-		void build_BC(system_matrix &BC,const unsigned int system_id);		
-
-		void build_B_tilde_inv(const system_matrix &B,
-						   const Full_matrix &X_minus,
-						   Full_matrix &B_tilde_inv);
-
-		void build_B_hat(const system_matrix &B,
-						 const Full_matrix &X_minus,
-						 const Full_matrix &B_tilde_inv,
-						 Full_matrix &B_hat);								
-	
+		void build_BC(system_matrix &BC,const unsigned int system_id);											
 	};
 
 	template<int num_flux,int dim> 
@@ -151,6 +136,7 @@ namespace EquationGenerator
 		cout << "writting the read matrices to: " << filename_to_write<< "\n" << endl;
 	}
 
+
 	/*The constructor of the class*/
 	template<int num_flux,int dim>
 	 Base_EquationGenerator<num_flux,dim>
@@ -161,8 +147,7 @@ namespace EquationGenerator
 	 Base_Basics(physical_constants,output_dir),
 	 num_equations(num_equations),
 	 system_type(num_equations.system_type),
-	 force_type(num_equations.force_type),
-	 bc_type(num_equations.bc_type)
+	 force_type(num_equations.force_type)
 	{
 		cout << "loading " << num_equations.no_of_total_systems << " systems" << endl;
 		system_data.resize(num_equations.no_of_total_systems);

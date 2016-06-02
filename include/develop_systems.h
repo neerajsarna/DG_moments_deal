@@ -47,27 +47,6 @@ void Base_EquationGenerator<num_flux,dim>
 
 template<int num_flux,int dim> 
 void Base_EquationGenerator<num_flux,dim>
-::build_B_tilde_inv(const system_matrix &B,
-				const Full_matrix &X_minus,
-				Full_matrix &B_tilde_inv)
-{
-	Assert(B_tilde_inv.size() != 0, ExcNotInitialized());
-	B_tilde_inv = (B.matrix * X_minus).inverse();
-}
-
-template<int num_flux,int dim> 
-void Base_EquationGenerator<num_flux,dim>
-::build_B_hat(const system_matrix &B,
-			  const Full_matrix &X_minus,
-			 const Full_matrix &B_tilde_inv,
-			 Full_matrix &B_hat)
-{
-	Assert(B_hat.size() != 0,ExcNotInitialized());
-	B_hat = X_minus * B_tilde_inv * B.matrix;
-}
-
-template<int num_flux,int dim> 
-void Base_EquationGenerator<num_flux,dim>
 ::build_P(system_matrix &matrix_info,const unsigned int system_id)
 {
 	assert(matrix_info.matrix.cols() == num_equations.total_nEqn[system_id] 
@@ -308,93 +287,45 @@ build_InvProjector(const Tensor<1,dim,double> normal_vector,const unsigned int s
 template<int num_flux,int dim> 
 void Base_EquationGenerator<num_flux,dim>::
 build_BCrhs(const Tensor<1,dim,double> p,
-	const Tensor<1,dim,double> normal_vector,
-	Vector<double> &bc_rhs,
-	const unsigned int system_id) const
+			const Tensor<1,dim,double> normal_vector,
+			Vector<double> &bc_rhs,
+			const unsigned int system_id) const
 {
+		assert(bc_rhs.size() == num_equations.total_nEqn[system_id]);
+		double norm = p.norm();
+		const unsigned int neqn_local = num_equations.total_nEqn[system_id];
 
-	double norm = p.norm();
-	const unsigned int neqn_local = num_equations.total_nEqn[system_id];
-
-	switch(bc_type)
-	{
-		case characteristic:
+		switch(neqn_local)
 		{
-			assert(bc_rhs.size() == num_equations.nBC[system_id]);
-			switch(neqn_local)
+			case 6:
 			{
-				case 6:
-				{
-
-					if( norm > 0.7 ) 
- 		   			bc_rhs(0) = -chi*theta1;  // is chi \alpha and same with zeta
-
- 		   			else 
- 		   			{
- 		   				bc_rhs(0) = -chi*theta0;
- 		   				bc_rhs(1) = -uW*normal_vector[1];
- 		   			}; 
-
- 		   			break;
- 		   		}
-
- 		   		case 10:
- 		   		{
-
- 		   			if( norm > 0.7 ) 
- 		   				bc_rhs(0) = -chi*theta1;  // is chi \alpha and same with zeta
- 		   			else 
- 		   			{
- 		   				bc_rhs(0) = -chi*theta0;
- 		   				bc_rhs(1) = -uW*normal_vector[1];
- 		   			}; 
-
-	 		   		break;
- 			   	}			
-
-			break;
-		 }
-	    }
-		case odd:
-		{
-			switch(neqn_local)
-			{
-				assert(bc_rhs.size() == num_equations.total_nEqn[system_id]);
-				case 6:
-				{
-
-					if( norm > 0.7 ) 
+				
+				if( norm > 0.7 ) 
  		   			bc_rhs(1) = chi*theta1;  // is chi \alpha and same with zeta
+		  		else 
+		  		{
+    				bc_rhs(1) = chi*theta0;
+    				bc_rhs(4) = uW*normal_vector[1];
+  		  		}; 
 
- 		   			else 
- 		   			{
- 		   				bc_rhs(1) = chi*theta0;
- 		   				bc_rhs(4) = uW*normal_vector[1];
- 		   			}; 
+				break;
+			}
 
- 		   			break;
- 		   		}
+			case 10:
+			{
+				
+				if( norm > 0.7 ) 
+ 		   			bc_rhs(1) = chi*theta1;  // is chi \alpha and same with zeta
+		  		else 
+		  		{
+    				bc_rhs(1) = chi*theta0;
+    				bc_rhs(4) = uW*normal_vector[1];
+  		  		}; 
 
- 		   		case 10:
- 		   		{
-
- 		   			if( norm > 0.7 ) 
- 		   				bc_rhs(1) = chi*theta1;  // is chi \alpha and same with zeta
- 		   			else 
- 		   			{
- 		   				bc_rhs(1) = chi*theta0;
- 		   				bc_rhs(4) = uW*normal_vector[1];
- 		   			}; 
-
-	 		   		break;
- 			   	}
- 			}
-
- 		   break;
- 		}
- 	}
-
- }
+				break;
+			}
+		}
+}
 
 template<int num_flux,int dim> 
 void Base_EquationGenerator<num_flux,dim>
@@ -490,15 +421,8 @@ void Base_EquationGenerator<num_flux,dim>
 	EigenSolver<MatrixXd> ES(system_data[system_id].A[0].matrix);
 	MatrixXd vecs = ES.pseudoEigenvectors();
 	VectorXd vals = ES.pseudoEigenvalueMatrix().diagonal();
-
-	Ordering_Values::Ordering order(vals);
-	system_data[system_id].X_minus.resize(num_equations.total_nEqn[system_id],
-										 num_equations.nBC[system_id]);
-
-	for (unsigned int i = 0 ; i < num_equations.nBC[system_id]; i ++)
-		system_data[system_id].X_minus.col(i) = vecs.col(order.index(i));
-
 	double maxEV = vals.cwiseAbs().maxCoeff();
+
 
 	switch (num_flux)
 	{
@@ -525,7 +449,7 @@ void Base_EquationGenerator<num_flux,dim>
 
 template<int num_flux,int dim> 
 void Base_EquationGenerator<num_flux,dim>::generate_matrices(equation_data &system_data,
-															const unsigned int system_id)
+																		const unsigned int system_id)
 {
 		if (system_type == 0)
 			system_data.is_symmetric = true;
@@ -565,34 +489,11 @@ void Base_EquationGenerator<num_flux,dim>::generate_matrices(equation_data &syst
 		build_BC(system_data.BC,system_id);
 		print_matrix(system_data.BC,generate_filename_to_write(system_dir,filename));
 
-		filename = system_dir + to_string(system_data.nEqn) + "B.txt";
-		system_data.B.matrix.resize(num_equations.nBC[system_id],system_data.nEqn);
-		build_triplet(system_data.B,filename);
-		build_matrix_from_triplet(system_data.B);
-		print_matrix(system_data.B,generate_filename_to_write(system_dir,filename));
-
 		system_data.Aminus_1D_Int.resize(system_data.nEqn,system_data.nEqn);
 		system_data.Aminus_1D_Bound.resize(system_data.nEqn,system_data.nEqn);
-
 		build_Aminus1D(system_data.Aminus_1D_Int,
 						system_data.Aminus_1D_Bound,
 						system_id);
-
-
-		system_data.B_tilde_inv.resize(num_equations.nBC[system_id],
-								      num_equations.nBC[system_id]);
-
-		system_data.B_hat.resize(system_data.nEqn,
-							     system_data.nEqn);
-
-		build_B_tilde_inv(system_data.B,
-						  system_data.X_minus,
-						  system_data.B_tilde_inv);
-
-		build_B_hat(system_data.B,
-			  		system_data.X_minus,
-			 		system_data.B_tilde_inv,
-			 		system_data.B_hat);
 
 		switch(system_type)
 		{
