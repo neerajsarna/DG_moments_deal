@@ -218,8 +218,8 @@ for (unsigned int q = 0 ; q < fe_v.n_quadrature_points ; q++)
         Sparse_matrix Inv_Projector = equation_system_data->build_InvProjector(fe_v.normal_vector(q),solve_system);
 
         Eigen::MatrixXd Am_invP_B_hat_P = Am * Inv_Projector 
-                                      * equation_system_data->system_data[solve_system].B_hat 
-                                      * Projector;
+                                          * equation_system_data->system_data[solve_system].B_hat 
+                                          * Projector;
 
         Eigen::MatrixXd Am_invP_X_min_B_tild_inv = Am
                                                    * Inv_Projector 
