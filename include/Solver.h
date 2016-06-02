@@ -25,11 +25,13 @@ namespace SolverDG
 
         Refinement refinement;
 
+        BC_type bc_type;
+
         Solver_DG(const unsigned int p,const unsigned int mapping_order,
                   const enum Refinement refinement,
                    EquationGenerator::Base_EquationGenerator<num_flux,dim> *system_of_equations,
                   const ExactSolution::Base_ExactSolution<dim> *exact_solution,
-                  const unsigned int solve_system,
+                  const nEqn_data num_equations,
                   physical_data &physical_constants,
                   string &output_dir);
 
@@ -40,6 +42,7 @@ namespace SolverDG
         const ExactSolution::Base_ExactSolution<dim> *exact_solution;
 
         const unsigned int solve_system;
+        const unsigned int no_of_BC;
         const unsigned int nEqn;
 
         SphericalManifold<dim> boundary;
@@ -173,17 +176,19 @@ namespace SolverDG
                                                   const enum Refinement refinement,
                                                   EquationGenerator::Base_EquationGenerator<num_flux,dim> *system_of_equations,
                                                   const ExactSolution::Base_ExactSolution<dim> *exact_solution,
-                                                  const unsigned int solve_system,
+                                                  const nEqn_data num_equations,
                                                   physical_data &physical_constants,
                                                   string &output_dir)
   :
   mesh_generation<dim>(mesh_generation<dim>::generate_internal),
   Base_Basics(physical_constants,output_dir),
   refinement(refinement),
+  bc_type(num_equations.bc_type),
   exact_solution(exact_solution),
-  solve_system(solve_system),
-  nEqn(system_of_equations->system_data[solve_system].nEqn),
-  finite_element(FE_DGQ<dim>(p),system_of_equations->system_data[solve_system].nEqn),
+  solve_system(num_equations.system_to_solve),
+  no_of_BC(num_equations.nBC[num_equations.system_to_solve]),
+  nEqn(num_equations.total_nEqn[num_equations.system_to_solve]),
+  finite_element(FE_DGQ<dim>(p),num_equations.total_nEqn[num_equations.system_to_solve]),
   dof_handler(triangulation),
   mapping(mapping_order),
   ngp(p+1),

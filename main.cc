@@ -6,6 +6,7 @@
 
 #include "include_deal.h"
 #include "mkl.h"
+#include "ordering.h"
 #include "parse_command_line.h"
 #include "input_parameters.h"
 #include "Basics.h"
@@ -21,6 +22,7 @@ using namespace std;
 
 int main(int argc,char **argv)
 {
+	
 	const unsigned int num_threads = atoi(argv[1]);
 
 	Utilities::MPI::MPI_InitFinalize mpi_initialization(argc, argv,num_threads);
@@ -49,7 +51,8 @@ int main(int argc,char **argv)
 
 	EquationGenerator::Base_EquationGenerator<num_flux,dim> system_of_equations(num_equations,
 																				physical_constants,
-																				output_dir_name);
+	 																			output_dir_name);
+
 
 	ExactSolution::Base_ExactSolution<dim> exact_solution(num_equations.system_to_solve,
 															num_equations.total_nEqn[num_equations.system_to_solve],
@@ -63,9 +66,9 @@ int main(int argc,char **argv)
 											 numerical_constants.refinement,
 											  &system_of_equations,
 											  &exact_solution,
-											 num_equations.system_to_solve,
-											 physical_constants,
-											 output_dir_name);
+											  num_equations,
+											  physical_constants,
+											  output_dir_name);
 
 	solver.run(mesh_file_name,numerical_constants.refine_cycles);
 }
