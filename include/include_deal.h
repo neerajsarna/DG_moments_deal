@@ -68,3 +68,4 @@
 #include <string>
 #include <sys/stat.h>
 #include <list>
+#include <algorithm>
