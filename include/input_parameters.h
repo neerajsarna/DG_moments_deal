@@ -133,6 +133,11 @@ namespace Input_parameters
 					 			  Patterns::Integer(6,10),
 					 			  "total number of equations in system");
 
+				prm.declare_entry("nBC",
+								  "2",
+								  Patterns::Integer(2,10),
+								  "total number of boundary conditions needed for the system");
+
 				/*by default we will solve the symmetric system*/
 				prm.declare_entry("symmetric or un symmetric",
 								  "0",
@@ -144,6 +149,12 @@ namespace Input_parameters
 								  "0",
 								  Patterns::Integer(0,1),
 								  "Type of force on the system");
+
+				/*0 for characteristic and 1 for odd*/
+				prm.declare_entry("BC type",
+								   "0",
+								   Patterns::Integer(0,1),
+								   "Type of BC");
 			}
 			prm.leave_subsection();
 
@@ -177,10 +188,15 @@ namespace Input_parameters
 			Assert(num_equations.no_of_total_systems == 1,ExcNotImplemented());
 
 			num_equations.total_nEqn.resize(num_equations.no_of_total_systems);
+			num_equations.nBC.resize(num_equations.no_of_total_systems);
+
 			num_equations.total_nEqn[0] = prm.get_integer("equations in the system");
+			num_equations.nBC[0] = prm.get_integer("nBC");
 			num_equations.system_to_solve = 0;
+
 			num_equations.system_type = (System_Type)prm.get_integer("symmetric or un symmetric");
 			num_equations.force_type = (Force_Type)prm.get_integer("force type");
+			num_equations.bc_type = (BC_type)prm.get_integer("BC type");
 		}
 		prm.leave_subsection();
 	}
