@@ -181,6 +181,7 @@ Solver_DG<num_flux,dim>
  for (unsigned int i = 0 ; i < dofs_per_cell ; i ++)
   component[i] = fe_in_cell.system_to_component_index(i).first;
 
+<<<<<<< HEAD
   	  for (unsigned int q = 0 ; q < fe_v.n_quadrature_points ; q++)
                 {
 		              const double jacobian_value = Jacobian_face[q];
@@ -190,17 +191,45 @@ Solver_DG<num_flux,dim>
                   Eigen::MatrixXd Am = equation_system_data->build_Aminus(fe_v.normal_vector(q),solve_system);
                   Sparse_matrix Projector = equation_system_data->build_Projector(fe_v.normal_vector(q),solve_system);
                   Sparse_matrix Inv_Projector = equation_system_data->build_InvProjector(fe_v.normal_vector(q),solve_system);
-
-                  Eigen::MatrixXd Am_invP_BC_P = Am * Inv_Projector 
-                                                * equation_system_data->system_data[solve_system].BC.matrix * Projector;
-
-<<<<<<< HEAD
-                  Eigen::MatrixXd Am_invP = Am * Inv_Projector;
 =======
+ Vector<double> boundary_rhs_value;
+
+switch(bc_type)
+{
+  case characteristic:
+  {
+    boundary_rhs_value.reinit(this->no_of_BC);
+    break;
+  }
+
+  case odd:
+  {
+    boundary_rhs_value.reinit(this->nEqn);
+    break;
+  }
+}
+
+
+for (unsigned int q = 0 ; q < fe_v.n_quadrature_points ; q++)
+{
+  const double jacobian_value = Jacobian_face[q];
+
+  boundary_rhs_value = 0;                 
+
+  switch(bc_type)
+  {
+    case characteristic:
+    {
+      equation_system_data->build_BCrhs(fe_v.quadrature_point(q),fe_v.normal_vector(q),
+                                        boundary_rhs_value,solve_system);
+
+        // build the matrices needed
+        Eigen::MatrixXd Am = equation_system_data->build_Aminus(fe_v.normal_vector(q),solve_system);
+        Sparse_matrix Projector = equation_system_data->build_Projector(fe_v.normal_vector(q),solve_system);
+        Sparse_matrix Inv_Projector = equation_system_data->build_InvProjector(fe_v.normal_vector(q),solve_system);
+
         Eigen::MatrixXd Am_invP_B_hat_P = Am * Inv_Projector 
                                       * equation_system_data->system_data[solve_system].B_hat 
-<<<<<<< HEAD
-=======
                                       * Projector;
 
         Eigen::MatrixXd Am_invP_X_min_B_tild_inv = Am
@@ -240,28 +269,28 @@ Solver_DG<num_flux,dim>
 
         Eigen::MatrixXd Am_invP_BC_P = Am * Inv_Projector 
                                       * equation_system_data->system_data[solve_system].BC.matrix 
->>>>>>> parent of 566d0df... updated assemblation
                                       * Projector;
->>>>>>> parent of 566d0df... updated assemblation
+
+        Eigen::MatrixXd Am_invP = Am * Inv_Projector;
+
+        for (unsigned int i = 0 ; i < dofs_per_cell ; i ++)
+        {
+          const double shape_value_test = fe_v.shape_value(i,q);
+          for (unsigned int j = 0 ; j < dofs_per_cell ; j ++)
+            cell_matrix(i,j) += 0.5 * shape_value_test
+                                * (Am(component[i],component[j])-Am_invP_BC_P(component[i],component[j]))
+                                * fe_v.shape_value(j,q) * jacobian_value;                                    
 
 
-                  for (unsigned int i = 0 ; i < dofs_per_cell ; i ++)
-                  {
-		                const double shape_value_test = fe_v.shape_value(i,q);
-                    for (unsigned int j = 0 ; j < dofs_per_cell ; j ++)
-                        cell_matrix(i,j) += 0.5 * shape_value_test
-                                           * (Am(component[i],component[j])-Am_invP_BC_P(component[i],component[j]))
-                                            * fe_v.shape_value(j,q) * jacobian_value;                                    
-                      
+          for (unsigned int j = 0 ; j < Am_invP.cols() ; j++)
+           cell_rhs(i) -= 0.5 * shape_value_test 
+                          * Am_invP(component[i],j) * boundary_rhs_value[j] * jacobian_value;
 
-                    for (unsigned int j = 0 ; j < Am_invP.cols() ; j++)
-                     cell_rhs(i) -= 0.5 * shape_value_test 
-                                    * Am_invP(component[i],j) * boundary_rhs_value[j] * jacobian_value;
-
-
-                  }
-
-                }
+        }
+        break;
+    }
+  }
+}
 
 }
 
