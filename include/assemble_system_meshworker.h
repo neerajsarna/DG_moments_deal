@@ -181,17 +181,6 @@ Solver_DG<num_flux,dim>
  for (unsigned int i = 0 ; i < dofs_per_cell ; i ++)
   component[i] = fe_in_cell.system_to_component_index(i).first;
 
-<<<<<<< HEAD
-  	  for (unsigned int q = 0 ; q < fe_v.n_quadrature_points ; q++)
-                {
-		              const double jacobian_value = Jacobian_face[q];
-                  Vector<double> boundary_rhs_value(this->nEqn);
-                  equation_system_data->build_BCrhs(fe_v.quadrature_point(q),fe_v.normal_vector(q),
-                                                  boundary_rhs_value,solve_system);
-                  Eigen::MatrixXd Am = equation_system_data->build_Aminus(fe_v.normal_vector(q),solve_system);
-                  Sparse_matrix Projector = equation_system_data->build_Projector(fe_v.normal_vector(q),solve_system);
-                  Sparse_matrix Inv_Projector = equation_system_data->build_InvProjector(fe_v.normal_vector(q),solve_system);
-=======
  Vector<double> boundary_rhs_value;
 
 switch(bc_type)

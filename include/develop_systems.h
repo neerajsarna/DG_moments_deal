@@ -352,9 +352,10 @@ build_BCrhs(const Tensor<1,dim,double> p,
 	 		   		break;
  			   	}			
 
-			break;
-		 }
-	    }
+		    }
+		
+		break;
+	      }
 		case odd:
 		{
 			switch(neqn_local)
@@ -491,13 +492,6 @@ void Base_EquationGenerator<num_flux,dim>
 	MatrixXd vecs = ES.pseudoEigenvectors();
 	VectorXd vals = ES.pseudoEigenvalueMatrix().diagonal();
 
-	Ordering_Values::Ordering order(vals);
-	system_data[system_id].X_minus.resize(num_equations.total_nEqn[system_id],
-										 num_equations.nBC[system_id]);
-
-	for (unsigned int i = 0 ; i < num_equations.nBC[system_id]; i ++)
-		system_data[system_id].X_minus.col(i) = vecs.col(order.index(i));
-
 	double maxEV = vals.cwiseAbs().maxCoeff();
 
 	switch (num_flux)
@@ -520,6 +514,13 @@ void Base_EquationGenerator<num_flux,dim>
 
 		}
 	}
+	Ordering_Values::Ordering order(vals);
+	system_data[system_id].X_minus.resize(num_equations.total_nEqn[system_id],
+										 num_equations.nBC[system_id]);
+
+	for (unsigned int i = 0 ; i < num_equations.nBC[system_id]; i ++)
+		system_data[system_id].X_minus.col(i) = vecs.col(order.index(i));
+
 
 }
 
