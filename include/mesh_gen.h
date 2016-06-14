@@ -9,30 +9,72 @@ namespace Mesh_Handler
   public:
     virtual void print_mesh_info(const Triangulation<dim> &tria) const = 0;
     virtual void print_grid(const Triangulation<dim> &tria,const string filename) const = 0;
-    virtual void generate_mesh(Triangulation<dim> &triangulation,SphericalManifold<dim> &boundary,const string mesh_file_name)= 0;      
+    virtual void generate_mesh(Triangulation<dim> &triangulation,
+                               SphericalManifold<dim> &boundary,
+                               GridIn<dim> &gridin) const = 0;      
+
   };
 
   template<int dim> class mesh_generation:public Base_MeshHandler<dim>
   {
   public:
-    enum Meshing_Options {read_msh, generate_internal};
-    mesh_generation(const enum Meshing_Options mesh_options);
+    mesh_generation(const mesh_data &mesh_info);
     virtual void print_mesh_info(const Triangulation<dim> &tria) const;
     virtual void print_grid(const Triangulation<dim> &tria,const string filename) const;
-    virtual void generate_mesh(Triangulation<dim> &triangulation,SphericalManifold<dim> &boundary,const string mesh_file_name);            
-    Meshing_Options mesh_options;
-  private:
-    GridIn<dim> gridin;
+    virtual void generate_mesh(Triangulation<dim> &triangulation,
+                              SphericalManifold<dim> &boundary,
+                              GridIn<dim> &gridin)const ;     
+    void set_periodic_bid(Triangulation<dim> &tria)const;
+    const mesh_data mesh_info;
+
   };
 
-  template<int dim> mesh_generation<dim>::mesh_generation(const enum Meshing_Options mesh_options)
+  template<int dim> mesh_generation<dim>::mesh_generation(const mesh_data &mesh_info)
   :
-  mesh_options(mesh_options)
+  mesh_info(mesh_info)
   {
 
   }
 
-  template<int dim> void mesh_generation<dim>::generate_mesh(Triangulation<dim> &triangulation,SphericalManifold<dim> &boundary,const string mesh_file_name)
+  template<int dim> 
+  void 
+  mesh_generation<dim>
+  ::set_periodic_bid(Triangulation<dim> &tria) const
+  {
+        typename Triangulation<dim>::cell_iterator cell = tria.begin(),
+                               endc = tria.end();
+
+        for (; cell != endc ; cell++)
+        {
+                for (unsigned int face = 0 ; face < GeometryInfo<dim>::faces_per_cell ; face++)
+              
+                  if (cell->face(face)->at_boundary())
+                  { 
+                    double x_cord = cell->face(face)->center()(0);
+                    double y_cord = cell->face(face)->center()(1);
+
+                    // right edge
+                    if (x_cord == mesh_info.xr)
+                      cell->face(face)->set_boundary_id(2);
+
+                    // left edge
+                    if (x_cord == mesh_info.xl)
+                      cell->face(face)->set_boundary_id(0);
+
+                    // bottom edge
+                    if (y_cord == mesh_info.yb)
+                      cell->face(face)->set_boundary_id(1);
+
+                    // top edge
+                    if (y_cord == mesh_info.yt)
+                      cell->face(face)->set_boundary_id(3);
+                   }
+        }
+  }
+
+  template<int dim> void mesh_generation<dim>::generate_mesh(Triangulation<dim> &triangulation,
+                                                            SphericalManifold<dim> &boundary,
+                                                            GridIn<dim> &gridin) const
   {
     triangulation.clear();
 
@@ -40,12 +82,12 @@ namespace Mesh_Handler
     const double inner_radius = 0.5,
     outer_radius = 2.0;
 
-    switch (mesh_options)
+    switch (mesh_info.mesh_options)
     {
       case read_msh:
       {
         gridin.attach_triangulation(triangulation);
-        ifstream f(mesh_file_name);
+        ifstream f(mesh_info.mesh_filename);
         gridin.read_msh(f);
         triangulation.set_all_manifold_ids_on_boundary(0);
         triangulation.set_manifold(0,boundary);
@@ -54,16 +96,39 @@ namespace Mesh_Handler
 
       case generate_internal:
       {
-        GridGenerator::hyper_shell (triangulation,
-          center, inner_radius, outer_radius,
-          10);
 
-        triangulation.set_all_manifold_ids_on_boundary(0);
-        triangulation.set_manifold(0,boundary);
+        switch(mesh_info.mesh_type)
+        {
+          case ring:
+          {
+            GridGenerator::hyper_shell (triangulation,
+              center, inner_radius, outer_radius,
+              10);
+
+            triangulation.set_all_manifold_ids_on_boundary(0);
+            triangulation.set_manifold(0,boundary);
+            break;
+          }
+
+          case periodic_square:
+          {
+            const unsigned int division_per_dim = 10;
+            const double xl = mesh_info.xl;
+            const double xr = mesh_info.xr;
+
+            GridGenerator::subdivided_hyper_cube  (triangulation,
+                                                    division_per_dim,
+                                                    mesh_info.xl,
+                                                    mesh_info.xr);
+
+            set_periodic_bid(triangulation);
+            break;
+          }
+        }
+
+
         break;
       }
-
-
 
     }
 

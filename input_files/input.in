@@ -2,12 +2,17 @@
 subsection Numerical Constants
 	set polynomial degree = 1
 	set mapping order = 2 
-	set total h refinement cycles = 5
+	set total h refinement cycles = 1
 	
 	# global = 0
 	# adaptive = 1
 	# adaptive_kelly = 2
 	set type of refinement = 0
+
+	# type of assembly
+	# meshworker = 0
+	# manuel = 1
+	set assembly type = 1
 end
 
 
@@ -41,6 +46,20 @@ subsection System Properties
 
 	# 0 for force of systemA,1 for force of systemB
 	set force type =0
+end
+
+subsection Mesh Info
+	# 0 for ring and 1 for periodic square
+	set mesh type = 0
+
+	# 0 to read msh file and 1 for internal generation
+	set mesh options = 1
+
+	# left boundary of square domain
+	set left boundary = -1
+	set right boundary = 1
+	set top boundary = 1
+	set bottom boundary = -1
 end
 
 subsection Output Directory Name

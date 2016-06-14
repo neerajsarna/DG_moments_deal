@@ -1,6 +1,6 @@
 template<int num_flux,int dim> 
 void 
-Solver_DG<num_flux,dim>::error_evaluation(const Vector<double> solution)
+Solver_DG<num_flux,dim>::error_evaluation(const Vector<double> &solution)
       {
 
         unsigned int component = 0;                                                // the component for which the error has to be computed
@@ -78,3 +78,45 @@ Solver_DG<num_flux,dim>::error_evaluation(const Vector<double> solution)
         convergence_table.set_scientific(column_name_Linfty,true);
 
       }
+
+
+// the following function evaluates the l2 and linf norm of the solution
+template<int num_flux,int dim> 
+void 
+Solver_DG<num_flux,dim>::evaluate_norms(const Vector<double> &solution)
+{
+        unsigned int component = 0;                                                // the component for which the error has to be computed
+        Vector<double> l2_per_cell(triangulation.n_active_cells());      
+
+        ComponentSelectFunction<dim> weight(component,this->nEqn);                              // used to compute only the error in theta
+
+        // computation of L2 error
+        VectorTools::integrate_difference (mapping,dof_handler,solution,
+                                            ZeroFunction<dim>(nEqn),
+                                            l2_per_cell,
+                                            QGauss<dim>(ngp),
+                                            VectorTools::L2_norm,&weight); 
+
+        const double global_l2 = l2_per_cell.l2_norm();
+
+        Vector<double> linf_per_cell(triangulation.n_active_cells());
+
+        VectorTools::integrate_difference (mapping,dof_handler,solution,
+                                            ZeroFunction<dim>(nEqn),
+                                            linf_per_cell,
+                                            QGauss<dim>(ngp),
+                                            VectorTools::Linfty_norm,&weight); 
+
+        const double global_linf = linf_per_cell.linfty_norm();
+
+        string error_details;
+        error_details = " L2_norm: " + to_string(global_l2) +
+                        " Linfty_error: " + to_string(global_linf) + 
+                        " #DOF: " + to_string(dof_handler.n_dofs()) +
+                        " #Cells " + to_string(triangulation.n_active_cells()); 
+
+        cout << "*******************Error details******************"<< endl ;
+        cout << error_details << endl;
+        cout << "**************************************************" << endl ;
+
+}

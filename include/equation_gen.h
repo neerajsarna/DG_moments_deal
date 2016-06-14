@@ -11,6 +11,7 @@ namespace EquationGenerator
 	{
 	   public:
 		const nEqn_data num_equations;
+		const tensor_data tensor_info;
 		const System_Type system_type;
 		const Force_Type force_type;
 		const BC_type bc_type;
@@ -34,10 +35,16 @@ namespace EquationGenerator
 	  		Full_matrix Aminus_1D_Bound;
 	  };
 
+	  struct projector_data
+	  {
+	  	  	Full_matrix P;
+	  };
+
 		
 	  
 	  		Base_EquationGenerator(nEqn_data const&num_equations,
-	  							   physical_data &physical_constants,
+		  						   physical_data &physical_constants,
+		  						   tensor_data const&tensor_info,
 	  							   string &output_dir);
 
 	  		vector<equation_data> system_data;
@@ -46,11 +53,11 @@ namespace EquationGenerator
 							const Tensor<1,dim,double> normal_vector,Vector<double> &bc_rhs,
 							const unsigned int system_id) const; 
 
-			Sparse_matrix build_Projector(const Tensor<1,dim,double> normal_vector,const unsigned int system_id) const;
+			Sparse_matrix build_Projector(const Tensor<1,dim,double> normal_vector,const unsigned int system_id);
 
 			void source_term(const vector<Point<dim>> &p,vector<Vector<double>> &value,const unsigned int system_id);
 			Sparse_matrix build_InvProjector(const Tensor<1,dim,double> normal_vector,
-											const unsigned int system_id) const;		
+											const unsigned int system_id);		
 			Full_matrix build_Aminus(const Tensor<1,dim,double> normal_vector,
 										const unsigned int system_id) ;		
 	
@@ -59,22 +66,35 @@ namespace EquationGenerator
 	  	void build_matrix_from_triplet(system_matrix &matrix_info);
 	  	void print_matrix(const system_matrix matrix_info,const string filename);
 
-		void generate_matrices(equation_data &system_data,const unsigned int system_id);
-		Tensor<1,dim,double> mirror(const Tensor<1,dim,double> normal_vector) const;			
-		void build_Aminus1D(Full_matrix &Aminus_1D_Int,
-							Full_matrix &Aminus_1D_Bound,
-							const unsigned int system_id);										
-		void build_P(system_matrix &P,const unsigned int system_id);												
-		void build_BC(system_matrix &BC,const unsigned int system_id);		
+	  	void generate_matrices(equation_data &system_data,const unsigned int system_id);
+	  	Tensor<1,dim,double> mirror(const Tensor<1,dim,double> normal_vector) const;			
+	  	void build_Aminus1D(Full_matrix &Aminus_1D_Int,
+	  		Full_matrix &Aminus_1D_Bound,
+	  		const unsigned int system_id);										
+	  	void build_P(system_matrix &P,const unsigned int system_id);												
+	  	void build_BC(system_matrix &BC,const unsigned int system_id);		
 
-		void build_B_tilde_inv(const system_matrix &B,
-						   const Full_matrix &X_minus,
-						   Full_matrix &B_tilde_inv);
+	  	void build_B_tilde_inv(const system_matrix &B,
+	  		const Full_matrix &X_minus,
+	  		Full_matrix &B_tilde_inv);
 
-		void build_B_hat(const system_matrix &B,
-						 const Full_matrix &X_minus,
-						 const Full_matrix &B_tilde_inv,
-						 Full_matrix &B_hat);								
+	  	void build_B_hat(const system_matrix &B,
+	  		const Full_matrix &X_minus,
+	  		const Full_matrix &B_tilde_inv,
+	  		Full_matrix &B_hat);	
+
+
+	  	// number to be changed if need for more equations
+	  	vector<projector_data> tensor_project;
+
+	  	/*the following function develops a projector for a corresponding tensorial degree*/
+	  	void build_tensorial_projector(const double nx,const double ny);	
+
+	  	/*the following function places the matrix P at diagonal location idx,idx of matrix Sp*/
+	  	void SpBlock(const unsigned int idx,const Full_matrix P,Sparse_matrix &Sp);						
+
+	  	/*allocates memory for the tensor_projector*/
+	  	void init_tensor_data();
 	
 	};
 
@@ -156,10 +176,12 @@ namespace EquationGenerator
 	 Base_EquationGenerator<num_flux,dim>
 	 ::Base_EquationGenerator(nEqn_data const&num_equations,
 	 					      physical_data &physical_constants,
+	 					      tensor_data const&tensor_info,
 	 					      string &output_dir)
 	 :
 	 Base_Basics(physical_constants,output_dir),
 	 num_equations(num_equations),
+	 tensor_info(tensor_info),
 	 system_type(num_equations.system_type),
 	 force_type(num_equations.force_type),
 	 bc_type(num_equations.bc_type)
@@ -170,6 +192,9 @@ namespace EquationGenerator
 		for (unsigned int i = 0 ; i < num_equations.no_of_total_systems ; i++)
 			generate_matrices(system_data[i],i);
 					
+		cout << "tensor data memory allocation" << endl;
+		init_tensor_data();
+		cout << "finished allocation" << endl;
 	}
 
 	#include "develop_systems.h"

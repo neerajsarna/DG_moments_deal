@@ -2103,6 +2103,7 @@ CMakeFiles/mycode.out.dir/main.cc.o: /Applications/deal.II.app/Contents/Resource
 CMakeFiles/mycode.out.dir/main.cc.o: /Applications/deal.II.app/Contents/Resources/include/deal.II/grid/grid_in.h
 CMakeFiles/mycode.out.dir/main.cc.o: /Applications/deal.II.app/Contents/Resources/include/deal.II/grid/grid_out.h
 CMakeFiles/mycode.out.dir/main.cc.o: /Applications/deal.II.app/Contents/Resources/include/deal.II/grid/grid_refinement.h
+CMakeFiles/mycode.out.dir/main.cc.o: /Applications/deal.II.app/Contents/Resources/include/deal.II/grid/grid_tools.h
 CMakeFiles/mycode.out.dir/main.cc.o: /Applications/deal.II.app/Contents/Resources/include/deal.II/grid/manifold.h
 CMakeFiles/mycode.out.dir/main.cc.o: /Applications/deal.II.app/Contents/Resources/include/deal.II/grid/manifold_lib.h
 CMakeFiles/mycode.out.dir/main.cc.o: /Applications/deal.II.app/Contents/Resources/include/deal.II/grid/tria.h
@@ -2627,6 +2628,8 @@ CMakeFiles/mycode.out.dir/main.cc.o: include/Basics.h
 CMakeFiles/mycode.out.dir/main.cc.o: include/EigenSetup.h
 CMakeFiles/mycode.out.dir/main.cc.o: include/PostProc.h
 CMakeFiles/mycode.out.dir/main.cc.o: include/Solver.h
+CMakeFiles/mycode.out.dir/main.cc.o: include/Tensors_info.h
+CMakeFiles/mycode.out.dir/main.cc.o: include/assemble.h
 CMakeFiles/mycode.out.dir/main.cc.o: include/assemble_system_meshworker.h
 CMakeFiles/mycode.out.dir/main.cc.o: include/basic_data_structures.h
 CMakeFiles/mycode.out.dir/main.cc.o: include/develop_systems.h
@@ -2636,10 +2639,12 @@ CMakeFiles/mycode.out.dir/main.cc.o: include/exact_solution.h
 CMakeFiles/mycode.out.dir/main.cc.o: include/h_adaptivity.h
 CMakeFiles/mycode.out.dir/main.cc.o: include/include_deal.h
 CMakeFiles/mycode.out.dir/main.cc.o: include/input_parameters.h
+CMakeFiles/mycode.out.dir/main.cc.o: include/integrate_per_cell_manuel.h
 CMakeFiles/mycode.out.dir/main.cc.o: include/mesh_gen.h
 CMakeFiles/mycode.out.dir/main.cc.o: include/ordering.h
 CMakeFiles/mycode.out.dir/main.cc.o: include/output_routines.h
 CMakeFiles/mycode.out.dir/main.cc.o: include/parse_command_line.h
+CMakeFiles/mycode.out.dir/main.cc.o: include/periodicity.h
 CMakeFiles/mycode.out.dir/main.cc.o: include/print_convergence_table.h
 CMakeFiles/mycode.out.dir/main.cc.o: include/solve.h
 

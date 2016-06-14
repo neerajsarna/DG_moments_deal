@@ -1,4 +1,7 @@
-template<int dim> void Solver_DG<dim>::assemble_system()
+#include "integrate_per_cell_manuel.h"
+template<int num_flux,int dim> 
+void 
+Solver_DG<num_flux,dim>::assemble_system()
   {
       const QGauss<dim> quadrature(ngp);
       const QGauss<dim-1> face_quadrature(ngp_face);
@@ -42,6 +45,8 @@ template<int dim> void Solver_DG<dim>::assemble_system()
       // vectors to make computations faster
       vector<double> Jacobians_interior(total_ngp);
       vector<double> Jacobian_face(total_ngp_face);
+
+      // component corresponding to every dof
       Vector<double> component(dofs_per_cell);
       vector<Vector<double>> source_term_value(total_ngp,Vector<double>(this->nEqn));
 
@@ -54,42 +59,17 @@ template<int dim> void Solver_DG<dim>::assemble_system()
       {
         cell_matrix = 0;
         cell_rhs = 0;
+        cell->get_dof_indices(local_dof_indices);
 
         fe_v.reinit(cell);
         Jacobians_interior = fe_v.get_JxW_values();
-        this->source_term(fe_v.get_quadrature_points(),source_term_value);
+        equation_system_data->source_term(fe_v.get_quadrature_points(),source_term_value,solve_system);
 
-      for(unsigned int q = 0 ;q < total_ngp ; q++)
-      {
-       for (unsigned int i = 0 ; i < dofs_per_cell ; i++)
-       {
-
-          for (unsigned int j = 0 ; j < dofs_per_cell  ; j++)
-          {
-
-            // loop over convection
-            for (unsigned int k = 0 ;k < dim ; k ++)
-                if (this->exists(this->A[k].Row_Col_Value,component(i),component(j)))
-                      cell_matrix(i,j) += fe_v.shape_value(i,q) * this->A[k].matrix.coeffRef(component(i),component(j)) 
-                                          * fe_v.shape_grad(j,q)[k] * Jacobians_interior[q];
-                
-                  
-            // loop over production
-            if (this->exists(this->P.Row_Col_Value,component(i),component(j)))
-                cell_matrix(i,j) += fe_v.shape_value(i,q) * this->P.matrix.coeffRef(component(i),component(j)) 
-                                    * fe_v.shape_value(j,q) * Jacobians_interior[q];
-
-            
-          }
-           
-            
-            cell_rhs(i) += fe_v.shape_value(i,q) * source_term_value[q][component(i)] * Jacobians_interior[q];
-        
-
-       }
-      }
+        integrate_cell_manuel(cell_matrix,cell_rhs,
+                              fe_v,Jacobians_interior,
+                              source_term_value,cell);
 	
-        cell->get_dof_indices(local_dof_indices);
+        
 
             for(unsigned int face  = 0; face< GeometryInfo<dim>::faces_per_cell; face++ )
             {
@@ -105,37 +85,9 @@ template<int dim> void Solver_DG<dim>::assemble_system()
 
               if (cell->face(face)->at_boundary())
               { 
-                for (unsigned int q = 0 ; q < total_ngp_face ; q++)
-                {
-                  Vector<double> boundary_rhs_value(this->nEqn);
-                  this->build_BCrhs(fe_v_face.quadrature_point(q),fe_v_face.normal_vector(q),boundary_rhs_value);
-
-                  // build the matrices needed
-                  Eigen::MatrixXd Am = this->build_Aminus(fe_v_face.normal_vector(q));
-                  Sparse_matrix Projector = this->build_Projector(fe_v_face.normal_vector(q));
-                  Sparse_matrix Inv_Projector = this->build_InvProjector(fe_v_face.normal_vector(q));
-
-                  Eigen::MatrixXd Am_invP_BC_P = Am * Inv_Projector 
-                                                * this->BC.matrix * Projector;
-
-                  Eigen::MatrixXd Am_invP = Am * Inv_Projector;
-
-                  for (unsigned int i = 0 ; i < dofs_per_cell ; i ++)
-                  {
-                    for (unsigned int j = 0 ; j < dofs_per_cell ; j ++)
-                        cell_matrix(i,j) += 0.5 * fe_v_face.shape_value(i,q) 
-                                            * (Am(component(i),component(j))-Am_invP_BC_P(component(i),component(j)))
-                                            * fe_v_face.shape_value(j,q) * Jacobian_face[q];                                    
-                      
-
-                    for (unsigned int j = 0 ; j < Am_invP.cols() ; j++)
-                     cell_rhs(i) -= 0.5 * fe_v_face.shape_value(i,q) 
-                                    * Am_invP(component(i),j) * boundary_rhs_value[j] * Jacobian_face[q];
-
-
-                  }
-
-                }
+                integrate_boundary_manuel(cell_matrix, cell_rhs,
+                                          fe_v_face, Jacobian_face,
+                                          component, cell); 
                 
               }
                 else
@@ -155,29 +107,12 @@ template<int dim> void Solver_DG<dim>::assemble_system()
 
                    fe_v_subface_neighbor.reinit(neighbor,neighbor_face_no.first,neighbor_face_no.second);
 
-                   for (unsigned int q = 0 ; q < total_ngp_face ; q++)
-                   {
-                    Eigen::MatrixXd Am = this->build_Aminus(fe_v_face.normal_vector(q));
-                    Eigen::MatrixXd Am_neighbor = this->build_Aminus(-fe_v_face.normal_vector(q));
-
-                    for (unsigned int i = 0 ; i < dofs_per_cell ; i ++)
-                      for (unsigned int j = 0 ; j < dofs_per_cell ; j ++)
-                      {
-                        u1_v1(i,j) += 0.5 * fe_v_face.shape_value(i,q) * Am(component(i),component(j)) 
-                                      * fe_v_face.shape_value(j,q) * Jacobian_face[q];
-
-                        u2_v1(i,j) -= 0.5 * fe_v_face.shape_value(i,q) * Am(component(i),component(j)) 
-                                      * fe_v_subface_neighbor.shape_value(j,q) * Jacobian_face[q];
-
-                        u2_v2(i,j) += 0.5 * fe_v_subface_neighbor.shape_value(i,q) * Am_neighbor(component(i),component(j))
-                                      * fe_v_subface_neighbor.shape_value(j,q) * Jacobian_face[q];
-
-                        u1_v2(i,j) -= 0.5 * fe_v_subface_neighbor.shape_value(i,q) * Am_neighbor(component(i),component(j)) 
-                                      * fe_v_face.shape_value(j,q) * Jacobian_face[q];
-
-                        }
-                      }
-                   }
+                   integrate_face_manuel(u1_v1,u1_v2,
+                                         u2_v1,u2_v2,
+                                         fe_v_face,fe_v_subface_neighbor,
+                                         Jacobian_face,component,  
+                                         cell);
+                  }
 
                   
                  
@@ -187,8 +122,9 @@ template<int dim> void Solver_DG<dim>::assemble_system()
                     continue;
 
 
-                  assert(cell->level() == neighbor->level());
+                  Assert(cell->level() == neighbor->level(),ExcMessage("cell and the neighbor not on the same level"));
 
+                  // compute the integral from only one side
                   if (neighbor < cell)
                     continue;
 
@@ -197,29 +133,13 @@ template<int dim> void Solver_DG<dim>::assemble_system()
                   const unsigned int neighbor_face_no = cell->neighbor_of_neighbor(face);
                   fe_v_face_neighbor.reinit(neighbor,neighbor_face_no);
                   
+                  integrate_face_manuel(u1_v1,u1_v2,
+                                        u2_v1,u2_v2,
+                                        fe_v_face,fe_v_face_neighbor,
+                                        Jacobian_face,component,  
+                                        cell);                  
 
-                   for (unsigned int q = 0 ; q < total_ngp_face ; q++)
-                   {
-                    Eigen::MatrixXd Am = this->build_Aminus(fe_v_face.normal_vector(q));
-                    Eigen::MatrixXd Am_neighbor = this->build_Aminus(-fe_v_face.normal_vector(q));
-
-                     for (unsigned int i = 0 ; i < dofs_per_cell ; i ++)
-                       for (unsigned int j = 0 ; j < dofs_per_cell ; j ++)
-                       {
-                         u1_v1(i,j) += 0.5 * fe_v_face.shape_value(i,q) * Am(component(i),component(j))
-                                       * fe_v_face.shape_value(j,q) * Jacobian_face[q];
-
-                         u2_v1(i,j) -= 0.5 * fe_v_face.shape_value(i,q) * Am(component(i),component(j))
-                                       * fe_v_face_neighbor.shape_value(j,q) * Jacobian_face[q];
-
-                         u2_v2(i,j) += 0.5 * fe_v_face_neighbor.shape_value(i,q) * Am_neighbor(component(i),component(j))
-                                       * fe_v_face_neighbor.shape_value(j,q) * Jacobian_face[q];
-
-                         u1_v2(i,j) -= 0.5 * fe_v_face_neighbor.shape_value(i,q) * Am_neighbor(component(i),component(j))
-                                         * fe_v_face.shape_value(j,q) * Jacobian_face[q];
-
-                        }
-                   }  
+  
                  }
                 }
 
