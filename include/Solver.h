@@ -21,6 +21,9 @@ namespace SolverDG
     public:
 
       const mesh_data mesh_info;
+	
+      unsigned int count_meshworker;
+      unsigned int count_manuel;
 
       enum Solver_Type
           {Trilinos_Direct,Trilinos_GMRES,Pardiso};
@@ -351,7 +354,7 @@ namespace SolverDG
       {
         case meshworker:
         {
-          cout << "assembling the matrix...." << endl;
+          cout << "assembling the matrix using meshworker...." << endl;
           timer.enter_subsection("assemblation");
           assemble_system_meshworker();
           timer.leave_subsection();
@@ -360,12 +363,15 @@ namespace SolverDG
         }
         case manuel:
         {
-          cout << "assembling the matrix " << endl;
+          cout << "assembling the matrix manually " << endl;
           assemble_system();
+	  cout << "finished assembling the matrix " << endl;
           break;
         }
       }
 
+      fflush(stdout);
+      Assert(1 == 0, ExcMessage("debugging from Solver"));
 
       cout << "solving the system...." << endl;
       timer.enter_subsection("solving the system");

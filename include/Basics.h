@@ -28,6 +28,10 @@ namespace Basics
 		string generate_filename_to_write(const string system_dir,string filename);
 		void Sparse_matrix_dot_Vector(const  system_matrix matrix_info,
 			Vector<double> &x) const;
+
+		// the following function prints the matrix given to it 
+		void print_dealii_matrix(const FullMatrix<double> &matrix,
+					string matrix_name);
 	};
 
 	Base_Basics::Base_Basics(const physical_data &physical_constants,
@@ -112,5 +116,25 @@ namespace Basics
 			for (unsigned int i = 0 ; i < result.size() ; i ++)
 				x(i) = result(i);
 		}
+
+	 // print the matrix to standard input output
+	  void  Base_Basics::print_dealii_matrix(const FullMatrix<double> &matrix,
+					   string matrix_name) 
+	  {
+		const unsigned int n_rows = matrix.m();
+		const unsigned int n_cols = matrix.n();
+
+		printf("%s \n",matrix_name.c_str());
+
+		for (unsigned int i = 0 ; i < n_rows ; i ++)
+		{
+			for (unsigned int j = 0 ; j < n_cols ; j ++)
+				cout << matrix(i,j) << " " ;
+
+			cout << endl;
+		}
+
+	  }
+
 
 	}

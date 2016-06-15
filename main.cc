@@ -20,7 +20,7 @@
 #include "input_parameters.h"
 
 // develops all the info related to tensors
-#include "Tensors_info.h"
+#include "Tensors_Info.h"
 
 
 /*contains the most basic of the code i.e.

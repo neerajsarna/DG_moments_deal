@@ -38,6 +38,9 @@ Solver_DG<num_flux,dim>::assemble_rhs()
               system_rhs(local_dof_indices[i]) += cell_rhs(i);
 
       }
+
+    cout << "CELL RHS " << endl;
+    cout << cell_rhs << endl;
     
 }
 
@@ -101,7 +104,9 @@ template<int num_flux,int dim>
  Solver_DG<num_flux,dim>::integrate_cell_term (DoFInfo &dinfo,
                                    			CellInfo &info)
 {
-  
+	if (count_meshworker > 0)
+		Assert(1 == 0, ExcMessage("")); 
+ 
 	const FEValuesBase<dim> &fe_v = info.fe_values();
 	FullMatrix<double> &cell_matrix = dinfo.matrix(0).matrix;
 	const std::vector<double> &Jacobians_interior = fe_v.get_JxW_values ();
@@ -158,6 +163,9 @@ template<int num_flux,int dim>
 		 }
 		
 	}
+
+	print_dealii_matrix(cell_matrix,"cell matrix");
+	count_meshworker++;
 
 
 }
@@ -242,7 +250,7 @@ for (unsigned int q = 0 ; q < fe_v.n_quadrature_points ; q++)
                           * Am_invP_X_min_B_tild_inv(component[i],j) * boundary_rhs_value[j] * jacobian_value;
 
         }
-
+	
       break;
     }
 
@@ -280,6 +288,8 @@ for (unsigned int q = 0 ; q < fe_v.n_quadrature_points ; q++)
     }
   }
 }
+
+	print_dealii_matrix(cell_matrix,"boundary cell matrix");
 
 }
 
@@ -341,5 +351,8 @@ Solver_DG<num_flux,dim>
       }
     }
   }
+
+	print_dealii_matrix(u1_v1,"u1 v1");
+	
 
 }

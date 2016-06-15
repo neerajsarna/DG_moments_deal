@@ -27,7 +27,6 @@ Solver_DG<num_flux,dim>::assemble_system()
       const unsigned int total_ngp_face = face_quadrature.size();
 
       typename DoFHandler<dim>::active_cell_iterator cell = dof_handler.begin_active(), endc = dof_handler.end();
-      typename DoFHandler<dim>::active_cell_iterator endc_trial = cell++;
       typename DoFHandler<dim>::cell_iterator neighbor;
 
       vector<types::global_dof_index> local_dof_indices(dofs_per_cell);
@@ -53,10 +52,16 @@ Solver_DG<num_flux,dim>::assemble_system()
       for (unsigned int i = 0 ; i < dofs_per_cell ; i++)
         component(i) = finite_element.system_to_component_index(i).first;
       
-      // end of vector to make computation faster
+      // end of vector to
+      // make computation faster
+     count_manuel = 0;
 
-      for (; cell != endc_trial ; cell++) 
+      for (; cell != endc ; cell++) 
       {
+        if (count_manuel > 0)
+		Assert(1 == 0 ,ExcMessage("debuggin"));		
+
+	cout << "inside assembly" << endl;
         cell_matrix = 0;
         cell_rhs = 0;
         cell->get_dof_indices(local_dof_indices);
@@ -142,7 +147,14 @@ Solver_DG<num_flux,dim>::assemble_system()
   
                  }
                 }
-
+	
+	
+	     cout << "integrated over face " << endl;
+	    /* print_dealii_matrix(u1_v1,"u1 v1");
+	     print_dealii_matrix(u1_v2,"u1 v2");
+             print_dealii_matrix(u2_v1,"u2 v1");
+	     print_dealii_matrix(u2_v2,"u2 v2");*/
+	 
                for (unsigned int i = 0 ; i < dofs_per_cell ; i++)
               for (unsigned int j = 0 ; j < dofs_per_cell ; j++)
               {
@@ -162,5 +174,9 @@ Solver_DG<num_flux,dim>::assemble_system()
               
              for(unsigned int i = 0 ; i < dofs_per_cell ; i++)
               system_rhs(local_dof_indices[i]) += cell_rhs(i);
-          }
+
+	     count_manuel++;
+	     //print_dealii_matrix(cell_matrix,"cell matrix");
+	  }
+
   }
