@@ -71,8 +71,14 @@ namespace SolverDG
 
         // data for periodicity
         vector<GridTools::PeriodicFacePair<typename DoFHandler<dim>::cell_iterator> > periodicity_vector;
+
+        // stores the y coord of the cell center and cell iterator
         map<double, typename DoFHandler<dim>::cell_iterator> set_xl;
         map<double, typename DoFHandler<dim>::cell_iterator> set_xr;
+
+        // stores the y coord of the cell center and the local face number
+        map<double, unsigned int> set_xl_face;
+        map<double, unsigned int> set_xr_face;
 
         Vector<double> solution;
         Vector<double> system_rhs;
@@ -81,14 +87,23 @@ namespace SolverDG
         const unsigned int ngp;
         const unsigned int ngp_face;
 
+        // functions for adding periodicity
         void add_periodic_sparsity(DynamicSparsityPattern &dsp,
               vector<GridTools::PeriodicFacePair<typename DoFHandler<dim>::cell_iterator>> &periodicity_vector);
 
         void divide_periodicity(vector<GridTools::PeriodicFacePair<typename DoFHandler<dim>::cell_iterator> > &periodicity_vector,
              map<double, typename DoFHandler<dim>::cell_iterator> &xminus1_set,
              map<double, typename DoFHandler<dim>::cell_iterator> &xplus1_set,
+             map<double, unsigned int> &set_xl_face,
+             map<double, unsigned int> &set_xr_face,
              const double xl,
              const double xr);
+
+        typename DoFHandler<dim>::cell_iterator  get_periodic_neighbor(const double xcord_face,
+                                                                       const double ycord_center) const;
+
+        unsigned int get_periodic_neighbor_face(const double xcord_face,
+                                       const double ycord_center) const;
 
         void distribute_dof_allocate_matrix(); 
         void solve(const enum Solver_Type solver_type);
@@ -145,7 +160,7 @@ namespace SolverDG
         virtual void output_solution_details(const Triangulation<dim> &triangulation,const string file_solution
                                                 ,const string file_exact,const string file_error)const ;
 
-	
+       virtual void output_solution_details(const Triangulation<dim> &triangulation,const string file_solution)const;	
       struct output_files
       {
         string file_for_convergence_tables;
@@ -335,10 +350,12 @@ namespace SolverDG
 
         // develops a map bewteen the boundary location and the respective cells
             divide_periodicity(periodicity_vector,
-              set_xl,
-              set_xr,
-              mesh_info.xl,
-              mesh_info.xr);
+                               set_xl, 
+                               set_xr,
+                               set_xl_face,
+                               set_xr_face,
+                               mesh_info.xl,
+                               mesh_info.xr);
             break;
           }
       }
@@ -365,13 +382,13 @@ namespace SolverDG
         {
           cout << "assembling the matrix manually " << endl;
           assemble_system();
-	  cout << "finished assembling the matrix " << endl;
+	        cout << "finished assembling the matrix " << endl;
           break;
         }
       }
 
-      fflush(stdout);
-      Assert(1 == 0, ExcMessage("debugging from Solver"));
+      //fflush(stdout);
+      //Assert(1 == 0, ExcMessage("debugging from Solver"));
 
       cout << "solving the system...." << endl;
       timer.enter_subsection("solving the system");
@@ -381,24 +398,7 @@ namespace SolverDG
 
       timer.enter_subsection("error evaluation");
 
-      switch (mesh_info.mesh_type)
-      {
-
-      // exact solution known for the ring configureation
-        case ring:
-        {
-          error_evaluation(solution);
-          break;
-        }
-
-      // no knowledge of the exact solution
-        case periodic_square:
-        {
-          evaluate_norms(solution);
-          break;
-        }
-
-      }
+      error_evaluation(solution);
       
       timer.leave_subsection();
 
@@ -409,23 +409,12 @@ namespace SolverDG
         string file_for_grid;
         file_for_grid = this->sub_directory_names[0] + "/grid_"+"_DOF_" + to_string(dof_handler.n_dofs());
         //mesh_generation<dim>::print_grid(triangulation,file_for_grid);
-        
-        switch (mesh_info.mesh_type)
-        {
-          case ring:
-          {
             print_convergence_table(output_file_names.file_for_convergence_tables);  
-            break;
-          }
+            output_solution_details(triangulation,output_file_names.file_for_num_solution,
+                                    output_file_names.file_for_exact_solution,
+                                    output_file_names.file_for_error);
 
-          case periodic_square:
-            break;
-          
-          
-        }
-       /* output_solution_details(triangulation,output_file_names.file_for_num_solution,
-                                output_file_names.file_for_exact_solution,
-                                output_file_names.file_for_error);*/
+
       }
     }
 

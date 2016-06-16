@@ -2,6 +2,7 @@
 subsection Numerical Constants
 	set polynomial degree = 1
 	set mapping order = 2 
+	# CAUTION refinement cycles = 1 for periodic square
 	set total h refinement cycles = 1
 	
 	# global = 0
@@ -12,7 +13,7 @@ subsection Numerical Constants
 	# type of assembly
 	# meshworker = 0
 	# manuel = 1
-	set assembly type = 1
+	set assembly type = 0
 end
 
 
@@ -22,14 +23,14 @@ subsection Physical Constants
 	set	zeta = 1.0				
 	set	chi = 1.0
 	set	theta0 = 2.0
-	set theta1 = 1.0
+	set 	theta1 = 1.0
 
 	#CAUTION CAUTION CAUTION: uW = 1 * tau
 	set	uW = 0.1
 	set	A0 = 0.0
 	set	A1 = 0.2
 	set	A2 = 0.1
-	set kappa  = 0.0
+	set     kappa = 0.0
 end
 
 

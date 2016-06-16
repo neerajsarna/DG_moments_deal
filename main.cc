@@ -104,30 +104,13 @@ int main(int argc,char **argv)
 	EquationGenerator::Base_EquationGenerator<num_flux,dim> system_of_equations(num_equations,
 																				physical_constants,
 																				tensor_info,
+																				mesh_info.mesh_type,
 	 																			output_dir_name);
 
 
 
-	ExactSolution::Base_ExactSolution<dim> exact_solution(num_equations.system_to_solve,
-		num_equations.total_nEqn[num_equations.system_to_solve],
-		system_of_equations.system_data[num_equations.system_to_solve].S_half,
-		num_equations.system_type,
-		physical_constants,
-		output_dir_name);
-
-	SolverDG::Solver_DG<num_flux,dim> solver(numerical_constants,
-		&system_of_equations,
-		&exact_solution,
-		num_equations,
-		physical_constants,
-		output_dir_name,
-		mesh_info);
-
-	solver.run(numerical_constants.refine_cycles);
-
-
 	// due to the availability of exact solution the implementation differs
-	/*switch (mesh_info.mesh_type)
+	switch (mesh_info.mesh_type)
 	{
 		// the exact solution is only known for a ring geometry
 		case ring:
@@ -139,15 +122,13 @@ int main(int argc,char **argv)
 															physical_constants,
 															output_dir_name);
 
-				SolverDG::Solver_DG<num_flux,dim> solver(numerical_constants.p,
-									         numerical_constants.mapping_order,
-											 numerical_constants.refinement,
-											  &system_of_equations,
-											  &exact_solution,
-											  num_equations,
-											  physical_constants,
-											  output_dir_name,
-											  mesh_info);
+				SolverDG::Solver_DG<num_flux,dim> solver(numerical_constants,
+											  			 &system_of_equations,
+											  			 &exact_solution,
+											  			 num_equations,
+											  			 physical_constants,
+											  			 output_dir_name,
+											  			 mesh_info);
 
 				solver.run(numerical_constants.refine_cycles);
 			break;
@@ -156,17 +137,37 @@ int main(int argc,char **argv)
 		// no known exact solution for a periodic square
 		case periodic_square:
 		{
+			switch(num_equations.total_nEqn[num_equations.system_to_solve])
+			{
+				case 6:
+				{
+					ExactSolution::Base_ExactSolution<dim> exact_solution(num_equations.system_to_solve,
+																	num_equations.total_nEqn[num_equations.system_to_solve],
+																	system_of_equations.system_data[num_equations.system_to_solve].S_half,
+																	num_equations.system_type,
+																	physical_constants,
+																	output_dir_name);
 
-				SolverDG::Solver_DG<num_flux,dim> solver(numerical_constants.p,
-									         numerical_constants.mapping_order,
-											 numerical_constants.refinement,
-											  &system_of_equations,
-											  num_equations,
-											  physical_constants,
-											  output_dir_name,
-											  mesh_info);
+				SolverDG::Solver_DG<num_flux,dim> solver(numerical_constants,
+											  			 &system_of_equations,
+											  			 &exact_solution,
+											  			 num_equations,
+											  			 physical_constants,
+											  			 output_dir_name,
+											  			 mesh_info);
 
-				solver.run(numerical_constants.refine_cycles);
+					solver.run(numerical_constants.refine_cycles);
+
+					break;
+				}
+
+				default:
+				{
+					Assert(1 == 0 , ExcNotImplemented());
+				}
+			}
+
+	
 			break;
 		}
 
@@ -174,7 +175,7 @@ int main(int argc,char **argv)
 		{
 			Assert(1 == 0, ExcNotImplemented());
 		}
-	}*/
+	}
 
 
 	

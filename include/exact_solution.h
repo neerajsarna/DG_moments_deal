@@ -324,6 +324,85 @@ vector_value(const Point<dim> &p,Vector<double> &value) const
 		return boost::math::cyl_bessel_k(n,x);
 	}
 
+template<int dim> class systemA_period_sqr:public Base_ExactSolution<dim>
+	{
+		public:
+			systemA_period_sqr(const unsigned int system_id,const unsigned int nEqn,
+							  const system_matrix S_half,
+							  const System_Type system_type,
+							  physical_data &physical_constants,
+							  string &output_dir);
+
+			virtual void vector_value(const Point<dim> &p,Vector<double> &value) const;
+
+	};
+
+template<int dim> systemA_period_sqr<dim>
+::systemA_period_sqr(const unsigned int system_id,
+							  const unsigned int nEqn,
+							  const system_matrix S_half,
+							  const System_Type system_type,
+							  physical_data &physical_constants,
+							  string &output_dir)
+:
+Base_ExactSolution<dim>(system_id,
+				   nEqn,
+				   S_half,
+				   system_type,
+				   physical_constants,
+				   output_dir)
+{
+	Assert(nEqn == 6,ExcMessage("number of equations larger or smaller than expected"));
+}
+
+template<int dim> 
+void
+systemA_period_sqr<dim>
+::vector_value(const Point<dim> &p,Vector<double> &value) const
+{
+	// temprature different between the walls
+	const double delta_theta_wall = this->theta0 - this->theta1; 			// thetaW(1)-thetaW(-1)
+	const double mean_theta_wall = (this->theta0 + this->theta1)/2;				// (thetaW(1) + thetaW(-1))/2
+	const double ycord = p(1);
+
+	Assert(value.size() != this->nEqn , ExcNotInitialized());
+
+	// value of temperature
+	value(0) = delta_theta_wall * ycord / (2 * (1 + this->tau)) + mean_theta_wall;
+
+	// value of sx
+	value(1) = 0;
+
+	// value of sy
+	value(2) = -delta_theta_wall * this->tau / (2 * (1 + this->tau));
+
+	// value of Rxx
+	value(3) = 0;
+
+	// value of Rxy
+	value(4) = 0;
+
+	/// value of Ryy
+	value(5) = 0;
+
+	switch(this->system_type)
+	{
+		case un_symmetric:
+		{
+			Assert(1 == 0, ExcMessage("dont use unsymmetric system"));
+			break;
+		}
+
+		case symmetric:
+		{
+			Sparse_matrix_dot_Vector(this->S_half,value);
+			break;
+		}
+	}
+	
+	//cout << "exact solution is " << value << endl;
+
+}
 
 
 }

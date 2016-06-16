@@ -15,6 +15,7 @@ namespace EquationGenerator
 		const System_Type system_type;
 		const Force_Type force_type;
 		const BC_type bc_type;
+		const Mesh_type mesh_type;
 
 	  struct equation_data
 	  {
@@ -45,6 +46,7 @@ namespace EquationGenerator
 	  		Base_EquationGenerator(nEqn_data const&num_equations,
 		  						   physical_data &physical_constants,
 		  						   tensor_data const&tensor_info,
+		  						   Mesh_type mesh_type,
 	  							   string &output_dir);
 
 	  		vector<equation_data> system_data;
@@ -177,6 +179,7 @@ namespace EquationGenerator
 	 ::Base_EquationGenerator(nEqn_data const&num_equations,
 	 					      physical_data &physical_constants,
 	 					      tensor_data const&tensor_info,
+	 					      Mesh_type mesh_type,
 	 					      string &output_dir)
 	 :
 	 Base_Basics(physical_constants,output_dir),
@@ -184,7 +187,8 @@ namespace EquationGenerator
 	 tensor_info(tensor_info),
 	 system_type(num_equations.system_type),
 	 force_type(num_equations.force_type),
-	 bc_type(num_equations.bc_type)
+	 bc_type(num_equations.bc_type),
+	 mesh_type(mesh_type)
 	{
 		cout << "loading " << num_equations.no_of_total_systems << " systems" << endl;
 		system_data.resize(num_equations.no_of_total_systems);

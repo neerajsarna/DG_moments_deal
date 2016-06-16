@@ -211,22 +211,7 @@ Sparse_matrix Base_EquationGenerator<num_flux,dim>
 				{
 					SpBlock(0,tensor_project[0].P,Projector);
 					SpBlock(1,tensor_project[1].P,Projector);
-					SpBlock(3,tensor_project[2].P,Projector);
-					/*Projector.coeffRef(0,0) = 1.0;
-					Projector.coeffRef(1,1) = nx;
-					Projector.coeffRef(1,2) = ny;
-					Projector.coeffRef(2,1) = -ny;
-					Projector.coeffRef(2,2) = nx;
-					Projector.coeffRef(3,3) = nx*nx;
-					Projector.coeffRef(3,4) = 2*nx*ny;
-					Projector.coeffRef(3,5) = ny*ny;
-					Projector.coeffRef(4,3) = -nx*ny;
-					Projector.coeffRef(4,4) = nx*nx-ny*ny;
-					Projector.coeffRef(4,5) = nx*ny;
-					Projector.coeffRef(5,3) = ny*ny;
-					Projector.coeffRef(5,4) = -2*nx*ny;
-					Projector.coeffRef(5,5) = nx*nx;*/
-				
+					SpBlock(3,tensor_project[2].P,Projector);				
 					break;					
 				}
 
@@ -271,40 +256,6 @@ Sparse_matrix Base_EquationGenerator<num_flux,dim>
 					SpBlock(1,tensor_project[1].P,Projector);
 					SpBlock(3,tensor_project[2].P,Projector);
 					SpBlock(6,tensor_project[3].P,Projector);
-					/*
-					Projector.coeffRef(0,0) = 1.0;
-					Projector.coeffRef(1,1) = nx;
-					Projector.coeffRef(1,2) = ny;
-					Projector.coeffRef(2,1) = -ny;
-					Projector.coeffRef(2,2) = nx;
-					Projector.coeffRef(3,3) = nxnx;
-					Projector.coeffRef(3,4) = 2*nx*ny;
-					Projector.coeffRef(3,5) = nyny;
-					Projector.coeffRef(4,3) = -nx*ny;
-					Projector.coeffRef(4,4) = nxnx-nyny;
-					Projector.coeffRef(4,5) = nx*ny;
-					Projector.coeffRef(5,3) = nyny;
-					Projector.coeffRef(5,4) = -2*nx*ny;
-					Projector.coeffRef(5,5) = nxnx;
-
-					Projector.coeffRef(6,6) = nx*nxnx;
-					Projector.coeffRef(6,7) = 3*ny*nxnx;
-					Projector.coeffRef(6,8) = 3*nx*nyny;
-					Projector.coeffRef(6,9) = ny*nyny;
-					Projector.coeffRef(7,6) = -ny*nxnx;
-					Projector.coeffRef(7,7) = nx*nxnx - 2*nx*nyny;
-					Projector.coeffRef(7,8) = 2*ny*nxnx - ny*nyny;
-					Projector.coeffRef(7,9) = nx*nyny;
-					Projector.coeffRef(8,6) = nx*nyny;
-					Projector.coeffRef(8,7) = -2*ny*nxnx + ny*nyny;
-					Projector.coeffRef(8,8) = nx*nxnx - 2*nx*nyny;
-					Projector.coeffRef(8,9) = ny*nxnx;
-					Projector.coeffRef(9,6) = -ny*nyny;
-					Projector.coeffRef(9,7) = 3*nx*nyny;
-					Projector.coeffRef(9,8) = -3*ny*nxnx;
-					Projector.coeffRef(9,9) = nx*nxnx;*/
-
-
 					break;
 				}
 
@@ -459,15 +410,49 @@ build_BCrhs(const Tensor<1,dim,double> p,
 			{
 				case 6:
 				{
+					switch(mesh_type)
+					{
+						double thetaW;
+						case ring:
+						{
+							if( norm > 0.7 ) 
+		 		   			bc_rhs(0) = -chi*theta1;  // is chi \alpha and same with zeta
 
-					if( norm > 0.7 ) 
- 		   			bc_rhs(0) = -chi*theta1;  // is chi \alpha and same with zeta
+ 					   		else 
+ 		   					{
+ 		   						bc_rhs(0) = -chi*theta0;
+ 		   						bc_rhs(1) = -uW*normal_vector[1];
+ 		   					}; 
+							break;
+						}
 
- 		   			else 
- 		   			{
- 		   				bc_rhs(0) = -chi*theta0;
- 		   				bc_rhs(1) = -uW*normal_vector[1];
- 		   			}; 
+						case periodic_square:
+						{
+ 			   				// upper edge
+							if (fabs(y_cord - 1) < 1e-10 ) 
+								thetaW = theta0;
+							
+
+
+ 			   				// lower edge
+							if ( fabs(y_cord - (-1)) < 1e-10 )
+								thetaW = theta1;
+							
+
+							bc_rhs(0) = -chi * thetaW;
+							bc_rhs(1) = -uW * normal_vector[1];		
+
+							break;					
+
+						}
+						default:
+						{
+							Assert(1 == 0 , ExcNotImplemented());
+							break;
+						}
+					}
+
+
 
  		   			break;
  		   		}
@@ -495,6 +480,7 @@ build_BCrhs(const Tensor<1,dim,double> p,
  			   		// upper edge
  			   		if (y_cord == 1)
  			   			thetaW = theta0;
+ 			   		
 
  			   		// lower edge
  			   		if (y_cord == -1)

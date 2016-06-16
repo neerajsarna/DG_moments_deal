@@ -204,7 +204,12 @@ namespace Input_parameters
 				prm.declare_entry("top boundary",
 									"1",
 									Patterns::Double(0.5,10.0),
-									"top boundary of square domain");				
+									"top boundary of square domain");	
+
+				prm.declare_entry("part_per_dim",
+								  "2",
+								  Patterns::Integer(2,200),
+								  "partitions per dim");
 			}
 			prm.leave_subsection();
 
@@ -315,6 +320,7 @@ namespace Input_parameters
 			mesh_info.xr = prm.get_double("right boundary");
 			mesh_info.yt = prm.get_double("top boundary");
 			mesh_info.yb = prm.get_double("bottom boundary");
+			mesh_info.part_per_dim = prm.get_integer("part_per_dim");
 		}
 		prm.leave_subsection();
 

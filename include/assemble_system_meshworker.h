@@ -37,11 +37,7 @@ Solver_DG<num_flux,dim>::assemble_rhs()
         for(unsigned int i = 0 ; i < dofs_per_cell ; i++)
               system_rhs(local_dof_indices[i]) += cell_rhs(i);
 
-      }
-
-    cout << "CELL RHS " << endl;
-    cout << cell_rhs << endl;
-    
+      }    
 }
 
 template<int num_flux,int dim>
@@ -104,8 +100,8 @@ template<int num_flux,int dim>
  Solver_DG<num_flux,dim>::integrate_cell_term (DoFInfo &dinfo,
                                    			CellInfo &info)
 {
-	if (count_meshworker > 0)
-		Assert(1 == 0, ExcMessage("")); 
+	//if (count_meshworker > 0)
+	//	Assert(1 == 0, ExcMessage("debugging integrate cell term")); 
  
 	const FEValuesBase<dim> &fe_v = info.fe_values();
 	FullMatrix<double> &cell_matrix = dinfo.matrix(0).matrix;
@@ -163,11 +159,6 @@ template<int num_flux,int dim>
 		 }
 		
 	}
-
-	print_dealii_matrix(cell_matrix,"cell matrix");
-	count_meshworker++;
-
-
 }
 
 template<int num_flux,int dim> 
@@ -289,7 +280,6 @@ for (unsigned int q = 0 ; q < fe_v.n_quadrature_points ; q++)
   }
 }
 
-	print_dealii_matrix(cell_matrix,"boundary cell matrix");
 
 }
 
@@ -351,8 +341,4 @@ Solver_DG<num_flux,dim>
       }
     }
   }
-
-	print_dealii_matrix(u1_v1,"u1 v1");
-	
-
 }

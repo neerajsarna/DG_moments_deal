@@ -12,8 +12,14 @@ namespace PostProc
 			Base_PostProc();
 			virtual void print_convergence_table(const string filename) = 0;
 			virtual void error_evaluation(const Vector<double> &solution) = 0;
+
+			// to be used when the exact solution is known
 			virtual void output_solution_details(const Triangulation<dim> &triangulation,const string file_solution,
 												const string file_exact,const string file_error)const = 0;
+
+			virtual void output_solution_details(const Triangulation<dim> &triangulation,const string file_solution)const = 0;
+												
+
 			virtual void evaluate_norms(const Vector<double> &solution) = 0;
 
 	};

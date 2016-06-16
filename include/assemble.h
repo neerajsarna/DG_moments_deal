@@ -3,6 +3,11 @@ template<int num_flux,int dim>
 void 
 Solver_DG<num_flux,dim>::assemble_system()
   {
+      // counters 
+      unsigned int boundary_wall = 0;
+      unsigned int boundary_periodic = 0;
+      bool integrated_boundary = false;
+
       const QGauss<dim> quadrature(ngp);
       const QGauss<dim-1> face_quadrature(ngp_face);
 
@@ -33,6 +38,7 @@ Solver_DG<num_flux,dim>::assemble_system()
       vector<types::global_dof_index> local_dof_indices_neighbor(dofs_per_cell);
 
       FullMatrix<double> cell_matrix(dofs_per_cell,dofs_per_cell);                  // contribution from the interior
+      FullMatrix<double> boundary_matrix(dofs_per_cell,dofs_per_cell);
       Vector<double>     cell_rhs(dofs_per_cell);                                   // rhs from the current cell
 
       // matrices for the boundary terms
@@ -58,10 +64,6 @@ Solver_DG<num_flux,dim>::assemble_system()
 
       for (; cell != endc ; cell++) 
       {
-        if (count_manuel > 0)
-		Assert(1 == 0 ,ExcMessage("debuggin"));		
-
-	cout << "inside assembly" << endl;
         cell_matrix = 0;
         cell_rhs = 0;
         cell->get_dof_indices(local_dof_indices);
@@ -73,27 +75,92 @@ Solver_DG<num_flux,dim>::assemble_system()
         integrate_cell_manuel(cell_matrix,cell_rhs,
                               fe_v,Jacobians_interior,
                               source_term_value,cell);
-	
-        
+      
 
             for(unsigned int face  = 0; face< GeometryInfo<dim>::faces_per_cell; face++ )
             {
             
               fe_v_face.reinit(cell,face);
+              const typename DoFHandler<dim>::face_iterator face_itr = cell->face(face);
               Jacobian_face = fe_v_face.get_JxW_values();
               
               u1_v1 = 0;
               u1_v2 = 0;
               u2_v1 = 0;
               u2_v2 = 0;
+              boundary_matrix = 0;
 
-
-              if (cell->face(face)->at_boundary())
+              if (face_itr->at_boundary())
               { 
-                integrate_boundary_manuel(cell_matrix, cell_rhs,
-                                          fe_v_face, Jacobian_face,
-                                          component, cell); 
+                integrated_boundary = false;
+                switch(mesh_info.mesh_type)
+                {
+                  // no periodic neighbors
+                  case ring:
+                  {
+                    integrate_boundary_manuel(boundary_matrix, cell_rhs,
+                                              fe_v_face, Jacobian_face,
+                                              component, cell); 
+                    integrated_boundary = true;
+                    break;
+                  }
+                  case periodic_square:
+                  {
+                    const double xcord_face_center = face_itr->center()(0);
+                    const double ycord_cell_center = cell->center()(1);
+
+
+                    if ( fabs(xcord_face_center - mesh_info.xl) <= 1e-10
+                        || fabs(xcord_face_center - mesh_info.xr) <= 1e-10 ) 
+                    {
+                      neighbor = get_periodic_neighbor(xcord_face_center,ycord_cell_center);
+                      neighbor->get_dof_indices(local_dof_indices_neighbor);
+
+                      Assert(!neighbor->has_children(),
+                             ExcMessage("periodic boundary only to used with zero level meshes"));
+                      Assert(neighbor->center()(1) == ycord_cell_center,
+                            ExcMessage("mesh not lexiograhical"));
+
+                      const unsigned int neighbor_face = get_periodic_neighbor_face(xcord_face_center
+                                                                                    ,ycord_cell_center);
+
+                      fe_v_face_neighbor.reinit(neighbor,neighbor_face);
+
+
+                      // integrate the face between the cell and the periodic neighbor
+                      integrate_face_manuel(u1_v1,u1_v2,
+                                        u2_v1,u2_v2,
+                                        fe_v_face,fe_v_face_neighbor,
+                                        Jacobian_face,component,  
+                                        cell);  
+
+                      integrated_boundary = true;
+                      boundary_periodic++;
+
+                    }
+
+                    // if the face is not on the peridic boundary 
+                    else 
+                    {
+                        integrate_boundary_manuel(boundary_matrix, cell_rhs,
+                                              fe_v_face, Jacobian_face,
+                                              component, cell); 
+
+                        integrated_boundary = true;
+                        boundary_wall ++;
+
+                    }  
+                    
+
+                    
+                    Assert(integrated_boundary, ExcMessage("did nothing on the boundary"));
+
+                    break;
+                  }
+                }
+
                 
+                //print_dealii_matrix(boundary_matrix,"boundary matrix");
               }
                 else
                {
@@ -142,24 +209,24 @@ Solver_DG<num_flux,dim>::assemble_system()
                                         u2_v1,u2_v2,
                                         fe_v_face,fe_v_face_neighbor,
                                         Jacobian_face,component,  
-                                        cell);                  
+                                        cell);   
 
+                  /*print_dealii_matrix(u1_v1,"u1 v1");
+                  print_dealii_matrix(u1_v2,"u1 v2");
+                  print_dealii_matrix(u2_v1,"u2 v1");
+                  print_dealii_matrix(u2_v2,"u2 v2");*/
   
                  }
                 }
 	
 	
-	     cout << "integrated over face " << endl;
-	    /* print_dealii_matrix(u1_v1,"u1 v1");
-	     print_dealii_matrix(u1_v2,"u1 v2");
-             print_dealii_matrix(u2_v1,"u2 v1");
-	     print_dealii_matrix(u2_v2,"u2 v2");*/
+
 	 
                for (unsigned int i = 0 ; i < dofs_per_cell ; i++)
               for (unsigned int j = 0 ; j < dofs_per_cell ; j++)
               {
                
-                global_matrix.add(local_dof_indices[i],local_dof_indices[j],u1_v1(i,j));
+                global_matrix.add(local_dof_indices[i],local_dof_indices[j],u1_v1(i,j) + boundary_matrix(i,j));
                 global_matrix.add(local_dof_indices_neighbor[i],local_dof_indices_neighbor[j],u2_v2(i,j));
 
                 global_matrix.add(local_dof_indices[i],local_dof_indices_neighbor[j],u2_v1(i,j));
@@ -175,8 +242,10 @@ Solver_DG<num_flux,dim>::assemble_system()
              for(unsigned int i = 0 ; i < dofs_per_cell ; i++)
               system_rhs(local_dof_indices[i]) += cell_rhs(i);
 
-	     count_manuel++;
-	     //print_dealii_matrix(cell_matrix,"cell matrix");
+	   
 	  }
+
+    cout << "integrated wall " << boundary_wall << " times " << endl;
+    cout << "integraed periodic wall " << boundary_periodic << " times " << endl;
 
   }

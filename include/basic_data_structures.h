@@ -89,4 +89,7 @@ struct mesh_data
 	// ycord of the top boundary
 	double yt;
 
+	// number of partisions per dimension for the square domain
+	unsigned int part_per_dim;
+
 };

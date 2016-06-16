@@ -112,12 +112,12 @@ namespace Mesh_Handler
 
           case periodic_square:
           {
-            const unsigned int division_per_dim = 10;
+
             const double xl = mesh_info.xl;
             const double xr = mesh_info.xr;
 
             GridGenerator::subdivided_hyper_cube  (triangulation,
-                                                    division_per_dim,
+                                                    mesh_info.part_per_dim,
                                                     mesh_info.xl,
                                                     mesh_info.xr);
 

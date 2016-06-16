@@ -12,11 +12,11 @@ SET(G++_COVERAGE_COMPILE_FLAGS6 "-DMKL_ILP64 -m64")
 SET(G++_COVERAGE_COMPILE_FLAGS7 "-Wl,--no-as-needed")
 
 
-#SET(DEAL_II_DIR "/Applications/deal.II.app/Contents/Resources/lib/cmake")
-#SET(MKL_DIR "/opt/intel//compilers_and_libraries_2016.3.170/mac/mkl")
-SET(DEAL_II_DIR "/home/ns179556/dealii/lib/cmake")
-SET(MKL_DIR "/opt/intel/mkl/11.3.2.181/compilers_and_libraries_2016.2.181/linux/mkl")
-SET(MKL_DIR2 "/opt/intel/mkl/11.3.2.181/compilers_and_libraries_2016.2.181/linux/compiler/")
+SET(DEAL_II_DIR "/Applications/deal.II.app/Contents/Resources/lib/cmake")
+SET(MKL_DIR "/opt/intel//compilers_and_libraries_2016.3.170/mac/mkl")
+#SET(DEAL_II_DIR "/home/ns179556/dealii/lib/cmake")
+#SET(MKL_DIR "/opt/intel/mkl/11.3.2.181/compilers_and_libraries_2016.2.181/linux/mkl")
+#SET(MKL_DIR2 "/opt/intel/mkl/11.3.2.181/compilers_and_libraries_2016.2.181/linux/compiler/")
 
 FIND_PACKAGE(deal.II 8.3 QUIET
   HINTS ${deal.II_DIR} ${DEAL_II_DIR} ../ ../../ $ENV{DEAL_II_DIR}
@@ -44,15 +44,15 @@ ADD_EXECUTABLE(mycode.out main.cc)
 
 
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/include)
-#INCLUDE_DIRECTORIES(/usr/local/include/eigen)
-INCLUDE_DIRECTORIES(/home/ns179556/eigen)
+INCLUDE_DIRECTORIES(/usr/local/include/eigen)
+#INCLUDE_DIRECTORIES(/home/ns179556/eigen)
 INCLUDE_DIRECTORIES(${MKL_DIR}/include)
 
-#LINK_DIRECTORIES(${MKL_DIR}/lib/)
-LINK_DIRECTORIES(${MKL_DIR}/lib/intel64/)
-LINK_DIRECTORIES(${MKL_DIR2}/lib/intel64)
-#TARGET_LINK_LIBRARIES(mycode.out libmkl_intel_ilp64.dylib libmkl_core.dylib libmkl_intel_thread.dylib libpthread.dylib libdl.dylib)
-TARGET_LINK_LIBRARIES(mycode.out libiomp5.so libpthread.so libmkl_intel_ilp64.so libmkl_core.so libmkl_intel_thread.so libdl.so)
+LINK_DIRECTORIES(${MKL_DIR}/lib/)
+#LINK_DIRECTORIES(${MKL_DIR}/lib/intel64/)
+#LINK_DIRECTORIES(${MKL_DIR2}/lib/intel64)
+TARGET_LINK_LIBRARIES(mycode.out libmkl_intel_ilp64.dylib libmkl_core.dylib libmkl_intel_thread.dylib libpthread.dylib libdl.dylib)
+#TARGET_LINK_LIBRARIES(mycode.out libiomp5.so libpthread.so libmkl_intel_ilp64.so libmkl_core.so libmkl_intel_thread.so libdl.so)
 
 DEAL_II_SETUP_TARGET(mycode.out)
 ADD_CUSTOM_TARGET(release
