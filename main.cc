@@ -141,7 +141,7 @@ int main(int argc,char **argv)
 			{
 				case 6:
 				{
-					ExactSolution::Base_ExactSolution<dim> exact_solution(num_equations.system_to_solve,
+					ExactSolution::systemA_period_sqr<dim> exact_solution(num_equations.system_to_solve,
 																	num_equations.total_nEqn[num_equations.system_to_solve],
 																	system_of_equations.system_data[num_equations.system_to_solve].S_half,
 																	num_equations.system_type,

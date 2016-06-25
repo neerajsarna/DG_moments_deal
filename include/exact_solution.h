@@ -364,9 +364,8 @@ systemA_period_sqr<dim>
 	const double delta_theta_wall = this->theta0 - this->theta1; 			// thetaW(1)-thetaW(-1)
 	const double mean_theta_wall = (this->theta0 + this->theta1)/2;				// (thetaW(1) + thetaW(-1))/2
 	const double ycord = p(1);
-
-	Assert(value.size() != this->nEqn , ExcNotInitialized());
-
+	
+	Assert(value.size() == this->nEqn, ExcMessage("incorrect size"));
 	// value of temperature
 	value(0) = delta_theta_wall * ycord / (2 * (1 + this->tau)) + mean_theta_wall;
 
@@ -395,7 +394,7 @@ systemA_period_sqr<dim>
 
 		case symmetric:
 		{
-			Sparse_matrix_dot_Vector(this->S_half,value);
+			this->Sparse_matrix_dot_Vector(this->S_half,value);
 			break;
 		}
 	}
