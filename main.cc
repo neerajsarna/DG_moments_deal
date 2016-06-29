@@ -161,9 +161,32 @@ int main(int argc,char **argv)
 					break;
 				}
 
+				case 17:
+				{
+					ExactSolution::R13_period_sqr<dim> exact_solution(num_equations.system_to_solve,
+																	num_equations.total_nEqn[num_equations.system_to_solve],
+																	system_of_equations.system_data[num_equations.system_to_solve].S_half,
+																	num_equations.system_type,
+																	physical_constants,
+																	output_dir_name);
+
+					SolverDG::Solver_DG<num_flux,dim> solver(numerical_constants,
+											  			 &system_of_equations,
+											  			 &exact_solution,
+											  			 num_equations,
+											  			 physical_constants,
+											  			 output_dir_name,
+											  			 mesh_info);
+
+					solver.run(numerical_constants.refine_cycles);
+					break;
+				}
+
 				default:
 				{
+				
 					Assert(1 == 0 , ExcNotImplemented());
+					break;
 				}
 			}
 
@@ -174,6 +197,7 @@ int main(int argc,char **argv)
 		default:
 		{
 			Assert(1 == 0, ExcNotImplemented());
+			break;
 		}
 	}
 

@@ -362,6 +362,8 @@ systemA_period_sqr<dim>
 {
 	// temprature different between the walls
 	const double delta_theta_wall = this->theta0 - this->theta1; 			// thetaW(1)-thetaW(-1)
+
+	// mean value of the temperature between the walls
 	const double mean_theta_wall = (this->theta0 + this->theta1)/2;				// (thetaW(1) + thetaW(-1))/2
 	const double ycord = p(1);
 	
@@ -401,6 +403,49 @@ systemA_period_sqr<dim>
 	
 	//cout << "exact solution is " << value << endl;
 
+}
+
+/*the exact solution of this particular system has not been implemented yet, 
+so rather we will just have a zero function as the exact solution. So the error estimate will 
+simply provide us with a norm of the solution*/
+template<int dim> class R13_period_sqr: public Base_ExactSolution<dim>
+{
+	public:
+		R13_period_sqr(const unsigned int system_id,const unsigned int nEqn,
+							  const system_matrix S_half,
+							  const System_Type system_type,
+							  physical_data &physical_constants,
+							  string &output_dir);
+
+		virtual void vector_value(const Point<dim> &p,Vector<double> &value) const;
+};
+
+template<int dim> 
+R13_period_sqr<dim>
+::R13_period_sqr(const unsigned int system_id,
+							  const unsigned int nEqn,
+							  const system_matrix S_half,
+							  const System_Type system_type,
+							  physical_data &physical_constants,
+							  string &output_dir)
+:
+Base_ExactSolution<dim>(system_id,
+				   nEqn,
+				   S_half,
+				   system_type,
+				   physical_constants,
+				   output_dir)
+{
+	Assert(nEqn == 17, ExcMessage("not the desired number of equations"));
+}
+
+template<int dim>
+void 
+R13_period_sqr<dim>
+::vector_value(const Point<dim> &p,Vector<double> &value) const
+{
+	Assert(value.size() == this->nEqn, ExcMessage("incorrect size"));
+	value = 0;
 }
 
 

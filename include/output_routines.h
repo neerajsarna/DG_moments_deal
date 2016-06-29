@@ -43,7 +43,23 @@ Solver_DG<num_flux,dim>
 		for (unsigned int i = 0 ; i < this->nEqn ; i++)
 			error_value(i) = fabs(solution_value(i)-exact_solution_value(i));
 
-		Sparse_matrix_dot_Vector(equation_system_data->system_data[solve_system].S_half_inv,solution_value);
+		
+		switch(equation_system_data->system_type)
+		{
+			case symmetric:
+			{
+				// we would like to convert back to our original variables
+				Sparse_matrix_dot_Vector(equation_system_data->system_data[solve_system].S_half_inv,solution_value);
+				break;
+			}
+
+			// don't do anything in case of using an un_symmetric system
+			case un_symmetric:
+				break;
+			
+		}
+
+		
 
 		fprintf(fp_solution, "%f %f ",cell->vertex(vertex)[0],cell->vertex(vertex)[1]);
 		fprintf(fp_exact, "%f %f ",cell->vertex(vertex)[0],cell->vertex(vertex)[1]);
@@ -68,6 +84,8 @@ Solver_DG<num_flux,dim>
 	fclose(fp_error);
 }
 
+
+// same as the above function, but does not compute the error values and simply outputs the solution
 template<int num_flux,int dim>
 void
 Solver_DG<num_flux,dim>
@@ -98,8 +116,20 @@ Solver_DG<num_flux,dim>
 
 		VectorTools::point_value(dof_handler, solution, cell->vertex(vertex),solution_value);	
 		
-		// we would now like to convert back to our original solution vector
-		Sparse_matrix_dot_Vector(equation_system_data->system_data[solve_system].S_half_inv,solution_value);
+		switch(equation_system_data->system_type)
+		{
+			case symmetric:
+			{
+				// we would like to convert back to our original variables
+				Sparse_matrix_dot_Vector(equation_system_data->system_data[solve_system].S_half_inv,solution_value);
+				break;
+			}
+
+			// don't do anything in case of using an un_symmetric system
+			case un_symmetric:
+				break;
+			
+		}
 
 		fprintf(fp_solution, "%f %f ",cell->vertex(vertex)[0],cell->vertex(vertex)[1]);
 		

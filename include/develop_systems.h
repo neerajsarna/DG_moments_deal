@@ -96,7 +96,7 @@ void Base_EquationGenerator<num_flux,dim>
 		}
 
 		// only implement characteristic boundary conditions for R13
-		case 16:
+		case 17:
 		{
 			Assert(1 == 0, ExcNotImplemented());
 		}
@@ -133,36 +133,14 @@ void Base_EquationGenerator<num_flux,dim>
 	assert(matrix_info.matrix.cols() == num_equations.total_nEqn[system_id] 
 			|| matrix_info.matrix.rows() == num_equations.total_nEqn[system_id]);
 
-	matrix_info.matrix.coeffRef(1,1) = zeta/tau;
+	
 
-	const unsigned int neqn_local = num_equations.total_nEqn[system_id];
-
-	switch (neqn_local)
-	{
-		case 6:
+	for (unsigned int m = 0 ; m < matrix_info.matrix.outerSize() ; m++)
+		for (Sparse_matrix::InnerIterator n(matrix_info.matrix,m); n ; ++n)
 		{
-			for (unsigned int i = 2 ; i < matrix_info.matrix.rows() ; i++)
-					matrix_info.matrix.coeffRef(i,i) = 1/tau;
-
-			break;
+			Assert(n.col() == n.row() , ExcMessage("Diagonal matrix expected"));
+			matrix_info.matrix.coeffRef(n.col(),n.row()) = n.value()/tau;
 		}
-
-		case 10:
-		{
-			for (unsigned int i = 2 ; i < matrix_info.matrix.rows() ; i++)
-					matrix_info.matrix.coeffRef(i,i) = 1/tau;
-
-			break;
-		}
-
-		case 16:
-		{
-			for (unsigned int i = 4 ; i < matrix_info.matrix.rows() ; i++)
-					matrix_info.matrix.coeffRef(i,i) = 1/tau;
-
-			break;
-		}
-	}
 
 
 		
@@ -271,21 +249,22 @@ Sparse_matrix Base_EquationGenerator<num_flux,dim>
 		}
 
 		// Details for R13
-		// rho, vx, vy, theta, sigma_xx, sigma_xy, sigma_yy, qx, qy, mxxx, mxxy, mxyy, myyy, Rxx, Rxy, Ryy
-		case 16:
+		// rho, (vx, vy), theta, sigma_xx, sigma_xy, sigma_yy, qx, qy, (mxxx, mxxy, mxyy, myyy),Delta, (Rxx, Rxy, Ryy)
+		case 17:
 		{
 			
 			switch(system_type)
 			{
 				case un_symmetric:
 				{
-					  SpBlock( 0, tensor_project[0].P, Projector );
-  					  SpBlock( 1, tensor_project[1].P, Projector );
-  					  SpBlock( 3, tensor_project[0].P, Projector );
-  			          SpBlock( 4, tensor_project[2].P, Projector );
-  					  SpBlock( 7, tensor_project[1].P, Projector );
-  				      SpBlock( 9, tensor_project[3].P, Projector );
-  				      SpBlock( 13, tensor_project[2].P, Projector );
+					  SpBlock( 0, tensor_project[0].P, Projector );	// theta
+  					  SpBlock( 1, tensor_project[1].P, Projector );	// velocity
+  					  SpBlock( 3, tensor_project[0].P, Projector ); // theta
+  			          SpBlock( 4, tensor_project[2].P, Projector ); // sigma
+  					  SpBlock( 7, tensor_project[1].P, Projector ); // q
+  				      SpBlock( 9, tensor_project[3].P, Projector ); // mijk
+  				      SpBlock( 13, tensor_project[0].P, Projector ); // delta
+  				      SpBlock( 14, tensor_project[2].P, Projector ); // Rij
 
 					break;
 				}
@@ -363,7 +342,7 @@ build_InvProjector(const Tensor<1,dim,double> normal_vector,const unsigned int s
 
 		}
 		case 10:
-		case 16:
+		case 17:
 		{
 			switch(system_type)
 			{
@@ -399,13 +378,15 @@ build_BCrhs(const Tensor<1,dim,double> p,
 	double x_cord = p[0];
 	double y_cord = p[1];
 	const unsigned int neqn_local = num_equations.total_nEqn[system_id];
+	const unsigned int nbc_local = num_equations.nBC[system_id];
 
 	switch(bc_type)
 	{
 		// the size of bc_rhs == no of negative eigen values in the system
 		case characteristic:
 		{
-			assert(bc_rhs.size() == num_equations.nBC[system_id]);
+			assert(bc_rhs.size() == nbc_local);
+			bc_rhs = 0;
 			switch(neqn_local)
 			{
 				case 6:
@@ -460,6 +441,7 @@ build_BCrhs(const Tensor<1,dim,double> p,
  		   		case 10:
  		   		{
  		   			Assert(1 == 0, ExcNotImplemented());
+ 		   			Assert(mesh_type == ring,ExcNotImplemented());
 
  		   			if( norm > 0.7 ) 
  		   				bc_rhs(0) = -chi*theta1;  // is chi \alpha and same with zeta
@@ -472,8 +454,9 @@ build_BCrhs(const Tensor<1,dim,double> p,
 	 		   		break;
  			   	}	
 
- 			   	case 16:
+ 			   	case 17:
  			   	{
+ 			   		Assert(mesh_type == periodic_square, ExcNotImplemented());
  			   		double thetaW;
  			   		// signs have been reveresed as compared to Manuel's implementation
 
@@ -486,12 +469,13 @@ build_BCrhs(const Tensor<1,dim,double> p,
  			   		if (y_cord == -1)
  			   			thetaW = theta1;
 
- 			   		bc_rhs(0) =  0;
- 			   		bc_rhs(1) =  0;
- 			   		bc_rhs(2) =  2*thetaW;		// temperature of the upper wall
- 			   		bc_rhs(3) =  -0.4*thetaW;
- 			   		bc_rhs(4) = 0.2*thetaW;
- 			   		bc_rhs(5) =  0;
+ 			   		for (unsigned int m = 0 ; m < system_data[system_id].B.matrix.outerSize() ; m++)
+ 			   			for (Sparse_matrix::InnerIterator n(system_data[system_id].B.matrix,m); n ; ++n)
+ 			   			{
+ 			   				if (n.col() == 3)		// only provide a boundary value for the temperature
+ 			   					bc_rhs(n.row()) = (-3.0/2) * thetaW * n.value();
+ 			   			}
+ 			   			
  			   		
  			   	}		
 
@@ -535,9 +519,9 @@ build_BCrhs(const Tensor<1,dim,double> p,
 	 		   		break;
  			   	}
 
- 			   	case 16:
+ 			   	case 17:
  			   	{
- 			   		Assert(1 == 0, ExcNotImplemented());
+ 			   		Assert(1 == 0, ExcMessage("not implemented due to inconsistency of the method"));
  			   		break;
  			   	}
  			}
@@ -604,7 +588,7 @@ void Base_EquationGenerator<num_flux,dim>
 					break;
 				}
 				case 10:
-				case 16:
+				case 17:
 				{
 					Assert(1 == 0,ExcNotImplemented());
 					break;
@@ -719,12 +703,17 @@ void Base_EquationGenerator<num_flux,dim>::generate_matrices(equation_data &syst
 		filename = system_dir + to_string(system_data.nEqn) + "P.txt";
 		system_data.P.matrix.resize(system_data.nEqn,system_data.nEqn);
 		build_triplet(system_data.P,filename);
+
+		// develop values of P corresponding to tau = 1.0
+		build_matrix_from_triplet(system_data.P);
+
+		// adjust P corresponding to the tau in the problem
 		build_P(system_data.P,system_id);
 		print_matrix(system_data.P,generate_filename_to_write(system_dir,filename));
 
 		/*for any other case, BC will be generated internally using characteristic splitting*/
 		if (num_equations.total_nEqn[system_id] == 6 
-			|| num_equations.total_nEqn[system_id] == 10 )
+			|| num_equations.total_nEqn[system_id] == 10)
 		{
 					filename = system_dir + to_string(system_data.nEqn) + "BC.txt";
 					system_data.BC.matrix.resize(system_data.nEqn,system_data.nEqn);
@@ -743,7 +732,7 @@ void Base_EquationGenerator<num_flux,dim>::generate_matrices(equation_data &syst
 		// needs to be implemented for the B system
 		// i.e the system with 10 equations
 		if (num_equations.total_nEqn[system_id] == 6
-			|| num_equations.total_nEqn[system_id] == 16)
+			|| num_equations.total_nEqn[system_id] == 17)
 		{
 			filename = system_dir + to_string(system_data.nEqn) + "B.txt";
 			system_data.B.matrix.resize(num_equations.nBC[system_id],system_data.nEqn);
@@ -775,7 +764,7 @@ void Base_EquationGenerator<num_flux,dim>::generate_matrices(equation_data &syst
 				Assert(num_equations.total_nEqn[system_id] != 10,
 					   ExcNotImplemented()); // symmetric system not implemented for B type
 
-				Assert(num_equations.total_nEqn[system_id] != 16,
+				Assert(num_equations.total_nEqn[system_id] != 17,
 						ExcNotImplemented());  // symmetric system not implemented for R13 equations
 
 				filename = system_dir + to_string(system_data.nEqn) + "S_half.txt";

@@ -137,7 +137,7 @@ namespace Input_parameters
 
 				prm.declare_entry("equations in the system",
 					 			  "6",
-					 			  Patterns::Integer(6,10),
+					 			  Patterns::Integer(6,20),
 					 			  "total number of equations in system");
 
 				prm.declare_entry("nBC",
