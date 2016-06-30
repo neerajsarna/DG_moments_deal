@@ -124,6 +124,7 @@ void Base_EquationGenerator<num_flux,dim>
 {
 	Assert(B_hat.size() != 0,ExcNotInitialized());
 	B_hat = X_minus * B_tilde_inv * B.matrix;
+
 }
 
 template<int num_flux,int dim> 
@@ -257,7 +258,7 @@ Sparse_matrix Base_EquationGenerator<num_flux,dim>
 			{
 				case un_symmetric:
 				{
-					  SpBlock( 0, tensor_project[0].P, Projector );	// theta
+					  SpBlock( 0, tensor_project[0].P, Projector );	// rho
   					  SpBlock( 1, tensor_project[1].P, Projector );	// velocity
   					  SpBlock( 3, tensor_project[0].P, Projector ); // theta
   			          SpBlock( 4, tensor_project[2].P, Projector ); // sigma
@@ -476,8 +477,14 @@ build_BCrhs(const Tensor<1,dim,double> p,
  			   					bc_rhs(n.row()) = (-3.0/2) * thetaW * n.value();
  			   			}
  			   			
- 			   		
- 			   	}		
+ 			   		break;
+ 			   	}	
+
+ 			   	default:
+ 			   	{
+ 			   		Assert(1 == 0,ExcInternalError());
+ 			   		break;
+ 			   	}	
 
 		    }
 		

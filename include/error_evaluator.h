@@ -15,6 +15,7 @@ Solver_DG<num_flux,dim>::error_evaluation(const Vector<double> &solution)
           QGauss<dim>(ngp),
           VectorTools::L2_norm,&weight);  
 
+        // division only needed for the sake of comparison, can be easily removed
         switch(equation_system_data->system_type)
         {
           case symmetric:
@@ -39,6 +40,7 @@ Solver_DG<num_flux,dim>::error_evaluation(const Vector<double> &solution)
           QGauss<dim>(ngp),
           VectorTools::Linfty_norm,&weight);  
         
+        // division only needed for the sake of comparison, can be easily removed
         switch(equation_system_data->system_type)
         {
           case symmetric:
@@ -81,6 +83,7 @@ Solver_DG<num_flux,dim>::error_evaluation(const Vector<double> &solution)
 
 
 // the following function evaluates the l2 and linf norm of the solution
+// to be used when the exact solution is not known
 template<int num_flux,int dim> 
 void 
 Solver_DG<num_flux,dim>::evaluate_norms(const Vector<double> &solution)

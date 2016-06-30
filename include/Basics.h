@@ -32,6 +32,12 @@ namespace Basics
 		// the following function prints the matrix given to it 
 		void print_dealii_matrix(const FullMatrix<double> &matrix,
 					string matrix_name);
+
+		void print_eigen_sparse(Sparse_matrix &sparse_matrix, 
+								string matrix_name);
+
+		void print_eigen_full(Full_matrix &full_matrix,
+							  string matrix_name);
 	};
 
 	Base_Basics::Base_Basics(const physical_data &physical_constants,
@@ -136,5 +142,37 @@ namespace Basics
 
 	  }
 
+	  void Base_Basics::print_eigen_sparse(Sparse_matrix &sparse_matrix,
+	  									   string matrix_name)
+	  {
+	  	const unsigned int n_rows = sparse_matrix.rows();
+	  	const unsigned int n_cols = sparse_matrix.cols();
+
+	  	printf("%s\n",matrix_name.c_str());
+	  	for (unsigned int i = 0 ;  i < n_rows ; i ++)
+	  	{
+	  		for (unsigned int j = 0 ; j < n_cols ; j ++)
+	  			cout << " " << sparse_matrix.coeffRef(i,j) ; 
+
+	  		cout << endl;
+	  	}
+
+	  }
+
+	  void Base_Basics::print_eigen_full(Full_matrix &full_matrix,
+	  									 string matrix_name)
+	  {
+	  	const unsigned int n_rows = full_matrix.rows();
+	  	const unsigned int n_cols = full_matrix.cols();
+
+	  	printf("%s\n",matrix_name.c_str());
+	  	for (unsigned int i = 0 ; i < n_rows; i ++)
+	  	{
+	  		for (unsigned int j = 0 ; j < n_cols ; j++)
+	  			cout << " " << full_matrix(i,j) ;
+
+	  		cout << endl;
+	  	}
+	  }
 
 	}

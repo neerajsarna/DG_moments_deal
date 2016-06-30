@@ -154,7 +154,7 @@ namespace Input_parameters
 				/*0 for force of system A and 1 for force of system B*/
 				prm.declare_entry("force type",
 								  "0",
-								  Patterns::Integer(0,1),
+								  Patterns::Integer(0,4),
 								  "Type of force on the system");
 
 				/*0 for characteristic and 1 for odd*/
@@ -208,7 +208,7 @@ namespace Input_parameters
 
 				prm.declare_entry("part_per_dim",
 								  "2",
-								  Patterns::Integer(2,200),
+								  Patterns::Integer(1,200),
 								  "partitions per dim");
 			}
 			prm.leave_subsection();

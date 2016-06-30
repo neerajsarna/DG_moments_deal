@@ -1,0 +1,64 @@
+Using input_files/input_periodic_R13.in as input fileloading 1 systems
+System ID 0 #nEqn 17
+Reading system matrices.......
+
+......reading triplet from: system_matrices/17A1.txt
+developing matrix from triplet......
+writting the read matrices to: output_trial_R13/matrix_read/17A1.txt
+
+......reading triplet from: system_matrices/17A2.txt
+developing matrix from triplet......
+writting the read matrices to: output_trial_R13/matrix_read/17A2.txt
+
+......reading triplet from: system_matrices/17P.txt
+developing matrix from triplet......
+writting the read matrices to: output_trial_R13/matrix_read/17P.txt
+
+......reading triplet from: system_matrices/17B.txt
+developing matrix from triplet......
+writting the read matrices to: output_trial_R13/matrix_read/17B.txt
+
+Done Reading Matrices......
+
+tensor data memory allocation
+finished allocation
+Solving for: 17 equations 
+no of cells in the initial mesh1
+Total #DOF: 68
+assembling the matrix manually 
+printing from integrate_cell_manuel
+cell_rhs
+0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 0.000e+00 
+
+integrated wall 2 times 
+integraed periodic wall 2 times 
+finished assembling the matrix 
+solving the system....
+Memory by original matrix 5.6776e-05
+Generating data for pardiso 
+Data generation completed
+Done copying to MKL_INT 
+entering pardiso 
+
+Reordering completed ... 
+Factorization completed ... 
+
+Solving non-transposed system...
+
+Solving complete 
+done solving*******************Error details******************
+ L2_error: 0.349843 Linfty_error: 0.174921 #DOF: 68 #Cells 1
+**************************************************
+
+
++---------------------------------------------+------------+------------+
+| Total wallclock time elapsed since start    |     0.167s |            |
+|                                             |            |            |
+| Section                         | no. calls |  wall time | % of total |
++---------------------------------+-----------+------------+------------+
+| distributing dof                |         1 |   0.00634s |       3.8% |
+| error evaluation                |         1 |    0.0121s |       7.2% |
+| mesh_generation                 |         1 |  0.000606s |      0.36% |
+| solving the system              |         1 |    0.0213s |        13% |
++---------------------------------+-----------+------------+------------+
+
