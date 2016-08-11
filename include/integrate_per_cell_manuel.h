@@ -84,10 +84,6 @@ Solver_DG<num_flux,dim>
     
   }
 
-  cout << "printing from integrate_cell_manuel" << endl;
-  cout << "cell_rhs" << endl;
-  cout << cell_rhs << endl;
-
 }
 
 template<int num_flux,int dim>

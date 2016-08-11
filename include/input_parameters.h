@@ -80,13 +80,13 @@ namespace Input_parameters
 			
 				prm.declare_entry("theta0",
 								  "2.0",
-								  Patterns::Double(0.001,20.0),
+								  Patterns::Double(0.00,20.0),
 								  "Temperature of inner wall");
 
 		
 				prm.declare_entry("theta1",
 								  "1.0",
-								  Patterns::Double(0.001,20.0),
+								  Patterns::Double(0.00,20.0),
 								  "Temperature of outer wall");
 
 				
