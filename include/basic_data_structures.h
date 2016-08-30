@@ -10,7 +10,7 @@ enum Num_Flux
 {Upwind, LLF};
 
 enum Force_Type
-{type1,type2,type3};
+{type1,type2,type3,type4};
 
 enum Refinement
     {global,adaptive,adaptive_kelly};
@@ -43,7 +43,7 @@ struct nEqn_data
 
 	std::vector<unsigned int> total_nEqn;
 	std::vector<unsigned int> nBC;
-	std::map<unsigned int,char> system_id_nEqn;			// maps the system_id with the number of equations
+	std::vector<int> system_id;			// the system id of the different equations
 	
 	Force_Type force_type;
 	System_Type system_type;			

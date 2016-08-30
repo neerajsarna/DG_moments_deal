@@ -15,12 +15,14 @@ namespace EquationGenerator
 		const System_Type system_type;
 		const Force_Type force_type;
 		const BC_type bc_type;
-		const Mesh_type mesh_type;
+		const mesh_data mesh_info;
 
 	  struct equation_data
 	  {
 	  		bool is_symmetric;
 	  		unsigned int nEqn;
+	  		int system_id;
+	  		string base_filename;
 			system_matrix A[dim];
 			system_matrix P;
 			system_matrix BC;
@@ -46,7 +48,7 @@ namespace EquationGenerator
 	  		Base_EquationGenerator(nEqn_data const&num_equations,
 		  						   physical_data &physical_constants,
 		  						   tensor_data const&tensor_info,
-		  						   Mesh_type mesh_type,
+		  						   mesh_data mesh_info,
 	  							   string &output_dir);
 
 	  		vector<equation_data> system_data;
@@ -68,7 +70,7 @@ namespace EquationGenerator
 	  	void build_matrix_from_triplet(system_matrix &matrix_info);
 	  	void print_matrix(const system_matrix matrix_info,const string filename);
 
-	  	void generate_matrices(equation_data &system_data,const unsigned int system_id);
+	  	void generate_matrices(equation_data &system_data,const unsigned int system_index);
 	  	Tensor<1,dim,double> mirror(const Tensor<1,dim,double> normal_vector) const;			
 	  	void build_Aminus1D(Full_matrix &Aminus_1D_Int,
 	  		Full_matrix &Aminus_1D_Bound,
@@ -100,6 +102,7 @@ namespace EquationGenerator
 	
 	};
 
+	// develops the triplet of all the matrices involved
 	template<int num_flux,int dim> 
 	void Base_EquationGenerator<num_flux,dim>::
 	build_triplet(system_matrix &matrix_info,const string filename)
@@ -140,6 +143,7 @@ namespace EquationGenerator
 
 	}
 
+	// builds the sparse matrix from the triplets
 	template<int num_flux,int dim>
 	void Base_EquationGenerator< num_flux, dim>::
 	build_matrix_from_triplet(system_matrix &matrix_info)
@@ -179,7 +183,7 @@ namespace EquationGenerator
 	 ::Base_EquationGenerator(nEqn_data const&num_equations,
 	 					      physical_data &physical_constants,
 	 					      tensor_data const&tensor_info,
-	 					      Mesh_type mesh_type,
+	 					      mesh_data mesh_info,
 	 					      string &output_dir)
 	 :
 	 Base_Basics(physical_constants,output_dir),
@@ -188,7 +192,7 @@ namespace EquationGenerator
 	 system_type(num_equations.system_type),
 	 force_type(num_equations.force_type),
 	 bc_type(num_equations.bc_type),
-	 mesh_type(mesh_type)
+	 mesh_info(mesh_info)
 	{
 		cout << "loading " << num_equations.no_of_total_systems << " systems" << endl;
 		system_data.resize(num_equations.no_of_total_systems);

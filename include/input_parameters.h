@@ -34,7 +34,7 @@ namespace Input_parameters
 			{
 				prm.declare_entry("polynomial degree",
 								  "1",
-								  Patterns::Integer(1,10),
+								  Patterns::Integer(0,10),
 								  "polynomial order per dimension");
 
 				prm.declare_entry("mapping order",
@@ -78,15 +78,16 @@ namespace Input_parameters
 								  Patterns::Double(0.0,20.0),
 								  "Boundary condition handling");
 			
+				// could be negative if one is using different variables
 				prm.declare_entry("theta0",
 								  "2.0",
-								  Patterns::Double(0.00,20.0),
+								  Patterns::Double(-20.0,20.0),
 								  "Temperature of inner wall");
 
 		
 				prm.declare_entry("theta1",
 								  "1.0",
-								  Patterns::Double(0.00,20.0),
+								  Patterns::Double(-20.0,20.0),
 								  "Temperature of outer wall");
 
 				
@@ -130,10 +131,16 @@ namespace Input_parameters
 
 			prm.enter_subsection("System Properties");
 			{
+
 				prm.declare_entry("total systems to load",
 								   "1",
 								   Patterns::Integer(1,2),
 								   "total number of systems to load");
+
+				prm.declare_entry("system_id",
+								  "6",
+								  Patterns::Integer(-100,100),
+								  "system ID(distinguish between regularized and normal theories)");
 
 				prm.declare_entry("equations in the system",
 					 			  "6",
@@ -248,14 +255,18 @@ namespace Input_parameters
 			entered = true;
 
 			num_equations.no_of_total_systems = prm.get_integer("total systems to load");
+			
+			// the code cannot presently solve for more than one moment system.
 			Assert(num_equations.no_of_total_systems == 1,ExcNotImplemented());
 
 			num_equations.total_nEqn.resize(num_equations.no_of_total_systems);
 			num_equations.nBC.resize(num_equations.no_of_total_systems);
+			num_equations.system_id.resize(num_equations.no_of_total_systems);
 
 			num_equations.total_nEqn[0] = prm.get_integer("equations in the system");
 			num_equations.nBC[0] = prm.get_integer("nBC");
 			num_equations.system_to_solve = 0;
+			num_equations.system_id[0] = prm.get_integer("system_id");
 
 			num_equations.system_type = (System_Type)prm.get_integer("symmetric or un symmetric");
 			num_equations.force_type = (Force_Type)prm.get_integer("force type");

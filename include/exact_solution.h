@@ -408,10 +408,10 @@ systemA_period_sqr<dim>
 /*the exact solution of this particular system has not been implemented yet, 
 so rather we will just have a zero function as the exact solution. So the error estimate will 
 simply provide us with a norm of the solution*/
-template<int dim> class R13_period_sqr: public Base_ExactSolution<dim>
+template<int dim> class G26_period_sqr: public Base_ExactSolution<dim>
 {
 	public:
-		R13_period_sqr(const unsigned int system_id,const unsigned int nEqn,
+		G26_period_sqr(const unsigned int system_id,const unsigned int nEqn,
 							  const system_matrix S_half,
 							  const System_Type system_type,
 							  physical_data &physical_constants,
@@ -421,8 +421,8 @@ template<int dim> class R13_period_sqr: public Base_ExactSolution<dim>
 };
 
 template<int dim> 
-R13_period_sqr<dim>
-::R13_period_sqr(const unsigned int system_id,
+G26_period_sqr<dim>
+::G26_period_sqr(const unsigned int system_id,
 							  const unsigned int nEqn,
 							  const system_matrix S_half,
 							  const System_Type system_type,
@@ -439,9 +439,10 @@ Base_ExactSolution<dim>(system_id,
 	Assert(nEqn == 17, ExcMessage("not the desired number of equations"));
 }
 
+// presently the solution is not known
 template<int dim>
 void 
-R13_period_sqr<dim>
+G26_period_sqr<dim>
 ::vector_value(const Point<dim> &p,Vector<double> &value) const
 {
 	Assert(value.size() == this->nEqn, ExcMessage("incorrect size"));

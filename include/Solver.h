@@ -372,6 +372,8 @@ namespace SolverDG
         case meshworker:
         {
           cout << "assembling the matrix using meshworker...." << endl;
+          // meshworker cannot presently handle periodic boundary conditions
+          Assert(mesh_info.mesh_type == periodic_square, ExcNotImplemented());
           timer.enter_subsection("assemblation");
           assemble_system_meshworker();
           timer.leave_subsection();
@@ -389,6 +391,7 @@ namespace SolverDG
 
       //fflush(stdout);
       //Assert(1 == 0, ExcMessage("debugging from Solver"));
+      print_dealii_sparse(global_matrix);
 
       cout << "solving the system...." << endl;
       timer.enter_subsection("solving the system");

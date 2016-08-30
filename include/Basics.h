@@ -38,6 +38,8 @@ namespace Basics
 
 		void print_eigen_full(Full_matrix &full_matrix,
 							  string matrix_name);
+
+		void print_dealii_sparse(const TrilinosWrappers::SparseMatrix &matrix);
 	};
 
 	Base_Basics::Base_Basics(const physical_data &physical_constants,
@@ -173,6 +175,24 @@ namespace Basics
 
 	  		cout << endl;
 	  	}
+	  }
+
+	  void Base_Basics::print_dealii_sparse(const TrilinosWrappers::SparseMatrix &matrix)
+	  {
+	  	FILE *fp;
+	  	fp = fopen("printed_matrices/global_matrix","w+");
+
+	  	const unsigned int num_non_zero = matrix.n_nonzero_elements();
+	  	typename TrilinosWrappers::SparseMatrix::const_iterator it = matrix.begin();
+	  	const typename TrilinosWrappers::SparseMatrix::const_iterator it_end = matrix.end();
+
+	  	for (; it != it_end; it++)
+	  		fprintf(fp,"%u %u %lf \n",it->row(),it->column(),it->value());
+	  	
+
+	  	fclose(fp);
+
+
 	  }
 
 	}

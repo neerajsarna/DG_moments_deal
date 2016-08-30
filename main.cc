@@ -1,3 +1,9 @@
+// Running the file
+//1. cmake .
+//2. make debug or make release
+//3. cd "directory for mkl"
+//4. source ./mklvars.sh intel64 mod ilp64
+//5. in the current directory ./mycode.out #threads -p "location of the input file"
 #include <iostream>
 #include "EigenSetup.h"
 #include "basic_data_structures.h"
@@ -96,15 +102,19 @@ int main(int argc,char **argv)
 	container_parameter.read_output_dir_name(output_dir_name);
 	container_parameter.read_mesh_info(mesh_info);
 
+	// given the tensorial degree of the tensor, the following routine allocates the total number of 
+	// independent variables.
 	Tensor_info::tensor_development<dim> develop_tensors;
 	develop_tensors.map_free_indices_to_variable(tensor_info);	
 
+	// Type of numerical flux, Upwind and LLF available
 	const Num_Flux num_flux = Upwind;
 
+	// generate the data corresponding to different to the equations to be solved
 	EquationGenerator::Base_EquationGenerator<num_flux,dim> system_of_equations(num_equations,
 																				physical_constants,
 																				tensor_info,
-																				mesh_info.mesh_type,
+																				mesh_info,
 	 																			output_dir_name);
 
 
@@ -137,8 +147,9 @@ int main(int argc,char **argv)
 		// no known exact solution for a periodic square
 		case periodic_square:
 		{
-			switch(num_equations.total_nEqn[num_equations.system_to_solve])
+			switch(num_equations.system_id[num_equations.system_to_solve])
 			{
+				//G26A system
 				case 6:
 				{
 					ExactSolution::systemA_period_sqr<dim> exact_solution(num_equations.system_to_solve,
@@ -148,7 +159,7 @@ int main(int argc,char **argv)
 																	physical_constants,
 																	output_dir_name);
 
-				SolverDG::Solver_DG<num_flux,dim> solver(numerical_constants,
+			    	SolverDG::Solver_DG<num_flux,dim> solver(numerical_constants,
 											  			 &system_of_equations,
 											  			 &exact_solution,
 											  			 num_equations,
@@ -161,9 +172,10 @@ int main(int argc,char **argv)
 					break;
 				}
 
+				// the G26 system
 				case 17:
 				{
-					ExactSolution::R13_period_sqr<dim> exact_solution(num_equations.system_to_solve,
+					ExactSolution::G26_period_sqr<dim> exact_solution(num_equations.system_to_solve,
 																	num_equations.total_nEqn[num_equations.system_to_solve],
 																	system_of_equations.system_data[num_equations.system_to_solve].S_half,
 																	num_equations.system_type,
