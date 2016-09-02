@@ -18,6 +18,9 @@ Solver_DG<num_flux,dim>
 	fp_exact = fopen(file_exact.c_str(),"w+");
 	fp_error = fopen(file_error.c_str(), "w+");
 
+	printf("FILENAME:  %s \n",file_solution.c_str());
+
+	fflush(stdout);
 	AssertThrow(fp_solution != NULL,ExcMessage("file not open"));
 	AssertThrow(fp_exact != NULL,ExcMessage("file not open"));
 	AssertThrow(fp_error != NULL,ExcMessage("file not open"));

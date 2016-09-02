@@ -115,9 +115,18 @@ Tensor<1,dim,double> Base_EquationGenerator<num_flux,dim>
 ::mirror(const Tensor<1,dim,double> normal_vector) const
 {
 		double nx = normal_vector[0], ny = 0;
+			
+
 		Tensor<1,dim,double> mirrored_vector;
-		mirrored_vector[0] = nx;
-		mirrored_vector[1] = -ny;
+
+		if (dim == 1)
+			mirrored_vector[0] = nx;
+
+		if (dim == 2)
+		{
+			mirrored_vector[0] = nx;
+			mirrored_vector[1] = -ny;
+		}
 
 		return mirrored_vector;
 }

@@ -448,15 +448,15 @@ G26_period_sqr<dim>
 
 	Assert(value.size() == this->nEqn, ExcMessage("incorrect size"));
 	value = 0;
-	const double y_coord = p[1];
+	const double x_coord = p[0];
 
    	// thetaw = 1
 	if (this->tau == 5.0)
 	{
-	value[this->variable_map.find("theta")->second] = -sqrt(3.0/2.0) * (-(sqrt(0.6666666666666666)*(-471.5554874736555 - 9.14476170639053*pow(y_coord,2) + 
-       													0.008164965809277261*pow(y_coord,4) + 
-       													470.28603054235964*cosh((65855813*y_coord)/5.00924885e8) - 
-       													2.842170943040401e-14*sinh((65855813*y_coord)/5.00924885e8))));
+	value[this->variable_map.find("theta")->second] = -sqrt(3.0/2.0) * (-(sqrt(0.6666666666666666)*(-471.5554874736555 - 9.14476170639053*pow(x_coord,2) + 
+       													0.008164965809277261*pow(x_coord,4) + 
+       													470.28603054235964*cosh((65855813*x_coord)/5.00924885e8) - 
+       													2.842170943040401e-14*sinh((65855813*x_coord)/5.00924885e8))));
    	// sigma_yy ()
    	/*value[this->variable_map.find("sigmayy")->second] = 
 
