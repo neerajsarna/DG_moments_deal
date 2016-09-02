@@ -21,6 +21,14 @@ namespace Basics
 		double A1;
 		double A2;
 		double kappa;
+		double epsilon;
+		double alpha;
+
+		// stores the id of the variables 
+		map<string, unsigned int> variable_map;
+
+		// variable name in which error has to be found
+		string error_variable;
 
 		string parameters;
 		string main_output_dir;
@@ -40,6 +48,8 @@ namespace Basics
 							  string matrix_name);
 
 		void print_dealii_sparse(const TrilinosWrappers::SparseMatrix &matrix);
+
+		void allocate_variable_locations();
 	};
 
 	Base_Basics::Base_Basics(const physical_data &physical_constants,
@@ -56,7 +66,10 @@ namespace Basics
 		A1 = physical_constants.A1;
 		A2 = physical_constants.A2;
 		kappa = physical_constants.kappa;		
-		
+		epsilon = physical_constants.epsilon;
+		alpha = physical_constants.alpha;
+		error_variable = physical_constants.error_variable;
+
 		main_output_dir = output_dir;
 		
 		unsigned int num_outputs = 5;
@@ -88,7 +101,9 @@ namespace Basics
 			if (stat(sub_directory_names[i].c_str(),&st) == -1)
 				mkdir(sub_directory_names[i].c_str(),0777);
 
-		}
+		allocate_variable_locations();
+
+	}
 
 		string Base_Basics
 		::generate_filename_to_write(const string system_dir,string filename)
@@ -193,6 +208,15 @@ namespace Basics
 	  	fclose(fp);
 
 
+	  }
+
+	  void Base_Basics::allocate_variable_locations()
+	  {
+	  	vector<string> var_names = {"rho","vx","vy","theta","sigmaxx","sigmaxy","sigmayy","qx","qy","mxxx","mxxy","mxyy","myyy",
+	  								"Delta","Rxx","Rxy","Ryy"};
+
+	  	for (unsigned int i = 0 ; i < 17 ; i++)
+	  		variable_map[var_names[i]] = i;
 	  }
 
 	}

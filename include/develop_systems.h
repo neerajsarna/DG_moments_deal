@@ -109,6 +109,20 @@ void Base_EquationGenerator<num_flux,dim>
 
 template<int num_flux,int dim> 
 void Base_EquationGenerator<num_flux,dim>
+::fix_B_vx(system_matrix &B,
+			const unsigned int system_index)
+{
+	const unsigned int neqn_local = num_equations.total_nEqn[system_index];
+	for (unsigned int i = 0 ; i < neqn_local ; i++)
+		if (i != 1)							// if the coefficient is not equal to the normal velocity
+			B.matrix.coeffRef(0,i) *= epsilon;
+}		
+
+
+
+
+template<int num_flux,int dim> 
+void Base_EquationGenerator<num_flux,dim>
 ::build_B_tilde_inv(const system_matrix &B,
 				const Full_matrix &X_minus,
 				Full_matrix &B_tilde_inv)
@@ -476,21 +490,21 @@ build_BCrhs(const Tensor<1,dim,double> p,
  			   		// signs have been reveresed as compared to Manuel's implementation
 
  			   		// upper edge
- 			   		// tilde_thetaW is the value of w_{wall}[1,0,0,0] as per the mathematica file
- 			   		if (y_cord == mesh_info.yt)
+ 			   		if (fabs(y_cord - mesh_info.yt) < 1e-10)
  			   			tilde_thetaW = theta0;
  			   		
 
  			   		// lower edge
- 			   		if (y_cord == mesh_info.yb)
+ 			   		if (fabs(y_cord - mesh_info.yb) < 1e-10)
  			   			tilde_thetaW = theta1;
 
  			   		for (unsigned int m = 0 ; m < system_data[system_id].B.matrix.outerSize() ; m++)
  			   			for (Sparse_matrix::InnerIterator n(system_data[system_id].B.matrix,m); n ; ++n)
  			   			{
 
- 			   				if (n.col() == 3)		// only provide a boundary value for the temperature
- 			   					bc_rhs(n.row()) = tilde_thetaW * n.value();
+ 			   				// only provide a boundary value for the temperature and no condition for velocity equation
+ 			   				if (n.col() == 3 && n.row() > 0)
+ 			   					bc_rhs(n.row()) = -sqrt(3.0/2.0) * tilde_thetaW * n.value();
  			   			}
  			   			
  			   		break;
@@ -599,7 +613,6 @@ void Base_EquationGenerator<num_flux,dim>
 		case type4:
 		{
 			// the coefficient of the polynomial(see mathematica file for details)
-			const double alpha = sqrt(2.0/3.0);
 
 			for (unsigned int i = 0 ; i < value.size(); i++)
 			{
@@ -787,6 +800,11 @@ void Base_EquationGenerator<num_flux,dim>::generate_matrices(equation_data &syst
 			build_triplet(system_data.B,filename);
 			build_matrix_from_triplet(system_data.B);
 			print_matrix(system_data.B,generate_filename_to_write(system_dir,filename));
+
+
+			// fix the boundary conditions for normal velocity
+			if (num_equations.total_nEqn[system_index] == 17)
+				fix_B_vx(system_data.B,system_index);
 
 			system_data.B_tilde_inv.resize(num_equations.nBC[system_index],
 								      num_equations.nBC[system_index]);

@@ -62,6 +62,15 @@ struct physical_data
 		double A1;
 		double A2;
 		double kappa;
+		
+		// coefficient for normal relaxational velocity
+		double epsilon;
+
+		// variable in which error has to be found
+		std::string error_variable;
+
+		// forcing term for poisson heat conduction
+		double alpha;
 };
 
 /*storing data related to tensors*/
@@ -90,6 +99,8 @@ struct mesh_data
 	double yt;
 
 	// number of partisions per dimension for the square domain
-	unsigned int part_per_dim;
+	unsigned int part_x;
+
+	unsigned int part_y;
 
 };

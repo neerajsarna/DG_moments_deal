@@ -3,7 +3,8 @@ void
 Solver_DG<num_flux,dim>::error_evaluation(const Vector<double> &solution)
       {
 
-        unsigned int component = 0;                                                // the component for which the error has to be computed
+        // error variable comes from Basics
+        unsigned int component = this->variable_map.find(error_variable)->second;                                                // the component for which the error has to be computed
         Vector<double> error_per_cell(triangulation.n_active_cells());      
 
         ComponentSelectFunction<dim> weight(component,this->nEqn);                              // used to compute only the error in theta
@@ -13,7 +14,8 @@ Solver_DG<num_flux,dim>::error_evaluation(const Vector<double> &solution)
           *exact_solution,
           error_per_cell,
           QGauss<dim>(ngp),
-          VectorTools::L2_norm,&weight);  
+          VectorTools::L2_norm,
+          &weight);  
 
         // division only needed for the sake of comparison, can be easily removed
         switch(equation_system_data->system_type)
@@ -38,7 +40,8 @@ Solver_DG<num_flux,dim>::error_evaluation(const Vector<double> &solution)
           *exact_solution,
           error_per_cell,
           QGauss<dim>(ngp),
-          VectorTools::Linfty_norm,&weight);  
+          VectorTools::Linfty_norm,
+          &weight);  
         
         // division only needed for the sake of comparison, can be easily removed
         switch(equation_system_data->system_type)

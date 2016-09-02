@@ -439,14 +439,38 @@ Base_ExactSolution<dim>(system_id,
 	Assert(nEqn == 17, ExcMessage("not the desired number of equations"));
 }
 
-// presently the solution is not known
 template<int dim>
 void 
 G26_period_sqr<dim>
 ::vector_value(const Point<dim> &p,Vector<double> &value) const
 {
+
+
 	Assert(value.size() == this->nEqn, ExcMessage("incorrect size"));
 	value = 0;
+	const double y_coord = p[1];
+
+   	// thetaw = 1
+	if (this->tau == 5.0)
+	{
+	value[this->variable_map.find("theta")->second] = -sqrt(3.0/2.0) * (-(sqrt(0.6666666666666666)*(-471.5554874736555 - 9.14476170639053*pow(y_coord,2) + 
+       													0.008164965809277261*pow(y_coord,4) + 
+       													470.28603054235964*cosh((65855813*y_coord)/5.00924885e8) - 
+       													2.842170943040401e-14*sinh((65855813*y_coord)/5.00924885e8))));
+   	// sigma_yy ()
+   	/*value[this->variable_map.find("sigmayy")->second] = 
+
+	// heat flux in the norma direction
+	value[this->variable_map.find("qy")->second] = 
+
+	value[this->variable_map.find("myyy")->second] = 
+
+   	value[this->variable_map.find("Delta")->second] = 
+
+   	value[this->variable_map.find("Ryy")->second] =  */
+	}
+
+
 }
 
 

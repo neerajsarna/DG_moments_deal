@@ -117,6 +117,21 @@ namespace Input_parameters
 								   "0.0",
 								  Patterns::Double(0,100.0),
 								  "Coefficient for the boundary");
+
+				prm.declare_entry("epsilon",
+								  "0.00001",
+								  Patterns::Double(0,0.0001),
+								  "Coefficient for normal relaxational velocity");
+
+				prm.declare_entry("error_variable",
+								  "theta",
+								  Patterns::DirectoryName(),
+								  "name of the variable for error evaluation");		
+
+				prm.declare_entry("alpha",
+								  "0",
+								  Patterns::Double(0,10.0),
+								  "forcing term poisson heat conduction");										  		
 			}
 			prm.leave_subsection();
 
@@ -195,28 +210,34 @@ namespace Input_parameters
 				// the left and right boundary
 				prm.declare_entry("left boundary",
 								   "-1",
-								   Patterns::Double(-10.0,-0.5),
+								   Patterns::Double(-10.0,-0.1),
 								   "left boundary");
 
 				prm.declare_entry("right boundary",
 								  "1",
-								  Patterns::Double(0.5,10.0),
+								  Patterns::Double(0.1,10.0),
 								   "right boundary");
 
 				prm.declare_entry("bottom boundary",
 								  "-1",
-								  Patterns::Double(-10.0,-0.5),
+								  Patterns::Double(-10.0,-0.1),
 								   "bottom boundary of square domain");
 
 				prm.declare_entry("top boundary",
 									"1",
-									Patterns::Double(0.5,10.0),
+									Patterns::Double(0.1,10.0),
 									"top boundary of square domain");	
 
-				prm.declare_entry("part_per_dim",
+				prm.declare_entry("part_x",
 								  "2",
-								  Patterns::Integer(1,200),
-								  "partitions per dim");
+								  Patterns::Integer(1,50),
+								  "parts in x");
+
+				prm.declare_entry("part_y",
+					"2",
+					Patterns::Integer(1,1000),
+					"parts in y");
+
 			}
 			prm.leave_subsection();
 
@@ -295,6 +316,9 @@ namespace Input_parameters
 		    physical_constants.A1 = prm.get_double("A1");
 			physical_constants.A2 = prm.get_double("A2");
 			physical_constants.kappa  = prm.get_double("kappa");
+			physical_constants.epsilon = prm.get_double("epsilon");
+			physical_constants.error_variable = prm.get("error_variable");
+			physical_constants.alpha = prm.get_double("alpha");
 		}
 		prm.leave_subsection();
 
@@ -331,7 +355,8 @@ namespace Input_parameters
 			mesh_info.xr = prm.get_double("right boundary");
 			mesh_info.yt = prm.get_double("top boundary");
 			mesh_info.yb = prm.get_double("bottom boundary");
-			mesh_info.part_per_dim = prm.get_integer("part_per_dim");
+			mesh_info.part_x = prm.get_integer("part_x");
+			mesh_info.part_y = prm.get_integer("part_y");
 		}
 		prm.leave_subsection();
 

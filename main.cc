@@ -117,8 +117,6 @@ int main(int argc,char **argv)
 																				mesh_info,
 	 																			output_dir_name);
 
-
-
 	// due to the availability of exact solution the implementation differs
 	switch (mesh_info.mesh_type)
 	{

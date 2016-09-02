@@ -391,7 +391,7 @@ namespace SolverDG
 
       //fflush(stdout);
       //Assert(1 == 0, ExcMessage("debugging from Solver"));
-      print_dealii_sparse(global_matrix);
+     // print_dealii_sparse(global_matrix);
 
       cout << "solving the system...." << endl;
       timer.enter_subsection("solving the system");
@@ -400,9 +400,7 @@ namespace SolverDG
       cout << "done solving";
 
       timer.enter_subsection("error evaluation");
-
       error_evaluation(solution);
-      
       timer.leave_subsection();
 
       if (i == refine_cycles - 1)
@@ -411,8 +409,8 @@ namespace SolverDG
         prescribe_filenames(output_file_names,finite_element.degree);
         string file_for_grid;
         file_for_grid = this->sub_directory_names[0] + "/grid_"+"_DOF_" + to_string(dof_handler.n_dofs());
-        //mesh_generation<dim>::print_grid(triangulation,file_for_grid);
-            print_convergence_table(output_file_names.file_for_convergence_tables);  
+        mesh_generation<dim>::print_grid(triangulation,file_for_grid);
+        //    print_convergence_table(output_file_names.file_for_convergence_tables);  
             output_solution_details(triangulation,output_file_names.file_for_num_solution,
                                     output_file_names.file_for_exact_solution,
                                     output_file_names.file_for_error);

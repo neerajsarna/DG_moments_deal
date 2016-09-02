@@ -113,13 +113,24 @@ namespace Mesh_Handler
           case periodic_square:
           {
 
-            const double xl = mesh_info.xl;
-            const double xr = mesh_info.xr;
+            Point<dim> p1;
+            Point<dim> p2;
+            vector<unsigned int > repetitions(dim);
 
-            GridGenerator::subdivided_hyper_cube  (triangulation,
-                                                    mesh_info.part_per_dim,
-                                                    mesh_info.xl,
-                                                    mesh_info.xr);
+            p1(0) = mesh_info.xl;
+            p1(1) = mesh_info.yb;
+
+            p2(0) = mesh_info.xr;
+            p2(1) = mesh_info.yt;
+
+            repetitions[0] = mesh_info.part_x;
+            repetitions[1] = mesh_info.part_y;
+
+            //The diagonal of the rectangle is the time joining p1 and p2
+            GridGenerator::subdivided_hyper_rectangle(triangulation,
+                                                    repetitions,
+                                                    p1,
+                                                    p2);
 
             set_periodic_bid(triangulation);
             break;

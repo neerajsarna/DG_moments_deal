@@ -29,6 +29,9 @@ subsection Physical Constants
 	set	A1 = 0.0
 	set	A2 = 0.0
 	set 	kappa = 0.0
+	set 	epsilon = 0.0
+	set 	error_variable = rho
+	set     alpha = 0
 end
 
 
@@ -46,8 +49,9 @@ subsection System Properties
 	# 0 for symmetric and 1 for un symmetric
 	set symmetric or un symmetric = 0
 
-	# 0 for force of systemA,1 for force of systemB
-	set force type =0
+	# 0 for force of systemA,1
+	# for force of systemB
+	set force type = 2
 end
 
 subsection Mesh Info
@@ -58,11 +62,12 @@ subsection Mesh Info
 	set mesh options = 1
 
 	# left boundary of square domain
-	set left boundary = -1
-	set right boundary = 1
-	set top boundary = 1
-	set bottom boundary = -1
-	set part_per_dim = 2
+	set left boundary = -0.5
+	set right boundary = 0.5
+	set top boundary = 0.5
+	set bottom boundary = -0.5
+	set part_x = 2
+	set part_y = 100
 end
 
 subsection Output Directory Name

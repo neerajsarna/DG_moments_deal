@@ -1,0 +1,77 @@
+
+subsection Numerical Constants
+	set polynomial degree = 1
+	set mapping order = 2 
+	# CAUTION refinement cycles = 1 for periodic square
+	set total h refinement cycles = 1
+	
+	# global = 0
+	# adaptive = 1
+	# adaptive_kelly = 2
+	set type of refinement = 0
+
+	# type of assembly
+	# meshworker = 0
+	# manuel = 1
+	set assembly type = 1
+end
+
+
+subsection Physical Constants
+# constants corresponding to exact solution for system A
+	set	tau = 0.3
+	set	zeta = 1.0				
+	set	chi = 1.0
+        
+	set	theta0 = 1
+	set 	theta1 = 1
+	
+	set	uW = 0.0
+	set	A0 = 0.0
+	set	A1 = 0.0
+	set	A2 = 0.0
+	set 	kappa = 0.0
+	set epsilon = 0.00001
+	set error_variable = myyy
+	set alpha = 0.816496580927726
+end
+
+
+subsection System Properties
+	set total systems to load = 1
+	set equations in the system = 17
+	set system_id = 17
+	set nBC = 6
+
+	# 0 for characteristic and 1 for odd
+	set BC type = 0
+
+	# 0 for symmetric and 1 for un symmetric
+	set symmetric or un symmetric = 1
+
+	# 0 for force of systemA
+	# 1 for force of systemB
+	# 2 for no force
+	# 3 for poisson heat conduction
+	set force type = 3
+end
+
+subsection Mesh Info
+	# 0 for ring and 1 for periodic square
+	set mesh type = 1
+
+	# 0 to read msh file and 1 for internal generation
+	set mesh options = 1
+
+	# boundaries of the square domain
+	set left boundary = -1.0
+	set right boundary = 1.0
+	set top boundary = 1.0
+	set bottom boundary = -1.0
+	set part_x  = 3
+	set part_y = 500
+end
+
+subsection Output Directory Name
+	set Main Output Directory = output_trial_G26
+end

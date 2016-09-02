@@ -74,7 +74,10 @@ namespace EquationGenerator
 	  	Tensor<1,dim,double> mirror(const Tensor<1,dim,double> normal_vector) const;			
 	  	void build_Aminus1D(Full_matrix &Aminus_1D_Int,
 	  		Full_matrix &Aminus_1D_Bound,
-	  		const unsigned int system_id);										
+	  		const unsigned int system_id);			
+
+	  	// fix the as per the normal relaxational velocity
+	  	void fix_B_vx(system_matrix &B,const unsigned int system_index);							
 	  	void build_P(system_matrix &P,const unsigned int system_id);												
 	  	void build_BC(system_matrix &BC,const unsigned int system_id);		
 
