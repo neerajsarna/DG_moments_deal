@@ -49,13 +49,13 @@ namespace EquationGenerator
 		  						   physical_data &physical_constants,
 		  						   tensor_data const&tensor_info,
 		  						   mesh_data mesh_info,
-	  							   string &output_dir);
+	  							   file_data &file_names);
 
 	  		vector<equation_data> system_data;
 
 	  		void build_BCrhs(const Tensor<1,dim,double> p,
 							const Tensor<1,dim,double> normal_vector,Vector<double> &bc_rhs,
-							const unsigned int system_id) const; 
+							const unsigned int system_id); 
 
 			Sparse_matrix build_Projector(const Tensor<1,dim,double> normal_vector,const unsigned int system_id);
 
@@ -77,7 +77,8 @@ namespace EquationGenerator
 	  		const unsigned int system_id);			
 
 	  	// fix the as per the normal relaxational velocity
-	  	void fix_B_vx(system_matrix &B,const unsigned int system_index);							
+	  	void fix_B_vx(system_matrix &B,const unsigned int system_index);	
+	  	void fix_BC_vx(system_matrix &BC,const unsigned int system_index);						
 	  	void build_P(system_matrix &P,const unsigned int system_id);												
 	  		
 
@@ -187,9 +188,9 @@ namespace EquationGenerator
 	 					      physical_data &physical_constants,
 	 					      tensor_data const&tensor_info,
 	 					      mesh_data mesh_info,
-	 					      string &output_dir)
+	 					      file_data &file_names)
 	 :
-	 Base_Basics(physical_constants,output_dir),
+	 Base_Basics(physical_constants,file_names),
 	 num_equations(num_equations),
 	 tensor_info(tensor_info),
 	 system_type(num_equations.system_type),

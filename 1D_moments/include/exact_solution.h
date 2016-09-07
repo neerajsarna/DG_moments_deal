@@ -12,7 +12,7 @@ namespace ExactSolution
 							  const system_matrix S_half,
 							  const System_Type system_type,
 							  physical_data &physical_constants,
-							  string &output_dir);
+							  file_data &file_names);
 
 			virtual void vector_value(const Point<dim> &p,Vector<double> &value) const;
 
@@ -38,10 +38,10 @@ namespace ExactSolution
 					     const system_matrix S_half,
 					     const System_Type system_type,
 					     physical_data &physical_constants,
-					     string &output_dir)
+					     file_data &file_names)
 	:
 	Function<dim>(nEqn),
-	Base_Basics(physical_constants,output_dir),
+	Base_Basics(physical_constants,file_names),
 	system_type(system_type),
 	S_half(S_half),
 	nEqn(nEqn),
@@ -331,7 +331,7 @@ template<int dim> class systemA_period_sqr:public Base_ExactSolution<dim>
 							  const system_matrix S_half,
 							  const System_Type system_type,
 							  physical_data &physical_constants,
-							  string &output_dir);
+							  file_data &file_names);
 
 			virtual void vector_value(const Point<dim> &p,Vector<double> &value) const;
 
@@ -343,14 +343,14 @@ template<int dim> systemA_period_sqr<dim>
 							  const system_matrix S_half,
 							  const System_Type system_type,
 							  physical_data &physical_constants,
-							  string &output_dir)
+							  file_data &file_names)
 :
 Base_ExactSolution<dim>(system_id,
 				   nEqn,
 				   S_half,
 				   system_type,
 				   physical_constants,
-				   output_dir)
+				   file_names)
 {
 	Assert(nEqn == 6,ExcMessage("number of equations larger or smaller than expected"));
 }
@@ -415,7 +415,7 @@ template<int dim> class G26_period_sqr: public Base_ExactSolution<dim>
 							  const system_matrix S_half,
 							  const System_Type system_type,
 							  physical_data &physical_constants,
-							  string &output_dir);
+							  file_data &file_names);
 
 		virtual void vector_value(const Point<dim> &p,Vector<double> &value) const;
 };
@@ -427,14 +427,14 @@ G26_period_sqr<dim>
 							  const system_matrix S_half,
 							  const System_Type system_type,
 							  physical_data &physical_constants,
-							  string &output_dir)
+							  file_data &file_names)
 :
 Base_ExactSolution<dim>(system_id,
 				   nEqn,
 				   S_half,
 				   system_type,
 				   physical_constants,
-				   output_dir)
+				   file_names)
 {
 	Assert(nEqn == 17, ExcMessage("not the desired number of equations"));
 }
@@ -448,28 +448,57 @@ G26_period_sqr<dim>
 
 	Assert(value.size() == this->nEqn, ExcMessage("incorrect size"));
 	value = 0;
-	const double x_coord = p[0];
+	// though we are solving in x it does not make a difference
+	const double x = p[0];
+
 
    	// thetaw = 1
-	if (this->tau == 5.0)
+	if (fabs(this->tau - 0.1) < 1e-15) 
 	{
-	value[this->variable_map.find("theta")->second] = -sqrt(3.0/2.0) * (-(sqrt(0.6666666666666666)*(-471.5554874736555 - 9.14476170639053*pow(x_coord,2) + 
-       													0.008164965809277261*pow(x_coord,4) + 
-       													470.28603054235964*cosh((65855813*x_coord)/5.00924885e8) - 
-       													2.842170943040401e-14*sinh((65855813*x_coord)/5.00924885e8))));
-   	// sigma_yy ()
-   	/*value[this->variable_map.find("sigmayy")->second] = 
+		// theta
+		value[this->variable_map.find("theta")->second] = -1.2852476333586613 - 0.18289523412781067*pow(x,2) + 0.408248290463863*pow(x,4) + 
+   														0.0015643311536178803*cosh(6.573421981221795*x) - 
+   														2.168404344971009e-19*sinh(6.573421981221795*x);
 
-	// heat flux in the norma direction
-	value[this->variable_map.find("qy")->second] = 
+   		// sigma_yy 
+   		value[this->variable_map.find("sigmayy")->second] = .002715290039756343 - 0.03771236166328255*pow(x,2) + 
+   														0.0011289587658037511*cosh(6.573421981221795*x);
 
-	value[this->variable_map.find("myyy")->second] = 
+		// heat flux
+		value[this->variable_map.find("qy")->second] = -0.21081851067789195*pow(x,3);
 
-   	value[this->variable_map.find("Delta")->second] = 
-
-   	value[this->variable_map.find("Ryy")->second] =  */
 	}
 
+	// Kn is 0.3
+	if (fabs(this->tau - 0.3) < 1e-15)
+	{
+		// theta
+		value[this->variable_map.find("theta")->second] = -1.3650564316627332 - 0.548685702383432*pow(x,2) + 0.13608276348795437*pow(x,4) + 
+   															0.09338201417693054*cosh(2.191140660407265*x);
+
+   		// sigma_yy 
+		value[this->variable_map.find("sigmayy")->second] = -0.07331283107342124 - 0.1131370849898476*pow(x,2) + 
+   														0.06739266377815037*cosh(2.191140660407265*x);
+
+		// heat flux
+		value[this->variable_map.find("qy")->second] = -0.21081851067789195*pow(x,3);
+
+	}
+
+	// Kn is 0.5
+	if (fabs(this->tau - 0.5) < 1e-15)
+	{
+		value[this->variable_map.find("theta")->second] = -1.7298151776227189 - 0.9144761706390533*pow(x,2) + 0.08164965809277261*pow(x,4) + 
+   														 0.45942750968124524*cosh(1.314684396244359*x) - 
+   														2.7755575615628914e-17*sinh(1.314684396244359*x);
+
+   		// sigma_yy 
+		value[this->variable_map.find("sigmayy")->second] = -0.3394112549695428 - 0.1885618083164127*pow(x,2) + 
+   															0.33156324548448296*cosh(1.314684396244359*x);
+
+		// heat flux
+		value[this->variable_map.find("qy")->second] = -0.21081851067789195*pow(x,3);		
+	}
 
 }
 

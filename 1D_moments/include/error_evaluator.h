@@ -4,10 +4,10 @@ Solver_DG<num_flux,dim>::error_evaluation(const Vector<double> &solution)
       {
 
         // error variable comes from Basics
-        unsigned int component = this->variable_map.find(error_variable)->second;                                                // the component for which the error has to be computed
+        unsigned int component = this->variable_map.find(error_variable)->second;    // the component for which the error has to be computed
         Vector<double> error_per_cell(triangulation.n_active_cells());      
 
-        ComponentSelectFunction<dim> weight(component,this->nEqn);                              // used to compute only the error in theta
+        ComponentSelectFunction<dim> weight(component,this->nEqn);                  // used to compute only the error in theta
 
         // computation of L2 error
         VectorTools::integrate_difference (mapping,dof_handler,solution,

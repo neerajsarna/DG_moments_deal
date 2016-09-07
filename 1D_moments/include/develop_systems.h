@@ -65,7 +65,17 @@ void Base_EquationGenerator<num_flux,dim>
 			B.matrix.coeffRef(0,i) *= epsilon;
 }		
 
+template<int num_flux,int dim> 
+void Base_EquationGenerator<num_flux,dim>
+::fix_BC_vx(system_matrix &BC,
+			const unsigned int system_index)
+{
+	const unsigned int neqn_local = num_equations.total_nEqn[system_index];
 
+	// change the first row of the BC matrix
+	for (unsigned int i = 0 ; i < neqn_local ; i++)
+			BC.matrix.coeffRef(1,i) *= epsilon;
+}	
 
 
 template<int num_flux,int dim> 
@@ -103,7 +113,7 @@ void Base_EquationGenerator<num_flux,dim>
 
 	// all the other moment system will have dim + 2 conservation laws
 	// all are BGK 
-	for (unsigned int i = dim + 2 ; i  < neqn_local ; i++)
+	for (unsigned int i = 4 ; i  < neqn_local ; i++)
 		matrix_info.matrix.coeffRef(i,i) = 1.0/tau;
 		
 }
@@ -115,7 +125,7 @@ Tensor<1,dim,double> Base_EquationGenerator<num_flux,dim>
 ::mirror(const Tensor<1,dim,double> normal_vector) const
 {
 		double nx = normal_vector[0], ny = 0;
-			
+		
 
 		Tensor<1,dim,double> mirrored_vector;
 
@@ -169,20 +179,6 @@ template<int num_flux,int dim>
 Sparse_matrix Base_EquationGenerator< num_flux,dim>::
 build_InvProjector(const Tensor<1,dim,double> normal_vector,const unsigned int system_id)
 {
-	Sparse_matrix Inv_Projector;
-	Inv_Projector.resize(system_data[system_id].nEqn,system_data[system_id].nEqn);
-
-	double nx = normal_vector[0];
-	double ny = 0;
-	double nxnx = nx * nx;
-	double nyny = ny * ny;
-
-	Assert(Inv_Projector.rows() == system_data[system_id].nEqn 
-			|| Inv_Projector.cols() == system_data[system_id].nEqn,
-			ExcNotInitialized());
-
-	const unsigned int neqn_local = num_equations.total_nEqn[system_id];
-
 	return build_Projector(mirror(normal_vector),system_id);
 			
 }
@@ -190,18 +186,18 @@ build_InvProjector(const Tensor<1,dim,double> normal_vector,const unsigned int s
 template<int num_flux,int dim> 
 void Base_EquationGenerator<num_flux,dim>::
 build_BCrhs(const Tensor<1,dim,double> p,
-	const Tensor<1,dim,double> normal_vector,
-	Vector<double> &bc_rhs,
-	const unsigned int system_id) const
+			const Tensor<1,dim,double> normal_vector,
+			Vector<double> &bc_rhs,
+			const unsigned int system_id) 
 {
+
+	Assert(bc_rhs.size() !=0 ,ExcNotInitialized());
 
 	double norm = p.norm();
 	double x_cord = p[0];
 	double y_cord = 0;
 	const unsigned int neqn_local = num_equations.total_nEqn[system_id];
 	const unsigned int nbc_local = num_equations.nBC[system_id];
-
-	Assert(bc_type == characteristic ,ExcMessage("use characteristic bc"));
 
 	double thetaW;
 
@@ -214,14 +210,47 @@ build_BCrhs(const Tensor<1,dim,double> p,
 	if (fabs(x_cord - mesh_info.xr) < 1e-10)
 		thetaW = theta1;
 
-	for (unsigned int m = 0 ; m < system_data[system_id].B.matrix.outerSize() ; m++)
-		for (Sparse_matrix::InnerIterator n(system_data[system_id].B.matrix,m); n ; ++n)
+	switch(bc_type)
+	{
+		case characteristic:
 		{
 
- 			   				// only provide a boundary value for the temperature and no condition for velocity equation
-			if (n.col() == 3 && n.row() > 0)
-				bc_rhs(n.row()) = -sqrt(3.0/2.0) * thetaW * n.value();
+			for (unsigned int m = 0 ; m < system_data[system_id].B.matrix.outerSize() ; m++)
+				for (Sparse_matrix::InnerIterator n(system_data[system_id].B.matrix,m); n ; ++n)
+			{
+
+ 			   	// only provide a boundary value for the temperature and no condition for velocity equation
+				if (n.col() == 3 && n.row() > 0)
+					bc_rhs(n.row()) = -sqrt(3.0/2.0) * thetaW * n.value();
+			}
+			break;
+		};
+
+		// bcrhs in the odd case is the negative of g, because during the assembly we have a negative sign
+		case odd:
+		{
+			const unsigned int num_odd = 6;
+
+			// location of the odd variables in the variables 
+			vector<unsigned int> odd_variables = {1, 5, 7, 9, 11, 15};		// caution: C-indices
+
+			// no temperature condition for the normal velocity
+			for (unsigned int i = 1 ; i < num_odd ; i ++)			
+			{
+				
+
+				bc_rhs(odd_variables[i]) = -system_data[system_id].BC.matrix.coeffRef(odd_variables[i],3) * sqrt(3.0/2) * thetaW;
+			}
+
+
+			break;
 		}
+
+		default:
+			break;
+	}		
+
+
 
 
  }
@@ -377,10 +406,20 @@ void Base_EquationGenerator<num_flux,dim>::generate_matrices(equation_data &syst
 			build_matrix_from_triplet(system_data.B);
 			print_matrix(system_data.B,generate_filename_to_write(system_dir,filename));
 
+			// build the BC matrix
+			filename = system_dir + "BC_" + system_data.base_filename + ".txt";
+			system_data.BC.matrix.resize(system_data.nEqn,system_data.nEqn);
+			build_triplet(system_data.BC,filename);
+			build_matrix_from_triplet(system_data.BC);
+			print_matrix(system_data.BC,generate_filename_to_write(system_dir,filename));
+
 
 			// fix the boundary conditions for normal velocity
 			if (num_equations.total_nEqn[system_index] == 17)
+			{
 				fix_B_vx(system_data.B,system_index);
+				fix_BC_vx(system_data.BC,system_index);
+			}
 
 			system_data.B_tilde_inv.resize(num_equations.nBC[system_index],
 								      num_equations.nBC[system_index]);

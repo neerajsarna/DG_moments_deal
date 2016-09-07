@@ -41,8 +41,9 @@ Solver_DG<num_flux,dim>
       {
       // instead of looping over all the components for all the indices, we only loop over the 
       // non-zero values of the sparse matrix A
-      for (unsigned int space = 0 ; space < dim ; space++)
-          for (unsigned int m = 0 ; m < equation_system_data->system_data[solve_system].A[space].matrix.outerSize(); m++)
+      
+      for (unsigned int space = 0 ; space < dim ; space ++)
+      for (unsigned int m = 0 ; m < equation_system_data->system_data[solve_system].A[space].matrix.outerSize(); m++)
         {
           const int dof_test = component_to_system[m][index_test];
           const double shape_value_test = fe_v.shape_value(dof_test,q);
@@ -164,11 +165,9 @@ Solver_DG<num_flux,dim>
 
 
           for (unsigned int j = 0 ; j < Am_invP_X_min_B_tild_inv.cols() ; j++)
-           cell_rhs(i) += 0.5 * shape_value_test 
-                          * Am_invP_X_min_B_tild_inv(component[i],j) * boundary_rhs_value[j] * jacobian_value;
+           cell_rhs(i) += 0.5 * shape_value_test * Am_invP_X_min_B_tild_inv(component[i],j) * boundary_rhs_value[j] * jacobian_value;
 
         }
-
       break;
     }
 
@@ -195,6 +194,7 @@ Solver_DG<num_flux,dim>
                         const typename DoFHandler<dim>::active_cell_iterator &cell)
 {
 
+
     Assert(u1_v1.m() !=0 || u1_v1.n() !=0 ,ExcNotInitialized());
     Assert(u1_v2.m() !=0 || u1_v2.n() !=0 ,ExcNotInitialized());
     Assert(u2_v1.m() !=0 || u2_v1.n() !=0 ,ExcNotInitialized());
@@ -207,9 +207,12 @@ Solver_DG<num_flux,dim>
 
     Assert(component.size() == dofs_per_cell, ExcMessage("value mismatch"));
 
+
+
     for (unsigned int q = 0 ; q < fe_v.n_quadrature_points ; q++)
     {
       Tensor<1,dim> outward_normal = fe_v.normal_vector(q);
+
       // build the matrices needed
       Eigen::MatrixXd Am = equation_system_data->build_Aminus(outward_normal,solve_system);
       Eigen::MatrixXd Am_neighbor = equation_system_data->build_Aminus(-outward_normal,solve_system);

@@ -39,7 +39,7 @@ namespace SolverDG
                   const ExactSolution::Base_ExactSolution<dim> *exact_solution,
                   const nEqn_data num_equations,
                   physical_data &physical_constants,
-                  string &output_dir,
+                  file_data &file_names,
                   mesh_data &mesh_info);
 
 
@@ -47,7 +47,7 @@ namespace SolverDG
                   EquationGenerator::Base_EquationGenerator<num_flux,dim> *system_of_equations,
                   const nEqn_data num_equations,
                   physical_data &physical_constants,
-                  string &output_dir,
+                  file_data &file_names,
                   mesh_data &mesh_info);
 
         void run(const unsigned int refine_cycles);
@@ -183,8 +183,11 @@ namespace SolverDG
     {
         case global:
         {
+          // we need to adatp the filename for the convergence table depending upon the variable we are choosing for the 
+          // error evaluation
+
           output_file_names.file_for_convergence_tables = sub_directory_names[2] + "/convergence_table_global_degree_"
-                                                          + to_string(p);
+                                                          + to_string(p)+"_"+error_variable;
 
           output_file_names.file_for_num_solution = sub_directory_names[1] + "/numerical_solution_global_degree_"
                                                           + to_string(p)+"_DOF_"+to_string(dof_handler.n_dofs());
@@ -203,7 +206,7 @@ namespace SolverDG
         case adaptive:
         {
           output_file_names.file_for_convergence_tables = sub_directory_names[2] + "/convergence_table_adaptive_degree_"
-                                                          + to_string(p);
+                                                          + to_string(p) + "_"+error_variable;
 
           output_file_names.file_for_num_solution = sub_directory_names[1] + "/numerical_solution_adaptive_degree_"
                                                           + to_string(p)+"_DOF_"+to_string(dof_handler.n_dofs());
@@ -221,7 +224,7 @@ namespace SolverDG
         case adaptive_kelly:
           {
           output_file_names.file_for_convergence_tables = sub_directory_names[2] + "/convergence_table_adaptive_kelly_degree_"
-                                                          + to_string(p);
+                                                          + to_string(p) + "_" + error_variable;
           
           output_file_names.file_for_num_solution = sub_directory_names[1] + "/numerical_solution_adaptive_kelly_degree_"
                                                           + to_string(p)+"_DOF_"+to_string(dof_handler.n_dofs());
@@ -244,11 +247,11 @@ namespace SolverDG
                                                   const ExactSolution::Base_ExactSolution<dim> *exact_solution,
                                                   const nEqn_data num_equations,
                                                   physical_data &physical_constants,
-                                                  string &output_dir,
+                                                  file_data &file_names,
                                                   mesh_data &mesh_info)
   :
   mesh_generation<dim>(mesh_info),
-  Base_Basics(physical_constants,output_dir),
+  Base_Basics(physical_constants,file_names),
   mesh_info(mesh_info),
   refinement(numerical_constants.refinement),
   bc_type(num_equations.bc_type),
@@ -272,11 +275,11 @@ namespace SolverDG
                                                   EquationGenerator::Base_EquationGenerator<num_flux,dim> *system_of_equations,
                                                   const nEqn_data num_equations,
                                                   physical_data &physical_constants,
-                                                  string &output_dir,
+                                                  file_data &file_names,
                                                   mesh_data &mesh_info)
   :
   mesh_generation<dim>(mesh_info),
-  Base_Basics(physical_constants,output_dir),
+  Base_Basics(physical_constants,file_names),
   mesh_info(mesh_info),
   refinement(numerical_constants.refinement),
   bc_type(num_equations.bc_type),
@@ -305,20 +308,39 @@ namespace SolverDG
 
     cout << "Solving for: " << nEqn << " equations " << endl;
 
-          timer.enter_subsection("mesh_generation");
+    for (unsigned int i = 0 ; i < refine_cycles ; i ++)
+    {
+      // for the first refine cycle we need to generate the mesh
+      if (i == 0)
+      {
+        timer.enter_subsection("mesh_generation");
         mesh_generation<dim>::generate_mesh(triangulation,boundary,gridin);
-        cout << "no of cells in the initial mesh" << triangulation.n_cells() << endl;  
-              
+        cout << "no of cells in the initial mesh" << triangulation.n_cells() << endl;          
+      }
+      else
+        triangulation.refine_global(1);
 
-      timer.enter_subsection("distributing dof");
+            timer.enter_subsection("distributing dof");
       distribute_dof_allocate_matrix();
+      prescribe_filenames(output_file_names,finite_element.degree);
       timer.leave_subsection();
 
       cout << "Total #DOF: " << dof_handler.n_dofs() << endl;
 
-      cout << "assembling the matrix manually " << endl;
-      assemble_system();
-      cout << "finished assembling the matrix " << endl;
+      switch(assembly_type)
+      {
+        case meshworker:
+        {
+          assemble_system_meshworker();
+          break;
+        }
+
+        case manuel:
+        {
+          assemble_system();
+          break;
+        }
+      }
 
       cout << "solving the system...." << endl;
       timer.enter_subsection("solving the system");
@@ -330,9 +352,15 @@ namespace SolverDG
       error_evaluation(solution);
       timer.leave_subsection();
 
-      output_solution_details(triangulation,output_file_names.file_for_num_solution,
-        output_file_names.file_for_exact_solution,
-        output_file_names.file_for_error);
+      if (i == refine_cycles - 1)
+      {
+        output_solution_details(triangulation,output_file_names.file_for_num_solution,
+                                output_file_names.file_for_exact_solution,
+                                output_file_names.file_for_error);
+
+        print_convergence_table(output_file_names.file_for_convergence_tables);        
+      }
+    }
       
   }
 

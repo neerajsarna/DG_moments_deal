@@ -104,3 +104,13 @@ struct mesh_data
 	unsigned int part_y;
 
 };
+
+// stores the names of the directories to be used for outputs
+struct file_data
+{
+	// one main output director
+	std::string out_dir;
+
+	std::string out_dir_sub;
+
+};

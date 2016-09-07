@@ -29,6 +29,7 @@ namespace Basics
 
 		// variable name in which error has to be found
 		string error_variable;
+		string directory_for_matrices;
 
 		string parameters;
 		string main_output_dir;
@@ -48,6 +49,9 @@ namespace Basics
 							  string matrix_name);
 
 		void print_dealii_sparse(const TrilinosWrappers::SparseMatrix &matrix);
+
+		void print_dealii_vector(const Vector<double> &vec, 
+								string vector_name);
 
 		void allocate_variable_locations();
 	};
@@ -103,6 +107,8 @@ namespace Basics
 
 		allocate_variable_locations();
 
+		directory_for_matrices = "printed_matrices";
+
 	}
 
 		string Base_Basics
@@ -144,58 +150,83 @@ namespace Basics
 	  void  Base_Basics::print_dealii_matrix(const FullMatrix<double> &matrix,
 					   string matrix_name) 
 	  {
+
+	  	string filename = directory_for_matrices + "/" + matrix_name;
+
+	  	FILE *fp = fopen(filename.c_str(),"w+");
+	  	AssertThrow(fp != NULL,ExcMessage("Could open the file for printing matrices"));
+
 		const unsigned int n_rows = matrix.m();
 		const unsigned int n_cols = matrix.n();
 
-		printf("%s \n",matrix_name.c_str());
+
 
 		for (unsigned int i = 0 ; i < n_rows ; i ++)
 		{
 			for (unsigned int j = 0 ; j < n_cols ; j ++)
-				cout << matrix(i,j) << " " ;
+				fprintf(fp,"%f ",matrix(i,j));
 
-			cout << endl;
+			fprintf(fp,"\n");
 		}
 
+		fclose(fp);
 	  }
 
 	  void Base_Basics::print_eigen_sparse(Sparse_matrix &sparse_matrix,
 	  									   string matrix_name)
 	  {
+
+	  	string filename = directory_for_matrices + "/" + matrix_name;
+
+	  	FILE *fp = fopen(filename.c_str(),"w+");
+	  	AssertThrow(fp != NULL,ExcMessage("Could open the file for printing matrices"));
+
+
 	  	const unsigned int n_rows = sparse_matrix.rows();
 	  	const unsigned int n_cols = sparse_matrix.cols();
 
-	  	printf("%s\n",matrix_name.c_str());
+
 	  	for (unsigned int i = 0 ;  i < n_rows ; i ++)
 	  	{
 	  		for (unsigned int j = 0 ; j < n_cols ; j ++)
-	  			cout << " " << sparse_matrix.coeffRef(i,j) ; 
+	  			fprintf(fp,"%f ",sparse_matrix.coeffRef(i,j)); 
 
-	  		cout << endl;
+	  		fprintf(fp,"\n");
 	  	}
+
+	  	fclose(fp);
 
 	  }
 
 	  void Base_Basics::print_eigen_full(Full_matrix &full_matrix,
 	  									 string matrix_name)
 	  {
+
+	  	string filename = directory_for_matrices + "/" + matrix_name;
+
+	  	FILE *fp = fopen(filename.c_str(),"w+");
+	  	AssertThrow(fp != NULL,ExcMessage("Could open the file for printing matrices"));
+
 	  	const unsigned int n_rows = full_matrix.rows();
 	  	const unsigned int n_cols = full_matrix.cols();
 
-	  	printf("%s\n",matrix_name.c_str());
 	  	for (unsigned int i = 0 ; i < n_rows; i ++)
 	  	{
 	  		for (unsigned int j = 0 ; j < n_cols ; j++)
-	  			cout << " " << full_matrix(i,j) ;
+	  			fprintf(fp,"%f ",full_matrix(i,j));
 
-	  		cout << endl;
+	  		fprintf(fp, "\n");
 	  	}
+
+	  	fclose(fp);
 	  }
 
 	  void Base_Basics::print_dealii_sparse(const TrilinosWrappers::SparseMatrix &matrix)
 	  {
 	  	FILE *fp;
-	  	fp = fopen("printed_matrices/global_matrix","w+");
+	  	fp = fopen("global_matrix/global_matrix","w+");
+
+	  	AssertThrow(fp != NULL, ExcMessage("could not open file for writting global matrix"));
 
 	  	const unsigned int num_non_zero = matrix.n_nonzero_elements();
 	  	typename TrilinosWrappers::SparseMatrix::const_iterator it = matrix.begin();
@@ -210,6 +241,19 @@ namespace Basics
 
 	  }
 
+	  void Base_Basics::print_dealii_vector(const Vector<double> &vec,
+	  										string vector_name)
+	  {
+	  	string filename = directory_for_matrices + "/" + vector_name;
+
+	  	FILE *fp;
+	  	fp = fopen(filename.c_str(),"w+");
+
+	  	for (unsigned int i = 0 ; i < vec.size() ; i ++)
+	  		fprintf(fp, "%f\n",vec(i));
+
+	  	fclose(fp);
+	  }
 	  void Base_Basics::allocate_variable_locations()
 	  {
 	  	vector<string> var_names = {"rho","vx","vy","theta","sigmaxx","sigmaxy","sigmayy","qx","qy","mxxx","mxxy","mxyy","myyy",

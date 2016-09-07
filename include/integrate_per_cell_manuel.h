@@ -139,7 +139,7 @@ Solver_DG<num_flux,dim>
                                         boundary_rhs_value,solve_system);
 
         // build the matrices needed
-        Eigen::MatrixXd Am = equation_system_data->build_Aminus(outward_normal,solve_system);
+        Full_matrix Am = equation_system_data->build_Aminus(outward_normal,solve_system);
         Sparse_matrix Projector = equation_system_data->build_Projector(outward_normal,solve_system);
         Sparse_matrix Inv_Projector = equation_system_data->build_InvProjector(outward_normal,solve_system);
 
@@ -168,6 +168,14 @@ Solver_DG<num_flux,dim>
                           * Am_invP_X_min_B_tild_inv(component[i],j) * boundary_rhs_value[j] * jacobian_value;
 
         }
+
+        cout << "PRINTING MATRICES FROM BOUNDARY ROUTINE" << endl;
+        const int y_part = outward_normal[1];
+        print_eigen_full(Am,"Am"+to_string(y_part));
+        print_eigen_sparse(Projector,"Projector"+to_string(y_part));
+        print_eigen_sparse(Inv_Projector,"Inv Projector"+to_string(y_part));
+        print_eigen_full(Am_invP_B_hat_P,"Am_invP_B_hat_P"+to_string(y_part));
+        print_eigen_full(Am_invP_X_min_B_tild_inv,"Am_invP_X_min_B_tild_inv"+to_string(y_part));
 
       break;
     }

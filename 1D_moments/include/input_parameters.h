@@ -13,7 +13,7 @@ namespace Input_parameters
 			void read_numerical_constants(numerical_data &numerical_constants);
 			void read_system_data(nEqn_data &num_equations);
 			void read_physical_constants(physical_data &physical_constants);
-			void read_output_dir_name(string &output_dir);
+			void read_output_dir_name(file_data &file_names);
 			void read_mesh_info(mesh_data &mesh_info);
 
 		private:
@@ -141,6 +141,11 @@ namespace Input_parameters
 								   "outputs",
 								   Patterns::DirectoryName(),
 								   "Directory name for writting results");
+
+				prm.declare_entry("Main Output SubDirectory",
+								   "outputs",
+								   Patterns::DirectoryName(),
+								   "division based upon Knudsen");
 			}
 			prm.leave_subsection();
 
@@ -326,14 +331,16 @@ namespace Input_parameters
 	}
 
 	void parameter_handling
-	::read_output_dir_name(string &output_dir)
+	::read_output_dir_name(file_data &file_names)
 	{
 		bool entered = false;
 
 		prm.enter_subsection("Output Directory Name");
 		{
 			entered = true;
-			output_dir = prm.get("Main Output Directory");
+			file_names.out_dir = prm.get("Main Output Directory");
+			file_names.out_dir_sub = prm.get("Main Output SubDirectory");
+
 		}
 		prm.leave_subsection();
 

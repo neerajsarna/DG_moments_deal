@@ -389,10 +389,6 @@ namespace SolverDG
         }
       }
 
-      //fflush(stdout);
-      //Assert(1 == 0, ExcMessage("debugging from Solver"));
-     // print_dealii_sparse(global_matrix);
-
       cout << "solving the system...." << endl;
       timer.enter_subsection("solving the system");
       solve(Pardiso);

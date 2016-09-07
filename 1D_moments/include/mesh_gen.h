@@ -79,7 +79,7 @@ namespace Mesh_Handler
     triangulation.clear();
 
     GridGenerator::hyper_cube(triangulation,mesh_info.xl,mesh_info.xr);
-    triangulation.refine_global(2);
+    triangulation.refine_global(mesh_info.part_x);
   }
 
   template<int dim> void mesh_generation<dim>::print_grid(const Triangulation<dim> &triangulation,const string filename) const

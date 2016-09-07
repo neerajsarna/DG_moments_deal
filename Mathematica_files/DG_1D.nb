@@ -1,0 +1,375 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 10.0' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       158,          7]
+NotebookDataLength[     14456,        366]
+NotebookOptionsPosition[     13859,        340]
+NotebookOutlinePosition[     14217,        356]
+CellTagsIndexPosition[     14174,        353]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+
+Cell[CellGroupData[{
+Cell["Sorting routines for eigenvalues", "Subsection",
+ CellChangeTimes->{{3.680249246085958*^9, 3.680249249027594*^9}, {
+  3.680256060552952*^9, 3.680256062997087*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"(*", 
+   RowBox[{
+   "the", " ", "following", " ", "routines", " ", "sorts", " ", "the", " ", 
+    "eigen", " ", "values", " ", "and", " ", "the", " ", "eigenvectors", " ", 
+    "in", " ", "proper", " ", "order"}], "*)"}], "\[IndentingNewLine]", 
+  RowBox[{
+   RowBox[{"SortEigenDecomp", "[", 
+    RowBox[{"X_", ",", "\[Lambda]_", ",", "Ax_"}], "]"}], ":=", 
+   RowBox[{"Module", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{
+      "Position\[Lambda]neg", ",", "num\[Lambda]neg", ",", 
+       "Position\[Lambda]pos", ",", "num\[Lambda]pos", ",", 
+       "Position\[Lambda]zero", ",", "num\[Lambda]zero", ",", "Xsorted", ",", 
+       "\[Lambda]plus", ",", "\[Lambda]minus", ",", "nEqn", ",", 
+       "\[Lambda]sorted"}], "}"}], ",", "\[IndentingNewLine]", 
+     "\[IndentingNewLine]", 
+     RowBox[{
+      RowBox[{"nEqn", " ", "=", " ", 
+       RowBox[{"Length", "[", "X", "]"}]}], ";", "\[IndentingNewLine]", 
+      RowBox[{"Position\[Lambda]neg", " ", "=", " ", 
+       RowBox[{"Flatten", "[", 
+        RowBox[{"Position", "[", 
+         RowBox[{"\[Lambda]", ",", 
+          RowBox[{"_", "?", 
+           RowBox[{"(", 
+            RowBox[{
+             RowBox[{"#", "<", "0"}], "&"}], ")"}]}]}], "]"}], "]"}]}], ";", 
+      "\[IndentingNewLine]", 
+      RowBox[{"num\[Lambda]neg", " ", "=", " ", 
+       RowBox[{"Length", "[", "Position\[Lambda]neg", "]"}]}], ";", 
+      "\[IndentingNewLine]", "\[IndentingNewLine]", 
+      RowBox[{"Position\[Lambda]pos", " ", "=", " ", 
+       RowBox[{"Flatten", "[", 
+        RowBox[{"Position", "[", 
+         RowBox[{"\[Lambda]", ",", 
+          RowBox[{"_", "?", 
+           RowBox[{"(", 
+            RowBox[{
+             RowBox[{"#", ">", "0"}], "&"}], ")"}]}]}], "]"}], "]"}]}], ";", 
+      "\[IndentingNewLine]", 
+      RowBox[{"num\[Lambda]pos", " ", "=", " ", 
+       RowBox[{"Length", "[", "Position\[Lambda]pos", "]"}]}], ";", 
+      "\[IndentingNewLine]", "\[IndentingNewLine]", 
+      RowBox[{"Position\[Lambda]zero", " ", "=", " ", 
+       RowBox[{"Flatten", "[", 
+        RowBox[{"Position", "[", 
+         RowBox[{"\[Lambda]", ",", 
+          RowBox[{"_", "?", 
+           RowBox[{"(", 
+            RowBox[{
+             RowBox[{"#", "==", "0"}], "&"}], ")"}]}]}], "]"}], "]"}]}], ";", 
+      "\[IndentingNewLine]", 
+      RowBox[{"num\[Lambda]zero", " ", "=", " ", 
+       RowBox[{"Length", "[", "Position\[Lambda]zero", "]"}]}], ";", 
+      "\[IndentingNewLine]", "\[IndentingNewLine]", 
+      RowBox[{"(*", 
+       RowBox[{"sorting", " ", "the", " ", "eigen", " ", "vectors"}], "*)"}], 
+      "\[IndentingNewLine]", 
+      RowBox[{"Xsorted", "=", 
+       RowBox[{"ConstantArray", "[", 
+        RowBox[{"0", ",", 
+         RowBox[{"{", 
+          RowBox[{"nEqn", ",", "nEqn"}], "}"}]}], "]"}]}], ";", 
+      "\[IndentingNewLine]", 
+      RowBox[{
+       RowBox[{"Xsorted", "[", 
+        RowBox[{"[", 
+         RowBox[{"All", ",", 
+          RowBox[{"1", ";;", "num\[Lambda]neg"}]}], "]"}], "]"}], "=", 
+       RowBox[{"X", "[", 
+        RowBox[{"[", 
+         RowBox[{"All", ",", "Position\[Lambda]neg"}], "]"}], "]"}]}], ";", 
+      "\[IndentingNewLine]", 
+      RowBox[{
+       RowBox[{"Xsorted", "[", 
+        RowBox[{"[", 
+         RowBox[{"All", ",", 
+          RowBox[{
+           RowBox[{"num\[Lambda]neg", "+", "1"}], ";;", 
+           RowBox[{"num\[Lambda]neg", "+", "num\[Lambda]zero"}]}]}], "]"}], 
+        "]"}], "=", 
+       RowBox[{"Transpose", "[", 
+        RowBox[{"NullSpace", "[", "Ax", "]"}], "]"}]}], ";", 
+      "\[IndentingNewLine]", 
+      RowBox[{
+       RowBox[{"Xsorted", "[", 
+        RowBox[{"[", 
+         RowBox[{"All", ",", 
+          RowBox[{
+           RowBox[{"num\[Lambda]neg", "+", "num\[Lambda]zero", "+", "1"}], ";;",
+            "nEqn"}]}], "]"}], "]"}], "=", 
+       RowBox[{"X", "[", 
+        RowBox[{"[", 
+         RowBox[{"All", ",", "Position\[Lambda]pos"}], "]"}], "]"}]}], ";", 
+      "\[IndentingNewLine]", "\[IndentingNewLine]", 
+      RowBox[{"(*", 
+       RowBox[{"sorting", " ", "the", " ", "eigenvalues"}], "*)"}], 
+      "\[IndentingNewLine]", 
+      RowBox[{"\[Lambda]sorted", "=", 
+       RowBox[{"Flatten", "[", 
+        RowBox[{"ConstantArray", "[", 
+         RowBox[{"0", ",", "nEqn"}], "]"}], "]"}]}], ";", 
+      "\[IndentingNewLine]", "\[IndentingNewLine]", 
+      RowBox[{"\[Lambda]plus", " ", "=", " ", 
+       RowBox[{"\[Lambda]", "[", 
+        RowBox[{"[", "Position\[Lambda]pos", "]"}], "]"}]}], ";", 
+      "\[IndentingNewLine]", 
+      RowBox[{"\[Lambda]minus", " ", "=", " ", 
+       RowBox[{"\[Lambda]", "[", 
+        RowBox[{"[", "Position\[Lambda]neg", "]"}], "]"}]}], ";", 
+      "\[IndentingNewLine]", 
+      RowBox[{
+       RowBox[{"\[Lambda]sorted", "[", 
+        RowBox[{"[", 
+         RowBox[{"1", ";;", "num\[Lambda]neg"}], "]"}], "]"}], "=", 
+       "\[Lambda]minus"}], ";", "\[IndentingNewLine]", 
+      RowBox[{
+       RowBox[{"\[Lambda]sorted", "[", 
+        RowBox[{"[", 
+         RowBox[{
+          RowBox[{"num\[Lambda]neg", "+", "num\[Lambda]zero", "+", "1"}], ";;",
+           "nEqn"}], "]"}], "]"}], "=", "\[Lambda]plus"}], ";", 
+      "\[IndentingNewLine]", "\[IndentingNewLine]", 
+      RowBox[{"{", 
+       RowBox[{
+       "Xsorted", ",", "\[Lambda]sorted", ",", "num\[Lambda]neg", ",", 
+        "num\[Lambda]pos"}], "}"}]}]}], "\[IndentingNewLine]", 
+    "\[IndentingNewLine]", "]"}]}]}]], "Input",
+ CellChangeTimes->{{3.680249250841631*^9, 3.6802492908741713`*^9}, {
+  3.680250814414568*^9, 3.680251053208439*^9}, {3.6802511937776833`*^9, 
+  3.680251218953314*^9}, {3.680251255945776*^9, 3.680251257401301*^9}, {
+  3.680251355927329*^9, 3.680251363210842*^9}, {3.680251399268958*^9, 
+  3.680251451223506*^9}, {3.680251508074215*^9, 3.680251523353497*^9}, {
+  3.680251559507114*^9, 3.680251581536899*^9}, {3.6802560492994213`*^9, 
+  3.680256056665092*^9}}]
+}, Closed]],
+
+Cell[CellGroupData[{
+
+Cell["Matrix generation for 1D finite volume", "Section",
+ CellChangeTimes->{{3.682056224657324*^9, 3.682056232447625*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"(*", 
+   RowBox[{
+   "a", " ", "finite", " ", "volume", " ", "solver", " ", "for", " ", "a", 
+    " ", "1", "D", " ", "system"}], "*)"}], "\[IndentingNewLine]", 
+  RowBox[{
+   RowBox[{"FVSolver1D", "[", 
+    RowBox[{"Ax_", ",", "BC_"}], "]"}], ":=", 
+   RowBox[{"Module", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"Aminus", ",", "\[Lambda]Ax", ",", "RAx", ",", "AminusNeigh"}], 
+      "}"}], ",", "\[IndentingNewLine]", "\[IndentingNewLine]", 
+     RowBox[{
+      RowBox[{"\[Lambda]Ax", " ", "=", " ", 
+       RowBox[{"N", "[", 
+        RowBox[{"Eigenvalues", "[", "Ax", "]"}], "]"}]}], ";", 
+      "\[IndentingNewLine]", 
+      RowBox[{"RAx", " ", "=", " ", 
+       RowBox[{"N", "[", 
+        RowBox[{"Transpose", "[", 
+         RowBox[{"Eigenvectors", "[", "Ax", "]"}], "]"}], "]"}]}], ";", 
+      "\[IndentingNewLine]", "\[IndentingNewLine]", 
+      RowBox[{"(*", 
+       RowBox[{
+       "we", " ", "need", " ", "to", " ", "compute", " ", "Aminus", " ", 
+        "only", " ", "from", " ", "one", " ", "side", " ", "of", " ", "the", 
+        " ", "cell"}], "*)"}], "\[IndentingNewLine]", 
+      RowBox[{"Aminus", " ", "=", " ", 
+       RowBox[{
+        RowBox[{"RAx", ".", 
+         RowBox[{"DiagonalMatrix", "[", 
+          RowBox[{"Abs", "[", "\[Lambda]Ax", "]"}], "]"}], ".", 
+         RowBox[{"Inverse", "[", "RAx", "]"}]}], "-", "Ax"}]}], ";", 
+      "\[IndentingNewLine]", "\[IndentingNewLine]", 
+      RowBox[{"(*", 
+       RowBox[{"matrix", " ", "for", " ", "the", " ", "neighbor"}], "*)"}], 
+      "\[IndentingNewLine]", 
+      RowBox[{"AminusNeigh", "=", 
+       RowBox[{
+        RowBox[{"RAx", ".", 
+         RowBox[{"DiagonalMatrix", "[", 
+          RowBox[{"Abs", "[", "\[Lambda]Ax", "]"}], "]"}], ".", 
+         RowBox[{"Inverse", "[", "RAx", "]"}]}], "+", "Ax"}]}], ";", 
+      "\[IndentingNewLine]", "\[IndentingNewLine]", 
+      FractionBox["AminusNeigh", "2"]}]}], "\[IndentingNewLine]", 
+    "\[IndentingNewLine]", "]"}]}]}]], "Input",
+ CellChangeTimes->{{3.6820527145406923`*^9, 3.682052749673176*^9}, {
+   3.682054540158983*^9, 3.682054661114883*^9}, {3.6820546960883417`*^9, 
+   3.68205470287708*^9}, {3.682054734509173*^9, 3.6820547348987017`*^9}, {
+   3.6820548723093977`*^9, 3.6820549167562513`*^9}, 3.682066723166843*^9}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Project individual tensors ", "Section",
+ CellChangeTimes->{{3.675862872743717*^9, 3.675862896743662*^9}}],
+
+Cell["\<\
+The following function develos the projector for tensors of a particular \
+degree\
+\>", "Text",
+ CellChangeTimes->{{3.675863142886834*^9, 3.675863155843251*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"ProjectTensor", "[", 
+   RowBox[{"degree_", ",", "nx_", ",", "ny_"}], "]"}], ":=", 
+  RowBox[{"Module", "[", 
+   RowBox[{
+    RowBox[{"{", "result", "}"}], ",", "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"Which", "[", 
+      RowBox[{
+       RowBox[{"degree", " ", "\[Equal]", " ", "0"}], ",", 
+       "\[IndentingNewLine]", 
+       RowBox[{"result", " ", "=", " ", "1"}], ",", "\[IndentingNewLine]", 
+       RowBox[{"degree", " ", "==", " ", "1"}], ",", "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{"result", " ", "=", " ", 
+         RowBox[{"{", 
+          RowBox[{"nx", ",", "ny", ",", 
+           RowBox[{"-", "ny"}], ",", "nx"}], "}"}]}], ";", 
+        "\[IndentingNewLine]", 
+        RowBox[{"result", "=", 
+         RowBox[{"ArrayReshape", "[", 
+          RowBox[{"result", ",", 
+           RowBox[{"{", 
+            RowBox[{"2", ",", "2"}], "}"}]}], "]"}]}], ";"}], ",", 
+       "\[IndentingNewLine]", 
+       RowBox[{"degree", " ", "\[Equal]", " ", "2"}], ",", 
+       "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{"result", " ", "=", " ", 
+         RowBox[{"{", 
+          RowBox[{
+           RowBox[{"nx", "*", "nx"}], ",", 
+           RowBox[{"2", "*", "nx", "*", "ny"}], ",", 
+           RowBox[{"ny", "*", "ny"}], ",", 
+           RowBox[{
+            RowBox[{"-", "nx"}], "*", "ny"}], ",", 
+           RowBox[{
+            RowBox[{"nx", "*", "nx"}], "-", 
+            RowBox[{"ny", "*", "ny"}]}], ",", 
+           RowBox[{"nx", "*", "ny"}], ",", 
+           RowBox[{"ny", "*", "ny"}], ",", 
+           RowBox[{
+            RowBox[{"-", "2"}], "*", "nx", "*", "ny"}], ",", 
+           RowBox[{"nx", "*", "nx"}]}], "}"}]}], ";", "\[IndentingNewLine]", 
+        RowBox[{"result", "=", 
+         RowBox[{"ArrayReshape", "[", 
+          RowBox[{"result", ",", 
+           RowBox[{"{", 
+            RowBox[{"3", ",", "3"}], "}"}]}], "]"}]}], ";"}], ",", 
+       "\[IndentingNewLine]", 
+       RowBox[{"degree", " ", "\[Equal]", " ", "3"}], ",", 
+       "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{"result", " ", "=", " ", 
+         RowBox[{"{", 
+          RowBox[{
+           RowBox[{"nx", "*", "nx", "*", "nx"}], ",", 
+           RowBox[{"3", "*", "ny", "*", "nx", "*", "nx"}], ",", 
+           RowBox[{"3", "*", "nx", "*", "ny", "*", "ny"}], ",", 
+           RowBox[{"ny", "*", "ny", "*", "ny"}], ",", 
+           RowBox[{
+            RowBox[{"-", "ny"}], "*", "nx", "*", "nx"}], ",", 
+           RowBox[{
+            RowBox[{"nx", "*", "nx", "*", "nx"}], "-", 
+            RowBox[{"2", "*", "nx", "*", "ny", "*", "ny"}]}], ",", 
+           RowBox[{
+            RowBox[{"2", "*", "ny", "*", "nx", "*", "nx"}], "-", 
+            RowBox[{"ny", "*", "ny", "*", "ny"}]}], ",", 
+           RowBox[{"nx", "*", "ny", "*", "ny"}], ",", 
+           RowBox[{"nx", "*", "ny", "*", "ny"}], ",", 
+           RowBox[{
+            RowBox[{
+             RowBox[{"-", "2"}], "*", "ny", "*", "nx", "*", "nx"}], "+", 
+            RowBox[{"ny", "*", "ny", "*", "ny"}]}], ",", 
+           RowBox[{
+            RowBox[{"nx", "*", "nx", "*", "nx"}], "-", 
+            RowBox[{"2", "*", "nx", "*", "ny", "*", "ny"}]}], ",", 
+           RowBox[{"ny", "*", "nx", "*", "nx"}], ",", 
+           RowBox[{
+            RowBox[{"-", "ny"}], "*", "ny", "*", "ny"}], ",", 
+           RowBox[{"3", "*", "nx", "*", "ny", "*", "ny"}], ",", 
+           RowBox[{
+            RowBox[{"-", "3"}], "*", "ny", "*", "nx", "*", "nx"}], ",", 
+           RowBox[{"nx", "*", "nx", "*", "nx"}]}], "}"}]}], ";", 
+        "\[IndentingNewLine]", 
+        RowBox[{"result", "=", 
+         RowBox[{"ArrayReshape", "[", 
+          RowBox[{"result", ",", 
+           RowBox[{"{", 
+            RowBox[{"4", ",", "4"}], "}"}]}], "]"}]}], ";"}]}], 
+      "\[IndentingNewLine]", "]"}], ";", "\[IndentingNewLine]", 
+     "\[IndentingNewLine]", "\[IndentingNewLine]", "result"}]}], 
+   "\[IndentingNewLine]", "]"}]}]], "Input",
+ CellChangeTimes->{{3.6758629062728977`*^9, 3.6758630052642393`*^9}, {
+  3.67586305337641*^9, 3.6758630639956427`*^9}, {3.6758631163302526`*^9, 
+  3.675863290015894*^9}, {3.675863376131879*^9, 3.675863428541092*^9}, {
+  3.675863601188249*^9, 3.675863616253203*^9}, {3.675863668116247*^9, 
+  3.6758637696418867`*^9}, {3.675863847278182*^9, 3.675863878026556*^9}, {
+  3.675863912511799*^9, 3.6758640926929817`*^9}, {3.675865716656579*^9, 
+  3.675865748779234*^9}, {3.675865961444706*^9, 3.6758659658415623`*^9}}]
+}, Closed]]
+},
+WindowSize->{808, 651},
+WindowMargins->{{20, Automatic}, {Automatic, 44}},
+FrontEndVersion->"10.0 for Mac OS X x86 (32-bit, 64-bit Kernel) (September 9, \
+2014)",
+StyleDefinitions->"Default.nb"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[CellGroupData[{
+Cell[580, 22, 169, 2, 44, "Subsection"],
+Cell[752, 26, 5847, 138, 550, "Input"]
+}, Closed]],
+Cell[CellGroupData[{
+Cell[6636, 169, 123, 1, 50, "Section"],
+Cell[6762, 172, 2294, 51, 309, "Input"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[9093, 228, 112, 1, 64, "Section"],
+Cell[9208, 231, 171, 4, 30, "Text"],
+Cell[9382, 237, 4461, 100, 369, "Input"]
+}, Closed]]
+}
+]
+*)
+
+(* End of internal cache information *)

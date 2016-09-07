@@ -86,7 +86,11 @@ int main(int argc,char **argv)
 	
 
 	/*main output directory name, to be read from the input file*/
+	// the main output directory depending upon the moment system
 	string output_dir_name;
+
+	// the subdirectory depending upon the Knudsen number or other physical parameters
+	string output_dir_subname;
 
 	/*all the data related to mapping order, degree of the polynomial etc.*/
 	numerical_data numerical_constants;
@@ -94,13 +98,14 @@ int main(int argc,char **argv)
 	physical_data physical_constants;
 	tensor_data tensor_info;
 	mesh_data mesh_info;
+	file_data file_names;
 
 	/*reading of all the parameters,
 	  will be used by the future classes*/
 	container_parameter.read_numerical_constants(numerical_constants);
 	container_parameter.read_system_data(num_equations);
 	container_parameter.read_physical_constants(physical_constants);
-	container_parameter.read_output_dir_name(output_dir_name);
+	container_parameter.read_output_dir_name(file_names);
 	container_parameter.read_mesh_info(mesh_info);
 
 	// given the tensorial degree of the tensor, the following routine allocates the total number of 
@@ -116,21 +121,21 @@ int main(int argc,char **argv)
 																				physical_constants,
 																				tensor_info,
 																				mesh_info,
-	 																			output_dir_name);
+	 																			file_names);
 
-					ExactSolution::G26_period_sqr<dim> exact_solution(num_equations.system_to_solve,
-																	num_equations.total_nEqn[num_equations.system_to_solve],
-																	system_of_equations.system_data[num_equations.system_to_solve].S_half,
-																	num_equations.system_type,
-																	physical_constants,
-																	output_dir_name);
+	ExactSolution::G26_period_sqr<dim> exact_solution(num_equations.system_to_solve,
+													  num_equations.total_nEqn[num_equations.system_to_solve],
+													  system_of_equations.system_data[num_equations.system_to_solve].S_half,
+													  num_equations.system_type,
+													  physical_constants,
+													  file_names);
 
 	SolverDG::Solver_DG<num_flux,dim> solver(numerical_constants,
 											&system_of_equations,
 											&exact_solution,
 											num_equations,
 											physical_constants,
-											output_dir_name,
+											file_names,
 											mesh_info);
 
 	solver.run(numerical_constants.refine_cycles);

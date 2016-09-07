@@ -10,7 +10,7 @@ namespace Basics
 		// physical constants
 	public:
 		Base_Basics(const physical_data &physical_constants,
-					const string &output_dir);
+					const file_data &file_names);
 		double tau;
 		double zeta;
 		double chi;
@@ -29,9 +29,16 @@ namespace Basics
 
 		// variable name in which error has to be found
 		string error_variable;
+		string directory_for_matrices;
 
 		string parameters;
+
+		string output_dir;
+		string output_dir_sub;
+
 		string main_output_dir;
+
+
 		vector<string> sub_directory_names;
 		string generate_filename_to_write(const string system_dir,string filename);
 		void Sparse_matrix_dot_Vector(const  system_matrix matrix_info,
@@ -53,24 +60,46 @@ namespace Basics
 	};
 
 	Base_Basics::Base_Basics(const physical_data &physical_constants,
-						     const string &output_dir)
+						     const file_data &file_names)
 	{
 
+		// Knudsen number for the physical problem
 		tau = physical_constants.tau;
 		zeta = physical_constants.zeta;
 		chi = physical_constants.chi;
+
+		// temperature of different values
 		theta0 = physical_constants.theta0;
 		theta1 = physical_constants.theta1;
+
+		// the tangential velocity of the wall
 		uW = physical_constants.uW;
+
+		// constants for force type1 and force type 2
 		A0 = physical_constants.A0;
 		A1 = physical_constants.A1;
 		A2 = physical_constants.A2;
+
+
 		kappa = physical_constants.kappa;		
+
+		// relaxation constant for the normal velocity boundary condition
 		epsilon = physical_constants.epsilon;
+
+		// constant in the forcing term for poisson flow
 		alpha = physical_constants.alpha;
+
+		// variable for which error has to be found
 		error_variable = physical_constants.error_variable;
 
-		main_output_dir = output_dir;
+		// the name of the output directory
+		output_dir = file_names.out_dir;
+
+		// name of the subdirectory for the output directory
+		output_dir_sub = file_names.out_dir_sub;
+
+		// name of the directory for finally writting the results
+		main_output_dir = output_dir + "/" + output_dir_sub;
 		
 		unsigned int num_outputs = 5;
 		sub_directory_names.resize(num_outputs);
@@ -94,6 +123,9 @@ namespace Basics
 		}
 
 
+		if (stat(output_dir.c_str(),&st) == -1)
+			mkdir(output_dir.c_str(),0777);
+
 		if (stat(main_output_dir.c_str(),&st) == -1)
 			mkdir(main_output_dir.c_str(),0777);
 
@@ -102,6 +134,8 @@ namespace Basics
 				mkdir(sub_directory_names[i].c_str(),0777);
 
 		allocate_variable_locations();
+
+		directory_for_matrices = "printed_matrices";
 
 	}
 
@@ -144,58 +178,83 @@ namespace Basics
 	  void  Base_Basics::print_dealii_matrix(const FullMatrix<double> &matrix,
 					   string matrix_name) 
 	  {
+
+	  	string filename = directory_for_matrices + "/" + matrix_name;
+
+	  	FILE *fp = fopen(filename.c_str(),"w+");
+	  	AssertThrow(fp != NULL,ExcMessage("Could open the file for printing matrices"));
+
 		const unsigned int n_rows = matrix.m();
 		const unsigned int n_cols = matrix.n();
 
-		printf("%s \n",matrix_name.c_str());
+
 
 		for (unsigned int i = 0 ; i < n_rows ; i ++)
 		{
 			for (unsigned int j = 0 ; j < n_cols ; j ++)
-				cout << matrix(i,j) << " " ;
+				fprintf(fp,"%f ",matrix(i,j));
 
-			cout << endl;
+			fprintf(fp,"\n");
 		}
 
+		fclose(fp);
 	  }
 
 	  void Base_Basics::print_eigen_sparse(Sparse_matrix &sparse_matrix,
 	  									   string matrix_name)
 	  {
+
+	  	string filename = directory_for_matrices + "/" + matrix_name;
+
+	  	FILE *fp = fopen(filename.c_str(),"w+");
+	  	AssertThrow(fp != NULL,ExcMessage("Could open the file for printing matrices"));
+
+
 	  	const unsigned int n_rows = sparse_matrix.rows();
 	  	const unsigned int n_cols = sparse_matrix.cols();
 
-	  	printf("%s\n",matrix_name.c_str());
+
 	  	for (unsigned int i = 0 ;  i < n_rows ; i ++)
 	  	{
 	  		for (unsigned int j = 0 ; j < n_cols ; j ++)
-	  			cout << " " << sparse_matrix.coeffRef(i,j) ; 
+	  			fprintf(fp,"%f ",sparse_matrix.coeffRef(i,j)); 
 
-	  		cout << endl;
+	  		fprintf(fp,"\n");
 	  	}
+
+	  	fclose(fp);
 
 	  }
 
 	  void Base_Basics::print_eigen_full(Full_matrix &full_matrix,
 	  									 string matrix_name)
 	  {
+
+	  	string filename = directory_for_matrices + "/" + matrix_name;
+
+	  	FILE *fp = fopen(filename.c_str(),"w+");
+	  	AssertThrow(fp != NULL,ExcMessage("Could open the file for printing matrices"));
+
 	  	const unsigned int n_rows = full_matrix.rows();
 	  	const unsigned int n_cols = full_matrix.cols();
 
-	  	printf("%s\n",matrix_name.c_str());
 	  	for (unsigned int i = 0 ; i < n_rows; i ++)
 	  	{
 	  		for (unsigned int j = 0 ; j < n_cols ; j++)
-	  			cout << " " << full_matrix(i,j) ;
+	  			fprintf(fp,"%f ",full_matrix(i,j));
 
-	  		cout << endl;
+	  		fprintf(fp, "\n");
 	  	}
+
+	  	fclose(fp);
 	  }
 
 	  void Base_Basics::print_dealii_sparse(const TrilinosWrappers::SparseMatrix &matrix)
 	  {
 	  	FILE *fp;
-	  	fp = fopen("printed_matrices/global_matrix","w+");
+	  	fp = fopen("global_matrix/global_matrix","w+");
+
+	  	AssertThrow(fp != NULL, ExcMessage("could not open file for writting global matrix"));
 
 	  	const unsigned int num_non_zero = matrix.n_nonzero_elements();
 	  	typename TrilinosWrappers::SparseMatrix::const_iterator it = matrix.begin();
