@@ -7,7 +7,7 @@ void Base_EquationGenerator<num_flux,dim>
 	const unsigned int no_of_tensors = tensor_info.free_index_info.size();
 	tensor_project.resize(no_of_tensors);
 	
-	Assert(no_of_tensors == 4,ExcNotImplemented());
+	Assert(no_of_tensors == 5,ExcNotImplemented());
 	Assert(tensor_project.size() != 0 , ExcNotInitialized());
 
 	for (unsigned int i = 0 ; i < no_of_tensors ; i++)
@@ -24,21 +24,16 @@ void Base_EquationGenerator<num_flux,dim>
 ::build_tensorial_projector(const double nx,const double ny)
 {
 
-	double nxnx = nx * nx;
-	double nyny = ny * ny;
+	double n20 = nx*nx, n02 = ny*ny, n11 = nx*ny;
+	double n30 = nx*n20, n21 = ny*n20, n12 = ny*n11, n03 = ny*n02;
+	double n40 = nx*n30, n31 = ny*n30, n22 = nx*n12, n13 = nx*n03, n04 = ny*n03;
 
-	tensor_project[0].P << 1;
 
-	tensor_project[1].P << nx, ny, -ny, nx;	
-	
-	tensor_project[2].P << nxnx, 2*nx*ny, nyny, 
-					    -nx*ny, nxnx-nyny, nx*ny, nyny, -2*nx*ny, nxnx;
-
-		
-	tensor_project[3].P << nx*nxnx, 3*ny*nxnx, 3*nx*nyny, ny*nyny, 
-						  -ny*nxnx, nx*nxnx - 2*nx*nyny, 2*ny*nxnx - ny*nyny, nx*nyny, 
-        				   nx*nyny, -2*ny*nxnx + ny*nyny, nx*nxnx - 2*nx*nyny, ny*nxnx,
-        			       -ny*nyny, 3*nx*nyny, -3*ny*nxnx, nx*nxnx;
+	tensor_project[0].P << 1.0;
+	tensor_project[1].P << nx, ny, -ny, nx;
+	tensor_project[2].P << n20,2*n11,n02,-n11,-n02 + n20,n11,n02,-2*n11,n20;
+	tensor_project[3].P << n30,3*n21,3*n12,n03,-n21,-2*n12+n30,-n03+2*n21,n12,n12,n03-2*n21,-2*n12+n30,n21,-n03,3*n12,-3*n21,n30;
+	tensor_project[4].P << n40,4*n31,6*n22,4*n13,n04,-n31,-3*n22+n40,-3*n13+3*n31,-n04+3*n22,n13,n22,2*n13-2*n31,n04-4*n22+n40,-2*n13+2*n31,n22,-n13,-n04+3*n22,3*n13-3*n31,-3*n22+n40,n31,n04,-4*n13,6*n22,-4*n31,n40;
 
 
 }
@@ -159,8 +154,8 @@ Sparse_matrix Base_EquationGenerator<num_flux,dim>
 		build_tensorial_projector(nx,ny);
 		const unsigned int neqn_local = num_equations.total_nEqn[system_id];
 
-		Assert(neqn_local == 17,ExcNotImplemented());
-
+		if (neqn_local == 17)
+		{
 					  SpBlock( 0, tensor_project[0].P, Projector );	// rho
   					  SpBlock( 1, tensor_project[1].P, Projector );	// velocity
   					  SpBlock( 3, tensor_project[0].P, Projector ); // theta
@@ -169,7 +164,22 @@ Sparse_matrix Base_EquationGenerator<num_flux,dim>
   				      SpBlock( 9, tensor_project[3].P, Projector ); // mijk
   				      SpBlock( 13, tensor_project[0].P, Projector ); // delta
   				      SpBlock( 14, tensor_project[2].P, Projector ); // Rij
-
+  		}
+  		if (neqn_local == 28)
+  		{
+  				// SpBlock(location on the diagonal, tensorial Projector, Projector)
+ 					  SpBlock( 0, tensor_project[0].P, Projector );	// rho
+  					  SpBlock( 1, tensor_project[1].P, Projector );	// velocity
+  					  SpBlock( 3, tensor_project[0].P, Projector ); // theta
+  			          SpBlock( 4, tensor_project[2].P, Projector ); // sigma
+  					  SpBlock( 7, tensor_project[1].P, Projector ); // q
+  				      SpBlock( 9, tensor_project[3].P, Projector ); // mijk
+  				      SpBlock( 13, tensor_project[0].P, Projector ); // delta
+  				      SpBlock( 14, tensor_project[2].P, Projector ); // Rij
+  				      SpBlock(17, tensor_project[4].P,Projector);	//psi xxxx 			
+  				      SpBlock(22, tensor_project[1].P,Projector);		//omega_x
+  				      SpBlock(24, tensor_project[3].P,Projector);	// psi xxx
+  		}
 
 	return Projector;
 }
@@ -406,20 +416,7 @@ void Base_EquationGenerator<num_flux,dim>::generate_matrices(equation_data &syst
 			build_matrix_from_triplet(system_data.B);
 			print_matrix(system_data.B,generate_filename_to_write(system_dir,filename));
 
-			// build the BC matrix
-			filename = system_dir + "BC_" + system_data.base_filename + ".txt";
-			system_data.BC.matrix.resize(system_data.nEqn,system_data.nEqn);
-			build_triplet(system_data.BC,filename);
-			build_matrix_from_triplet(system_data.BC);
-			print_matrix(system_data.BC,generate_filename_to_write(system_dir,filename));
-
-
-			// fix the boundary conditions for normal velocity
-			if (num_equations.total_nEqn[system_index] == 17)
-			{
-				fix_B_vx(system_data.B,system_index);
-				fix_BC_vx(system_data.BC,system_index);
-			}
+			fix_B_vx(system_data.B,system_index);
 
 			system_data.B_tilde_inv.resize(num_equations.nBC[system_index],
 								      num_equations.nBC[system_index]);

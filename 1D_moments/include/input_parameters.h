@@ -164,12 +164,12 @@ namespace Input_parameters
 
 				prm.declare_entry("equations in the system",
 					 			  "6",
-					 			  Patterns::Integer(6,20),
+					 			  Patterns::Integer(6,100),
 					 			  "total number of equations in system");
 
 				prm.declare_entry("nBC",
 								  "2",
-								  Patterns::Integer(2,10),
+								  Patterns::Integer(2,100),
 								  "total number of boundary conditions needed for the system");
 
 				/*by default we will solve the symmetric system*/

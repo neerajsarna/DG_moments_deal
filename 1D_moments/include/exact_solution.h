@@ -503,4 +503,45 @@ G26_period_sqr<dim>
 }
 
 
+template<int dim> class G45_period_sqr: public Base_ExactSolution<dim>
+{
+	public:
+		G45_period_sqr(const unsigned int system_id,const unsigned int nEqn,
+							  const system_matrix S_half,
+							  const System_Type system_type,
+							  physical_data &physical_constants,
+							  file_data &file_names);
+
+		virtual void vector_value(const Point<dim> &p,Vector<double> &value) const;
+};
+
+
+template<int dim> 
+G45_period_sqr<dim>
+::G45_period_sqr(const unsigned int system_id,
+							  const unsigned int nEqn,
+							  const system_matrix S_half,
+							  const System_Type system_type,
+							  physical_data &physical_constants,
+							  file_data &file_names)
+:
+Base_ExactSolution<dim>(system_id,
+				   nEqn,
+				   S_half,
+				   system_type,
+				   physical_constants,
+				   file_names)
+{
+	Assert(nEqn == 28, ExcMessage("not the desired number of equations"));
+}
+
+template<int dim>
+void 
+G45_period_sqr<dim>
+::vector_value(const Point<dim> &p,Vector<double> &value) const
+{
+	Assert(value.size() == this->nEqn, ExcMessage("incorrect size"));
+	value = 0;
+}
+
 }
