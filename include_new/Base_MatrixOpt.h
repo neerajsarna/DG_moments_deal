@@ -52,7 +52,12 @@ namespace MatrixOpt
 
 			// computes the difference between a full matrix and a sparse matrix
 
-			void print_eigen_full(Full_matrix &full_matrix,
+			// prints a full matrix
+			void print_eigen_mat(Full_matrix &full_matrix,
+								std::string matrix_name);
+
+			// same as above but for sparse matrix
+			void print_eigen_mat(Sparse_matrix &full_matrix,
 								std::string matrix_name);
 	};
 
@@ -154,25 +159,47 @@ namespace MatrixOpt
 		return(neg_vals);
 	}
 
-	void Base_MatrixOpt::print_eigen_full(Full_matrix &full_matrix,
+	void Base_MatrixOpt::print_eigen_mat(Full_matrix &full_matrix,
 											std::string matrix_name)
 	{
 		const unsigned int n_rows = full_matrix.rows();
 		const unsigned int n_cols = full_matrix.cols();
 
 		std::cout << matrix_name << std::endl;
-
 		fflush(stdout);
+
 		for (unsigned int i = 0 ; i < n_rows; i ++)
 		{
 			for (unsigned int j = 0 ; j < n_cols ; j++)
-				std::cout << " " << full_matrix(i,j) ;
+				std::cout << " " << full_matrix.coeffRef(i,j) ;
 
 			std::cout << std::endl;
 
 		}
 
 	}
+
+
+	void Base_MatrixOpt::print_eigen_mat(Sparse_matrix &full_matrix,
+											std::string matrix_name)
+	{
+		const unsigned int n_rows = full_matrix.rows();
+		const unsigned int n_cols = full_matrix.cols();
+
+		std::cout << matrix_name << std::endl;
+		fflush(stdout);
+		
+		for (unsigned int i = 0 ; i < n_rows; i ++)
+		{
+			for (unsigned int j = 0 ; j < n_cols ; j++)
+				std::cout << " " << full_matrix.coeffRef(i,j) ;
+
+			std::cout << std::endl;
+
+		}
+
+	}
+
 
 	Full_matrix Base_MatrixOpt::compute_X(Sparse_matrix &A)
 	{

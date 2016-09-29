@@ -160,6 +160,26 @@ namespace Test_EquationGenerator
 		}
 	}
 
+	// develops the ID of odd variables
+	void develop_odd_ID(MatrixUI &vector,const unsigned int nEqn)
+	{
+		switch(nEqn)
+		{
+			case 6:
+			{
+				vector.resize(2,1);
+				vector(0,0) = 1;
+				vector(1,0) = 4;
+				break;
+			}
+			default:
+			{
+				ASSERT_EQ(1,0)<<"Should not have reached here";
+				break;
+			}
+		}
+	}
+
 	TEST(DevelopingSystem,HandlingDevelopingSystems)
 	{
 		const unsigned int dim = 2;
@@ -168,7 +188,7 @@ namespace Test_EquationGenerator
 		std::string input_file = "../test_input_files/input1.in";
 		std::string folder_name = "../system_matrices/";
 		Constants::Base_Constants constants(input_file);
-		SystemA::Base_SystemA<dim> systemA(constants.constants,folder_name);
+		SystemA::SystemA<dim> systemA(constants.constants,folder_name);
 
 		// no we will manually enter the matrices so as to compare with the read values
 		// we will now input all the matrices manually so as to compare with the results
@@ -178,7 +198,7 @@ namespace Test_EquationGenerator
 		Sparse_matrix S_half;
 		Sparse_matrix S_half_inv;
 		Sparse_matrix P;
-
+		MatrixUI odd_ID;
 		
 
 		// develop A1
@@ -188,23 +208,18 @@ namespace Test_EquationGenerator
 		develop_S_half(S_half,systemA.constants.nEqn);
 		develop_S_half_inv(S_half_inv,systemA.constants.nEqn);
 		develop_P(P,systemA.constants.nEqn,systemA.constants.tau);
+		develop_odd_ID(odd_ID,systemA.constants.nEqn);
 
-		// now we will compare with the values that have been read
-		for (int i = 0 ; i < systemA.constants.nEqn ; i ++)
-			for (int j = 0 ; j < systemA.constants.nEqn ; j++)
-			{
-				EXPECT_LT(fabs(systemA.systemA_data.A[0].matrix.coeffRef(i,j)-A1.coeffRef(i,j)),1e-5);
-				EXPECT_LT(fabs(systemA.systemA_data.A[1].matrix.coeffRef(i,j)-A2.coeffRef(i,j)),1e-5);
-
-				EXPECT_LT(fabs(systemA.systemA_data.S_half.matrix.coeffRef(i,j)-S_half.coeffRef(i,j)),1e-5);
-				EXPECT_LT(fabs(systemA.systemA_data.S_half_inv.matrix.coeffRef(i,j)-S_half_inv.coeffRef(i,j)),1e-5);
-				EXPECT_LT(fabs(systemA.systemA_data.P.matrix.coeffRef(i,j)-P.coeffRef(i,j)),1e-5);
-			}
-
-
-		for (int i = 0 ; i < systemA.constants.nBC ; i ++)
-				for (int j = 0 ; j < systemA.constants.nEqn; j ++)
-					EXPECT_LT(fabs(systemA.systemA_data.B.matrix.coeffRef(i,j) - B.coeffRef(i,j)),1e-5);
 		
+		Compare_Float_Mat(systemA.system_data.A[0].matrix,A1);
+		Compare_Float_Mat(systemA.system_data.A[1].matrix,A2);
+		Compare_Float_Mat(systemA.system_data.S_half.matrix,S_half);
+		Compare_Float_Mat(systemA.system_data.S_half_inv.matrix,S_half_inv);
+		Compare_Float_Mat(systemA.system_data.P.matrix,P);
+
+		Compare_Float_Mat(systemA.system_data.B.matrix,B);
+	
+		for (unsigned int i = 0 ; i < 2 ; i ++)
+			EXPECT_EQ(odd_ID(i,0),systemA.system_data.odd_ID(i,0));
 	}
 }

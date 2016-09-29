@@ -73,14 +73,14 @@ namespace TestMatrixOpt
 
 		Constants::Base_Constants constants(input_file);
 		const unsigned int dim = 2;
-		SystemA::Base_SystemA<dim> systemA(constants.constants,folder_name);
+		SystemA::SystemA<dim> systemA(constants.constants,folder_name);
 
 		MatrixOpt::Base_MatrixOpt matrix_opt;
-		Full_matrix Xminus = matrix_opt.compute_Xminus(systemA.systemA_data.A[0].matrix,2);
-		VectorXd neg_vals = matrix_opt.compute_Lambda_minus(systemA.systemA_data.A[0].matrix,2);
+		Full_matrix Xminus = matrix_opt.compute_Xminus(systemA.system_data.A[0].matrix,2);
+		VectorXd neg_vals = matrix_opt.compute_Lambda_minus(systemA.system_data.A[0].matrix,2);
 
 		// now we check the computations
-		Full_matrix A_Xminus = systemA.systemA_data.A[0].matrix * Xminus;
+		Full_matrix A_Xminus = systemA.system_data.A[0].matrix * Xminus;
 		Full_matrix Xminus_negvals;
 
 		Xminus_negvals.resize(A_Xminus.rows(),A_Xminus.cols());
@@ -105,10 +105,10 @@ namespace TestMatrixOpt
 
 		Constants::Base_Constants constants(input_file);
 		const unsigned int dim = 2;
-		SystemA::Base_SystemA<dim> systemA(constants.constants,folder_name);
+		SystemA::SystemA<dim> systemA(constants.constants,folder_name);
 
 		MatrixOpt::Base_MatrixOpt matrix_opt;
-		Sparse_matrix A = systemA.systemA_data.A[0].matrix;
+		Sparse_matrix A = systemA.system_data.A[0].matrix;
 
 		// first we compute the eigenvectors
 		Full_matrix vecs = matrix_opt.compute_X(A);
@@ -139,10 +139,10 @@ namespace TestMatrixOpt
 
 		Constants::Base_Constants constants(input_file);
 		const unsigned int dim = 2;
-		SystemA::Base_SystemA<dim> systemA(constants.constants,folder_name);	
+		SystemA::SystemA<dim> systemA(constants.constants,folder_name);	
 
 		MatrixOpt::Base_MatrixOpt matrix_opt;
-		Sparse_matrix A = systemA.systemA_data.A[0].matrix;
+		Sparse_matrix A = systemA.system_data.A[0].matrix;
 		Sparse_matrix Amod = matrix_opt.compute_Amod(A);
 
 		Full_matrix Amod_result;
@@ -166,10 +166,10 @@ namespace TestMatrixOpt
 
 		Constants::Base_Constants constants(input_file);
 		const unsigned int dim = 2;
-		SystemA::Base_SystemA<dim> systemA(constants.constants,folder_name);	
+		SystemA::SystemA<dim> systemA(constants.constants,folder_name);	
 
 		MatrixOpt::Base_MatrixOpt matrix_opt;
-		Sparse_matrix A = systemA.systemA_data.A[0].matrix;
+		Sparse_matrix A = systemA.system_data.A[0].matrix;
 		Sparse_matrix Aminus = matrix_opt.compute_Aminus(A);
 
 		Full_matrix Aminus_result;

@@ -62,7 +62,7 @@ namespace SolverDG
 
         SphericalManifold<dim> boundary;
         Triangulation<dim> triangulation;
-         GridIn<dim> gridin;
+        GridIn<dim> gridin;
         FESystem<dim> finite_element;
         DoFHandler<dim> dof_handler;
 

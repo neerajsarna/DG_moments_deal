@@ -130,15 +130,25 @@ int main(int argc,char **argv)
 															physical_constants,
 															output_dir_name);
 
-				SolverDG::Solver_DG<num_flux,dim> solver(numerical_constants,
-											  			 &system_of_equations,
-											  			 &exact_solution,
-											  			 num_equations,
-											  			 physical_constants,
-											  			 output_dir_name,
-											  			 mesh_info);
+				Point<dim> p;
+				Vector<double> value(6);
 
-				solver.run(numerical_constants.refine_cycles);
+				p(0) = 0.5;
+				p(1) = 0.0;
+
+				exact_solution.vector_value(p,value);
+
+				cout << "Value " << value << endl;
+				// SolverDG::Solver_DG<num_flux,dim> solver(numerical_constants,
+				// 							  			 &system_of_equations,
+				// 							  			 &exact_solution,
+				// 							  			 num_equations,
+				// 							  			 physical_constants,
+				// 							  			 output_dir_name,
+				// 							  			 mesh_info);
+
+
+				// solver.run(numerical_constants.refine_cycles);
 			break;
 		}
 

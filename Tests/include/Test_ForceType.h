@@ -38,6 +38,7 @@ namespace Test_ForceType
 		EXPECT_LT(fabs(force_type1.constants.A1-0.2),1e-5);
 		EXPECT_LT(fabs(force_type1.constants.A2-0.1),1e-5);
 
+
 		// exact value obtained from mathematica
 		EXPECT_LT(fabs(value1[0](0)-exact_value1),1e-5);
 
@@ -59,6 +60,7 @@ namespace Test_ForceType
 		EXPECT_LT(fabs(force_type2.constants.A0 - 0.0),1e-5);
 		EXPECT_LT(fabs(force_type2.constants.A1-0.2),1e-5);
 		EXPECT_LT(fabs(force_type2.constants.A2-0.1),1e-5);
+		EXPECT_NEAR(force_type2.constants.tau,0.1,1e-5);
 
 		// exact value obtained from mathematica
 		ASSERT_LT(fabs(value2[0](0)-exact_value2),1e-5);

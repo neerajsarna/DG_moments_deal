@@ -14,6 +14,10 @@ typedef SparseMatrix<double,Eigen::RowMajor> Sparse_matrix;
 typedef Eigen::Triplet<double> triplet;
 typedef Eigen::MatrixXd Full_matrix;
 
+// matrix type for the unsigned int
+typedef Matrix<unsigned int,Dynamic,Dynamic> MatrixUI;
+
+
 		struct system_matrix
 		{
 			std::vector<triplet> Row_Col_Value;

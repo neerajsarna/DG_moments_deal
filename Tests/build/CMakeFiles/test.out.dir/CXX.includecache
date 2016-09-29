@@ -6,15 +6,33 @@
 
 #IncludeRegexTransform: 
 
+../../include_new/AssembleSystem_Meshworker.h
+
 ../../include_new/Base_BoundaryHandler.h
 
 ../../include_new/Base_Constants.h
 
 ../../include_new/Base_EquationGenerator.h
 
+../../include_new/Base_ExactSolution.h
+
 ../../include_new/Base_ForceType.h
 
 ../../include_new/Base_MatrixOpt.h
+
+../../include_new/Base_MeshGenerator.h
+MeshGenerator_Ring.h
+../../include_new/MeshGenerator_Ring.h
+MeshGenerator_PeriodicSquare.h
+../../include_new/MeshGenerator_PeriodicSquare.h
+
+../../include_new/Base_Solver.h
+AssembleSystem_Meshworker.h
+../../include_new/AssembleSystem_Meshworker.h
+Run_Ring.h
+../../include_new/Run_Ring.h
+
+../../include_new/Base_TensorInfo.h
 
 ../../include_new/EigenSetup.h
 Eigen/Dense
@@ -152,15 +170,43 @@ algorithm
 iomanip
 -
 
+../../periodic_square/MeshGenerator_PeriodicSquare.h
+
+../../ring/ExactSolution_SystemA.h
+
+../../ring/MeshGenerator_Ring.h
+
+../../ring/Run_Ring.h
+
+../../systems/BCrhs_systemA.h
+
 ../../systems/SystemA.h
 
 ../include/Test_BaseConstants.h
 
+../include/Test_BoundaryHandler_Char.h
+basic_routines.h
+../include/basic_routines.h
+
+../include/Test_BoundaryHandler_Odd.h
+
 ../include/Test_EquationGenerator.h
+
+../include/Test_ExactSolution.h
 
 ../include/Test_ForceType.h
 
 ../include/Test_MatrixOpt.h
+
+../include/Test_Solver.h
+
+../include/Test_TensorInfo.h
+develop_Aminus.h
+../include/develop_Aminus.h
+
+../include/basic_routines.h
+
+../include/develop_Aminus.h
 
 /Applications/deal.II.app/Contents/Resources/include/deal.II/algorithms/any_data.h
 deal.II/base/config.h
@@ -4489,18 +4535,32 @@ EigenSetup.h
 /Users/neerajsarna/sciebo/DG_moments_deal/Tests/EigenSetup.h
 basic_data_structures.h
 /Users/neerajsarna/sciebo/DG_moments_deal/Tests/basic_data_structures.h
+basic_routines.h
+/Users/neerajsarna/sciebo/DG_moments_deal/Tests/basic_routines.h
 Base_Constants.h
 /Users/neerajsarna/sciebo/DG_moments_deal/Tests/Base_Constants.h
+Base_TensorInfo.h
+/Users/neerajsarna/sciebo/DG_moments_deal/Tests/Base_TensorInfo.h
 Base_ForceType.h
 /Users/neerajsarna/sciebo/DG_moments_deal/Tests/Base_ForceType.h
 Base_MatrixOpt.h
 /Users/neerajsarna/sciebo/DG_moments_deal/Tests/Base_MatrixOpt.h
-Base_EquationGenerator.h
-/Users/neerajsarna/sciebo/DG_moments_deal/Tests/Base_EquationGenerator.h
 Base_BoundaryHandler.h
 /Users/neerajsarna/sciebo/DG_moments_deal/Tests/Base_BoundaryHandler.h
+BCrhs_systemA.h
+/Users/neerajsarna/sciebo/DG_moments_deal/Tests/BCrhs_systemA.h
+Base_ExactSolution.h
+/Users/neerajsarna/sciebo/DG_moments_deal/Tests/Base_ExactSolution.h
+ExactSolution_SystemA.h
+/Users/neerajsarna/sciebo/DG_moments_deal/Tests/ExactSolution_SystemA.h
+Base_EquationGenerator.h
+/Users/neerajsarna/sciebo/DG_moments_deal/Tests/Base_EquationGenerator.h
 SystemA.h
 /Users/neerajsarna/sciebo/DG_moments_deal/Tests/SystemA.h
+Base_MeshGenerator.h
+/Users/neerajsarna/sciebo/DG_moments_deal/Tests/Base_MeshGenerator.h
+Base_Solver.h
+/Users/neerajsarna/sciebo/DG_moments_deal/Tests/Base_Solver.h
 Test_BaseConstants.h
 /Users/neerajsarna/sciebo/DG_moments_deal/Tests/Test_BaseConstants.h
 Test_ForceType.h
@@ -4509,6 +4569,16 @@ Test_EquationGenerator.h
 /Users/neerajsarna/sciebo/DG_moments_deal/Tests/Test_EquationGenerator.h
 Test_MatrixOpt.h
 /Users/neerajsarna/sciebo/DG_moments_deal/Tests/Test_MatrixOpt.h
+Test_BoundaryHandler_Char.h
+/Users/neerajsarna/sciebo/DG_moments_deal/Tests/Test_BoundaryHandler_Char.h
+Test_TensorInfo.h
+/Users/neerajsarna/sciebo/DG_moments_deal/Tests/Test_TensorInfo.h
+Test_BoundaryHandler_Odd.h
+/Users/neerajsarna/sciebo/DG_moments_deal/Tests/Test_BoundaryHandler_Odd.h
+Test_ExactSolution.h
+/Users/neerajsarna/sciebo/DG_moments_deal/Tests/Test_ExactSolution.h
+Test_Solver.h
+/Users/neerajsarna/sciebo/DG_moments_deal/Tests/Test_Solver.h
 
 /usr/local/include/boost/align/align.hpp
 boost/config.hpp

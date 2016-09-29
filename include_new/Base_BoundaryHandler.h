@@ -107,4 +107,73 @@ namespace BoundaryHandler
 		return(X_minus * B_tilde_inv * (*B));
 	}
 
+	// we would now like to look into the development of odd Boundary Conditions
+	template<int dim>
+	class
+	Base_BoundaryHandler_Odd
+	{
+		public:
+			Base_BoundaryHandler_Odd(Sparse_matrix &B,const MatrixUI &odd_ID);
+
+			Sparse_matrix B;
+			const MatrixUI odd_ID;
+
+			// the boundary conditions will be implemented in the form U = BCU+g
+			Sparse_matrix develop_BC();
+	};
+
+	template<int dim>
+	Base_BoundaryHandler_Odd<dim>::Base_BoundaryHandler_Odd(Sparse_matrix &B,const MatrixUI &odd_ID)
+	:
+	B(B),
+	odd_ID(odd_ID)
+	{
+		Assert(B.rows() != 0 || B.cols() != 0,ExcNotInitialized());
+		Assert(odd_ID.rows() != 0 || odd_ID.cols() != 0,ExcNotInitialized());
+	}
+
+	// we now try to develop the BC matrix for the implementation of the odd boundary conditions
+	template<int dim>
+	Sparse_matrix
+	Base_BoundaryHandler_Odd<dim>::develop_BC()
+	{
+		const unsigned int nEqn = B.cols();
+		unsigned int num_odd = 1;
+		Sparse_matrix BC;
+		BC.resize(nEqn,nEqn);
+
+		for (unsigned int i = 0 ; i < nEqn ; i++)
+		{
+			//if we encounter an odd variable
+			if (i == odd_ID(num_odd - 1,0))
+			{
+																									
+				const double odd_coeff = B.coeffRef(num_odd-1,odd_ID(num_odd - 1,0));
+
+				// We now need to check whether the order in which the odd variables are listed is the
+				// same order in which the boundary conditions for these odd variables have been loaded.
+				Assert(fabs(odd_coeff) > 1e-5,ExcMessage("Assumption has broken down"));
+				
+				//If we write the boundary conditions as A.u_odd + C.u_even = g then u_odd = -Inverse(A).C.u_even
+				//A = B.coeffRef(num_odd,odd_ID(num_odd)) and C = B.coeffRef(num_odd,j). 
+				for (unsigned int j = 0 ; j < B.cols() ; j++)
+					if (j != odd_ID(num_odd - 1,0))	
+						BC.coeffRef(odd_ID(num_odd - 1,0),j) = -B.coeffRef(num_odd - 1,j)/odd_coeff;
+				
+				// // // update only if it doest now exceed the size limit
+				
+				if (num_odd < B.rows())
+					num_odd ++;
+			}
+			else
+				BC.coeffRef(i,i) = 1;
+		}
+
+		BC.makeCompressed();
+		B.makeCompressed();
+		AssertDimension(B.rows(),num_odd);
+
+		return(BC);
+	}
+
 }

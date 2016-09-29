@@ -19,9 +19,9 @@ namespace Test_BaseConstants
 		int nBC = 2;
 		int system_id = 6;
 
-		System_Type system_type = symmetric;
+		System_Type system_type = un_symmetric;
 		Force_Type force_type = type1;
-		BC_Type bc_type = characteristic;
+		BC_Type bc_type = odd;
 
 		// physical constants
 		double tau = 0.1;

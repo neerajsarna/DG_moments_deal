@@ -19,8 +19,10 @@ set(CMAKE_TARGET_DEFINITIONS_CXX
 set(CMAKE_CXX_TARGET_INCLUDE_PATH
   "../../include_new"
   "../include"
+  "../../periodic_square"
   "../../systems"
   "/usr/local/include/eigen"
+  "../../ring"
   "/usr/local/include"
   "/Applications/deal.II.app/Contents/Resources/include"
   "/Applications/deal.II.app/Contents/Resources/include/deal.II/bundled"

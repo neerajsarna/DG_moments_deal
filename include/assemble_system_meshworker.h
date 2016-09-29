@@ -271,7 +271,7 @@ for (unsigned int q = 0 ; q < fe_v.n_quadrature_points ; q++)
 
 
           for (unsigned int j = 0 ; j < Am_invP.cols() ; j++)
-           cell_rhs(i) -= 0.5 * shape_value_test 
+           cell_rhs(i) += 0.5 * shape_value_test 
                           * Am_invP(component[i],j) * boundary_rhs_value[j] * jacobian_value;
 
         }

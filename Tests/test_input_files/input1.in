@@ -22,7 +22,7 @@ subsection Physical Constants
 	set	zeta = 1.0				
 	set	chi = 1.0
 	set	theta0 = 2.0
-	set theta1 = 1.0
+	set  theta1 = 1.0
 
  #CAUTION CAUTION CAUTION: uW = 1 * tau
 	set	uW = 0.1
@@ -41,18 +41,22 @@ subsection System Properties
 	set nBC = 2
 
 	# 0 for symmetric and 1 for un symmetric
-	set symmetric or un symmetric = 0
+	set symmetric or un symmetric = 1
 
 	# 0 for force of systemA,1 for force of systemB
 	set force type = 0
 
 	# 0 for characteristic and 1 for odd
-	set BC type = 0
+	set BC type = 1
 end
 
 subsection Mesh Info
 	set filename = mesh
+
+	# 0 for ring and 1 for periodic square
 	set mesh type = 0
+
+	# 0 for reading gmsh and 1 for internal generation
 	set mesh options = 1
 	set left boundary = -1.0
 	set right boundary = 1.0
