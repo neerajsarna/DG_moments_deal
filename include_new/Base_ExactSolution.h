@@ -4,7 +4,7 @@ namespace ExactSolution
 
 	template<int dim>
 	class
-	Base_ExactSolution
+	Base_ExactSolution:public Function<dim>
 	{
 		public:
 			Base_ExactSolution(const constant_data &constants);
@@ -26,6 +26,7 @@ namespace ExactSolution
 	template<int dim>
 	Base_ExactSolution<dim>::Base_ExactSolution(const constant_data &constants)
 	:
+	Function<dim>(constants.nEqn),
 	constants(constants)
 	{;};
 

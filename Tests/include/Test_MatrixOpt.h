@@ -143,7 +143,7 @@ namespace TestMatrixOpt
 
 		MatrixOpt::Base_MatrixOpt matrix_opt;
 		Sparse_matrix A = systemA.system_data.A[0].matrix;
-		Sparse_matrix Amod = matrix_opt.compute_Amod(A);
+		Full_matrix Amod = matrix_opt.compute_Amod(A);
 
 		Full_matrix Amod_result;
 		Amod_result.resize(A.rows(),A.cols());
@@ -153,10 +153,7 @@ namespace TestMatrixOpt
 						0.707107, 0, 0, 0, 0.516398, 0, 0, 0.516398, 0, 0, 0, 0, 0, 0, 
 						0.707107, 0, -0.258199, 0, 0, -0.258199, 0, 0;
 
-		for (unsigned int i = 0 ; i < A.rows() ; i ++)
-			for (unsigned int j = 0 ; j < A.cols(); j ++)
-				EXPECT_NEAR(Amod_result(i,j), Amod.coeffRef(i,j),1e-5 );
-
+		Compare_Float_Mat(Amod_result,Amod);
 	}
 
 	TEST(AminusComputationSystemA,HandlingAminus)
@@ -170,7 +167,7 @@ namespace TestMatrixOpt
 
 		MatrixOpt::Base_MatrixOpt matrix_opt;
 		Sparse_matrix A = systemA.system_data.A[0].matrix;
-		Sparse_matrix Aminus = matrix_opt.compute_Aminus(A);
+		Full_matrix Aminus = matrix_opt.compute_Aminus(A);
 
 		Full_matrix Aminus_result;
 		Aminus_result.resize(A.rows(),A.cols());
@@ -179,8 +176,6 @@ namespace TestMatrixOpt
 						0.707107, 0, -1., 0, 0.516398, -0.666667, 0, 0.516398, 0, 0, 0, 0, 
 						-0.5, 0, 0.707107, 0, -0.258199, 0.333333, 0, -0.258199, 0, 0;
 
-		for (unsigned int i = 0 ; i < Aminus_result.rows(); i ++)
-			for (unsigned int j = 0 ; j < Aminus_result.cols(); j ++)
-				EXPECT_NEAR(Aminus.coeffRef(i,j),Aminus_result(i,j),1e-5);
+		Compare_Float_Mat(Aminus,Aminus_result);
 	}
 }

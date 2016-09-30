@@ -102,7 +102,7 @@ namespace SystemA
 									const Tensor<1,dim,double> normal_vector,
 									Vector<double> &bc_rhs);
 
-			virtual Sparse_matrix build_Aminus(const Tensor<1,dim,double> normal_vector);
+			virtual Full_matrix build_Aminus(const Tensor<1,dim,double> normal_vector);
 	};
 
 	template<int dim>
@@ -202,6 +202,32 @@ namespace SystemA
 				}
 				break;
 			}
+
+			case periodic_square:
+			{
+				switch(this->constants.bc_type)
+				{
+					case characteristic:
+					{
+						this->base_bcrhs = &this->bcrhs_periodic_char;
+						break;
+					}
+
+					case odd:
+					{
+						this->base_bcrhs = &this->bcrhs_periodic_odd;
+						break;
+					}
+
+					default:
+					{
+						Assert(1 == 0, ExcMessage("Should not have reached here"));
+						break;
+					}
+				}
+
+				break;
+			}
 			default:
 			{
 				Assert(1 ==0,ExcNotImplemented());
@@ -214,6 +240,8 @@ namespace SystemA
 
 		// we will always send Ax independent of symmetric or unsymmetric system
 		this->Aminus_1D = matrixopt.compute_Aminus(this->system_data.Ax.matrix);
+
+		this->X_minus = matrixopt.compute_Xminus(this->system_data.Ax.matrix,this->constants.nBC);
 
 	}
 	
@@ -272,11 +300,11 @@ namespace SystemA
 
 	// computation of Aminus for An
 	template<int dim>
-	Sparse_matrix
+	Full_matrix
 	SystemA<dim>
 	::build_Aminus(const Tensor<1,dim,double> normal_vector)
 	{
-		Sparse_matrix Aminus;
+		Full_matrix Aminus;
 		Aminus.resize(this->constants.nEqn,this->constants.nEqn);
 
 		const double nx = normal_vector[0];

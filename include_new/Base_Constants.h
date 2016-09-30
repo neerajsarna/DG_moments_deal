@@ -28,10 +28,15 @@ namespace Constants
 		// read mesh info
 		void read_mesh_info();
 
+		// read output director
+		void read_output_directory();
+
 		// set of numerical constants
 		constant_data constants;
 		private:
 			void declare_parameters();
+			void allocate_variable_map();
+			void allocate_subdirector_names();
 	};
 
 	Base_Constants::
@@ -53,6 +58,12 @@ namespace Constants
 		read_physical_constants();
 
 		read_mesh_info();
+
+		read_output_directory();
+
+		// we create a map between the id of the variable and it's name,
+		// proves to be helpful during error computation
+		allocate_variable_map();
 	}
 
 	void Base_Constants
@@ -366,5 +377,58 @@ namespace Constants
 		prm.leave_subsection();
 
 		Assert(entered,ExcMessage("did not read mesh info"));
+	}
+
+	void Base_Constants
+	::read_output_directory()
+	{
+		bool entered = false;
+
+		// enter the subsection which reads the output directory name
+		prm.enter_subsection("Output Directory Name");
+		{
+			entered = true;
+
+			// input the output directory name
+			constants.main_output_dir = prm.get("Main Output Directory");
+		}
+		prm.leave_subsection();
+
+		Assert(entered,ExcMessage("Did not read the output directory name"));
+	}
+
+	void Base_Constants
+	::allocate_variable_map()
+	{
+
+	  	Assert(constants.nEqn <= 17,ExcNotImplemented());
+	  	std::vector<std::string> var_names = {"rho","vx","vy","theta","sigmaxx","sigmaxy","sigmayy","qx","qy","mxxx","mxxy","mxyy","myyy",
+	  								"Delta","Rxx","Rxy","Ryy"};
+
+	  	for (unsigned int i = 0 ; i < 17 ; i++)
+	  		constants.variable_map[var_names[i]] = i;
+	  
+	}
+
+	void Base_Constants
+	::allocate_subdirector_names()
+	{
+		const unsigned int num_outputs = 5;
+		constants.sub_directory_names.resize(num_outputs);
+
+		constants.sub_directory_names[0] = constants.main_output_dir + "/grids";
+
+		
+		constants.sub_directory_names[1] = constants.main_output_dir + "/solution";
+
+		
+		constants.sub_directory_names[2] = constants.main_output_dir + "/convergence_tables";
+
+		
+		constants.sub_directory_names[3] = constants.main_output_dir + "/sparsity_patterns";
+
+		
+		constants.sub_directory_names[4] = constants.main_output_dir + "/matrix_read";			
+		
 	}
 }

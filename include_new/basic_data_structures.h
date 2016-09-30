@@ -97,5 +97,14 @@ struct constant_data
 	unsigned int part_x;
 
 	unsigned int part_y;
+
+	// we create a map between the id of the variable and it's name
+	std::map<std::string,unsigned int> variable_map;
+
+	// names of the sub directories
+	std::vector<std::string> sub_directory_names;
+
+	// output directory name
+	std::string main_output_dir;
 };
 

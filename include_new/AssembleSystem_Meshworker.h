@@ -141,7 +141,7 @@ template<int dim>
 	const unsigned int dofs_per_cell = fe_in_cell.dofs_per_cell;
 	const unsigned int components_per_cell  = fe_in_cell.n_components();
 	const unsigned int indices_per_cell = dofs_per_cell/components_per_cell;
-	vector<vector<double>> component_to_system(components_per_cell,vector<double> (indices_per_cell));
+	std::vector<std::vector<double>> component_to_system(components_per_cell,std::vector<double> (indices_per_cell));
 
 	for (unsigned int i = 0 ; i < components_per_cell ; i ++)
 		for (unsigned int j = 0 ; j < indices_per_cell ; j ++)
@@ -225,28 +225,28 @@ for (unsigned int q = 0 ; q < fe_v.n_quadrature_points ; q++)
                           boundary_rhs_value);
 
         // build the matrices needed
-  Sparse_matrix Am = system_info->build_Aminus(fe_v.normal_vector(q));
+  Full_matrix Am = system_info->build_Aminus(fe_v.normal_vector(q));
   Sparse_matrix Projector = system_info->build_Projector(fe_v.normal_vector(q));
   Sparse_matrix Inv_Projector = system_info->build_InvProjector(fe_v.normal_vector(q));
 
-  Sparse_matrix Am_invP_BC_P = Am * Inv_Projector 
-                               * equation_system_data->system_data[solve_system].BC.matrix 
+  Full_matrix Am_invP_BC_P = Am * Inv_Projector 
+                               * system_info->BC
                                * Projector;
 
-  Eigen::MatrixXd Am_invP = Am * Inv_Projector;
+  Full_matrix Am_invP = Am * Inv_Projector;
 
   for (unsigned int i = 0 ; i < dofs_per_cell ; i ++)
   {
     const double shape_value_test = fe_v.shape_value(i,q);
     for (unsigned int j = 0 ; j < dofs_per_cell ; j ++)
       cell_matrix(i,j) += 0.5 * shape_value_test
-    * (Am(component[i],component[j])-Am_invP_BC_P(component[i],component[j]))
-    * fe_v.shape_value(j,q) * jacobian_value;                                    
+                          * (Am(component[i],component[j])-Am_invP_BC_P(component[i],component[j]))
+                          * fe_v.shape_value(j,q) * jacobian_value;                                    
 
 
     for (unsigned int j = 0 ; j < Am_invP.cols() ; j++)
      cell_rhs(i) += 0.5 * shape_value_test 
-   * Am_invP(component[i],j) * boundary_rhs_value[j] * jacobian_value;
+                    * Am_invP(component[i],j) * boundary_rhs_value[j] * jacobian_value;
 
  }
 
@@ -283,19 +283,21 @@ for (unsigned int q = 0 ; q < fe_v.n_quadrature_points ; q++)
 
   boundary_rhs_value = 0;                 
 
-  system_info->build_BCrhs(fe_v.quadrature_point(q),fe_v.normal_vector(q),
-                          boundary_rhs_value);
+  system_info->build_BCrhs(fe_v.quadrature_point(q),fe_v.normal_vector(q),boundary_rhs_value);
 
         // build the matrices needed
-  Sparse_matrix Am = system_info->build_Aminus(fe_v.normal_vector(q));
+  Eigen::MatrixXd Am = system_info->build_Aminus(fe_v.normal_vector(q));
   Sparse_matrix Projector = system_info->build_Projector(fe_v.normal_vector(q));
   Sparse_matrix Inv_Projector = system_info->build_InvProjector(fe_v.normal_vector(q));
 
-  Sparse_matrix Am_invP_BC_P = Am * Inv_Projector 
-                               * equation_system_data->system_data[solve_system].BC.matrix 
-                               * Projector;
+  Eigen::MatrixXd Am_invP_B_hat_P = Am * Inv_Projector 
+                                   * system_info->B_hat 
+                                    * Projector;
 
-  Eigen::MatrixXd Am_invP = Am * Inv_Projector;
+  Eigen::MatrixXd Am_invP_X_min_B_tild_inv = Am
+                                            * Inv_Projector 
+                                            * system_info->X_minus
+                                            * system_info->B_tilde_inv;
 
 
   for (unsigned int i = 0 ; i < dofs_per_cell ; i ++)
@@ -303,9 +305,9 @@ for (unsigned int q = 0 ; q < fe_v.n_quadrature_points ; q++)
     const double shape_value_test = fe_v.shape_value(i,q);
     for (unsigned int j = 0 ; j < dofs_per_cell ; j ++)
       cell_matrix(i,j) += 0.5 * shape_value_test
-                              * Am_invP_B_hat_P(component[i],component[j])
-                              * fe_v.shape_value(j,q) 
-                              * jacobian_value;                                    
+                          * Am_invP_B_hat_P(component[i],component[j])
+                          * fe_v.shape_value(j,q) 
+                          * jacobian_value;                                    
 
 
     for (unsigned int j = 0 ; j < Am_invP_X_min_B_tild_inv.cols() ; j++)
@@ -314,7 +316,6 @@ for (unsigned int q = 0 ; q < fe_v.n_quadrature_points ; q++)
                         * boundary_rhs_value[j] * jacobian_value;
 
  }
-
 
 }
 

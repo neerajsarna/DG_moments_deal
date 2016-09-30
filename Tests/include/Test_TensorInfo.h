@@ -245,7 +245,7 @@ namespace Test_TensorInfo
 			normal_vectors[i][0] = i * 0.1 + pow(i,2);
 			normal_vectors[i][1] = i * 0.5 + pow(i,3);
 
-			Sparse_matrix Aminus = systemA.build_Aminus(normal_vectors[i]);
+			Full_matrix Aminus = systemA.build_Aminus(normal_vectors[i]);
 			Full_matrix result = Aminus_manuel(normal_vectors[i][0],normal_vectors[i][1],systemA.constants.nEqn);
 			
 			Compare_Float_Mat(Aminus,result);

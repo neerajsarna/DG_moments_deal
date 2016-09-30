@@ -13,6 +13,7 @@ SET(G++_COVERAGE_COMPILE_FLAGS7 "-Wl,--no-as-needed")
 
 
 SET(DEAL_II_DIR "/Applications/deal.II.app/Contents/Resources/lib/cmake")
+SET(MKL_DIR "/opt/intel//compilers_and_libraries_2016.3.170/mac/mkl")
 
 FIND_PACKAGE(deal.II 8.3 QUIET
   HINTS ${deal.II_DIR} ${DEAL_II_DIR} ../ ../../ $ENV{DEAL_II_DIR}
@@ -51,7 +52,9 @@ INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/../ring)
 FIND_PACKAGE(GTest REQUIRED)
 INCLUDE_DIRECTORIES(${GTEST_INCLUDE_DIRS})
 
-TARGET_LINK_LIBRARIES(test.out ${GTEST_LIBRARIES} pthread)
+TARGET_LINK_LIBRARIES(test.out ${GTEST_LIBRARIES} libmkl_intel_ilp64.dylib libmkl_core.dylib libmkl_intel_thread.dylib libpthread.dylib libdl.dylib pthread)
+
+#TARGET_LINK_LIBRARIES(test.out ${GTEST_LIBRARIES} pthread)
 
 DEAL_II_SETUP_TARGET(test.out)
 ADD_CUSTOM_TARGET(release

@@ -43,12 +43,12 @@ namespace MatrixOpt
 
 
 			// computes the modulus of a matrix
-			Sparse_matrix compute_Amod(Sparse_matrix &A);
+			Full_matrix compute_Amod(Sparse_matrix &A);
 			Full_matrix compute_Amod(Full_matrix &A);
 
 
 			// computes the flux matrix for a sparse matrix
-			Sparse_matrix compute_Aminus(Sparse_matrix &A);
+			Full_matrix compute_Aminus(Sparse_matrix &A);
 
 			// computes the difference between a full matrix and a sparse matrix
 
@@ -240,26 +240,14 @@ namespace MatrixOpt
 		return(vals);
 	}
 
-	Sparse_matrix Base_MatrixOpt::compute_Amod(Sparse_matrix &A)
+	Full_matrix Base_MatrixOpt::compute_Amod(Sparse_matrix &A)
 	{
 		Full_matrix vecs = compute_X(A);
 		VectorXd vals = compute_Lambda(A);
 		Full_matrix Amod;
 		Amod = vecs*vals.cwiseAbs().asDiagonal()*vecs.inverse();
 
-		Sparse_matrix Amod_sparse;
-		Amod_sparse.resize(Amod.rows(),Amod.cols());
-
-		// though this conversion leads to added memory momentarily but
-		// it might help for larger systems since Amod is destroyed after the call
-		for (unsigned int i = 0 ; i < Amod.rows(); i++)
-			for (unsigned int j = 0 ; j < Amod.cols() ; j++)
-				// we store only if the value is large enough
-				if (fabs(Amod(i,j)) > 1e-10)
-					Amod_sparse.coeffRef(i,j) = Amod(i,j);
-
-		Amod_sparse.makeCompressed();
-		return(Amod_sparse);
+		return(Amod);
 	}
 
 	// same as above but for full matrix
@@ -274,8 +262,12 @@ namespace MatrixOpt
 	}
 
 	// compute the Upwind Matrix
-	Sparse_matrix Base_MatrixOpt::compute_Aminus(Sparse_matrix &A)
+	Full_matrix Base_MatrixOpt::compute_Aminus(Sparse_matrix &A)
 	{
-		return(compute_Amod(A)-A);
+		Full_matrix X = compute_X(A);
+		VectorXd Lambda = compute_Lambda(A);
+
+
+		return(X * (Lambda.cwiseAbs() - Lambda).asDiagonal() * X.inverse());
 	}
 }

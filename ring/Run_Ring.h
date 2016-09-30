@@ -24,32 +24,10 @@ Base_Solver<dim>::run_ring(const unsigned int refine_cycles)
 {
 	for (unsigned int i = 0 ; i < refine_cycles ; i ++)
 	{
-		if (i == 0)
-		{
-			// first we generate the grid
-			switch(constants.mesh_options)
-			{
-				case generate_internal:
-				{
-			// generate internally
-					this->mesh_internal_ring();
-					break;
-				}
-				case read_msh:
-				{
-				// read the gmsh generated ring
-					this->mesh_gmsh_ring();
-					break;
-				}
-				default:
-				{
-					Assert(1 == 0,ExcMessage("Should not have reached here"));
-					break;
-				}
-			}
-		}
+	
 
-		//now we distribute the dofs and allocate the memory for the global matrix
+		//now we distribute the dofs and allocate the memory for the global matrix. We have 
+		// already created the mesh so we can directly distribute the degrees of freedom now.
 		distribute_dof_allocate_matrix_ring();
 
 		// the following routine assembles
@@ -73,7 +51,13 @@ Base_Solver<dim>::run_ring(const unsigned int refine_cycles)
 			}
 		}
 
-		//LinearSolve(global_matrix,system_rhs,solution,Pardiso);
+		LinearSolver::LinearSolver(global_matrix,system_rhs,solution,LinearSolver::LinearSolver::Pardiso);
+
+		PostProc::Base_PostProc<dim> postproc(constants,base_exactsolution,&dof_handler, &mapping);
+
+		// now we compute the error due to computation
+		postproc.error_evaluation_QGauss(solution,this->triangulation.n_active_cells(),this->triangulation.maximum_cell,this->triangulation.diameter());
+
 
 	}
 

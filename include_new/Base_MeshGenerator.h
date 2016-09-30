@@ -52,6 +52,7 @@ namespace MeshGenerator
 		{
 			case read_msh:
 			{
+
 				switch(constants.mesh_type)
 				{
 					case ring:
@@ -72,20 +73,22 @@ namespace MeshGenerator
 					}
 				}
 				
+				break;
 				
 			}
 			case generate_internal:
 			{
+
 				switch(constants.mesh_type)
 				{
 					case ring:
 					{
-						mesh_gmsh_ring();
+						mesh_internal_ring();
 						break;
 					}
 					case periodic_square:
 					{
-						mesh_gmsh_periodic_square();
+						mesh_internal_periodic_square();
 						break;
 					}
 					default:
@@ -94,6 +97,7 @@ namespace MeshGenerator
 						break;
 					}
 				}
+				break;
 			}
 
 			default:

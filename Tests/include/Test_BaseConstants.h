@@ -45,7 +45,7 @@ namespace Test_BaseConstants
 		double alpha = 1.0;
 
 		// the type of mesh to be used
-		Mesh_type mesh_type = ring;
+		Mesh_type mesh_type = periodic;
 
 		// different options for meshing
 		Meshing_Options mesh_options = generate_internal;

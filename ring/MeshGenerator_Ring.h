@@ -3,6 +3,9 @@
 	void
 	Base_MeshGenerator<dim>::mesh_internal_ring()
 	{
+		std::cout << "Generating the mesh " <<std::endl;
+		fflush(stdout);
+		
 		Point<dim> center;
 		const double inner_radius = 0.5;
 		const double outer_radius = 2.0;
@@ -24,6 +27,9 @@
 	void
 	Base_MeshGenerator<dim>::mesh_gmsh_ring()
 	{
+		std::cout << "Reading the mesh " << std::endl;
+		fflush(stdout);
+
 		gridin.attach_triangulation(triangulation);
         std::ifstream f(mesh_file_name);
         gridin.read_msh(f);

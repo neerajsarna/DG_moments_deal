@@ -95,6 +95,7 @@ namespace EquationGenerator
 			// matrices for the boundary conditions
 			Full_matrix B_tilde_inv;
 			Full_matrix B_hat;
+			Full_matrix X_minus;
 			Sparse_matrix BC;
 
 			// development of projectors
@@ -106,11 +107,14 @@ namespace EquationGenerator
 			BCrhs_systemA::Base_BCrhs_systemA<dim> *base_bcrhs;
 			BCrhs_systemA::BCrhs_ring_char_systemA<dim> bcrhs_ring_char;
 			BCrhs_systemA::BCrhs_ring_odd_systemA<dim> bcrhs_ring_odd;
+			
+			BCrhs_systemA::BCrhs_periodic_char_systemA<dim> bcrhs_periodic_char;
+			BCrhs_systemA::BCrhs_periodic_odd_systemA<dim> bcrhs_periodic_odd;
 
-			virtual Sparse_matrix build_Aminus(const Tensor<1,dim,double> normal_vector) = 0;
+			virtual Full_matrix build_Aminus(const Tensor<1,dim,double> normal_vector) = 0;
 
 			// Matrices for the flux
-			Sparse_matrix Aminus_1D;
+			Full_matrix Aminus_1D;
 
 			virtual void build_BCrhs(const Tensor<1,dim,double> p,
 									const Tensor<1,dim,double> normal_vector,
@@ -126,7 +130,9 @@ namespace EquationGenerator
 	force2(constants),
 	force3(constants),
 	bcrhs_ring_char(constants),
-	bcrhs_ring_odd(constants)
+	bcrhs_ring_odd(constants),
+	bcrhs_periodic_char(constants),
+	bcrhs_periodic_odd(constants)
 	{
 		basefile.resize(dim + 4);
 		unsigned int entry;

@@ -9,14 +9,17 @@ namespace FEM_Solver
 	{
 		typedef MeshWorker::DoFInfo<dim> DoFInfo;
 		typedef MeshWorker::IntegrationInfo<dim> CellInfo;
-		
+
 		public:
 			Base_Solver(const std::string &mesh_file_name,
 						const std::string &output_file_name,
 						const constant_data &constants,
-						EquationGenerator::Base_EquationGenerator<dim> *equation_info);
+						EquationGenerator::Base_EquationGenerator<dim> *equation_info,
+                        ExactSolution::Base_ExactSolution<dim> *exact_solution
+                        );
 
 			const constant_data constants;
+            ExactSolution::Base_ExactSolution<dim> *base_exactsolution;
 			EquationGenerator::Base_EquationGenerator<dim> *system_info;
 
 			// the following order is important or else we run into trouble
@@ -37,6 +40,10 @@ namespace FEM_Solver
         	// running routines for a ring
         	void distribute_dof_allocate_matrix_ring();
         	void run_ring(const unsigned int refine_cycles);
+
+        	const MappingQ<dim> mapping;
+        	const unsigned int ngp;
+        	const unsigned int ngp_face;
 
         	// running routines for a periodic box
         	// void distribute_dof_allocate_matrix_periodic_box();
@@ -97,6 +104,9 @@ namespace FEM_Solver
         	// 							Vector<double> &component,
         	// 							const typename DoFHandler<dim>::active_cell_iterator &cell);
 
+            // Data for post proc
+            ConvergenceTable convergence_table;
+
 
 	};
 
@@ -104,14 +114,19 @@ namespace FEM_Solver
 	Base_Solver<dim>::Base_Solver(const std::string &mesh_file_name,
 								  const std::string &output_file_name,
 								  const constant_data &constants,
-								  EquationGenerator::Base_EquationGenerator<dim> *equation_info)
+								  EquationGenerator::Base_EquationGenerator<dim> *equation_info,
+                                  ExactSolution::Base_ExactSolution<dim> *exact_solution)
 	:
 	MeshGenerator::Base_MeshGenerator<dim>(mesh_file_name,output_file_name,constants),
-	PeriodicityHandler::Base_PeriodicityHandler<dim>(constants.xl,constants.xr)
+	PeriodicityHandler::Base_PeriodicityHandler<dim>(constants.xl,constants.xr),
 	constants(constants),
+    base_exactsolution(exact_solution),
 	system_info(equation_info),
 	finite_element(FE_DGQ<dim>(constants.p),constants.nEqn),
-	dof_handler(this->triangulation)
+	dof_handler(this->triangulation),
+	mapping(constants.mapping_order),
+	ngp(constants.p + 1),
+	ngp_face(constants.p + 1)
 	{;}
 
   	#include "AssembleSystem_Meshworker.h"

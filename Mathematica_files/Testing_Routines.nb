@@ -10,10 +10,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       158,          7]
-NotebookDataLength[     23038,        680]
-NotebookOptionsPosition[     21234,        611]
-NotebookOutlinePosition[     21592,        627]
-CellTagsIndexPosition[     21549,        624]
+NotebookDataLength[     26905,        771]
+NotebookOptionsPosition[     24870,        694]
+NotebookOutlinePosition[     25228,        710]
+CellTagsIndexPosition[     25185,        707]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
@@ -606,6 +606,89 @@ Cell[BoxData[
    MatrixForm[BoxForm`e$]]]], "Output",
  CellChangeTimes->{{3.684056829778528*^9, 3.6840568358736963`*^9}}]
 }, Open  ]]
+}, Closed]],
+
+Cell[CellGroupData[{
+
+Cell["Aminus", "Subsection",
+ CellChangeTimes->{{3.684056882038591*^9, 3.68405688385021*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"Aminus", " ", "=", 
+   RowBox[{"Chop", "[", " ", 
+    RowBox[{
+     RowBox[{"Projector", "[", 
+      RowBox[{"nx", ",", 
+       RowBox[{"-", "ny"}]}], "]"}], ".", 
+     RowBox[{"(", 
+      RowBox[{"modAx", "-", "Ax"}], ")"}], ".", 
+     RowBox[{"Projector", "[", 
+      RowBox[{"nx", ",", "ny"}], "]"}]}], "]"}]}], ";"}]], "Input",
+ CellChangeTimes->{{3.6840568873977222`*^9, 3.684056927241311*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"CForm", "[", 
+  RowBox[{"Flatten", "[", "Aminus", "]"}], "]"}]], "Input",
+ CellChangeTimes->{{3.68405692916581*^9, 3.684056940479498*^9}, {
+  3.6840570115644817`*^9, 3.684057013981161*^9}}],
+
+Cell["\<\
+List(0.7745966692414836,-0.9999999999999999*nx,-0.9999999999999999*ny,
+   0.7745966692414832*Power(nx,2),1.5491933384829664*nx*ny,
+   0.7745966692414832*Power(ny,2),-0.9999999999999999*nx,
+   1.2909944487358058*Power(nx,2) + 0.7071067811865477*Power(ny,2),
+   0.5838876675492581*nx*ny,-1.*Power(nx,3) - \
+1.0000000000000004*nx*Power(ny,2),
+   -2.*Power(nx,2)*ny + 1.0000000000000004*ny*(Power(nx,2) - Power(ny,2)),
+   4.440892098500626e-16*nx*Power(ny,2),-0.9999999999999999*ny,
+   0.5838876675492581*nx*ny,0.7071067811865477*Power(nx,2) + 
+    1.2909944487358058*Power(ny,2),4.440892098500626e-16*Power(nx,2)*ny,
+   -2.*nx*Power(ny,2) - 1.0000000000000004*nx*(Power(nx,2) - Power(ny,2)),
+   -1.0000000000000004*Power(nx,2)*ny - 1.*Power(ny,3),
+   1.*(0.5163977794943224*Power(nx,2) - 0.2581988897471612*Power(ny,2)),
+   -1.0000000000000004*nx*Power(ny,2) + 
+    nx*(-0.6666666666666665*Power(nx,2) + 0.33333333333333326*Power(ny,2)),
+   1.0000000000000004*Power(nx,2)*ny + 
+    ny*(-0.6666666666666665*Power(nx,2) + 0.33333333333333326*Power(ny,2)),
+   1.4142135623730954*Power(nx,2)*Power(ny,2) + 
+    Power(nx,2)*(0.5163977794943222*Power(nx,2) - \
+0.2581988897471611*Power(ny,2)),
+   -1.4142135623730954*nx*ny*(Power(nx,2) - Power(ny,2)) + 
+    2*nx*ny*(0.5163977794943222*Power(nx,2) - \
+0.2581988897471611*Power(ny,2)),
+   -1.4142135623730954*Power(nx,2)*Power(ny,2) + 
+    Power(ny,2)*(0.5163977794943222*Power(nx,2) - \
+0.2581988897471611*Power(ny,2)),
+   0.7745966692414836*nx*ny,-0.9999999999999998*Power(nx,2)*ny + 
+    0.5000000000000002*ny*(Power(nx,2) - Power(ny,2)),
+   -0.9999999999999998*nx*Power(ny,2) - 
+    0.5000000000000002*nx*(Power(nx,2) - Power(ny,2)),
+   0.7745966692414833*Power(nx,3)*ny - 
+    0.7071067811865477*nx*ny*(Power(nx,2) - Power(ny,2)),
+   1.5491933384829666*Power(nx,2)*Power(ny,2) + 
+    0.7071067811865477*Power(Power(nx,2) - Power(ny,2),2),
+   0.7745966692414833*nx*Power(ny,3) + 
+    0.7071067811865477*nx*ny*(Power(nx,2) - Power(ny,2)),
+   1.*(-0.2581988897471612*Power(nx,2) + 0.5163977794943224*Power(ny,2)),
+   1.0000000000000004*nx*Power(ny,2) + 
+    nx*(0.33333333333333326*Power(nx,2) - 0.6666666666666665*Power(ny,2)),
+   -1.0000000000000004*Power(nx,2)*ny + 
+    ny*(0.33333333333333326*Power(nx,2) - 0.6666666666666665*Power(ny,2)),
+   -1.4142135623730954*Power(nx,2)*Power(ny,2) + 
+    Power(nx,2)*(-0.2581988897471611*Power(nx,2) + \
+0.5163977794943222*Power(ny,2)),
+   1.4142135623730954*nx*ny*(Power(nx,2) - Power(ny,2)) + 
+    2*nx*ny*(-0.2581988897471611*Power(nx,2) + 0.5163977794943222*Power(ny,2)),
+   1.4142135623730954*Power(nx,2)*Power(ny,2) + 
+    Power(ny,2)*(-0.2581988897471611*Power(nx,2) + \
+0.5163977794943222*Power(ny,2)))\
+\>", "Output",
+ CellChangeTimes->{{3.6840569319106503`*^9, 3.684056940891588*^9}, 
+   3.684057014347911*^9}]
+}, Open  ]]
 }, Open  ]]
 }, Open  ]]
 },
@@ -679,6 +762,14 @@ Cell[19452, 560, 505, 13, 46, "Input"],
 Cell[CellGroupData[{
 Cell[19982, 577, 162, 3, 28, "Input"],
 Cell[20147, 582, 1047, 24, 115, "Output"]
+}, Open  ]]
+}, Closed]],
+Cell[CellGroupData[{
+Cell[21243, 612, 93, 1, 36, "Subsection"],
+Cell[21339, 615, 434, 12, 28, "Input"],
+Cell[CellGroupData[{
+Cell[21798, 631, 213, 4, 28, "Input"],
+Cell[22014, 637, 2816, 52, 659, "Output"]
 }, Open  ]]
 }, Open  ]]
 }, Open  ]]

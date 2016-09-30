@@ -23,7 +23,7 @@
                                             	        p2);
 
             // set the boundary id
-            set_periodic_bid(triangulation);
+            set_periodic_bid();
             
 	}
 
