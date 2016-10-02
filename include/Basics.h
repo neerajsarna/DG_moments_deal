@@ -224,7 +224,7 @@ namespace Basics
 	  void Base_Basics::print_dealii_sparse(const TrilinosWrappers::SparseMatrix &matrix)
 	  {
 	  	FILE *fp;
-	  	fp = fopen("global_matrix/global_matrix","w+");
+	  	fp = fopen("printed_matrices/global_matrix","w+");
 
 	  	AssertThrow(fp != NULL, ExcMessage("could not open file for writting global matrix"));
 

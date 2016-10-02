@@ -31,6 +31,9 @@ namespace Constants
 		// read output director
 		void read_output_directory();
 
+		// read printing options
+		void read_printing_options();
+
 		// set of numerical constants
 		constant_data constants;
 		private:
@@ -55,15 +58,23 @@ namespace Constants
 		// like the number of equations, the number of boundary conditions etc. 
 		read_system_data();
 
+		// read the physical constants
 		read_physical_constants();
 
+		// read the mesh info
 		read_mesh_info();
 
+		// read output directory name
 		read_output_directory();
+
+		// printing options
+		read_printing_options();
 
 		// we create a map between the id of the variable and it's name,
 		// proves to be helpful during error computation
 		allocate_variable_map();
+
+		allocate_subdirector_names();
 	}
 
 	void Base_Constants
@@ -301,6 +312,35 @@ namespace Constants
 		}
 		prm.leave_subsection();
 
+		prm.enter_subsection("Printing Options");
+		{
+			prm.declare_entry("print_all",
+							"false",
+							Patterns::Anything(),
+							"decide to print when");
+
+			prm.declare_entry("print_solution",
+							  "false",
+							  Patterns::Anything(),
+							  "decide to print solution");
+
+			prm.declare_entry("print_error",
+							  "false",
+							  Patterns::Anything(),
+							  "decide to print error");
+
+			prm.declare_entry("print_exactsolution",
+							  "false",
+							  Patterns::Anything(),
+							  "decide to print exact solution");
+
+			prm.declare_entry("print_convergence_table",
+							  "true",
+							  Patterns::Anything(),
+							  "decide to print the convergence table");
+		}
+		prm.leave_subsection();
+
 	}
 
 
@@ -430,5 +470,21 @@ namespace Constants
 		
 		constants.sub_directory_names[4] = constants.main_output_dir + "/matrix_read";			
 		
+	}
+
+	void Base_Constants
+	::read_printing_options()
+	{
+		bool entered = false;
+
+		prm.enter_subsection("Printing Options");
+		{
+			constants.print_all = prm.get_bool("print_all");
+			constants.print_solution = prm.get_bool("print_solution");
+			constants.print_error = prm.get_bool("print_error");
+			constants.print_exactsolution = prm.get_bool("print_exactsolution");
+			constants.print_convergence_table = prm.get_bool("print_convergence_table");
+		}
+		prm.leave_subsection();
 	}
 }

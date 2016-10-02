@@ -106,5 +106,20 @@ struct constant_data
 
 	// output directory name
 	std::string main_output_dir;
+
+	// decide whether to print for all the refine steps or not
+	bool print_all;
+
+	// decide whether to print the solution or not
+	bool print_solution;
+
+	// decide whether to print error or not
+	bool print_error;
+
+	// decide whether to print exact solution or not
+	bool print_exactsolution;
+
+	// decide whether to print the convergence table or not
+	bool print_convergence_table;
 };
 

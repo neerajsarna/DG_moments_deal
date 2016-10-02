@@ -36,7 +36,9 @@ namespace MeshGenerator
 			void mesh_gmsh_ring();
 			void mesh_gmsh_periodic_square();
 
-			// the following routine 
+			// the following routine handles the refinement of the grid
+			void refinement_handling(const unsigned int present_cycle,
+									 const unsigned int total_cycles);
 	};
 
 	template<int dim>
@@ -158,6 +160,16 @@ namespace MeshGenerator
 	  std::ofstream out (output_file_name.c_str());
       GridOut grid_out;
       grid_out.write_eps (triangulation, out);
+	}
+
+	template<int dim>
+	void
+	Base_MeshGenerator<dim>::refinement_handling(const unsigned int present_cycle,
+												 const unsigned int total_cycles)
+	{
+		// if its not the last cycle then we refine
+		if (present_cycle != total_cycles - 1)
+			triangulation.refine_global(1);
 	}
 
 	#include "MeshGenerator_Ring.h"

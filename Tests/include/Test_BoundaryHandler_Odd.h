@@ -26,9 +26,12 @@ namespace Test_BoundaryHandler_Odd
 		Constants::Base_Constants constants(input_file);
 		SystemA::SystemA<dim> systemA(constants.constants,folder_name);
 
-		Sparse_matrix BC = develop_BC_systemA(systemA.constants.nEqn);
+		if (constants.constants.bc_type == odd)
+		{
+			Sparse_matrix BC = develop_BC_systemA(systemA.constants.nEqn);
+			Compare_Float_Mat(BC,systemA.BC);			
+		}
 
-		Compare_Float_Mat(BC,systemA.BC);
 	}
 
 	TEST(BCrhsOddSystemARing,HandlingBCrhsOddSystemARing)
@@ -43,7 +46,7 @@ namespace Test_BoundaryHandler_Odd
 		const double theta0 = 2.0;
 		const double uW = 0.1;		
 		
-		if (constants.constants.mesh_type == ring)
+		if (constants.constants.mesh_type == ring && constants.constants.bc_type == odd)
 		{
 			Tensor<1,dim> p;
 			Tensor<1,dim> normal_vector;
@@ -100,7 +103,7 @@ namespace Test_BoundaryHandler_Odd
 		const double theta0 = 2.0;
 		const double uW = 0.1;	
 
-		if (constants.constants.mesh_type == periodic_square)
+		if (constants.constants.mesh_type == periodic_square && constants.constants.bc_type == odd)
 		{
 			Tensor<1,dim> p;
 			Tensor<1,dim> normal_vector;

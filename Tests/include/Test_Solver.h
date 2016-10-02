@@ -142,6 +142,63 @@ namespace Test_Solver
 		EXPECT_NEAR(it->center()(1),y2,1e-5) << "problem with finding neighbor " ;
 		}
 	}
+
+
+	// // we go through the whole procedure step by step
+	// TEST(DofDistribution,HandlesDofDistribution)
+	// {
+	// 	const unsigned int dim = 2;
+	// 	ASSERT_EQ(dim,2) << "3D not implemented" << std::endl;
+
+	// 	std::string input_file = "../test_input_files/input1.in";
+	// 	std::string folder_name = "../system_matrices/";
+	// 	Constants::Base_Constants constants(input_file);
+	// 	SystemA::SystemA<dim> systemA(constants.constants,folder_name);
+
+	// 	ExactSolution::ExactSolution_SystemA_ring<dim>  exact_solution_systemA(constants.constants);
+
+	// 	FEM_Solver::Base_Solver<dim> base_solver("mesh_file_name",
+	// 										 "grid",
+	// 										 constants.constants,
+	// 										 &systemA,
+	// 										 &exact_solution_systemA);
+
+
+	// 	base_solver.distribute_dof_allocate_matrix_ring();
+	// }
+
+	// // we go through the whole procedure step by step
+	// TEST(MeshWorker,HandlesMeshWorker)
+	// {
+	// 	const unsigned int dim = 2;
+	// 	ASSERT_EQ(dim,2) << "3D not implemented" << std::endl;
+
+	// 	std::string input_file = "../test_input_files/input1.in";
+	// 	std::string folder_name = "../system_matrices/";
+	// 	Constants::Base_Constants constants(input_file);
+	// 	SystemA::SystemA<dim> systemA(constants.constants,folder_name);
+
+	// 	ExactSolution::ExactSolution_SystemA_ring<dim>  exact_solution_systemA(constants.constants);
+
+	// 	FEM_Solver::Base_Solver<dim> base_solver("mesh_file_name",
+	// 										 "grid",
+	// 										 constants.constants,
+	// 										 &systemA,
+	// 										 &exact_solution_systemA);
+
+
+	// 	base_solver.distribute_dof_allocate_matrix_ring();
+
+	// 	if(constants.constants.assembly_type == meshworker)
+	// 	{
+	// 		std::cout << "Assembling Using Meshworker " << std::endl;
+	// 		base_solver.assemble_system_meshworker();
+	// 	}
+
+	// 	LinearSolver::LinearSolver linear_solver(base_solver.global_matrix,base_solver.system_rhs,base_solver.solution);
+	// }
+
+
 	TEST(SolvingSystemA,HandlesSolvingSystemA)
 	{
 		const unsigned int dim = 2;
@@ -153,13 +210,15 @@ namespace Test_Solver
 		SystemA::SystemA<dim> systemA(constants.constants,folder_name);
 
 		ExactSolution::ExactSolution_SystemA_ring<dim>  exact_solution_systemA(constants.constants);
+
 		FEM_Solver::Base_Solver<dim> base_solver("mesh_file_name",
 											 "grid",
 											 constants.constants,
 											 &systemA,
 											 &exact_solution_systemA);
 
+
 		// run for the ring configuration
-		base_solver.run_ring(1);
+		base_solver.run_ring(4);
 	}
 }

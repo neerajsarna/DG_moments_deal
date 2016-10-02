@@ -38,7 +38,7 @@ namespace FEM_Solver
         	Vector<double> system_rhs;
 
         	// running routines for a ring
-        	void distribute_dof_allocate_matrix_ring();
+        	void distribute_dof_allocate_matrix();
         	void run_ring(const unsigned int refine_cycles);
 
         	const MappingQ<dim> mapping;
@@ -128,6 +128,27 @@ namespace FEM_Solver
 	ngp(constants.p + 1),
 	ngp_face(constants.p + 1)
 	{;}
+
+    //can be used for all the applications apart from periodic box
+    template<int dim>
+    void
+    Base_Solver<dim>::distribute_dof_allocate_matrix()
+    {
+        dof_handler.distribute_dofs(finite_element);
+
+        DynamicSparsityPattern dsp(dof_handler.n_dofs(),dof_handler.n_dofs());
+
+
+        DoFTools::make_flux_sparsity_pattern (dof_handler, dsp);
+
+        sparsity_pattern.copy_from(dsp);
+
+        global_matrix.reinit(sparsity_pattern);   
+
+        solution.reinit (dof_handler.n_dofs());
+        system_rhs.reinit (dof_handler.n_dofs());
+
+    }
 
   	#include "AssembleSystem_Meshworker.h"
   	#include "Run_Ring.h"

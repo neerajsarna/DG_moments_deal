@@ -13,8 +13,8 @@ namespace LinearSolver
     enum Solver_Type
     {Trilinos_Direct,Trilinos_GMRES,Pardiso};
 
-		LinearSolver(TrilinosWrappers::SparseMatrix global_matrix,Vector<double> &system_rhs,
-			           Vector<double> &solution,Solver_Type &solver_type);
+		LinearSolver(TrilinosWrappers::SparseMatrix &global_matrix,Vector<double> &system_rhs,
+			           Vector<double> &solution);
 
 
 
@@ -23,10 +23,11 @@ namespace LinearSolver
 
 	};
 
-	LinearSolver::LinearSolver(TrilinosWrappers::SparseMatrix global_matrix,Vector<double> &system_rhs,
-		Vector<double> &solution,Solver_Type &solver_type)
+	LinearSolver::LinearSolver(TrilinosWrappers::SparseMatrix &global_matrix,Vector<double> &system_rhs,
+		                        Vector<double> &solution)
 	{
 
+          const Solver_Type solver_type = Pardiso;
           switch(solver_type)
           {
             case Trilinos_Direct:

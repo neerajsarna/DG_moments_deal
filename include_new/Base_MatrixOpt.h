@@ -59,6 +59,20 @@ namespace MatrixOpt
 			// same as above but for sparse matrix
 			void print_eigen_mat(Sparse_matrix &full_matrix,
 								std::string matrix_name);
+
+			// print a matrix to a file
+			void print_eigen_mat_to_file(Sparse_matrix &full_matrix,
+										 std::string matrix_name);
+
+			void print_eigen_mat_to_file(Full_matrix &full_matrix,
+										 std::string matrix_name);
+
+			// print dealii sparse matrix to a file
+			void print_dealii_sparse(const TrilinosWrappers::SparseMatrix &matrix,
+									std::string matrix_name);
+
+			void print_dealii_vector(const Vector<double> &vec, 
+									std::string vector_name);
 	};
 
 	// constructor of the structure
@@ -270,4 +284,95 @@ namespace MatrixOpt
 
 		return(X * (Lambda.cwiseAbs() - Lambda).asDiagonal() * X.inverse());
 	}
+
+	// print the full matrix to a file
+	void Base_MatrixOpt::print_eigen_mat_to_file(Full_matrix &full_matrix,
+											std::string matrix_name)
+	{
+		const unsigned int n_rows = full_matrix.rows();
+		const unsigned int n_cols = full_matrix.cols();
+
+		FILE *fp;
+		std::string filename = "printed_matrices/" + matrix_name;
+
+
+		fp = fopen(filename.c_str(),"w+");
+
+		AssertThrow(fp != NULL , ExcMessage("Could not open file for writting matrix "));
+
+		for (unsigned int i = 0 ; i < n_rows; i ++)
+		{
+			for (unsigned int j = 0 ; j < n_cols ; j++)
+				fprintf(fp, "%f ",full_matrix.coeffRef(i,j));
+
+			fprintf(fp, "\n");
+
+		}
+
+		fclose(fp);
+
+	}
+
+	void Base_MatrixOpt::print_eigen_mat_to_file(Sparse_matrix &full_matrix,
+											std::string matrix_name)
+	{
+		const unsigned int n_rows = full_matrix.rows();
+		const unsigned int n_cols = full_matrix.cols();
+
+		FILE *fp;
+		std::string filename = "printed_matrices/" + matrix_name;
+
+
+		fp = fopen(filename.c_str(),"w+");
+
+		AssertThrow(fp != NULL , ExcMessage("Could not open file for writting matrix "));
+
+		for (unsigned int i = 0 ; i < n_rows; i ++)
+		{
+			for (unsigned int j = 0 ; j < n_cols ; j++)
+				fprintf(fp, "%f ",full_matrix.coeffRef(i,j));
+
+			fprintf(fp, "\n");
+
+		}
+
+		fclose(fp);
+
+	}
+
+	void Base_MatrixOpt::print_dealii_sparse(const TrilinosWrappers::SparseMatrix &matrix,
+										  std::string matrix_name)
+	  {
+	  	FILE *fp;
+	  	std::string filename;
+	  	filename = "printed_matrices/" + matrix_name;
+	  	fp = fopen(filename.c_str(),"w+");
+
+	  	AssertThrow(fp != NULL, ExcMessage("could not open file for writting global matrix"));
+
+	  	typename TrilinosWrappers::SparseMatrix::const_iterator it = matrix.begin();
+	  	const typename TrilinosWrappers::SparseMatrix::const_iterator it_end = matrix.end();
+
+	  	for (; it != it_end; it++)
+	  		fprintf(fp,"%u %u %lf \n",it->row(),it->column(),it->value());
+	  	
+
+	  	fclose(fp);
+
+
+	  }
+
+	  void Base_MatrixOpt::print_dealii_vector(const Vector<double> &vec,
+	  										std::string vector_name)
+	  {
+	  	std::string filename = "printed_matrices/" + vector_name;
+
+	  	FILE *fp;
+	  	fp = fopen(filename.c_str(),"w+");
+
+	  	for (unsigned int i = 0 ; i < vec.size() ; i ++)
+	  		fprintf(fp, "%f\n",vec(i));
+
+	  	fclose(fp);
+	  }
 }

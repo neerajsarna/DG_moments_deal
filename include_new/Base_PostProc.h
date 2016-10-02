@@ -53,19 +53,28 @@ namespace PostProc
 									   		ConvergenceTable &convergence_table);
 
 			// print convergence table to a file
-			void print_convergence_table(ConvergenceTable &convergence_table);
+			void print_convergence_table_to_file(ConvergenceTable &convergence_table);
 
 			// print the solution and the error to a file
 			// With the help of the two booleans we decide whether we want to print the 
 			// solution or we want to print the error.
-			void print_solution(
-									  const Triangulation<dim> &triangulation,
-									  const Vector<double> &solution);
+			void print_solution_to_file(const Triangulation<dim> &triangulation,
+										const Vector<double> &solution);
 
-			void print_error(const Triangulation<dim> &triangulation,
-							 const Vector<double> &solution);
+			void print_error_to_file(const Triangulation<dim> &triangulation,
+							 		 const Vector<double> &solution);
 
-			void print_exactsolution(const Triangulation<dim> &triangulation);
+			void print_exactsolution_to_file(const Triangulation<dim> &triangulation);
+
+			// print the solution depending upon printing options
+			void print_options(const Triangulation<dim> &triangulation,
+							   const Vector<double> &solution,
+							   const unsigned int present_cycle,
+							   const unsigned int refine_cycle,
+							   ConvergenceTable &convergence_table);
+
+			// write the values of computational constants to a file
+			void create_stamp();
 
 	};
 
@@ -75,36 +84,38 @@ namespace PostProc
 									  const DoFHandler<dim> *dof_handle,
 									  const MappingQ<dim> *mapping_obj)
 	:
+	base_exactsolution(exact_solution),
 	constants(constants),
-	base_exactsolution(base_exactsolution),
 	dof_handler(dof_handle),
 	mapping(mapping_obj)
 	{
-		// we prescribe the file names where we wish to write
 		prescribe_file_names();
 
 		used_midpoint = false;
 		used_qgauss = false;
 
 		make_directories();
+
+		// we leave the details of the computational parameters in the main directory
+		create_stamp();
+
 	}
 
 	template<int dim>
 	void
 	Base_PostProc<dim>::prescribe_file_names()
 	{
-		  const unsigned int poly_degree = dof_handler->get_fe()->degree();
+		  const unsigned int poly_degree = constants.p;
 
+		  Assert(constants.sub_directory_names.size() != 0,ExcMessage("Not initialized"));
 		  output_file_names.file_for_convergence_tables = constants.sub_directory_names[2] + "/convergence_table_global_degree_"
                                                           + std::to_string(poly_degree);
 
           output_file_names.file_for_num_solution = constants.sub_directory_names[1] + "/numerical_solution_global_degree_"
                                                           + std::to_string(poly_degree)+"_DOF_"+std::to_string(dof_handler->n_dofs());
 
-
           output_file_names.file_for_exact_solution = constants.sub_directory_names[1] + "/exact_solution_global_degree_"
                                                           + std::to_string(poly_degree)+"_DOF_"+std::to_string(dof_handler->n_dofs());
-
 
           output_file_names.file_for_error = constants.sub_directory_names[1] + "/error_global_degree_"
                                                           + std::to_string(poly_degree)+"_DOF_"+std::to_string(dof_handler->n_dofs());
@@ -126,6 +137,27 @@ namespace PostProc
 
 	}
 
+	template<int dim>
+	void
+	Base_PostProc<dim>::create_stamp()
+	{
+		FILE *fp;
+		std::string filename = constants.main_output_dir + "/computational_parameters.txt";
+
+		fp = fopen(filename.c_str(),"w+");
+		AssertThrow(fp != NULL , ExcMessage("Could not open file for stamping"));
+
+		std::string parameters = "A0 " + std::to_string(constants.A0) + "\n"
+								 "A1 " + std::to_string(constants.A1) + "\n"
+								 "A2 " + std::to_string(constants.A2) + "\n"
+								 "poly degree " + std::to_string(constants.p) + "\n"
+								 "mapping order" + std::to_string(constants.mapping_order) + "\n"
+								 "uW " + std::to_string(constants.uW) + "\n" ;
+								 "tau " + std::to_string(constants.tau);
+
+		fprintf(fp, "%s\n",parameters.c_str());
+		fclose(fp);
+	}
 	// evaluate the error using gaussian qaudrature
 	template<int dim>
 	void
@@ -148,7 +180,7 @@ namespace PostProc
 
         // computation of L2 error
         VectorTools::integrate_difference (*mapping,*dof_handler,solution,
-          									base_exactsolution,
+          									*base_exactsolution,
           									error_per_cell,
           									QGauss<dim>(ngp),
           									VectorTools::L2_norm,
@@ -160,7 +192,7 @@ namespace PostProc
         // computation of L_inifinity error
         error_per_cell = 0;
         VectorTools::integrate_difference (*mapping,*dof_handler,solution,
-          									base_exactsolution,
+          									*base_exactsolution,
           									error_per_cell,
           									QGauss<dim>(ngp),
           									VectorTools::Linfty_norm,
@@ -218,7 +250,7 @@ namespace PostProc
 
         // computation of L2 error
         VectorTools::integrate_difference (*mapping,*dof_handler,solution,
-          									base_exactsolution,
+          									*base_exactsolution,
           									error_per_cell,
           									QMidpoint<dim>(),
           									VectorTools::L2_norm,
@@ -230,7 +262,7 @@ namespace PostProc
         // computation of L_inifinity error
         error_per_cell = 0;
         VectorTools::integrate_difference (*mapping,*dof_handler,solution,
-          									base_exactsolution,
+          									*base_exactsolution,
           									error_per_cell,
           									QMidpoint<dim>(),
           									VectorTools::Linfty_norm,
@@ -267,7 +299,7 @@ namespace PostProc
 	// print the convergence table to a file
 	template<int dim> 
 	void 
-	Base_PostProc<dim>::print_convergence_table(ConvergenceTable &convergence_table)
+	Base_PostProc<dim>::print_convergence_table_to_file(ConvergenceTable &convergence_table)
         {
            unsigned int component = constants.variable_map.find(constants.error_variable)->second;
             std::string column_name_L2;
@@ -296,7 +328,7 @@ namespace PostProc
     template<int dim>
    	void 
    	Base_PostProc<dim>::
-   	print_solution(
+   	print_solution_to_file(
    					    const Triangulation<dim> &triangulation,
    					    const Vector<double> &solution)
    	{
@@ -315,14 +347,14 @@ namespace PostProc
 		{
 
 		Vector<double> solution_value(constants.nEqn);
-		VectorTools::point_value(&dof_handler, solution, cell->vertex(vertex),solution_value);	
+		VectorTools::point_value(*dof_handler, solution, cell->vertex(vertex),solution_value);	
 		
 
 		for (unsigned int space = 0 ; space < dim ; space ++)
 			fprintf(fp_solution, "%f ",cell->vertex(vertex)[space]);
 		
 
-		for (unsigned int i = 0 ; i < this->nEqn ; i++)
+		for (int i = 0 ; i < constants.nEqn ; i++)
 			fprintf(fp_solution, "%f ",solution_value(i));
 		
 
@@ -337,7 +369,7 @@ namespace PostProc
     template<int dim>
    	void 
    	Base_PostProc<dim>::
-   	print_error(
+   	print_error_to_file(
    					    const Triangulation<dim> &triangulation,
    					    const Vector<double> &solution)
    	{
@@ -351,24 +383,24 @@ namespace PostProc
 
 	fprintf(fp_error, "#%s\n","x y at the midpoint of each cell and the error in every component");
 
+	// we can print  
 	for (; cell != endc ; cell++)
-		for (unsigned int vertex = 0 ; vertex < GeometryInfo<dim>::vertices_per_cell ; vertex ++)
 		{
 
 		Vector<double> solution_value(constants.nEqn);
 		Vector<double> exact_solution_value(constants.nEqn);
 		Vector<double> error_value(constants.nEqn);
 
-		VectorTools::point_value(*dof_handler, solution, cell->vertex(vertex),solution_value);	
-		base_exactsolution->vector_value(cell->vertex(vertex),exact_solution_value);
+		VectorTools::point_value(*dof_handler, solution, cell->center(),solution_value);	
+		base_exactsolution->vector_value(cell->center(),exact_solution_value);
 
-		for (unsigned int i = 0 ; i < constants.nEqn ; i++)
+		for ( int i = 0 ; i < constants.nEqn ; i++)
 			error_value(i) = fabs(solution_value(i)-exact_solution_value(i));
 
-		for (unsigned int space = 0 ; space < dim ; space ++)
-			fprintf(fp_error, "%f ",cell->vertex(vertex)[space]);
+		for (int space = 0 ; space < dim ; space ++)
+			fprintf(fp_error, "%f ",cell->center()[space]);
 
-		for (unsigned int i = 0 ; i < this->nEqn ; i++)
+		for (int i = 0 ; i < constants.nEqn ; i++)
 			fprintf(fp_error, "%f ",error_value(i));
 
 		fprintf(fp_error, "\n");
@@ -383,7 +415,7 @@ namespace PostProc
     template<int dim>
    	void 
    	Base_PostProc<dim>::
-   	print_exactsolution(const Triangulation<dim> &triangulation)
+   	print_exactsolution_to_file(const Triangulation<dim> &triangulation)
    	{
    	typename Triangulation<dim>::active_cell_iterator cell = triangulation.begin_active(), endc = triangulation.end();
 
@@ -406,7 +438,7 @@ namespace PostProc
 		for (unsigned int space = 0 ; space < dim ; space ++)
 			fprintf(fp_exact, "%f ",cell->vertex(vertex)[space]);
 
-		for (unsigned int i = 0 ; i < this->nEqn ; i++)
+		for (int i = 0 ; i < constants.nEqn ; i++)
 			fprintf(fp_exact, "%f ",exact_solution_value(i));
 
 		fprintf(fp_exact, "\n");
@@ -414,5 +446,49 @@ namespace PostProc
 		}
 
 	fclose(fp_exact);
+   	}
+
+   	template<int dim>
+   	void 
+   	Base_PostProc<dim>::
+   	print_options(const Triangulation<dim> &triangulation,
+   				  const Vector<double> &solution,
+   				  const unsigned int present_cycle,
+   				  const unsigned int total_cycles,
+   				  ConvergenceTable &convergence_table)
+   	{
+
+   		if (constants.print_all)
+   		{
+   			if (constants.print_solution)
+   				print_solution_to_file(triangulation,solution);
+
+   			if(constants.print_error)
+   				print_error_to_file(triangulation,solution);
+
+   			if(constants.print_exactsolution)
+   				print_exactsolution_to_file(triangulation);
+
+   		}
+
+   		else
+   		{
+   			// only print in the final cycle
+   			if (present_cycle == total_cycles - 1)
+   			{
+   				if(constants.print_solution)
+   					print_solution_to_file(triangulation,solution);
+
+   				if(constants.print_error)
+   					print_error_to_file(triangulation,solution);
+
+   				if(constants.print_exactsolution)
+   					print_exactsolution_to_file(triangulation);
+   			}
+   		}
+
+   		if (constants.print_convergence_table)
+ 			print_convergence_table_to_file(convergence_table);
+
    	}
 }

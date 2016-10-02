@@ -169,14 +169,6 @@ Solver_DG<num_flux,dim>
 
         }
 
-        cout << "PRINTING MATRICES FROM BOUNDARY ROUTINE" << endl;
-        const int y_part = outward_normal[1];
-        print_eigen_full(Am,"Am"+to_string(y_part));
-        print_eigen_sparse(Projector,"Projector"+to_string(y_part));
-        print_eigen_sparse(Inv_Projector,"Inv Projector"+to_string(y_part));
-        print_eigen_full(Am_invP_B_hat_P,"Am_invP_B_hat_P"+to_string(y_part));
-        print_eigen_full(Am_invP_X_min_B_tild_inv,"Am_invP_X_min_B_tild_inv"+to_string(y_part));
-
       break;
     }
 
