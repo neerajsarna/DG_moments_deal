@@ -319,9 +319,6 @@ build_InvProjector(const Tensor<1,dim,double> normal_vector,const unsigned int s
 
 	double nx = normal_vector[0];
 	double ny = normal_vector[1];
-	double nxnx = nx * nx;
-	double nyny = ny * ny;
-
 	Assert(Inv_Projector.rows() == system_data[system_id].nEqn 
 			|| Inv_Projector.cols() == system_data[system_id].nEqn,
 			ExcNotInitialized());
@@ -401,8 +398,7 @@ build_BCrhs(const Tensor<1,dim,double> p,
 {
 
 	double norm = p.norm();
-	double x_cord = p[0];
-	double y_cord = p[1];
+double y_cord = p[1];
 	const unsigned int neqn_local = num_equations.total_nEqn[system_id];
 	const unsigned int nbc_local = num_equations.nBC[system_id];
 

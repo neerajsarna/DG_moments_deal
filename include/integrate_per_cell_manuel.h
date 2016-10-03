@@ -102,8 +102,7 @@ Solver_DG<num_flux,dim>
     Assert(J.size() !=0,ExcNotInitialized());
     
     const FiniteElement<dim> &fe_in_cell = cell->get_fe();
-    const unsigned int total_ngp = J.size();
-    const unsigned int dofs_per_cell = fe_in_cell.dofs_per_cell;
+   const unsigned int dofs_per_cell = fe_in_cell.dofs_per_cell;
 
      Vector<double> boundary_rhs_value;
 
@@ -202,8 +201,7 @@ Solver_DG<num_flux,dim>
     Assert(J.size() !=0,ExcNotInitialized());
     
     const FiniteElement<dim> &fe_in_cell = cell->get_fe();
-    const unsigned int total_ngp = J.size();
-    const unsigned int dofs_per_cell = fe_in_cell.dofs_per_cell;
+  const unsigned int dofs_per_cell = fe_in_cell.dofs_per_cell;
 
     Assert(component.size() == dofs_per_cell, ExcMessage("value mismatch"));
 

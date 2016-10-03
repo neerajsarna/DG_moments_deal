@@ -334,7 +334,6 @@ namespace SolverDG
       else
         h_adapt();
 
-
       switch(mesh_info.mesh_type)
       {
         case ring:
@@ -360,7 +359,6 @@ namespace SolverDG
           }
       }
 
-
       timer.enter_subsection("distributing dof");
       distribute_dof_allocate_matrix();
       timer.leave_subsection();
@@ -373,7 +371,7 @@ namespace SolverDG
         {
           cout << "assembling the matrix using meshworker...." << endl;
           // meshworker cannot presently handle periodic boundary conditions
-          Assert(mesh_info.mesh_type == periodic_square, ExcNotImplemented());
+          Assert(mesh_info.mesh_type != periodic_square, ExcNotImplemented());
           timer.enter_subsection("assemblation");
           assemble_system_meshworker();
           timer.leave_subsection();
