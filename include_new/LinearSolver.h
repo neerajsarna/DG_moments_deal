@@ -64,7 +64,8 @@ namespace LinearSolver
               const long long int nnz = global_matrix.n_nonzero_elements();
 
              const Epetra_CrsMatrix temp_system_matrix = global_matrix.trilinos_matrix();
-              Epetra_CrsMatrix temp_system_matrix2 = temp_system_matrix;
+              
+              Epetra_CrsMatrix temp_system_matrix2 = temp_system_matrix; 
               Epetra_IntSerialDenseVector row_ptr = temp_system_matrix2.ExpertExtractIndexOffset();
               Epetra_IntSerialDenseVector col_ind = temp_system_matrix2.ExpertExtractIndices();
               double *values = temp_system_matrix2.ExpertExtractValues();
@@ -84,7 +85,10 @@ namespace LinearSolver
               for (long int j = 0 ; j < nnz ; j ++)
                 ja[j] = col_ind[j];
 
+
               global_matrix.clear();
+              // temp_system_matrix.DeleteMemory();
+              // temp_system_matrix2.DeleteMemory();
 
               PardisoSolve(ia,ja,
                             values,&system_rhs(0),&solution(0),n_rows);
@@ -180,7 +184,7 @@ namespace LinearSolver
     iparm[11] = 0;        /* Conjugate transposed/transpose solve */
       uplo = "non-transposed";
 
-      printf ("\n\nSolving %s system...\n", uplo.c_str());
+
       pardiso (pt, &maxfct, &mnum, &mtype, &phase,
       	&n, a, ia, ja, &idum, &nrhs, iparm, &msglvl, b, x, &error);
 
@@ -190,9 +194,7 @@ namespace LinearSolver
       	exit (3);
       }
 
-      printf ("\n");
-      std::cout << "Solving complete " << std::endl;
-      fflush(stdout);
+      
 
 
     phase = -1;           /* Release internal memory. */

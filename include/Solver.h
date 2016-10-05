@@ -386,7 +386,6 @@ namespace SolverDG
           break;
         }
       }
-
       
       cout << "solving the system...." << endl;
       timer.enter_subsection("solving the system");

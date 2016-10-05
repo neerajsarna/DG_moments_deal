@@ -2,12 +2,13 @@ namespace Test_ForceType
 {
 	using namespace dealii;
 
-	TEST(ForceType,HandlesForcing)
+	// checks the forcing for un symmetric system
+	TEST(ForceTypeUnSymm,HandlesForcingUnSymm)
 	{
 		// input file
 		const unsigned int dim = 2;
 		ASSERT_LT(dim,3)<< "3D not implemented " << std::endl;
-		std::string input_file = "../test_input_files/input1.in";
+		
 		// first we need to read all the constants
 		Constants::Base_Constants constants(input_file);
 
@@ -23,14 +24,14 @@ namespace Test_ForceType
 
 		const double exact_value1 = 0.195;
 	
-
+		const double force_factor = 1;
 		// x coordinate
 		p[0][0] = 0.5;
 
 		// y coordinate
 		p[0][1] = 0.8;
 
-		force_type1.source_term(p,value1);
+		force_type1.source_term(p,value1,force_factor);
 
 		// first we need to check whether the values of A0, A1 and A2 correspond to 
 		// the exact solution or not 
@@ -53,7 +54,7 @@ namespace Test_ForceType
 
 		const double exact_value2 = -2.42555;
 
-		force_type2.source_term(p,value2);
+		force_type2.source_term(p,value2,force_factor);
 
 		// first we need to check whether the values of A0, A1 and A2 correspond to 
 		// the exact solution or not 
@@ -78,7 +79,7 @@ namespace Test_ForceType
 
 		const double exact_value3 = -0.64;
 
-		force_type3.source_term(p,value3);
+		force_type3.source_term(p,value3,force_factor);
 
 		// first we need to check whether the values of A0, A1 and A2 correspond to 
 		// the exact solution or not 
@@ -101,26 +102,28 @@ namespace Test_ForceType
 	TEST(ForceSystemA,HandlesForceSystemA)
 	{
 		const unsigned int dim = 2;
-		std::string input_file = "../test_input_files/input1.in";
 		std::string folder_name = "../system_matrices/";
 
 		Constants::Base_Constants constants(input_file);
-		SystemA::SystemA<dim> systemA(constants.constants,folder_name);
+		SystemA::SystemA<dim> systemA(constants.constants,folder_name); 
 
+		// if (systemA.constants.force_type == type1)
+		// {
+		// 	std::vector<Point<dim>> p(1);
 
-		std::vector<Point<dim>> p(1);
+		// // testing for forcetype1
+		// 	std::vector<Vector<double>> value(1,Vector<double>(systemA.constants.nEqn));
+			
+		// // x coordinate
+		// 	p[0][0] = 0.5;
 
-		// testing for forcetype1
-		std::vector<Vector<double>> value(1,Vector<double>(systemA.constants.nEqn));
-		
-		// x coordinate
-		p[0][0] = 0.5;
+		// // y coordinate
+		// 	p[0][1] = 0.8;
 
-		// y coordinate
-		p[0][1] = 0.8;
+		// 	systemA.source_term(p,value);
+		// // the exact value has been taken from mathematica file
+		// 	ASSERT_NEAR(value[0](0),0.195,1e-5);			
+		// }
 
-		systemA.source_term(p,value);
-		// the exact value has been taken from mathematica file
-		ASSERT_NEAR(value[0](0),0.195,1e-5);
 	}
 }

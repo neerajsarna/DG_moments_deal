@@ -1,4 +1,6 @@
 // In the following file we genereate tensor info for different sytems
+// along with symmetrizer
+
 namespace TensorInfo
 {
 	using namespace dealii;
@@ -8,18 +10,26 @@ namespace TensorInfo
 	Base_TensorInfo
 	{
 		public:
+			
+			struct projector_data
+			{
+				// matrix which stores the local projector matrix
+				Full_matrix P;
+			};	
+
 			// In all the normal grad's theories, we know the number of tensors we will be using
-			Base_TensorInfo(const unsigned int Ntensors);
+			Base_TensorInfo();
+			void reinit(const unsigned int n_tensors);
 
 			// For certain systems, for ex the A system we do not have a direct correlation between the various
 			// Ntensors and varIdx. For such system we directly provide varIdx
-			Base_TensorInfo(MatrixUI &varIdx,const unsigned int Ntensors);
+			void reinit(const MatrixUI &var_idx,const unsigned int n_tensors);
 
 			MatrixUI varIdx;
 			// we have the max tensorial degree because only then the projectors for individual tensors can be 
 			// constructed
 			const unsigned int max_tensorial_degree = 4;
-			const unsigned int Ntensors;
+			unsigned int Ntensors;
 
 			// total number of equations in the system
 			unsigned int nEqn;
@@ -30,6 +40,9 @@ namespace TensorInfo
 			unsigned int iFullDegree(const unsigned int tensor_degree);
 			unsigned int iTraces(const unsigned int tensor_degree);
 			unsigned int iTensorDegree(const unsigned int tensor_degree);
+
+			// computes the maximum tensorial degree depending upon varIdx
+			unsigned int compute_max_tensorial_degree();
 
 			// computes the number of 2D components for a particular tensorial degree
 			unsigned int components_2D(const unsigned int tensorial_degree);
@@ -43,33 +56,40 @@ namespace TensorInfo
 			MatrixUI generate_varIdx();
 			MatrixUI generate_num_free_indices(MatrixUI &varIdx);
 			MatrixUI generate_cumilative_index(MatrixUI &free_indices);
-			void allocate_tensor_memory();
+			void allocate_tensor_memory(std::vector<projector_data> &tensor_project);
 
 			// put a block of a full_matrix at a particular location in a sparse_matrix
 			// idx is the diagonal position at which P has to be placed at Sp
 			void SpBlock(const unsigned int idx,const Full_matrix &P,Sparse_matrix &Sp);
 
-			struct projector_data
-			{
-				// matrix which stores the local projector matrix
-				Full_matrix P;
-			};
+			void reinit_local(const double nx,const double ny,
+							  std::vector<projector_data> &tensor_project);
 
-			void reinit_local(const double nx,const double ny);
-			void reinit_global(const double nx,const double ny);
+			// same as above but for inverse projector
+			void reinit_Invlocal(const double nx,const double ny,
+				   				std::vector<projector_data> &tensor_project);
+
+			Sparse_matrix reinit_global(const double nx,const double ny);
 
 			// inverse of the projector matrix
-			void reinit_Invglobal(const double nx,const double ny);
-
-			// the block matrices to be used in the global projector
-			std::vector<projector_data> tensor_project;
-
-			//the global projector for the equations
-			Sparse_matrix global_Projector;
-
+			Sparse_matrix reinit_Invglobal(const double nx,const double ny);
 
 			// develops the mirror of a normal vector
 			Tensor<1,dim> mirror(const Tensor<1,dim,double> normal_vector) const;
+
+			// routines to generate the symmetrizer
+			Sparse_matrix S_half;
+
+			Sparse_matrix S_half_inv;
+
+			// create symmetrizer for the system
+			void create_Symmetrizer();
+			void reinit_symmetrizer(std::vector<projector_data> &tensor_Invsymmetrizer);
+
+			// create inverse symmetrizer for the system
+			void create_InvSymmetrizer();
+			void reinit_Invsymmetrizer(std::vector<projector_data> &tensor_Invsymmetrizer);
+			
 
 			// compute the number of equations with the help of Ntensors
 			// // functions not presently needed
@@ -85,15 +105,20 @@ namespace TensorInfo
 	};
 
 	template<int dim>
-	Base_TensorInfo<dim>
-	::Base_TensorInfo(const unsigned int Ntensors)
-	:
-	Ntensors(Ntensors)
+	Base_TensorInfo<dim>::Base_TensorInfo()
+	{;}
+
+	// initialize the class depending upon the system
+	template<int dim>
+	void
+	Base_TensorInfo<dim>::reinit(const unsigned int n_tensors)
 	{
+		Ntensors = n_tensors;
+
 		varIdx.resize(Ntensors,2);
 		free_indices.resize(Ntensors,1);
 		Assert(max_tensorial_degree == 4,ExcNotImplemented());
-		tensor_project.resize(max_tensorial_degree);
+		Assert(compute_max_tensorial_degree() <= max_tensorial_degree,ExcMessage("Projector and Symmetrizer data not available for this tensorial degree"));
 
 		// the situation for dim ==1 has not be implemented yet
 		Assert(dim > 1,ExcNotImplemented());
@@ -112,27 +137,25 @@ namespace TensorInfo
 		// compute the total number of equations in the system
 		nEqn = compute_nEqn(free_indices);
 
-		// now we allocate the memory for tensor_project
-		allocate_tensor_memory();
-
-		// allocaet memory for the global projector
-		global_Projector.resize(nEqn,nEqn);
-
+		create_Symmetrizer();
+		create_InvSymmetrizer();
 	}
 
+	// same as above but with different parameters
 	template<int dim>
-	Base_TensorInfo<dim>
-	::Base_TensorInfo(MatrixUI &varIdx,const unsigned int Ntensors)
-	:
-	varIdx(varIdx),
-	Ntensors(Ntensors)
+	void 
+	Base_TensorInfo<dim>::reinit(const MatrixUI &var_idx,const unsigned int n_tensors)
 	{
+		varIdx = var_idx;
+		Ntensors = n_tensors;
+
 		free_indices.resize(varIdx.rows(),1);
 		Assert(varIdx.rows() != 0 || varIdx.cols() != 0,ExcNotInitialized());
 		Assert(free_indices.size() != 0,ExcNotInitialized());
 		Assert(max_tensorial_degree == 4,ExcNotImplemented());
 
-		tensor_project.resize(max_tensorial_degree);
+
+		Assert(compute_max_tensorial_degree() <= max_tensorial_degree,ExcMessage("Projector and Symmetrizer data not available for this tensorial degree"));
 
 		// the situation for dim ==1 has not be implemented yet
 		Assert(dim > 1,ExcNotImplemented());
@@ -148,11 +171,11 @@ namespace TensorInfo
 		// compute the total number of equations in the system
 		nEqn = compute_nEqn(free_indices);
 
-		// now we allocate the memory for tensor_project
-		allocate_tensor_memory();
+		// create the symmetrizer for this particular ssytem
+		create_Symmetrizer();
 
-		// allocate memory for the global projector
-		global_Projector.resize(nEqn,nEqn);
+		// create the symmetrizer for this particular system
+		create_InvSymmetrizer();
 	}
 
 	template<int dim>
@@ -177,6 +200,15 @@ namespace TensorInfo
 	::iTensorDegree(const unsigned int tensor_degree)
 	{
 		return(iFullDegree(tensor_degree)-2*iTraces(tensor_degree));
+	}
+
+	// the following function computes the maximum tensorial degree using varIdx.
+	template<int dim>
+	unsigned int 
+	Base_TensorInfo<dim>
+	::compute_max_tensorial_degree()
+	{
+		return(varIdx.col(1).maxCoeff());
 	}
 
 	template<int dim>
@@ -387,7 +419,7 @@ namespace TensorInfo
 	template<>
 	void 
 	Base_TensorInfo<2>
-	::allocate_tensor_memory()
+	::allocate_tensor_memory(std::vector<projector_data> &tensor_project)
 	{
 		// to make sure that tensor project has been initialized
 		AssertDimension(tensor_project.size(),max_tensorial_degree);
@@ -400,10 +432,17 @@ namespace TensorInfo
 	template<>
 	void 
 	Base_TensorInfo<2>
-	::reinit_local(const double nx,const double ny)
+	::reinit_local(const double nx,const double ny,
+				   std::vector<projector_data> &tensor_project)
 	{
-		double nxnx = nx * nx;
-		double nyny = ny * ny;
+		// first we allocate the required memory
+		tensor_project.resize(max_tensorial_degree);
+
+		// now we allocate memory for every individual projector
+		allocate_tensor_memory(tensor_project);
+
+		const double nxnx = nx * nx;
+		const double nyny = ny * ny;
 
 		Assert(tensor_project.size() !=0 ,ExcNotInitialized());
 
@@ -419,39 +458,93 @@ namespace TensorInfo
 
 		tensor_project[1].P << nx, ny, -ny, nx;	
 
-		tensor_project[2].P << nxnx, 2*nx*ny, nyny, 
-							  -nx*ny, nxnx-nyny, nx*ny,
-							   nyny, -2*nx*ny, nxnx;
+		tensor_project[2].P << 0.7886751345948129*pow(nx,2) - 0.21132486540518713*pow(ny,2),
+   							   0. + 1.4142135623730951*nx*ny,0. - 0.21132486540518713*pow(nx,2) + 
+    						   0.7886751345948129*pow(ny,2), // end of the first row
+    						   0. - 1.*nx*ny,	
+   							   0. + 0.7071067811865476*(pow(nx,2) - pow(ny,2)),
+   							   0. + 1.*nx*ny, // end of the second row
+   							   0. - 0.21132486540518713*pow(nx,2) + 0.7886751345948129*pow(ny,2),
+   							   0. - 1.4142135623730951*nx*ny,0. + 0.7886751345948129*pow(nx,2) - 
+    						   0.21132486540518713*pow(ny,2);	// end of the third row
 
 		
-		tensor_project[3].P << nx*nxnx, 3*ny*nxnx, 3*nx*nyny, ny*nyny, 
-							-ny*nxnx, nx*nxnx - 2*nx*nyny, 2*ny*nxnx - ny*nyny, nx*nyny, 
-							nx*nyny, -2*ny*nxnx + ny*nyny, nx*nxnx - 2*nx*nyny, ny*nxnx,
-							-ny*nyny, 3*nx*nyny, -3*ny*nxnx, nx*nxnx;
+		tensor_project[3].P << 0.6051359354609693*pow(nx,3) - 0.5516289482287868*nx*pow(ny,2),
+   								1.4476551742303836*pow(nx,2)*ny - 0.18387631607626226*pow(ny,3),
+   								-0.18387631607626226*pow(nx,3) + 1.4476551742303836*nx*pow(ny,2),
+   								-0.5516289482287868*pow(nx,2)*ny + 0.6051359354609693*pow(ny,3), // first row
+   								-0.9728885676134938*pow(nx,2)*ny + 0.18387631607626226*pow(ny,3),
+   								0.4825517247434612*pow(nx,3) - 1.1489797655631846*nx*pow(ny,2),
+   								1.1489797655631846*pow(nx,2)*ny - 0.4825517247434612*pow(ny,3),
+   								-0.18387631607626226*pow(nx,3) + 0.9728885676134938*nx*pow(ny,2), // second row
+   								-0.18387631607626226*pow(nx,3) + 0.9728885676134938*nx*pow(ny,2),
+   								-1.1489797655631846*pow(nx,2)*ny + 0.4825517247434612*pow(ny,3),
+   								0.4825517247434612*pow(nx,3) - 1.1489797655631846*nx*pow(ny,2),
+   								0.9728885676134938*pow(nx,2)*ny - 0.18387631607626226*pow(ny,3), // third row
+   								0.5516289482287868*pow(nx,2)*ny - 0.6051359354609693*pow(ny,3),
+   								-0.18387631607626226*pow(nx,3) + 1.4476551742303836*nx*pow(ny,2),
+   								-1.4476551742303836*pow(nx,2)*ny + 0.18387631607626226*pow(ny,3),
+   								0.6051359354609693*pow(nx,3) - 0.5516289482287868*nx*pow(ny,2); // fourth row
 
 
 	}
 
+// same as above but for the inverse of the projector
 	template<>
-	void
+	void 
 	Base_TensorInfo<2>
-	::reinit_global(const double nx,const double ny)
+	::reinit_Invlocal(const double nx,const double ny,
+				   std::vector<projector_data> &tensor_project)
 	{
+		// first we allocate the required memory
+		tensor_project.resize(max_tensorial_degree);
 
-		// so we first initialize the tensorial projectors
-		reinit_local(nx,ny);
-		Assert(global_Projector.rows() != 0,ExcNotInitialized());
-		Assert(global_Projector.cols() != 0,ExcNotInitialized());
+		// now we allocate memory for every individual projector
+		allocate_tensor_memory(tensor_project);
 
-		// then using the tensorial projectors we initialize the global projector
-		for (unsigned int i = 0 ; i < Ntensors ; i++)
+		const double nxnx = nx * nx;
+		const double nyny = ny * ny;
+
+		Assert(tensor_project.size() !=0 ,ExcNotInitialized());
+
+		// we first check whether P has been properly allocated or not
+		for (unsigned int i = 0 ; i < max_tensorial_degree ; i++)
 		{
-
-			SpBlock(free_indices_cumilative(i),tensor_project[varIdx(i,1)].P,global_Projector);
+			Assert(tensor_project[i].P.rows() != 0,ExcNotInitialized());
+			Assert(tensor_project[i].P.cols() != 0,ExcNotInitialized());
 		}
 
-		global_Projector.makeCompressed();
+
+		tensor_project[0].P << 1.0;
+
+		tensor_project[1].P << nx, -ny, ny, nx;	
+
+		tensor_project[2].P << 1.3660254037844386*pow(nx,2) + 0.3660254037844386*pow(ny,2),-2.*nx*ny,
+								0.3660254037844386*pow(nx,2) + 1.3660254037844386*pow(ny,2),
+								1.4142135623730951*nx*ny,1.4142135623730951*pow(nx,2) - 
+								1.4142135623730951*pow(ny,2),-1.4142135623730951*nx*ny,
+								0.3660254037844386*pow(nx,2) + 1.3660254037844386*pow(ny,2),2.*nx*ny,
+								1.3660254037844386*pow(nx,2) + 0.3660254037844386*pow(ny,2);
+
+		
+		tensor_project[3].P << 1.8689147936150907*pow(nx,3) + 0.712149909925335*nx*pow(ny,2),
+							-4.182444560994602*pow(nx,2)*ny - 0.712149909925335*pow(ny,3),
+							0.712149909925335*pow(nx,3) + 4.182444560994602*nx*pow(ny,2),
+							-0.712149909925335*pow(nx,2)*ny - 1.8689147936150907*pow(ny,3),
+							2.3436814002319806*pow(nx,2)*ny + 0.7121499099253348*pow(ny,3),
+							2.3436814002319806*pow(nx,3) - 2.550913070687957*nx*pow(ny,2),
+							-2.550913070687957*pow(nx,2)*ny + 2.3436814002319806*pow(ny,3),
+							0.7121499099253348*pow(nx,3) + 2.3436814002319806*nx*pow(ny,2),
+							0.7121499099253349*pow(nx,3) + 2.3436814002319806*nx*pow(ny,2),
+							2.5509130706879564*pow(nx,2)*ny - 2.3436814002319806*pow(ny,3),
+							2.3436814002319806*pow(nx,3) - 2.5509130706879564*nx*pow(ny,2),
+							-2.3436814002319806*pow(nx,2)*ny - 0.7121499099253349*pow(ny,3),
+							0.7121499099253349*pow(nx,2)*ny + 1.8689147936150907*pow(ny,3),
+							0.7121499099253349*pow(nx,3) + 4.182444560994603*nx*pow(ny,2),
+							4.182444560994603*pow(nx,2)*ny + 0.7121499099253349*pow(ny,3),
+							1.8689147936150907*pow(nx,3) + 0.7121499099253349*nx*pow(ny,2);
 	}
+
 
 	template<>
 	Tensor<1,2>
@@ -466,35 +559,168 @@ namespace TensorInfo
 		return mirrored_vector;
 	}
 
+
 	template<>
-	void 
+	Sparse_matrix
 	Base_TensorInfo<2>
-	::reinit_Invglobal(const double nx,const double ny)
+	::reinit_global(const double nx,const double ny)
 	{
-		// nx of the mirrored vector
-		// The normal vector
 
-		Tensor<1,2> normal_vector;
-		normal_vector[0]= nx;
-		normal_vector[1] = ny;
+		// the block matrices to be used in the global projector
+		std::vector<projector_data> tensor_project;
 
-		// The mirrored vector
-		Tensor<1,2> normal_vectorInv = mirror(normal_vector);
-
-		const double nx_Inv = normal_vectorInv[0];
-		const double ny_Inv = normal_vectorInv[1];
+		//the global projector for the equations
+		Sparse_matrix global_Projector;
+		global_Projector.resize(nEqn,nEqn);
 
 		// so we first initialize the tensorial projectors
-		reinit_local(nx_Inv,ny_Inv);
+		reinit_local(nx,ny,tensor_project);
+
 		Assert(global_Projector.rows() != 0,ExcNotInitialized());
 		Assert(global_Projector.cols() != 0,ExcNotInitialized());
 
 		// then using the tensorial projectors we initialize the global projector
 		for (unsigned int i = 0 ; i < Ntensors ; i++)
+		{
+
 			SpBlock(free_indices_cumilative(i),tensor_project[varIdx(i,1)].P,global_Projector);
+		}
+
+		global_Projector.makeCompressed();
+
+		return(global_Projector);
+	}
+
+	// same as above but for the inverse of projector
+	template<>
+	Sparse_matrix
+	Base_TensorInfo<2>
+	::reinit_Invglobal(const double nx,const double ny)
+	{
+
+		// the block matrices to be used in the global projector
+		std::vector<projector_data> tensor_Invproject;
+
+		//the global projector for the equations
+		Sparse_matrix global_Projector;
+		global_Projector.resize(nEqn,nEqn);
+
+		// so we first initialize the tensorial projectors
+		reinit_Invlocal(nx,ny,tensor_Invproject);
+
+		Assert(global_Projector.rows() != 0,ExcNotInitialized());
+		Assert(global_Projector.cols() != 0,ExcNotInitialized());
+
+		// then using the tensorial projectors we initialize the global projector
+		for (unsigned int i = 0 ; i < Ntensors ; i++)
+		{
+
+			SpBlock(free_indices_cumilative(i),tensor_Invproject[varIdx(i,1)].P,global_Projector);
+		}
+
+		global_Projector.makeCompressed();
+
+		return(global_Projector);
+	}
+
+	template<>
+	void 
+	Base_TensorInfo<2>
+	::reinit_symmetrizer(std::vector<projector_data> &tensor_symmetrizer)
+	{
+		Assert(tensor_symmetrizer.size() != 0,ExcNotInitialized());
+
+		for (unsigned int i = 0 ; i < max_tensorial_degree ; i++)
+			Assert(tensor_symmetrizer[i].P.rows() != 0 || tensor_symmetrizer[i].P.cols() != 0,ExcNotInitialized());
+		
+		tensor_symmetrizer[0].P << 1;
+
+		tensor_symmetrizer[1].P << 1, 0., 0.,1;	
+
+		tensor_symmetrizer[2].P << 1.3660254037844386,0.,0.3660254037844386,0.,1.4142135623730951,0.,
+   								   0.3660254037844386,0.,1.3660254037844386;
+
+		
+		tensor_symmetrizer[3].P << 1.8689147936150907,0.,0.712149909925335,0.,0.,2.3436814002319806,0.,
+   								   0.7121499099253348,0.7121499099253349,0.,2.3436814002319806,0.,0.,0.7121499099253349,
+   								   0.,1.8689147936150907;
+
+
+	}
+
+	template<>
+	void 
+	Base_TensorInfo<2>
+	::reinit_Invsymmetrizer(std::vector<projector_data> &tensor_Invsymmetrizer)
+	{
+		Assert(tensor_Invsymmetrizer.size() != 0,ExcNotInitialized());
+
+		for (unsigned int i = 0 ; i < max_tensorial_degree ; i++)
+			Assert(tensor_Invsymmetrizer[i].P.rows() != 0 || tensor_Invsymmetrizer[i].P.cols() != 0,ExcNotInitialized());
+		
+		tensor_Invsymmetrizer[0].P << 1.0;
+
+		tensor_Invsymmetrizer[1].P << 1.0, 0.0 ,0.0 ,1.0;	
+
+		tensor_Invsymmetrizer[2].P << 0.7886751345948129,0.,-0.21132486540518713,0.,0.7071067811865476,0.,
+   									-0.21132486540518713,0.,0.7886751345948129;
+
+		
+		tensor_Invsymmetrizer[3].P << 0.6051359354609693,0.,-0.18387631607626226,0.,0.,0.4825517247434612,0.,
+   									-0.18387631607626226,-0.18387631607626226,0.,0.4825517247434612,0.,0.,
+   									-0.18387631607626226,0.,0.6051359354609693;
+
+
+	}
+
+
+	template<>
+	void 
+	Base_TensorInfo<2>
+	::create_Symmetrizer()
+	{
+		S_half.resize(nEqn,nEqn);
+
+		// symmetrizer for a particular tensor
+		std::vector<projector_data> tensor_symmetrizer;
+
+		tensor_symmetrizer.resize(max_tensorial_degree);
+		allocate_tensor_memory(tensor_symmetrizer);
+
+		reinit_symmetrizer(tensor_symmetrizer);
+
+		// then using the tensorial projectors we initialize the global projector
+		for (unsigned int i = 0 ; i < Ntensors ; i++)
+		{
+
+			SpBlock(free_indices_cumilative(i),tensor_symmetrizer[varIdx(i,1)].P,S_half);
+		}
+
+		S_half.makeCompressed();
+	}
+
+	template<>
+	void
+	Base_TensorInfo<2>
+	::create_InvSymmetrizer()
+	{
+		S_half_inv.resize(nEqn,nEqn);
+
+		// symmetrizer for a particular tensor
+		std::vector<projector_data> tensor_Invsymmetrizer;
+
+		tensor_Invsymmetrizer.resize(max_tensorial_degree);
+		allocate_tensor_memory(tensor_Invsymmetrizer);
+
+		reinit_Invsymmetrizer(tensor_Invsymmetrizer);
+
+		// then using the tensorial projectors we initialize the global projector
+		for (unsigned int i = 0 ; i < Ntensors ; i++)
+			SpBlock(free_indices_cumilative(i),tensor_Invsymmetrizer[varIdx(i,1)].P,S_half_inv);
 		
 
-		global_Projector.makeCompressed();		
+		S_half_inv.makeCompressed();
+
 	}
 
 }

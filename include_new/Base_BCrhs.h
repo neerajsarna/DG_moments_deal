@@ -8,10 +8,8 @@ namespace BCrhs
 	Base_BCrhs
 	{
 		public:
-			Base_BCrhs(const constant_data &constants,
-					   const Sparse_matrix &B);
+			Base_BCrhs(const constant_data &constants);
 			const constant_data constants;
-			Sparse_matrix B;
 			virtual void BCrhs(const Tensor<1,dim,double> p,
 							  const Tensor<1,dim,double> normal_vector,
 							   Vector<double> &bc_rhs) = 0;
@@ -19,10 +17,8 @@ namespace BCrhs
 
 	template<int dim>
 	Base_BCrhs<dim>
-	::Base_BCrhs(const constant_data &constants,
-				 const Sparse_matrix &B)
+	::Base_BCrhs(const constant_data &constants)
 	:
-	constants(constants),
-	B(B)
+	constants(constants)
 	{;}
 }

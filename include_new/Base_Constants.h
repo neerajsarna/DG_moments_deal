@@ -203,6 +203,11 @@ namespace Constants
 				Patterns::DirectoryName(),
 				"name of the variable for error evaluation");		
 
+			prm.declare_entry("force_variable",
+							  "rho",
+							  Patterns::DirectoryName(),
+							"name of the variable to which external force has to be applied");		
+
 			prm.declare_entry("alpha",
 				"0",
 				Patterns::Double(0,10.0),
@@ -237,12 +242,6 @@ namespace Constants
 				"2",
 				Patterns::Integer(2,10),
 				"total number of boundary conditions needed for the system");
-
-				/*by default we will solve the symmetric system*/
-			prm.declare_entry("symmetric or un symmetric",
-				"0",
-				Patterns::Integer(0,1),
-				"to solve the symmetric system or the un symmetric system");
 
 				/*0 for force of system A and 1 for force of system B*/
 			prm.declare_entry("force type",
@@ -356,7 +355,6 @@ namespace Constants
 			constants.nBC = prm.get_integer("nBC");
 			constants.system_id = prm.get_integer("system_id");
 
-			constants.system_type = (System_Type)prm.get_integer("symmetric or un symmetric");
 			constants.force_type = (Force_Type)prm.get_integer("force type");
 			constants.bc_type = (BC_Type)prm.get_integer("BC type");
 		}
@@ -388,6 +386,7 @@ namespace Constants
 			constants.kappa  = prm.get_double("kappa");
 			constants.epsilon = prm.get_double("epsilon");
 			constants.error_variable = prm.get("error_variable");
+			constants.force_variable = prm.get("force_variable");
 			constants.alpha = prm.get_double("alpha");
 		}
 		prm.leave_subsection();

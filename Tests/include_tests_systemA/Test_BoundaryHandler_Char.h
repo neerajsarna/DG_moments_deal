@@ -25,7 +25,6 @@ namespace Test_BoundaryHanlder_Char
 	TEST(BMatSystemA,HandlesBMatSystemA)
 	{
 		const unsigned int dim = 2;
-		std::string input_file = "../test_input_files/input1.in";
 		std::string folder_name = "../system_matrices/";
 		Constants::Base_Constants constants(input_file);
 		SystemA::SystemA<dim> systemA(constants.constants,folder_name);
@@ -46,7 +45,7 @@ namespace Test_BoundaryHanlder_Char
 	TEST(XminusBXminusInv,HandlesXminusBXminusInv)
 	{
 		const unsigned int dim = 2;
-		std::string input_file = "../test_input_files/input1.in";
+
 		std::string folder_name = "../system_matrices/";
 		Constants::Base_Constants constants(input_file);
 		SystemA::SystemA<dim> systemA(constants.constants,folder_name);
@@ -54,7 +53,7 @@ namespace Test_BoundaryHanlder_Char
 		if (constants.constants.bc_type == characteristic)
 		{
 			MatrixOpt::Base_MatrixOpt matrix_opt;
-			Full_matrix Xminus = matrix_opt.compute_Xminus(systemA.system_data.A[0].matrix,
+			Full_matrix Xminus = matrix_opt.compute_Xminus(systemA.system_data.Ax.matrix,
 													  systemA.constants.nBC);
 
 			Full_matrix XminusBXminusInv = Xminus * systemA.B_tilde_inv;
@@ -74,7 +73,7 @@ namespace Test_BoundaryHanlder_Char
 	TEST(BhatCheck,HandlesBhat)
 	{
 		const unsigned int dim = 2;
-		std::string input_file = "../test_input_files/input1.in";
+		
 		std::string folder_name = "../system_matrices/";
 		Constants::Base_Constants constants(input_file);
 		SystemA::SystemA<dim> systemA(constants.constants,folder_name);
@@ -98,7 +97,6 @@ namespace Test_BoundaryHanlder_Char
 	TEST(BCrhs,HandlesBCrhsSystemA)
 	{
 		const unsigned int dim = 2;
-		std::string input_file = "../test_input_files/input1.in";
 		std::string folder_name = "../system_matrices/";
 		Constants::Base_Constants constants(input_file);
 		SystemA::SystemA<dim> systemA(constants.constants,folder_name);

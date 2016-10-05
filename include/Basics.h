@@ -48,7 +48,8 @@ namespace Basics
 		void print_eigen_full(Full_matrix &full_matrix,
 							  string matrix_name);
 
-		void print_dealii_sparse(const TrilinosWrappers::SparseMatrix &matrix);
+		void print_dealii_sparse(const TrilinosWrappers::SparseMatrix &matrix,
+							     const std::string matrix_name);
 
 		void print_dealii_vector(const Vector<double> &vec, 
 								string vector_name);
@@ -221,10 +222,13 @@ namespace Basics
 	  	fclose(fp);
 	  }
 
-	  void Base_Basics::print_dealii_sparse(const TrilinosWrappers::SparseMatrix &matrix)
+	  void Base_Basics::print_dealii_sparse(const TrilinosWrappers::SparseMatrix &matrix,
+	  										const std::string matrix_name)
 	  {
 	  	FILE *fp;
-	  	fp = fopen("printed_matrices/global_matrix","w+");
+	  	std::string filename = "printed_matrices/" + matrix_name;
+
+	  	fp = fopen(filename.c_str(),"w+");
 
 	  	AssertThrow(fp != NULL, ExcMessage("could not open file for writting global matrix"));
 
@@ -232,7 +236,7 @@ namespace Basics
 	  	const typename TrilinosWrappers::SparseMatrix::const_iterator it_end = matrix.end();
 
 	  	for (; it != it_end; it++)
-	  		fprintf(fp,"%llu %llu %lf \n",it->row(),it->column(),it->value());
+	  		fprintf(fp,"%u %u %lf \n",it->row(),it->column(),it->value());
 	  	
 
 	  	fclose(fp);

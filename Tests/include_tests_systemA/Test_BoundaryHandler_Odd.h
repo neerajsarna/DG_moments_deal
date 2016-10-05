@@ -21,7 +21,6 @@ namespace Test_BoundaryHandler_Odd
 	TEST(BCOddSystemA,HandlingBCOddSystemA)
 	{
 		const unsigned int dim = 2;
-		std::string input_file = "../test_input_files/input1.in";
 		std::string folder_name = "../system_matrices/";
 		Constants::Base_Constants constants(input_file);
 		SystemA::SystemA<dim> systemA(constants.constants,folder_name);
@@ -37,7 +36,7 @@ namespace Test_BoundaryHandler_Odd
 	TEST(BCrhsOddSystemARing,HandlingBCrhsOddSystemARing)
 	{
 		const unsigned int dim = 2;
-		std::string input_file = "../test_input_files/input1.in";
+
 		std::string folder_name = "../system_matrices/";
 		Constants::Base_Constants constants(input_file);
 		SystemA::SystemA<dim> systemA(constants.constants,folder_name);		
@@ -94,7 +93,7 @@ namespace Test_BoundaryHandler_Odd
 	TEST(BCrhsPeriodicSystemA,HandlesPeriodicBoxBCrhsSystemA)
 	{
 		const unsigned int dim = 2;
-		std::string input_file = "../test_input_files/input1.in";
+		
 		std::string folder_name = "../system_matrices/";
 		Constants::Base_Constants constants(input_file);
 		SystemA::SystemA<dim> systemA(constants.constants,folder_name);		

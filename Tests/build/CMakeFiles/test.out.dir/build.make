@@ -91,7 +91,7 @@ test_out_EXTERNAL_OBJECTS =
 test.out: CMakeFiles/test.out.dir/main.cc.o
 test.out: CMakeFiles/test.out.dir/build.make
 test.out: /usr/local/lib/libgtest.a
-test.out: /Applications/deal.II.app/Contents/Resources/lib/libdeal_II.8.4.1.dylib
+test.out: /Applications/deal.II.app/Contents/Resources/lib/libdeal_II.g.8.4.1.dylib
 test.out: /usr/lib/libbz2.dylib
 test.out: /usr/lib/libz.dylib
 test.out: /Applications/deal.II.app/Contents/Resources/opt/petsc-3e25e16/lib/libparmetis.dylib

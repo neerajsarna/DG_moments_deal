@@ -11,5 +11,5 @@ diff1 = z1 - z2;
 
 for i in range(0,len(diff1)):
 	if(abs(diff1[i]) > 1e-5):
-		print "not good";
+		print i;
 

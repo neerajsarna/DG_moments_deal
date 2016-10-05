@@ -7,8 +7,9 @@ namespace ExactSolution
 	Base_ExactSolution:public Function<dim>
 	{
 		public:
-			Base_ExactSolution(const constant_data &constants);
+			Base_ExactSolution(const constant_data &constants,const Sparse_matrix &S_half);
 
+			const Sparse_matrix S_half;
 			virtual void vector_value(const Point<dim> &p,Vector<double> &value) const = 0;
 
 			const constant_data constants;
@@ -24,9 +25,11 @@ namespace ExactSolution
 	};
 
 	template<int dim>
-	Base_ExactSolution<dim>::Base_ExactSolution(const constant_data &constants)
+	Base_ExactSolution<dim>::Base_ExactSolution(const constant_data &constants,
+											    const Sparse_matrix &S_half)
 	:
 	Function<dim>(constants.nEqn),
+	S_half(S_half),
 	constants(constants)
 	{;};
 

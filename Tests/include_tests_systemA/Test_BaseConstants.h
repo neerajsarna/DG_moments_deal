@@ -2,15 +2,16 @@ namespace Test_BaseConstants
 {
 	TEST(ReadingInputs,HandlingInputs)
 	{
-		std::string input_file = "../test_input_files/input1.in";
 		Constants::Base_Constants base_constants(input_file);
 		
 		// first we allocate the values for the variables and then 
 		// we check whether that is what we expect or not 
 				// set of numerical constants
+		if (base_constants.constants.bc_type = characteristic)
+		{
 		int p = 1;
-		int mapping_order = 1;
-		int refine_cycles = 10;
+		int mapping_order = 2;
+		int refine_cycles = 3;
 		Refinement refinement = global;
 		Assembly_Type assembly_type = meshworker;
 
@@ -19,9 +20,8 @@ namespace Test_BaseConstants
 		int nBC = 2;
 		int system_id = 6;
 
-		System_Type system_type = un_symmetric;
 		Force_Type force_type = type1;
-		BC_Type bc_type = odd;
+		BC_Type bc_type = characteristic;
 
 		// physical constants
 		double tau = 0.1;
@@ -39,13 +39,15 @@ namespace Test_BaseConstants
 		double epsilon = 1e-5;
 
 		// variable in which error has to be found
-		std::string error_variable = "theta";
+		std::string error_variable = "rho";
+
+		std::string force_variable = "rho";
 
 		// forcing term for poisson heat conduction
 		double alpha = 1.0;
 
 		// the type of mesh to be used
-		Mesh_type mesh_type = periodic;
+		Mesh_type mesh_type = ring;
 
 		// different options for meshing
 		Meshing_Options mesh_options = generate_internal;
@@ -68,9 +70,9 @@ namespace Test_BaseConstants
 		double yt = 1.0;
 
 	// number of partisions per dimension for the square domain
-		unsigned int part_x = 10;
+		unsigned int part_x = 2;
 
-		unsigned int part_y = 10;
+		unsigned int part_y = 2;
 
 /***************NOW WE TEST THE VALUES WHICH HAVE BEEN READ ************/
 
@@ -85,7 +87,6 @@ namespace Test_BaseConstants
 		EXPECT_EQ(nBC,base_constants.constants.nBC);
 		EXPECT_EQ(system_id,base_constants.constants.system_id);
 
-		EXPECT_EQ(system_type,base_constants.constants.system_type);
 		EXPECT_EQ(force_type,base_constants.constants.force_type);
 		EXPECT_EQ(bc_type,base_constants.constants.bc_type);
 
@@ -134,6 +135,8 @@ namespace Test_BaseConstants
 		EXPECT_EQ(part_x,base_constants.constants.part_x);
 
 		EXPECT_EQ(part_y,base_constants.constants.part_y);
+
+		}
 	}
 
 }

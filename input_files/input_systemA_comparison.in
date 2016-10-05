@@ -1,9 +1,9 @@
-
+i
 subsection Numerical Constants
 	set polynomial degree = 1
 	set mapping order = 2
 	# CAUTION refinement cycles = 1 for periodic square
-	set total h refinement cycles = 1
+	set total h refinement cycles = 3
 	
 	# global = 0
 	# adaptive = 1
@@ -44,7 +44,7 @@ subsection System Properties
 	set nBC = 2
 
 	# 0 for characteristic and 1 for odd
-	set BC type = 0
+	set BC type = 1
 
 	# 0 for symmetric and 1 for un symmetric
 	set symmetric or un symmetric = 1
@@ -71,5 +71,5 @@ subsection Mesh Info
 end
 
 subsection Output Directory Name
-	set Main Output Directory = output_comparision_Kn0p1_char
+	set Main Output Directory = output_comparision_Kn0p1_odd
 end

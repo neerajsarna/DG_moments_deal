@@ -3,9 +3,6 @@
 enum Assembly_Type
 {meshworker, manuel};
 
-enum System_Type
-{symmetric,un_symmetric};
-
 enum Num_Flux
 {Upwind, LLF};
 
@@ -47,8 +44,7 @@ struct constant_data
 	int nEqn;
 	int nBC;
 	int system_id;
-
-	System_Type system_type;
+	
 	Force_Type force_type;
 	BC_Type bc_type;
 
@@ -69,6 +65,9 @@ struct constant_data
 
 		// variable in which error has to be found
 	std::string error_variable;
+
+	// the equation in which force has to be applied
+	std::string force_variable;
 
 		// forcing term for poisson heat conduction
 	double alpha;

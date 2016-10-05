@@ -4,6 +4,7 @@
 namespace EquationGenerator
 {
 	using namespace dealii;
+	#include "basic_routines.h"
 
 	template<int dim>
 	class Base_EquationGenerator
@@ -20,12 +21,6 @@ namespace EquationGenerator
 
 		  	// The Production term
 				  system_matrix P;
-
-			// Square root of the symmetrizer
-				system_matrix S_half;			// sqrt(S)
-
-			// Inverse of the sqaure root of the symmetrizer
-				system_matrix S_half_inv;
 
 			// The Jacobian in the x-direction
 				system_matrix Ax;
@@ -69,11 +64,6 @@ namespace EquationGenerator
 	  		// reading the system matrices.
 	  		void fancy_print_filename(std::vector<std::string> &filenames);
 
-			// The matrix from the production term
-			virtual void build_P(Sparse_matrix &P) = 0;
-
-			MatrixUI varIdx;
-
 			// we have a pointer to the kind of force we want in the system
 			ForceType::Base_ForceType<dim> *force;
 
@@ -88,8 +78,8 @@ namespace EquationGenerator
 			// the force which corresponds to the poisson heat conduction problem
 			ForceType::ForceType3<dim> force3;
 
-			virtual void source_term(const std::vector<Point<dim>> &p,
-									 std::vector<Vector<double>> &value) = 0;
+			void source_term(const std::vector<Point<dim>> &p,
+									 std::vector<Vector<double>> &value);
 
 			
 			// matrices for the boundary conditions
@@ -98,27 +88,60 @@ namespace EquationGenerator
 			Full_matrix X_minus;
 			Sparse_matrix BC;
 
+			// first we create the class which handles matrix orperations
+			MatrixOpt::Base_MatrixOpt matrixopt;
+
+			// routines for tensor development
+			TensorInfo::Base_TensorInfo<dim> base_tensorinfo;
+
 			// development of projectors
 			// build the projector corresponding to a particular normal vector
-			virtual Sparse_matrix build_Projector(const Tensor<1,dim> &normal_vector) = 0;
-			virtual Sparse_matrix build_InvProjector(const Tensor<1,dim> &normal_vector) = 0;
+			Sparse_matrix build_Projector(const Tensor<1,dim> &normal_vector);
+			Sparse_matrix build_InvProjector(const Tensor<1,dim> &normal_vector);
 
 			// this system is stupid and special. So special treatment of the boundary
-			BCrhs_systemA::Base_BCrhs_systemA<dim> *base_bcrhs;
-			BCrhs_systemA::BCrhs_ring_char_systemA<dim> bcrhs_ring_char;
-			BCrhs_systemA::BCrhs_ring_odd_systemA<dim> bcrhs_ring_odd;
+			BCrhs::Base_BCrhs<dim> *base_bcrhs;
+			BCrhs_systemA::BCrhs_ring_char_systemA<dim> bcrhs_ring_char_systemA;
+			BCrhs_systemA::BCrhs_ring_odd_systemA<dim> bcrhs_ring_odd_systemA;
 			
-			BCrhs_systemA::BCrhs_periodic_char_systemA<dim> bcrhs_periodic_char;
-			BCrhs_systemA::BCrhs_periodic_odd_systemA<dim> bcrhs_periodic_odd;
+			BCrhs_systemA::BCrhs_periodic_char_systemA<dim> bcrhs_periodic_char_systemA;
+			BCrhs_systemA::BCrhs_periodic_odd_systemA<dim> bcrhs_periodic_odd_systemA;
 
-			virtual Full_matrix build_Aminus(const Tensor<1,dim,double> normal_vector) = 0;
+			// The following function already knows the Aminus_1D game
+			Full_matrix build_Aminus(const Tensor<1,dim,double> normal_vector);
 
 			// Matrices for the flux
 			Full_matrix Aminus_1D;
 
-			virtual void build_BCrhs(const Tensor<1,dim,double> p,
+			void build_BCrhs(const Tensor<1,dim,double> p,
 									const Tensor<1,dim,double> normal_vector,
-									Vector<double> &bc_rhs) = 0;
+									Vector<double> &bc_rhs);
+
+
+			//convert a matrix to a symmetric matrix
+			void create_symmetric_matrix(Sparse_matrix &matrix,Sparse_matrix &S_half,
+										 Sparse_matrix &S_half_inv);
+
+			void reinit_system(const std::string &folder_name);
+
+			// reinit the Aminus_1D matrix
+			void reinit_Aminus1D();
+
+			void reinit_Xminus();
+
+			void symmetrize_system();
+
+			double forcing_factor();
+
+			void reinit_force();
+
+			void reinit_BoundaryMatrices();
+
+			void reinit_BCrhs();
+
+			double force_factor;
+			void reinit_P();
+
 	};
 
 	template<int dim>
@@ -129,12 +152,13 @@ namespace EquationGenerator
 	force1(constants),
 	force2(constants),
 	force3(constants),
-	bcrhs_ring_char(constants),
-	bcrhs_ring_odd(constants),
-	bcrhs_periodic_char(constants),
-	bcrhs_periodic_odd(constants)
+	bcrhs_ring_char_systemA(constants),
+	bcrhs_ring_odd_systemA(constants),
+	bcrhs_periodic_char_systemA(constants),
+	bcrhs_periodic_odd_systemA(constants)
 	{
-		basefile.resize(dim + 4);
+		basefile.resize(dim + 2);
+
 		unsigned int entry;
 
 		for (unsigned int i = 0 ; i < dim ; i ++)
@@ -146,14 +170,6 @@ namespace EquationGenerator
 
 		entry = dim + 1;
 		Assert(entry < dim + 3,ExcNotInitialized());
-		basefile[entry] = "S_half_";
-
-		entry = dim + 2;
-		Assert(entry < dim + 3,ExcNotInitialized());
-		basefile[entry] = "S_half_inv_";
-
-		entry = dim + 3;
-		Assert(entry <= dim + 3,ExcNotInitialized());
 		basefile[entry] = "odd_ID_";
 	};
 
@@ -338,8 +354,6 @@ namespace EquationGenerator
 
 		system_data.Ax.matrix.resize(nEqn,nEqn);
 		system_data.P.matrix.resize(nEqn,nEqn);
-		system_data.S_half.matrix.resize(nEqn,nEqn);
-		system_data.S_half_inv.matrix.resize(nEqn,nEqn);
 		system_data.B.matrix.resize(nBC,nEqn);
 		system_data.Ax.matrix.resize(nEqn,nEqn);
 
@@ -373,16 +387,318 @@ namespace EquationGenerator
 			this->build_triplet(system_data.B.Row_Col_Value,basefile_system[dim]);
 			this->build_matrix_from_triplet(system_data.B.matrix,system_data.B.Row_Col_Value);
 
-			// develop S_half
-			this->build_triplet(system_data.S_half.Row_Col_Value,basefile_system[dim+1]);
-			this->build_matrix_from_triplet(system_data.S_half.matrix,system_data.S_half.Row_Col_Value);
-
-			// develop S_half_inv
-			this->build_triplet(system_data.S_half_inv.Row_Col_Value,basefile_system[dim+2]);
-			this->build_matrix_from_triplet(system_data.S_half_inv.matrix,system_data.S_half_inv.Row_Col_Value);
-
 			// develop the ID of the odd variables
-			this->build_Vector(system_data.odd_ID,basefile_system[dim + 3]);
+			this->build_Vector(system_data.odd_ID,basefile_system[dim + 1]);
+
 	}
 
+	// builds the Projector matrix to be used during computation
+	template<int dim>
+	Sparse_matrix
+	Base_EquationGenerator<dim>
+	::build_Projector(const Tensor<1,dim> &normal_vector)
+	{
+
+		const double nx = normal_vector[0];
+		const double ny = normal_vector[1];
+
+		Assert(base_tensorinfo.varIdx.rows() != 0 || base_tensorinfo.varIdx.cols() !=0 ,
+				ExcMessage("Base tensor info not initialized"));
+
+		return(base_tensorinfo.reinit_global(nx,ny));
+	}
+
+
+	template<int dim>
+	Sparse_matrix
+	Base_EquationGenerator<dim>
+	::build_InvProjector(const Tensor<1,dim> &normal_vector)
+	{
+
+		const double nx = normal_vector[0];
+		const double ny = normal_vector[1];
+
+		Assert(base_tensorinfo.varIdx.rows() != 0 || base_tensorinfo.varIdx.cols() !=0 ,
+				ExcMessage("Base tensor info not initialized"));
+
+		return(base_tensorinfo.reinit_Invglobal(nx,ny));
+	}
+
+	template<int dim>
+	Full_matrix 
+	Base_EquationGenerator<dim>::
+	build_Aminus(const Tensor<1,dim,double> normal_vector)
+	{
+		Full_matrix Aminus;
+		Aminus.resize(this->constants.nEqn,this->constants.nEqn);
+
+		const double nx = normal_vector[0];
+		const double ny = normal_vector[1];
+
+		Assert(this->Aminus_1D.rows() != 0 || this->Aminus_1D.cols() != 0,
+			  ExcMessage("Aminus_1D has not been built yet"));
+
+		Assert(base_tensorinfo.varIdx.rows() != 0 || base_tensorinfo.varIdx.cols() !=0 ,
+				ExcMessage("Base tensor info not initialized"));
+
+		return(base_tensorinfo.reinit_Invglobal(nx,ny) 
+			   * this->Aminus_1D 
+			   * base_tensorinfo.reinit_global(nx,ny));
+	}
+
+	// convert a matrix to a symmetric matrix
+	template<int dim>
+	void 
+	Base_EquationGenerator<dim>::
+	create_symmetric_matrix(Sparse_matrix &matrix,
+							Sparse_matrix &S_half,
+							Sparse_matrix &S_half_inv)
+	{
+		Assert(matrix.rows() != 0|| matrix.cols() != 0,ExcNotInitialized());
+		Assert(S_half.rows() != 0|| S_half.cols() != 0,ExcNotInitialized());
+		Assert(S_half_inv.rows() != 0|| S_half_inv.cols() != 0,ExcNotInitialized());
+		
+		// every symmetrix matrix = S_half * matrix * S_half_inv
+		matrix = S_half * matrix * S_half_inv;
+	}
+
+	template<int dim>
+	void 
+	Base_EquationGenerator<dim>
+	::reinit_Aminus1D()
+	{
+		Aminus_1D = matrixopt.compute_Aminus(system_data.Ax.matrix);
+	}
+
+	template<int dim>
+	void 
+	Base_EquationGenerator<dim>
+	::reinit_Xminus()
+	{
+		X_minus = matrixopt.compute_Xminus(system_data.Ax.matrix,constants.nBC);
+	}
+
+	template<int dim>
+	void
+	Base_EquationGenerator<dim>
+	::symmetrize_system()
+	{
+		// now we symmetrize the system
+		// First symmetrize the jacobians
+		for (unsigned int i = 0 ; i < dim ; i ++)
+			create_symmetric_matrix(system_data.A[i].matrix,base_tensorinfo.S_half,base_tensorinfo.S_half_inv);
+
+		// now symmetrize the production term
+		create_symmetric_matrix(system_data.P.matrix,base_tensorinfo.S_half,base_tensorinfo.S_half_inv);
+	}
+
+	template<int dim>
+	double
+	Base_EquationGenerator<dim>
+	::forcing_factor()
+	{
+		const unsigned int var_force = constants.variable_map.find(constants.force_variable)->second;
+
+		Assert(base_tensorinfo.S_half.rows() != 0 || base_tensorinfo.S_half.cols() != 0,ExcNotInitialized());
+		const double force_factor = base_tensorinfo.S_half.coeffRef(var_force,var_force);
+
+		base_tensorinfo.S_half.makeCompressed();
+
+		return(force_factor);
+	}
+
+	template<int dim>
+	void
+	Base_EquationGenerator<dim>
+	::reinit_force()
+	{
+		switch(constants.force_type)
+		{
+			case type1:
+			{
+				force = &force1;
+				break;
+			}
+
+			case type2:
+			{
+				force = &force2;
+				break;
+			}
+
+			case type3:
+			{
+				force = &force3;
+				break;
+			}
+
+			default:
+			{
+				AssertThrow(1 == 0, ExcMessage("Should not have reached here"));
+				break;
+
+			}
+		}
+	}
+
+	template<int dim>
+	void 
+	Base_EquationGenerator<dim>
+	::reinit_BoundaryMatrices()
+	{
+		// develop the matrices which are independent of the test case
+		switch(constants.bc_type)
+		{
+			// characteristic boundary conditions
+			case characteristic:
+			{
+				BoundaryHandler::Base_BoundaryHandler_Char<dim> boundary_handler_char(system_data.Ax.matrix,
+																				system_data.B.matrix,
+																				constants.nBC);
+
+				// we do not need to fix B for the present problem since we do not have a velocity in the system
+
+				B_tilde_inv.resize(constants.nBC,constants.nBC);
+				B_hat.resize(constants.nEqn,this->constants.nEqn);
+
+				B_tilde_inv = boundary_handler_char.build_B_tilde_inv();
+				B_hat = boundary_handler_char.build_B_hat(this->B_tilde_inv);
+
+				break;
+			}
+
+			// picking up the odd variables
+			case odd:
+			{
+				BoundaryHandler::Base_BoundaryHandler_Odd<dim> boundary_handler_odd(system_data.B.matrix,
+																				   system_data.odd_ID);
+
+				 BC = boundary_handler_odd.develop_BC();
+				break;
+			}
+
+			default:
+			{
+				Assert(1 == 0,ExcMessage("Should not have reached here"));
+				break;
+			}
+		}
+	}
+
+	template<int dim>
+	void
+	Base_EquationGenerator<dim>
+	::reinit_BCrhs()
+	{
+		if(constants.nEqn == 6)
+		{
+					//the following implementation is mesh dependent
+		switch(constants.mesh_type)
+		{
+			case ring:
+			{
+				switch (constants.bc_type)
+				{
+					case characteristic:
+					{
+						base_bcrhs = &this->bcrhs_ring_char_systemA;
+						break;
+					}
+					case odd:
+					{
+						base_bcrhs = &this->bcrhs_ring_odd_systemA;
+						break;
+					}
+				}
+				break;
+			}
+
+			case periodic_square:
+			{
+				switch(constants.bc_type)
+				{
+					case characteristic:
+					{
+						base_bcrhs = &bcrhs_periodic_char_systemA;
+						break;
+					}
+
+					case odd:
+					{
+						base_bcrhs = &bcrhs_periodic_odd_systemA;
+						break;
+					}
+
+					default:
+					{
+						Assert(1 == 0, ExcMessage("Should not have reached here"));
+						break;
+					}
+				}
+
+				break;
+			}
+			default:
+			{
+				Assert(1 ==0,ExcNotImplemented());
+				break;
+			}
+		}
+		}
+	}
+
+	template<int dim>
+	void 
+	Base_EquationGenerator<dim>
+	::source_term(const std::vector<Point<dim>> &p,
+				 std::vector<Vector<double>> &value)
+	{
+
+		// now we simply pass on the value to the base class
+		force->source_term(p,value,force_factor);
+	}
+
+	template<int dim>
+	void
+	Base_EquationGenerator<dim>
+	::build_BCrhs(const Tensor<1,dim,double> p,
+				const Tensor<1,dim,double> normal_vector,
+				Vector<double> &bc_rhs)
+	{
+
+		base_bcrhs->BCrhs(p,normal_vector,bc_rhs);
+	}
+
+	template<>
+	void
+	Base_EquationGenerator<2>
+	::reinit_P()
+	{
+		if (constants.nEqn == 6)
+		{
+			for (int i = 1 ; i < constants.nEqn ; i ++)
+				system_data.P.matrix.coeffRef(i,i) = 1/constants.tau;
+
+			system_data.P.matrix.makeCompressed();
+		}
+		else
+		{
+			const unsigned int num_conserved = 4;
+			for (int i =  num_conserved; i < constants.nEqn ; i++)
+				system_data.P.matrix.coeffRef(i,i) = 1/constants.tau;
+
+			system_data.P.matrix.makeCompressed();
+		}
+	}
+
+	template<int dim>
+	void 
+	Base_EquationGenerator<dim>
+	::reinit_system(const std::string &folder_name)
+	{
+		this->generate_matrices(this->system_data,this->constants.nEqn,this->constants.nBC,folder_name);
+
+		// we now develop the P matrix
+		reinit_P();	
+	}
 }

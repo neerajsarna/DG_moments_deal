@@ -7,7 +7,7 @@ namespace ExactSolution
 	ExactSolution_SystemA_ring: public Base_ExactSolution<dim>
 	{
 		public:
-			ExactSolution_SystemA_ring(const constant_data &constants);
+			ExactSolution_SystemA_ring(const constant_data &constants,const Sparse_matrix &S_half);
 
 			virtual void vector_value(const Point<dim> &p,Vector<double> &value) const ;
 
@@ -17,9 +17,9 @@ namespace ExactSolution
 	};
 
 	template<int dim>
-	ExactSolution_SystemA_ring<dim>::ExactSolution_SystemA_ring(const constant_data &constants)
+	ExactSolution_SystemA_ring<dim>::ExactSolution_SystemA_ring(const constant_data &constants,const Sparse_matrix &S_half)
 	:
-	Base_ExactSolution<dim>(constants)
+	Base_ExactSolution<dim>(constants,S_half)
 	{
 		Assert(this->constants.nEqn == 6,ExcMessage("incorrect equation number"));
 
@@ -133,6 +133,11 @@ namespace ExactSolution
 		// put all the other values to zero
 		for (int i = 3 ; i < this->constants.nEqn ; i++)
 			value[i] = 0; 
+
+
+		// The above values correspond to a unsymmetric system, therefore we now need to accomodate the symmetric system
+		MatrixOpt::Base_MatrixOpt matrix_opt;
+		value = matrix_opt.Sparse_matrix_dot_Vector(this->S_half,value);
 
 	}
 

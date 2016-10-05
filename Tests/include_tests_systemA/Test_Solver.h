@@ -2,18 +2,19 @@ namespace Test_Solver
 {
 	using namespace dealii;
 
+
+
 	TEST(MeshGenerationRing,HandlesMeshGenerationRing)
 	{
 		const unsigned int dim = 2;
 		ASSERT_EQ(dim,2) << "3D not implemented" << std::endl;
 
-		std::string input_file = "../test_input_files/input1.in";
 		std::string folder_name = "../system_matrices/";
 		Constants::Base_Constants constants(input_file);
 		SystemA::SystemA<dim> systemA(constants.constants,folder_name);
 
 		// now we need an object for the exact solution
-		ExactSolution::ExactSolution_SystemA_ring<dim>  exact_solution_systemA(constants.constants);
+		ExactSolution::ExactSolution_SystemA_ring<dim>  exact_solution_systemA(constants.constants,systemA.base_tensorinfo.S_half);
 
 		FEM_Solver::Base_Solver<dim> base_solver("mesh_file_name","grid",constants.constants,&systemA,
 											 	&exact_solution_systemA);
@@ -36,12 +37,11 @@ namespace Test_Solver
 		const unsigned int dim = 2;
 		ASSERT_EQ(dim,2) << "3D not implemented" << std::endl;
 
-		std::string input_file = "../test_input_files/input1.in";
 		std::string folder_name = "../system_matrices/";
 		Constants::Base_Constants constants(input_file);
 		SystemA::SystemA<dim> systemA(constants.constants,folder_name);
 
-		ExactSolution::ExactSolution_SystemA_ring<dim>  exact_solution_systemA(constants.constants);
+		ExactSolution::ExactSolution_SystemA_ring<dim>  exact_solution_systemA(constants.constants,systemA.base_tensorinfo.S_half);
 
 		FEM_Solver::Base_Solver<dim> base_solver("mesh_file_name",
 											 "grid",
@@ -143,73 +143,16 @@ namespace Test_Solver
 		}
 	}
 
-
-	// // we go through the whole procedure step by step
-	// TEST(DofDistribution,HandlesDofDistribution)
-	// {
-	// 	const unsigned int dim = 2;
-	// 	ASSERT_EQ(dim,2) << "3D not implemented" << std::endl;
-
-	// 	std::string input_file = "../test_input_files/input1.in";
-	// 	std::string folder_name = "../system_matrices/";
-	// 	Constants::Base_Constants constants(input_file);
-	// 	SystemA::SystemA<dim> systemA(constants.constants,folder_name);
-
-	// 	ExactSolution::ExactSolution_SystemA_ring<dim>  exact_solution_systemA(constants.constants);
-
-	// 	FEM_Solver::Base_Solver<dim> base_solver("mesh_file_name",
-	// 										 "grid",
-	// 										 constants.constants,
-	// 										 &systemA,
-	// 										 &exact_solution_systemA);
-
-
-	// 	base_solver.distribute_dof_allocate_matrix_ring();
-	// }
-
-	// // we go through the whole procedure step by step
-	// TEST(MeshWorker,HandlesMeshWorker)
-	// {
-	// 	const unsigned int dim = 2;
-	// 	ASSERT_EQ(dim,2) << "3D not implemented" << std::endl;
-
-	// 	std::string input_file = "../test_input_files/input1.in";
-	// 	std::string folder_name = "../system_matrices/";
-	// 	Constants::Base_Constants constants(input_file);
-	// 	SystemA::SystemA<dim> systemA(constants.constants,folder_name);
-
-	// 	ExactSolution::ExactSolution_SystemA_ring<dim>  exact_solution_systemA(constants.constants);
-
-	// 	FEM_Solver::Base_Solver<dim> base_solver("mesh_file_name",
-	// 										 "grid",
-	// 										 constants.constants,
-	// 										 &systemA,
-	// 										 &exact_solution_systemA);
-
-
-	// 	base_solver.distribute_dof_allocate_matrix_ring();
-
-	// 	if(constants.constants.assembly_type == meshworker)
-	// 	{
-	// 		std::cout << "Assembling Using Meshworker " << std::endl;
-	// 		base_solver.assemble_system_meshworker();
-	// 	}
-
-	// 	LinearSolver::LinearSolver linear_solver(base_solver.global_matrix,base_solver.system_rhs,base_solver.solution);
-	// }
-
-
 	TEST(SolvingSystemA,HandlesSolvingSystemA)
 	{
 		const unsigned int dim = 2;
 		ASSERT_EQ(dim,2) << "3D not implemented" << std::endl;
 
-		std::string input_file = "../test_input_files/input1.in";
 		std::string folder_name = "../system_matrices/";
 		Constants::Base_Constants constants(input_file);
 		SystemA::SystemA<dim> systemA(constants.constants,folder_name);
 
-		ExactSolution::ExactSolution_SystemA_ring<dim>  exact_solution_systemA(constants.constants);
+		ExactSolution::ExactSolution_SystemA_ring<dim>  exact_solution_systemA(constants.constants,systemA.base_tensorinfo.S_half);
 
 		FEM_Solver::Base_Solver<dim> base_solver("mesh_file_name",
 											 "grid",
@@ -218,7 +161,66 @@ namespace Test_Solver
 											 &exact_solution_systemA);
 
 
-		// run for the ring configuration
-		base_solver.run_ring(4);
+		// we copy the routine from Run_Ring.h since we wish to explicitly compute the error values
+		Vector<double> error_per_run(constants.constants.refine_cycles);
+
+		for (int i = 0 ; i < constants.constants.refine_cycles ; i++)
+		{
+			base_solver.distribute_dof_allocate_matrix();
+		
+			switch(constants.constants.assembly_type)
+		  		{	
+					case meshworker:
+					{
+						base_solver.assemble_system_meshworker();
+						break;
+					}
+
+					// case manuel:
+					// {
+					// 	assemble_system();
+					// 	break;
+					// }
+					default :
+					{
+						Assert(1 == 0,ExcMessage("Should not have reached here"));
+						break;
+					}
+		 		}
+
+			LinearSolver::LinearSolver linear_solver(base_solver.global_matrix,base_solver.system_rhs,base_solver.solution);
+
+			PostProc::Base_PostProc<dim> postproc(base_solver.constants,&exact_solution_systemA,&base_solver.dof_handler, &base_solver.mapping);
+
+			error_per_run(i) = postproc.L2_error_QGauss(base_solver.solution,base_solver.triangulation.n_active_cells());
+
+			std::cout << "L2 error " << error_per_run(i) << std::endl;
+			if (i != constants.constants.refine_cycles - 1)
+				base_solver.triangulation.refine_global(1);
+
+		}
+
+		Assert(constants.constants.refine_cycles == 3,ExcMessage("The refine cycles requested for have not been implemented"));
+
+		Vector<double> exact_error(constants.constants.refine_cycles);
+
+		if(constants.constants.bc_type == characteristic)
+		{
+			exact_error(0) = 7.6043e-01;
+			exact_error(1) = 1.6451e-01;
+			exact_error(2) = 2.8996e-02;
+		}
+
+		if (constants.constants.bc_type == odd)
+		{
+			exact_error(0) = 8.5794e-01;
+			exact_error(1) = 2.0796e-01;
+			exact_error(2) = 4.5868e-02;
+		}
+
+
+		for (int i = 0 ; i < constants.constants.refine_cycles ; i++)
+			EXPECT_NEAR(error_per_run(i),exact_error(i),1e-5);
+
 	}
 }

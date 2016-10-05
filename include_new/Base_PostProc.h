@@ -46,11 +46,19 @@ namespace PostProc
 										const double hMax,
 									   ConvergenceTable &convergence_table);
 
+			// return the value of the L2_erro
+			double L2_error_QGauss(const Vector<double> &solution,const unsigned int active_cells);
+			double Linfty_error_QGauss(const Vector<double> &solution,const unsigned int active_cells);
+
+
 			// error evaluation based upon midpoint rule
 			void error_evaluation_QMidpoint(const Vector<double> &solution,
 											const unsigned int active_cells,
 											const double hMax,
 									   		ConvergenceTable &convergence_table);
+
+			double L2_error_QMidpoint(const Vector<double> &solution,const unsigned int active_cells);
+			double Linfty_error_QMidpoint(const Vector<double> &solution,const unsigned int active_cells);
 
 			// print convergence table to a file
 			void print_convergence_table_to_file(ConvergenceTable &convergence_table);
@@ -75,6 +83,12 @@ namespace PostProc
 
 			// write the values of computational constants to a file
 			void create_stamp();
+
+			// we compute the error from our code and print it manually to file
+			// is useful when using external grid
+			void compute_error_print_manuel(const Vector<double> &solution,
+											const unsigned int active_cells,
+											const double hMax);
 
 	};
 
@@ -228,6 +242,64 @@ namespace PostProc
 	}
 
 
+	// returns the L2 error using the gauss quadrature
+	template<int dim>
+	double
+	Base_PostProc<dim>::L2_error_QGauss(const Vector<double> &solution,
+										const unsigned int active_cells)
+	{
+		// error variable comes from Basics. The following is the component in which
+		// we wish to find the error.
+        unsigned int component = constants.variable_map.find(constants.error_variable)->second;
+
+        const unsigned int ngp = constants.p + 1;
+        // error per cell of the domain
+        Vector<double> error_per_cell(active_cells);      
+
+        ComponentSelectFunction<dim> weight(component,constants.nEqn);                              // used to compute only the error in theta
+
+        // computation of L2 error
+        VectorTools::integrate_difference (*mapping,*dof_handler,solution,
+          									*base_exactsolution,
+          									error_per_cell,
+          									QGauss<dim>(ngp),
+          									VectorTools::L2_norm,
+          									&weight);  
+
+
+        return (error_per_cell.l2_norm());
+                
+	}
+
+	template<int dim>
+	double
+	Base_PostProc<dim>::Linfty_error_QGauss(const Vector<double> &solution,
+											const unsigned int active_cells)
+	{
+		// error variable comes from Basics. The following is the component in which
+		// we wish to find the error.
+        unsigned int component = constants.variable_map.find(constants.error_variable)->second;
+
+        const unsigned int ngp = constants.p + 1;
+        // error per cell of the domain
+        Vector<double> error_per_cell(active_cells);      
+
+        ComponentSelectFunction<dim> weight(component,constants.nEqn);                              // used to compute only the error in theta
+
+        // computation of L_inifinity error
+        error_per_cell = 0;
+        VectorTools::integrate_difference (*mapping,*dof_handler,solution,
+          									*base_exactsolution,
+          									error_per_cell,
+          									QGauss<dim>(ngp),
+          									VectorTools::Linfty_norm,
+          									&weight);  
+        
+
+        return(error_per_cell.linfty_norm());
+                
+	}
+
 	// evaluate the error from the solution using midpoint quadrature rule
 	template<int dim>
 	void
@@ -295,6 +367,67 @@ namespace PostProc
         convergence_table.set_scientific(column_name_Linfty,true);
         convergence_table.set_scientific("#hMax",true);
 	}
+
+
+	// returns the L2 error using the gauss quadrature
+	template<int dim>
+	double
+	Base_PostProc<dim>::L2_error_QMidpoint(const Vector<double> &solution,
+										  const unsigned int active_cells)
+	{
+		// error variable comes from Basics. The following is the component in which
+		// we wish to find the error.
+        unsigned int component = constants.variable_map.find(constants.error_variable)->second;
+
+        const unsigned int ngp = constants.p + 1;
+        // error per cell of the domain
+        Vector<double> error_per_cell(active_cells);      
+
+        ComponentSelectFunction<dim> weight(component,constants.nEqn);                              // used to compute only the error in theta
+
+        // computation of L2 error
+        VectorTools::integrate_difference (*mapping,*dof_handler,solution,
+          									*base_exactsolution,
+          									error_per_cell,
+          									QGauss<dim>(ngp),
+          									VectorTools::L2_norm,
+          									&weight);  
+
+
+        return (error_per_cell.l2_norm());
+
+                
+	}
+
+	template<int dim>
+	double
+	Base_PostProc<dim>::Linfty_error_QMidpoint(const Vector<double> &solution,
+												const unsigned int active_cells)
+	{
+		// error variable comes from Basics. The following is the component in which
+		// we wish to find the error.
+        unsigned int component = constants.variable_map.find(constants.error_variable)->second;
+
+        const unsigned int ngp = constants.p + 1;
+        // error per cell of the domain
+        Vector<double> error_per_cell(active_cells);      
+
+        ComponentSelectFunction<dim> weight(component,constants.nEqn);                              // used to compute only the error in theta
+
+        // computation of L_inifinity error
+        error_per_cell = 0;
+        VectorTools::integrate_difference (*mapping,*dof_handler,solution,
+          									*base_exactsolution,
+          									error_per_cell,
+          									QGauss<dim>(ngp),
+          									VectorTools::Linfty_norm,
+          									&weight);  
+        
+
+        return(error_per_cell.linfty_norm());
+                
+	}
+
 
 	// print the convergence table to a file
 	template<int dim> 
@@ -489,6 +622,57 @@ namespace PostProc
 
    		if (constants.print_convergence_table)
  			print_convergence_table_to_file(convergence_table);
+
+   	}
+
+   	template<int dim>
+   	void
+   	Base_PostProc<dim>::compute_error_print_manuel(const Vector<double> &solution,
+											   		const unsigned int active_cells,
+											   		const double hMax)
+   	{
+ 		// error variable comes from Basics. The following is the component in which
+		// we wish to find the error.
+        unsigned int component = constants.variable_map.find(constants.error_variable)->second;
+
+        // error per cell of the domain
+        Vector<double> error_per_cell(active_cells);      
+
+        ComponentSelectFunction<dim> weight(component,constants.nEqn);                              // used to compute only the error in theta
+
+        // computation of L2 error
+        VectorTools::integrate_difference (*mapping,*dof_handler,solution,
+          									*base_exactsolution,
+          									error_per_cell,
+          									QMidpoint<dim>(),
+          									VectorTools::L2_norm,
+          									&weight);  
+
+
+        const double L2_error = error_per_cell.l2_norm();
+
+        // computation of L_inifinity error
+        error_per_cell = 0;
+        VectorTools::integrate_difference (*mapping,*dof_handler,solution,
+          									*base_exactsolution,
+          									error_per_cell,
+          									QMidpoint<dim>(),
+          									VectorTools::Linfty_norm,
+          									&weight);  
+        
+
+        const double Linfty_error = error_per_cell.linfty_norm(); 
+        
+        FILE *fp;
+
+        // append the existing file and write values to it
+        fp = fopen(output_file_names.file_for_convergence_tables.c_str(),"a+"); 		
+        AssertThrow(fp != NULL,ExcMessage("Cant open file for convergence table writting"));
+
+        fprintf(fp, "L2_error Linfity_error active_cells hMax\n");
+        fprintf(fp, "%f %f %u %f \n",L2_error, Linfty_error, active_cells,hMax);
+
+        fclose(fp);
 
    	}
 }

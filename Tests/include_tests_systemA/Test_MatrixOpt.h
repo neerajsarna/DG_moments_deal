@@ -68,7 +68,7 @@ namespace TestMatrixOpt
 	// we will now consider the matrix from system A
 	TEST(TestXminusSystemA,HandlingXminusSystemA)
 	{
-		std::string input_file = "../test_input_files/input1.in";
+		
 		std::string folder_name = "../system_matrices/";
 
 		Constants::Base_Constants constants(input_file);
@@ -100,7 +100,6 @@ namespace TestMatrixOpt
 
 	TEST(TestLambdaXcomputationSystemA,HandlingEigenDecomp)
 	{
-		std::string input_file = "../test_input_files/input1.in";
 		std::string folder_name = "../system_matrices/";
 
 		Constants::Base_Constants constants(input_file);
@@ -134,7 +133,6 @@ namespace TestMatrixOpt
 
 	TEST(AmodComputationSystemA,HandlingAmod)
 	{
-		std::string input_file = "../test_input_files/input1.in";
 		std::string folder_name = "../system_matrices/";
 
 		Constants::Base_Constants constants(input_file);
@@ -142,7 +140,7 @@ namespace TestMatrixOpt
 		SystemA::SystemA<dim> systemA(constants.constants,folder_name);	
 
 		MatrixOpt::Base_MatrixOpt matrix_opt;
-		Sparse_matrix A = systemA.system_data.A[0].matrix;
+		Sparse_matrix A = systemA.system_data.Ax.matrix;
 		Full_matrix Amod = matrix_opt.compute_Amod(A);
 
 		Full_matrix Amod_result;
@@ -158,7 +156,7 @@ namespace TestMatrixOpt
 
 	TEST(AminusComputationSystemA,HandlingAminus)
 	{
-		std::string input_file = "../test_input_files/input1.in";
+		
 		std::string folder_name = "../system_matrices/";
 
 		Constants::Base_Constants constants(input_file);
@@ -166,7 +164,7 @@ namespace TestMatrixOpt
 		SystemA::SystemA<dim> systemA(constants.constants,folder_name);	
 
 		MatrixOpt::Base_MatrixOpt matrix_opt;
-		Sparse_matrix A = systemA.system_data.A[0].matrix;
+		Sparse_matrix A = systemA.system_data.Ax.matrix;
 		Full_matrix Aminus = matrix_opt.compute_Aminus(A);
 
 		Full_matrix Aminus_result;

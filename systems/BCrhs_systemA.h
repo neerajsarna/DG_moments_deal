@@ -2,30 +2,10 @@ namespace BCrhs_systemA
 {
 	using namespace dealii;
 
-	template<int dim>
-	class
-	Base_BCrhs_systemA
-	{
-		public:
-			Base_BCrhs_systemA(const constant_data &constants);
-			const constant_data constants;
-
-			virtual void BCrhs(const Tensor<1,dim,double> p,
-							  const Tensor<1,dim,double> normal_vector,
-							   Vector<double> &bc_rhs) = 0;
-	};
-
-	template<int dim>
-	Base_BCrhs_systemA<dim>::Base_BCrhs_systemA(const constant_data &constants)
-	:
-	constants(constants)
-	{;}
-
-
 	// BCrhs for a ring with characteristic variables
 	template<int dim>
 	class
-	BCrhs_ring_char_systemA:public Base_BCrhs_systemA<dim>
+	BCrhs_ring_char_systemA:public BCrhs::Base_BCrhs<dim>
 	{
 		public:
 			BCrhs_ring_char_systemA(const constant_data &constants);
@@ -38,7 +18,7 @@ namespace BCrhs_systemA
 	template<int dim>
 	BCrhs_ring_char_systemA<dim>::BCrhs_ring_char_systemA(const constant_data &constants)
 	:
-	Base_BCrhs_systemA<dim>(constants)
+	BCrhs::Base_BCrhs<dim>(constants)
 	{;}
 
 	template<int dim>
@@ -75,7 +55,7 @@ namespace BCrhs_systemA
 	// BCrhs with odd variables
 	template<int dim>
 	class
-	BCrhs_ring_odd_systemA:public Base_BCrhs_systemA<dim>
+	BCrhs_ring_odd_systemA:public BCrhs::Base_BCrhs<dim>
 	{
 		public:
 			BCrhs_ring_odd_systemA(const constant_data &constants);
@@ -88,7 +68,7 @@ namespace BCrhs_systemA
 	template<int dim>
 	BCrhs_ring_odd_systemA<dim>::BCrhs_ring_odd_systemA(const constant_data &constants)
 	:
-	Base_BCrhs_systemA<dim>(constants)
+	BCrhs::Base_BCrhs<dim>(constants)
 	{;}
 
 	template<int dim>
@@ -119,7 +99,7 @@ namespace BCrhs_systemA
 
 	template<int dim>
 	class
-	BCrhs_periodic_char_systemA: public Base_BCrhs_systemA<dim>
+	BCrhs_periodic_char_systemA: public BCrhs::Base_BCrhs<dim>
 	{
 		public:
 			BCrhs_periodic_char_systemA(const constant_data &constants);
@@ -132,7 +112,7 @@ namespace BCrhs_systemA
 	template<int dim>
 	BCrhs_periodic_char_systemA<dim>::BCrhs_periodic_char_systemA(const constant_data &constants)
 	:
-	Base_BCrhs_systemA<dim>(constants)
+	BCrhs::Base_BCrhs<dim>(constants)
 	{;}
 
 	template<int dim>
@@ -164,7 +144,7 @@ namespace BCrhs_systemA
 
 	template<int dim>
 	class
-	BCrhs_periodic_odd_systemA: public Base_BCrhs_systemA<dim>
+	BCrhs_periodic_odd_systemA: public BCrhs::Base_BCrhs<dim>
 	{
 		public:
 			BCrhs_periodic_odd_systemA(const constant_data &constants);
@@ -177,7 +157,7 @@ namespace BCrhs_systemA
 	template<int dim>
 	BCrhs_periodic_odd_systemA<dim>::BCrhs_periodic_odd_systemA(const constant_data &constants)
 	:
-	Base_BCrhs_systemA<dim>(constants)
+	BCrhs::Base_BCrhs<dim>(constants)
 	{;}
 
 	template<int dim>

@@ -73,6 +73,9 @@ namespace MatrixOpt
 
 			void print_dealii_vector(const Vector<double> &vec, 
 									std::string vector_name);
+
+			// a dot product between sparse matrix and a vector
+			Vector<double> Sparse_matrix_dot_Vector(const Sparse_matrix &matrix,const Vector<double> &vec);
 	};
 
 	// constructor of the structure
@@ -374,5 +377,26 @@ namespace MatrixOpt
 	  		fprintf(fp, "%f\n",vec(i));
 
 	  	fclose(fp);
+	  }
+
+	  // The following function performs the dot product between a dealii sparse matrix and a vector
+	  Vector<double> Base_MatrixOpt::Sparse_matrix_dot_Vector(const Sparse_matrix &matrix,
+	  														  const Vector<double> &vec)
+	  {
+	  	const unsigned int num_entries = vec.size();
+	  	Assert(matrix.rows() != 0 || matrix.cols() != 0,ExcNotInitialized());
+	  	Assert(vec.size() != 0,ExcNotInitialized());
+	  	Assert(matrix.IsRowMajor,ExcMessage("Basic assumption failed"));
+
+		Vector<double> result(num_entries);
+
+		for (unsigned int m = 0 ; m < matrix.outerSize(); m++)
+		{
+			result(m) = 0;
+			for (Sparse_matrix::InnerIterator n(matrix,m); n ; ++n)
+				result(m) += n.value() * vec(n.col());
+		}
+
+		return(result);
 	  }
 }

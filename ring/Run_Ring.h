@@ -31,6 +31,13 @@ Base_Solver<dim>::run_ring(const unsigned int refine_cycles)
 			}
 		}
 
+		std::cout << "Memory Before Compression " << global_matrix.memory_consumption() << std::endl;
+
+		if(!global_matrix.is_compressed())
+			global_matrix.compress();
+
+		std::cout << "Memory After Compression " << global_matrix.memory_consumption() << std::endl;
+
 		// we initialize the object which will solve our system
 		// We do int the following way so as to keep the solver independent of all the other implementations.
 		// This makes the code highly reusable. So one can directly copy the following class and use it somewhere
