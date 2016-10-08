@@ -204,23 +204,48 @@ namespace Test_Solver
 
 		Vector<double> exact_error(constants.constants.refine_cycles);
 
-		if(constants.constants.bc_type == characteristic)
+		if (fabs(constants.constants.tau - 0.1) < 1e-5)
 		{
-			exact_error(0) = 7.6043e-01;
-			exact_error(1) = 1.6451e-01;
-			exact_error(2) = 2.8996e-02;
+			if(constants.constants.bc_type == characteristic)
+			{
+				exact_error(0) = 7.6043e-01;
+				exact_error(1) = 1.6451e-01;
+				exact_error(2) = 2.8996e-02;
+			}
+
+			if (constants.constants.bc_type == odd)
+			{
+				exact_error(0) = 8.5794e-01;
+				exact_error(1) = 2.0796e-01;
+				exact_error(2) = 4.5868e-02;
+			}
+
+
+			for (int i = 0 ; i < constants.constants.refine_cycles ; i++)
+				EXPECT_NEAR(error_per_run(i),exact_error(i),1e-5);			
 		}
 
-		if (constants.constants.bc_type == odd)
+		if (fabs(constants.constants.tau - 1.0) < 1e-5)
 		{
-			exact_error(0) = 8.5794e-01;
-			exact_error(1) = 2.0796e-01;
-			exact_error(2) = 4.5868e-02;
+			if(constants.constants.bc_type == characteristic)
+			{
+				exact_error(0) = 2.1383e-01;
+				exact_error(1) = 1.4952e-01;
+				exact_error(2) = 7.6967e-02;
+			}
+
+			if (constants.constants.bc_type == odd)
+			{
+				exact_error(0) = 2.2221e-01;
+				exact_error(1) = 1.5103e-01;
+				exact_error(2) = 7.7323e-02;
+			}
+
+
+			for (int i = 0 ; i < constants.constants.refine_cycles ; i++)
+				EXPECT_NEAR(error_per_run(i),exact_error(i),1e-5);				
 		}
 
-
-		for (int i = 0 ; i < constants.constants.refine_cycles ; i++)
-			EXPECT_NEAR(error_per_run(i),exact_error(i),1e-5);
 
 	}
 }

@@ -52,8 +52,6 @@ struct constant_data
 	double tau;
 	double zeta;
 	double chi;
-	double theta0;
-	double theta1;
 	double uW;
 	double A0;
 	double A1;
@@ -120,5 +118,27 @@ struct constant_data
 
 	// decide whether to print the convergence table or not
 	bool print_convergence_table;
+
+	// data for the boundary
+	// first wall
+	double theta0;
+	double vn0;
+	double vt0;
+
+
+	// data for the second wall
+	double theta1;
+	double vn1;
+	double vt1;
+
+	// data for the third wall
+	double theta2;
+	double vn2;
+	double vt2;
+
+	// data for the fourth wall
+	double theta3;
+	double vn3;
+	double vt3;
 };
 

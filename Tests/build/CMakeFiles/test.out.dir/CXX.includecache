@@ -6,6 +6,18 @@
 
 #IncludeRegexTransform: 
 
+../../Projector_Data/Tensorial_InvProjector.h
+
+../../Projector_Data/Tensorial_Projector.h
+
+../../Symmetrizer_Data/Tensorial_InvSymmetrizer.h
+
+../../Symmetrizer_Data/Tensorial_Symmetrizer.h
+
+../../include_new/AssembleSystem_Manuel.h
+Integrate_PerCell.h
+../../include_new/Integrate_PerCell.h
+
 ../../include_new/AssembleSystem_Meshworker.h
 
 ../../include_new/Base_BCrhs.h
@@ -35,16 +47,30 @@ MeshGenerator_PeriodicSquare.h
 ../../include_new/Base_Solver.h
 AssembleSystem_Meshworker.h
 ../../include_new/AssembleSystem_Meshworker.h
+AssembleSystem_Manuel.h
+../../include_new/AssembleSystem_Manuel.h
 Run_Ring.h
 ../../include_new/Run_Ring.h
+Run_Periodic.h
+../../include_new/Run_Periodic.h
 
 ../../include_new/Base_TensorInfo.h
+Tensorial_Projector.h
+../../include_new/Tensorial_Projector.h
+Tensorial_InvProjector.h
+../../include_new/Tensorial_InvProjector.h
+Tensorial_Symmetrizer.h
+../../include_new/Tensorial_Symmetrizer.h
+Tensorial_InvSymmetrizer.h
+../../include_new/Tensorial_InvSymmetrizer.h
 
 ../../include_new/EigenSetup.h
 Eigen/Dense
 -
 Eigen/SparseCore
 -
+
+../../include_new/Integrate_PerCell.h
 
 ../../include_new/LinearSolver.h
 
@@ -178,9 +204,11 @@ algorithm
 
 ../../periodic_square/Base_PeriodicityHandler.h
 
+../../periodic_square/ExactSolution_PoissonHeatConduction_G26.h
+
 ../../periodic_square/MeshGenerator_PeriodicSquare.h
 
-../../ring/ExactSolution_SystemA.h
+../../periodic_square/Run_Periodic.h
 
 ../../ring/MeshGenerator_Ring.h
 
@@ -188,35 +216,13 @@ algorithm
 
 ../../systems/BCrhs_systemA.h
 
-../../systems/SystemA.h
+../../systems/G26.h
 
-../include_tests_systemA/Test_BaseConstants.h
+../include_tests_G26/Test_Solver.h
 
-../include_tests_systemA/Test_BoundaryHandler_Char.h
-basic_routines.h
-../include_tests_systemA/basic_routines.h
+../include_tests_G26/basic_routines.h
 
-../include_tests_systemA/Test_BoundaryHandler_Odd.h
-
-../include_tests_systemA/Test_EquationGenerator.h
-
-../include_tests_systemA/Test_ExactSolution.h
-
-../include_tests_systemA/Test_ForceType.h
-
-../include_tests_systemA/Test_MatrixOpt.h
-
-../include_tests_systemA/Test_Solver.h
-
-../include_tests_systemA/Test_TensorInfo.h
-develop_Aminus.h
-../include_tests_systemA/develop_Aminus.h
-
-../include_tests_systemA/basic_routines.h
-
-../include_tests_systemA/develop_Aminus.h
-
-../include_tests_systemA/parse_command_line.h
+../include_tests_G26/parse_command_line.h
 
 /Applications/deal.II.app/Contents/Resources/include/deal.II/algorithms/any_data.h
 deal.II/base/config.h
@@ -4567,14 +4573,14 @@ BCrhs_systemA.h
 /Users/neerajsarna/sciebo/DG_moments_deal/Tests/BCrhs_systemA.h
 Base_ExactSolution.h
 /Users/neerajsarna/sciebo/DG_moments_deal/Tests/Base_ExactSolution.h
-ExactSolution_SystemA.h
-/Users/neerajsarna/sciebo/DG_moments_deal/Tests/ExactSolution_SystemA.h
+ExactSolution_PoissonHeatConduction_G26.h
+/Users/neerajsarna/sciebo/DG_moments_deal/Tests/ExactSolution_PoissonHeatConduction_G26.h
 Base_EquationGenerator.h
 /Users/neerajsarna/sciebo/DG_moments_deal/Tests/Base_EquationGenerator.h
 LinearSolver.h
 /Users/neerajsarna/sciebo/DG_moments_deal/Tests/LinearSolver.h
-SystemA.h
-/Users/neerajsarna/sciebo/DG_moments_deal/Tests/SystemA.h
+G26.h
+/Users/neerajsarna/sciebo/DG_moments_deal/Tests/G26.h
 Base_MeshGenerator.h
 /Users/neerajsarna/sciebo/DG_moments_deal/Tests/Base_MeshGenerator.h
 Base_PeriodicityHandler.h
@@ -4583,22 +4589,6 @@ Base_PostProc.h
 /Users/neerajsarna/sciebo/DG_moments_deal/Tests/Base_PostProc.h
 Base_Solver.h
 /Users/neerajsarna/sciebo/DG_moments_deal/Tests/Base_Solver.h
-Test_BaseConstants.h
-/Users/neerajsarna/sciebo/DG_moments_deal/Tests/Test_BaseConstants.h
-Test_ForceType.h
-/Users/neerajsarna/sciebo/DG_moments_deal/Tests/Test_ForceType.h
-Test_EquationGenerator.h
-/Users/neerajsarna/sciebo/DG_moments_deal/Tests/Test_EquationGenerator.h
-Test_MatrixOpt.h
-/Users/neerajsarna/sciebo/DG_moments_deal/Tests/Test_MatrixOpt.h
-Test_BoundaryHandler_Char.h
-/Users/neerajsarna/sciebo/DG_moments_deal/Tests/Test_BoundaryHandler_Char.h
-Test_TensorInfo.h
-/Users/neerajsarna/sciebo/DG_moments_deal/Tests/Test_TensorInfo.h
-Test_BoundaryHandler_Odd.h
-/Users/neerajsarna/sciebo/DG_moments_deal/Tests/Test_BoundaryHandler_Odd.h
-Test_ExactSolution.h
-/Users/neerajsarna/sciebo/DG_moments_deal/Tests/Test_ExactSolution.h
 Test_Solver.h
 /Users/neerajsarna/sciebo/DG_moments_deal/Tests/Test_Solver.h
 

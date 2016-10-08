@@ -74,9 +74,9 @@ namespace Test_EquationGenerator
 	{
 		P.resize(nEqn,nEqn);
 		
-		P << 0.,0.,0.,0.,0.,0.,0.,10.,0.,0.,0.,0.,0.,0.,10.,0.,0.,0.,0.,0.,0.,10.,0.,
-   -1.1102230246251565e-15,0.,0.,0.,0.,10.000000000000002,0.,0.,0.,0.,
-   -1.1102230246251565e-15,0.,10.;
+		P << 0.,0.,0.,0.,0.,0.,0.,1.0/tau,0.,0.,0.,0.,0.,0.,1./tau,0.,0.,0.,0.,0.,0.,1./tau,0.,
+   			-1.1102230246251565e-15,0.,0.,0.,0.,1.000000000000002/tau,0.,0.,0.,0.,
+   			-1.1102230246251565e-15,0.,1./tau;
 	}
 
 	// develops the ID of odd variables
@@ -108,7 +108,8 @@ namespace Test_EquationGenerator
 		Constants::Base_Constants constants(input_file);
 		SystemA::SystemA<dim> systemA(constants.constants,folder_name);
 
-		ASSERT_NEAR(constants.constants.tau,0.1,1e-5);
+		Assert(constants.constants.tau<10.0,ExcNotImplemented());
+
 		// no we will manually enter the matrices so as to compare with the read values
 		// we will now input all the matrices manually so as to compare with the results
 		Full_matrix A1;

@@ -58,21 +58,22 @@
                     double x_cord = cell->face(face)->center()(0);
                     double y_cord = cell->face(face)->center()(1);
 
+                    // the periodic faces get the id 100 and 101
                     // right edge
                     if (x_cord == constants.xr)
-                      cell->face(face)->set_boundary_id(2);
+                      cell->face(face)->set_boundary_id(100);
 
                     // left edge
                     if (x_cord == constants.xl)
+                      cell->face(face)->set_boundary_id(101);
+
+                    // This is the first wall
+                    if (y_cord == constants.yb)
                       cell->face(face)->set_boundary_id(0);
 
-                    // bottom edge
-                    if (y_cord == constants.yb)
-                      cell->face(face)->set_boundary_id(1);
-
-                    // top edge
+                    // top edge, This is the second wall
                     if (y_cord == constants.yt)
-                      cell->face(face)->set_boundary_id(3);
+                      cell->face(face)->set_boundary_id(1);
                    }
         }
   }

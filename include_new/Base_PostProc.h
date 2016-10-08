@@ -63,6 +63,10 @@ namespace PostProc
 			// print convergence table to a file
 			void print_convergence_table_to_file(ConvergenceTable &convergence_table);
 
+
+			void print_convergence_table_to_file(const double L2_error,const double Linfty_error,
+												const double hMax,const unsigned int active_cells);
+
 			// print the solution and the error to a file
 			// With the help of the two booleans we decide whether we want to print the 
 			// solution or we want to print the error.
@@ -80,6 +84,16 @@ namespace PostProc
 							   const unsigned int present_cycle,
 							   const unsigned int refine_cycle,
 							   ConvergenceTable &convergence_table);
+
+			// same as above but prints the error to the file manually
+			void print_options(const Triangulation<dim> &triangulation,
+							   const Vector<double> &solution,
+							   const unsigned int present_cycle,
+							   const unsigned int refine_cycle,
+							   const double L2_error,
+							   const double Linfty_error,
+							   const unsigned int active_cells,
+							   const double hMax);
 
 			// write the values of computational constants to a file
 			void create_stamp();
@@ -457,6 +471,25 @@ namespace PostProc
 
         }
 
+	// print convergence table manually
+	template<int dim> 
+	void 
+	Base_PostProc<dim>::print_convergence_table_to_file(const double L2_error,const double Linfty_error,
+														const double hMax,const unsigned int active_cells)
+        {
+           unsigned int component = constants.variable_map.find(constants.error_variable)->second;
+           
+           FILE *fp;
+           fp = fopen(output_file_names.file_for_convergence_tables.c_str(),"a+");
+
+           fprintf(fp, "L2_error Linf_error hMax active_cells (u%u)\n",component);
+
+           fprintf(fp, "%f %f %f %u\n",L2_error,Linfty_error,hMax,active_cells);
+
+           fclose(fp);
+
+        }
+
      // compute the solution at all the vertices and print it to a file
     template<int dim>
    	void 
@@ -622,6 +655,55 @@ namespace PostProc
 
    		if (constants.print_convergence_table)
  			print_convergence_table_to_file(convergence_table);
+
+   	}
+
+   	template<int dim>
+   	void 
+   	Base_PostProc<dim>::
+   	print_options(const Triangulation<dim> &triangulation,
+   				  const Vector<double> &solution,
+   				  const unsigned int present_cycle,
+   				  const unsigned int total_cycles,
+   				  const double L2_error,
+   				  const double Linfty_error,
+   				  const unsigned int active_cells,
+   				  const double hMax)
+   	{
+
+   		// if we wish to print for all the refinement cycles
+   		if (constants.print_all)
+   		{
+   			if (constants.print_solution)
+   				print_solution_to_file(triangulation,solution);
+
+   			if(constants.print_error)
+   				print_error_to_file(triangulation,solution);
+
+   			if(constants.print_exactsolution)
+   				print_exactsolution_to_file(triangulation);
+
+   		}
+
+   		// if we wish to print only in the end of the computation
+   		else
+   		{
+   			// only print in the final cycle
+   			if (present_cycle == total_cycles - 1)
+   			{
+   				if(constants.print_solution)
+   					print_solution_to_file(triangulation,solution);
+
+   				if(constants.print_error)
+   					print_error_to_file(triangulation,solution);
+
+   				if(constants.print_exactsolution)
+   					print_exactsolution_to_file(triangulation);
+   			}
+   		}
+
+   		if (constants.print_convergence_table)
+ 			print_convergence_table_to_file(L2_error,Linfty_error,hMax,active_cells);
 
    	}
 

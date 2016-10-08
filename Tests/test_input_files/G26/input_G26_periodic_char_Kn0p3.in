@@ -18,11 +18,9 @@ end
 
 subsection Physical Constants
  # constants corresponding to exact solution for system A
-	set	tau = 0.1
+	set	tau = 0.3
 	set	zeta = 1.0				
 	set	chi = 1.0
-	set	theta0 = 2.0
-	set  theta1 = 1.0
 
  #CAUTION CAUTION CAUTION: uW = 1 * tau
 	set	uW = 0.1
@@ -31,30 +29,51 @@ subsection Physical Constants
 	set	A2 = 0.1
 	set kappa  = 0.0
 	set epsilon = 1e-5
+ 
  # the mapping for system A is different. So to compare the values for theta, we need to use rho
 	set error_variable = rho
- # there is no rho in system A, so rho corrresponds to theta
-	set force_variable = rho
-	set alpha = 1.0
+
+ # there is no rho in system A, so this rho corresponds to theta
+    set force_variable = rho
+    
+	set alpha = 0.816496580927726
+
+ # temperatures of different walls
+	set	theta0 = 1.0
+	set theta1 = 2.0
+	set theta2 = 3.0
+	set theta3 = 4.0
+
+ # normal velocity of different walls
+	set vn0 = 1.0
+	set vn1 = 2.0
+	set vn2 = 3.0
+	set vn3 = 4.0
+
+ # tangential velocity of different walls
+	set vt0 = 1.0
+	set vt1 = 2.0
+	set vt2 = 3.0
+	set vt3 = 4.0
 end
 
 subsection System Properties
-	set system_id = 6
-	set equations in the system = 6
-	set nBC = 2
-	
-	# 0 for force of systemA,1 for force of systemB
-	set force type = 0
+	set system_id = 17
+	set equations in the system = 17
+	set nBC = 6
+
+	# 0 for force of systemA,1 for force of systemB, 2 for poisson heat conduction
+	set force type = 2
 
 	# 0 for characteristic and 1 for odd
-	set BC type = 1
+	set BC type = 0
 end
 
 subsection Mesh Info
 	set filename = mesh
 
 	# 0 for ring and 1 for periodic square
-	set mesh type = 0
+	set mesh type = 1
 
 	# 0 for reading gmsh and 1 for internal generation
 	set mesh options = 1
@@ -64,7 +83,7 @@ subsection Mesh Info
 	set bottom boundary = -1.0
 	set top boundary = 1.0
 	set part_x = 2
-	set part_y = 2
+	set part_y = 10
 end
 
 subsection Printing Options
@@ -76,5 +95,5 @@ subsection Printing Options
 end
 
 subsection Output Directory Name
-	set Main Output Directory = output_systemA_Ring_Kn0p1_char
+	set Main Output Directory = output_G26_trial
 end

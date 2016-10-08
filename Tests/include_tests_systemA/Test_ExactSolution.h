@@ -48,6 +48,14 @@ namespace Test_ExactSolution
 					value_manuel(2) = -0.0509269;
 				}
 
+				if (fabs(constants.constants.tau - 1.0) < 1e-5)
+				{
+					value_manuel(0) = 1.39944;
+					value_manuel(1) = -0.0555114;
+					value_manuel(2) = 0.115708;
+				}
+
+
 			}
 			
 		}

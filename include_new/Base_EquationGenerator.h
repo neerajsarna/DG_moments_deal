@@ -99,13 +99,10 @@ namespace EquationGenerator
 			Sparse_matrix build_Projector(const Tensor<1,dim> &normal_vector);
 			Sparse_matrix build_InvProjector(const Tensor<1,dim> &normal_vector);
 
-			// this system is stupid and special. So special treatment of the boundary
+			// base class for the boundary routines. The decision regarding which boundary system to load
+			// has to be done inside specific systems
 			BCrhs::Base_BCrhs<dim> *base_bcrhs;
-			BCrhs_systemA::BCrhs_ring_char_systemA<dim> bcrhs_ring_char_systemA;
-			BCrhs_systemA::BCrhs_ring_odd_systemA<dim> bcrhs_ring_odd_systemA;
-			
-			BCrhs_systemA::BCrhs_periodic_char_systemA<dim> bcrhs_periodic_char_systemA;
-			BCrhs_systemA::BCrhs_periodic_odd_systemA<dim> bcrhs_periodic_odd_systemA;
+
 
 			// The following function already knows the Aminus_1D game
 			Full_matrix build_Aminus(const Tensor<1,dim,double> normal_vector);
@@ -115,7 +112,8 @@ namespace EquationGenerator
 
 			void build_BCrhs(const Tensor<1,dim,double> p,
 									const Tensor<1,dim,double> normal_vector,
-									Vector<double> &bc_rhs);
+									Vector<double> &bc_rhs,
+									const unsigned int b_id);
 
 
 			//convert a matrix to a symmetric matrix
@@ -137,7 +135,7 @@ namespace EquationGenerator
 
 			void reinit_BoundaryMatrices();
 
-			void reinit_BCrhs();
+			virtual void reinit_BCrhs() = 0;
 
 			double force_factor;
 			void reinit_P();
@@ -151,11 +149,7 @@ namespace EquationGenerator
 	constants(constants),
 	force1(constants),
 	force2(constants),
-	force3(constants),
-	bcrhs_ring_char_systemA(constants),
-	bcrhs_ring_odd_systemA(constants),
-	bcrhs_periodic_char_systemA(constants),
-	bcrhs_periodic_odd_systemA(constants)
+	force3(constants)
 	{
 		basefile.resize(dim + 2);
 
@@ -390,6 +384,7 @@ namespace EquationGenerator
 			// develop the ID of the odd variables
 			this->build_Vector(system_data.odd_ID,basefile_system[dim + 1]);
 
+
 	}
 
 	// builds the Projector matrix to be used during computation
@@ -546,17 +541,19 @@ namespace EquationGenerator
 	Base_EquationGenerator<dim>
 	::reinit_BoundaryMatrices()
 	{
+		
 		// develop the matrices which are independent of the test case
 		switch(constants.bc_type)
 		{
 			// characteristic boundary conditions
 			case characteristic:
 			{
+
 				BoundaryHandler::Base_BoundaryHandler_Char<dim> boundary_handler_char(system_data.Ax.matrix,
 																				system_data.B.matrix,
 																				constants.nBC);
 
-				// we do not need to fix B for the present problem since we do not have a velocity in the system
+
 
 				B_tilde_inv.resize(constants.nBC,constants.nBC);
 				B_hat.resize(constants.nEqn,this->constants.nEqn);
@@ -583,69 +580,10 @@ namespace EquationGenerator
 				break;
 			}
 		}
+
 	}
 
-	template<int dim>
-	void
-	Base_EquationGenerator<dim>
-	::reinit_BCrhs()
-	{
-		if(constants.nEqn == 6)
-		{
-					//the following implementation is mesh dependent
-		switch(constants.mesh_type)
-		{
-			case ring:
-			{
-				switch (constants.bc_type)
-				{
-					case characteristic:
-					{
-						base_bcrhs = &this->bcrhs_ring_char_systemA;
-						break;
-					}
-					case odd:
-					{
-						base_bcrhs = &this->bcrhs_ring_odd_systemA;
-						break;
-					}
-				}
-				break;
-			}
 
-			case periodic_square:
-			{
-				switch(constants.bc_type)
-				{
-					case characteristic:
-					{
-						base_bcrhs = &bcrhs_periodic_char_systemA;
-						break;
-					}
-
-					case odd:
-					{
-						base_bcrhs = &bcrhs_periodic_odd_systemA;
-						break;
-					}
-
-					default:
-					{
-						Assert(1 == 0, ExcMessage("Should not have reached here"));
-						break;
-					}
-				}
-
-				break;
-			}
-			default:
-			{
-				Assert(1 ==0,ExcNotImplemented());
-				break;
-			}
-		}
-		}
-	}
 
 	template<int dim>
 	void 
@@ -663,10 +601,11 @@ namespace EquationGenerator
 	Base_EquationGenerator<dim>
 	::build_BCrhs(const Tensor<1,dim,double> p,
 				const Tensor<1,dim,double> normal_vector,
-				Vector<double> &bc_rhs)
+				Vector<double> &bc_rhs,
+				const unsigned int b_id)
 	{
 
-		base_bcrhs->BCrhs(p,normal_vector,bc_rhs);
+		base_bcrhs->BCrhs(p,normal_vector,bc_rhs,b_id);
 	}
 
 	template<>
@@ -700,5 +639,24 @@ namespace EquationGenerator
 
 		// we now develop the P matrix
 		reinit_P();	
+
+
+		// if the number of equations are not equal to 6 then we fix the normal relaxation velocity
+		if (constants.nEqn != 6)
+		{
+				const bool fix_B = true;
+				const bool check_B = true;
+
+				BoundaryHandler::Base_BoundaryHandler_Char<dim>::fix_B_vx(constants.epsilon,fix_B,system_data.B.matrix);
+
+				// check whether B has been fixed or not
+				if(check_B)
+					for (unsigned int i = 0 ; i < system_data.B.matrix.cols() ; i++)
+					 if(i != constants.variable_map.find("vx")->second)			
+						Assert(fabs(system_data.B.matrix.coeffRef(0,i)) < 1e-3,ExcMessage("relaxational normal velocity not accommodated in B"));
+		}
+
+		// we need to compres B again
+		system_data.B.matrix.makeCompressed();
 	}
 }

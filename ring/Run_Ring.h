@@ -11,25 +11,7 @@ Base_Solver<dim>::run_ring(const unsigned int refine_cycles)
 		distribute_dof_allocate_matrix();
 
 		// the following routine assembles
-		switch(constants.assembly_type)
-		{
-			case meshworker:
-			{
-				assemble_system_meshworker();
-				break;
-			}
-
-			// case manuel:
-			// {
-			// 	assemble_system();
-			// 	break;
-			// }
-			default :
-			{
-				Assert(1 == 0,ExcMessage("Should not have reached here"));
-				break;
-			}
-		}
+		assemble_system_meshworker();
 
 		std::cout << "Memory Before Compression " << global_matrix.memory_consumption() << std::endl;
 

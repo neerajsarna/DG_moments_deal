@@ -46,8 +46,8 @@ namespace FEM_Solver
         	const unsigned int ngp_face;
 
         	// running routines for a periodic box
-        	// void distribute_dof_allocate_matrix_periodic_box();
-        	// void run_periodic();
+        	void distribute_dof_allocate_matrix_periodic_box();
+        	void run_periodic();
 
         	// assembling routines for meshworker
     		// variables and functions for meshworker
@@ -70,39 +70,43 @@ namespace FEM_Solver
 
         	void assemble_system_meshworker();
 
-        	// routines for manuel assemblation
-        	//     // functions for manuel assemblation
-        	// void assemble_system();
+            // different implementations of the same routine
+        	void assemble_system_char();
+            void assemble_system_odd();
+            void assemble_system_periodic_char();
+            void assemble_system_periodic_odd();
 
-        	// void integrate_cell_manuel(FullMatrix<double> &cell_matrix, Vector<double> &cell_rhs,
-        	// 							FEValuesBase<dim> &fe_v,  vector<double> &J,
-        	// 							vector<Vector<double>> &source_term_value, const typename DoFHandler<dim>::active_cell_iterator &cell);
+        	void integrate_cell_manuel(FullMatrix<double> &cell_matrix, Vector<double> &cell_rhs,
+        								FEValuesBase<dim> &fe_v,  std::vector<double> &J,
+        								std::vector<Vector<double>> &source_term_value, const typename DoFHandler<dim>::active_cell_iterator &cell);
 
-        	// // integrate the boundary manuelly using odd boundary implementation
-        	// void integrate_boundary_manuel_odd(FullMatrix<double> &cell_matrix,
-        	// 								Vector<double> &cell_rhs,
-        	// 								FEValuesBase<dim> &fe_v,
-        	// 								vector<double> &J,
-        	// 								Vector<double> &component,
-        	// 								const typename DoFHandler<dim>::active_cell_iterator &cell);
+        	// integrate the boundary manuelly using odd boundary implementation
+        	void integrate_boundary_manuel_odd(FullMatrix<double> &cell_matrix,
+        									Vector<double> &cell_rhs,
+        									FEValuesBase<dim> &fe_v,
+        									std::vector<double> &J,
+        									Vector<double> &component,
+        									const typename DoFHandler<dim>::active_cell_iterator &cell,
+                                            const unsigned int b_id);
         	
-        	// // integrate the boundary using characteristic variables
-        	// void integrate_boundary_manuel_char(FullMatrix<double> &cell_matrix,
-        	// 								Vector<double> &cell_rhs,
-        	// 								FEValuesBase<dim> &fe_v,
-        	// 								vector<double> &J,
-        	// 								Vector<double> &component,
-        	// 								const typename DoFHandler<dim>::active_cell_iterator &cell);
+        	// integrate the boundary using characteristic variables
+        	void integrate_boundary_manuel_char(FullMatrix<double> &cell_matrix,
+        									Vector<double> &cell_rhs,
+        									FEValuesBase<dim> &fe_v,
+        									std::vector<double> &J,
+        									Vector<double> &component,
+        									const typename DoFHandler<dim>::active_cell_iterator &cell,
+                                            const unsigned int b_id);
 
-        	// void integrate_face_manuel(FullMatrix<double> &u1_v1,
-        	// 							FullMatrix<double> &u1_v2,
-        	// 							FullMatrix<double> &u2_v1,
-        	// 							FullMatrix<double> &u2_v2,
-        	// 							FEValuesBase<dim> &fe_v,
-        	// 							FEValuesBase<dim> &fe_v_neighbor,
-        	// 							vector<double> &J,
-        	// 							Vector<double> &component,
-        	// 							const typename DoFHandler<dim>::active_cell_iterator &cell);
+        	void integrate_face_manuel(FullMatrix<double> &u1_v1,
+        								FullMatrix<double> &u1_v2,
+        								FullMatrix<double> &u2_v1,
+        								FullMatrix<double> &u2_v2,
+        								FEValuesBase<dim> &fe_v,
+        								FEValuesBase<dim> &fe_v_neighbor,
+        								std::vector<double> &J,
+        								Vector<double> &component,
+        								const typename DoFHandler<dim>::active_cell_iterator &cell);
 
             // Data for post proc
             ConvergenceTable convergence_table;
@@ -151,6 +155,8 @@ namespace FEM_Solver
     }
 
   	#include "AssembleSystem_Meshworker.h"
+    #include "AssembleSystem_Manuel.h"
   	#include "Run_Ring.h"
+    #include "Run_Periodic.h"
 
 }

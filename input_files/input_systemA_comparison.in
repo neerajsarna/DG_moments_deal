@@ -1,4 +1,3 @@
-i
 subsection Numerical Constants
 	set polynomial degree = 1
 	set mapping order = 2
@@ -19,12 +18,12 @@ end
 
 subsection Physical Constants
 # constants corresponding to exact solution for system A
-	set	tau = 0.1
+	set	tau = 1.0
 	set	zeta = 1.0				
 	set	chi = 1.0
 	set	theta0 = 2.0
-	set theta1 = 1.0
-	set	uW = 0.1
+	set     theta1 = 1.0
+	set	uW = 1.0
 	set	A0 = 0.0
 	set	A1 = 0.2
 	set	A2 = 0.1
@@ -44,7 +43,7 @@ subsection System Properties
 	set nBC = 2
 
 	# 0 for characteristic and 1 for odd
-	set BC type = 1
+	set BC type = 0
 
 	# 0 for symmetric and 1 for un symmetric
 	set symmetric or un symmetric = 1
@@ -71,5 +70,5 @@ subsection Mesh Info
 end
 
 subsection Output Directory Name
-	set Main Output Directory = output_comparision_Kn0p1_odd
+	set Main Output Directory = output_comparision_Kn0p1_char
 end

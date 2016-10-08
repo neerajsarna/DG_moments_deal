@@ -152,19 +152,7 @@ namespace Constants
 				"1.0",
 				Patterns::Double(0.0,20.0),
 				"Boundary condition handling");
-			
-				// could be negative if one is using different variables
-			prm.declare_entry("theta0",
-				"2.0",
-				Patterns::Double(-20.0,20.0),
-				"Temperature of inner wall");
-
-
-			prm.declare_entry("theta1",
-				"1.0",
-				Patterns::Double(-20.0,20.0),
-				"Temperature of outer wall");
-
+		
 
 			prm.declare_entry("uW",
 				"0.1",
@@ -211,7 +199,69 @@ namespace Constants
 			prm.declare_entry("alpha",
 				"0",
 				Patterns::Double(0,10.0),
-				"forcing term poisson heat conduction");										  		
+				"forcing term poisson heat conduction");		
+
+			prm.declare_entry("theta0",
+							  "0",
+							  Patterns::Double(0,100.0),
+							  "temperature");								  		
+
+			prm.declare_entry("vn0",
+							  "0",
+							  Patterns::Double(0,100.0),
+							  "normal velocity");
+
+			prm.declare_entry("vt0",
+							  "0",
+							  Patterns::Double(0,100.0),
+							  "tangential velocity");
+
+			prm.declare_entry("theta1",
+							  "0",
+							  Patterns::Double(0,100.0),
+							  "temperature of the second wall");								  		
+
+			prm.declare_entry("vn1",
+							  "0",
+							  Patterns::Double(0,100.0),
+							  "normal velocity");
+
+			prm.declare_entry("vt1",
+							  "0",
+							  Patterns::Double(0,100.0),
+							  "tangential velocity");
+
+
+			prm.declare_entry("theta2",
+							  "0",
+							  Patterns::Double(0,100.0),
+							  "temperature");								  		
+
+			prm.declare_entry("vn2",
+							  "0",
+							  Patterns::Double(0,100.0),
+							  "normal velocity");
+
+			prm.declare_entry("vt2",
+							  "0",
+							  Patterns::Double(0,100.0),
+							  "tangential velocity");
+
+			prm.declare_entry("theta3",
+							  "0",
+							  Patterns::Double(0,100.0),
+							  "temperature");								  		
+
+			prm.declare_entry("vn3",
+							  "0",
+							  Patterns::Double(0,100.0),
+							  "normal velocity");
+
+			prm.declare_entry("vt3",
+							  "0",
+							  Patterns::Double(0,100.0),
+							  "tangential velocity");
+
 		}
 		prm.leave_subsection();
 
@@ -375,10 +425,7 @@ namespace Constants
 			constants.tau = prm.get_double("tau");
 			constants.zeta = prm.get_double("zeta");
 			constants.chi = prm.get_double("chi");
-			
-
-			constants.theta0 =  prm.get_double("theta0");
-		 	constants.theta1  = prm.get_double("theta1");
+		
 			constants.uW = prm.get_double("uW");
 			constants.A0 = prm.get_double("A0");
 		    constants.A1 = prm.get_double("A1");
@@ -388,6 +435,22 @@ namespace Constants
 			constants.error_variable = prm.get("error_variable");
 			constants.force_variable = prm.get("force_variable");
 			constants.alpha = prm.get_double("alpha");
+
+			constants.theta0 =  prm.get_double("theta0");
+		 	constants.theta1  = prm.get_double("theta1");
+		 	constants.theta2  = prm.get_double("theta2");
+		 	constants.theta3  = prm.get_double("theta3");
+
+		 	constants.vn0 =  prm.get_double("vn0");
+		 	constants.vn1  = prm.get_double("vn1");
+		 	constants.vn2  = prm.get_double("vn2");
+		 	constants.vn3  = prm.get_double("vn3");
+
+
+		 	constants.vt0 =  prm.get_double("vt0");
+		 	constants.vt1  = prm.get_double("vt1");
+		 	constants.vt2  = prm.get_double("vt2");
+		 	constants.vt3  = prm.get_double("vt3");
 		}
 		prm.leave_subsection();
 

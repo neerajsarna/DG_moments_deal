@@ -12,8 +12,7 @@ namespace SystemA
 		public:
 			Base_SystemA(const constant_data &constants,
 						std::string &folder_name);
-			
-			virtual void build_P(Sparse_matrix &P);
+		
 
 			MatrixUI varIdx;
 
@@ -40,15 +39,6 @@ namespace SystemA
 		varIdx = build_varIdx();
 	}
 
-	template<int dim>
-	void 
-	Base_SystemA<dim>
-	::build_P(Sparse_matrix &P)
-	{
-		// the first one is the conservation law
-		for (unsigned int i = 1 ; i < P.rows() ; i ++)
-			P.coeffRef(i,i) = 1/this->constants.tau;
-	}
 
 	template<int dim>
 	MatrixUI
@@ -88,6 +78,17 @@ namespace SystemA
 			SystemA(const constant_data &constants,
 					std::string &folder_name);
 
+			virtual void reinit_BCrhs();
+
+
+
+			// boundary routines for system A
+			BCrhs_systemA::BCrhs_ring_char_systemA<dim> bcrhs_ring_char_systemA;
+			BCrhs_systemA::BCrhs_ring_odd_systemA<dim> bcrhs_ring_odd_systemA;
+			
+			BCrhs_systemA::BCrhs_periodic_char_systemA<dim> bcrhs_periodic_char_systemA;
+			BCrhs_systemA::BCrhs_periodic_odd_systemA<dim> bcrhs_periodic_odd_systemA;
+
 	};
 
 	template<int dim>
@@ -96,6 +97,10 @@ namespace SystemA
 			  std::string &folder_name)
 	:
 	Base_SystemA<dim>(constants,folder_name)
+	bcrhs_ring_char_systemA(constants),
+	bcrhs_ring_odd_systemA(constants),
+	bcrhs_periodic_char_systemA(constants),
+	bcrhs_periodic_odd_systemA(constants)
 	{
 
 		// we reinitialize all the data for base_tensorinfo for this particular system
@@ -107,7 +112,7 @@ namespace SystemA
 		// initialize the boundary matrices for this system
 		this->reinit_BoundaryMatrices();
 
-		this->reinit_BCrhs();
+		reinit_BCrhs();
 
 		// we will always send Ax independent of symmetric or unsymmetric system
 		this->reinit_Aminus1D();
@@ -120,6 +125,65 @@ namespace SystemA
 	}
 	
 
+	template<int dim>
+	void
+	SystemA<dim>
+	::reinit_BCrhs()
+	{
+					//the following implementation is mesh dependent
+		switch(this->constants.mesh_type)
+		{
+			case ring:
+			{
+				switch (this->constants.bc_type)
+				{
+					case characteristic:
+					{
+						this->base_bcrhs = &bcrhs_ring_char_systemA;
+						break;
+					}
+					case odd:
+					{
+						this->base_bcrhs = &this->bcrhs_ring_odd_systemA;
+						break;
+					}
+				}
+				break;
+			}
+
+			case periodic_square:
+			{
+				switch(constants.bc_type)
+				{
+					case characteristic:
+					{
+						this->base_bcrhs = &bcrhs_periodic_char_systemA;
+						break;
+					}
+
+					case odd:
+					{
+						this->base_bcrhs = &bcrhs_periodic_odd_systemA;
+						break;
+					}
+
+					default:
+					{
+						Assert(1 == 0, ExcMessage("Should not have reached here"));
+						break;
+					}
+				}
+
+				break;
+			}
+			default:
+			{
+				Assert(1 ==0,ExcNotImplemented());
+				break;
+			}
+		}
+		
+	}
 }
 
 

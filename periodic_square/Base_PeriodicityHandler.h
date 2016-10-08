@@ -51,8 +51,8 @@ namespace PeriodicityHandler
 	Base_PeriodicityHandler<dim>::develop_periodic_faces(DoFHandler<dim> &dof_handler)
 	{
 		// collect the periodic faces of the mesh
-		// a link between periodic boundary 2 and 0
-		GridTools::collect_periodic_faces(dof_handler, 2,0,0,periodicity_vector);
+		// The ID of the periodic faces is 100 and 101
+		GridTools::collect_periodic_faces(dof_handler, 100,101,0,periodicity_vector);
 	}
 
 	// in the following routine we add entries to a given sparsity pattern so as to accommodate periodicity

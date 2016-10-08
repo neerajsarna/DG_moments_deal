@@ -18,10 +18,12 @@ set(CMAKE_TARGET_DEFINITIONS_CXX
 # The include file search paths:
 set(CMAKE_CXX_TARGET_INCLUDE_PATH
   "../../include_new"
-  "../include_tests_systemA"
+  "../include_tests_G26"
   "../../periodic_square"
   "../../systems"
   "/usr/local/include/eigen"
+  "../../Projector_Data"
+  "../../Symmetrizer_Data"
   "../../ring"
   "/usr/local/include"
   "/Applications/deal.II.app/Contents/Resources/include"

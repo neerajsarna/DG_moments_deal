@@ -10,10 +10,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       158,          7]
-NotebookDataLength[   2127411,      35596]
-NotebookOptionsPosition[   2124818,      35506]
-NotebookOutlinePosition[   2125338,      35528]
-CellTagsIndexPosition[   2125249,      35523]
+NotebookDataLength[   2129914,      35672]
+NotebookOptionsPosition[   2127191,      35578]
+NotebookOutlinePosition[   2127711,      35600]
+CellTagsIndexPosition[   2127622,      35595]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
@@ -28,7 +28,7 @@ Cell[BoxData[
 
 Cell[BoxData["\<\"/Users/neerajsarna/sciebo/DG_moments_deal/Mathematica_files\
 \"\>"], "Output",
- CellChangeTimes->{3.684388205962813*^9}]
+ CellChangeTimes->{3.684388205962813*^9, 3.684912583322538*^9}]
 }, Open  ]],
 
 Cell[CellGroupData[{
@@ -35501,6 +35501,78 @@ specifies the region to include in the plot drawn. \"\>", "MSG"],
  CellChangeTimes->{3.684244144379475*^9},
  CellTags->"Info3684251344-8376011"]
 }, Open  ]]
+}, Closed]],
+
+Cell[CellGroupData[{
+
+Cell["G26 Heat Conduction", "Subsubsection",
+ CellChangeTimes->{{3.684912611301929*^9, 3.684912616006435*^9}}],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"dof", " ", "=", " ", "6800"}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+  "foldername", " ", "=", " ", "\"\<Tests/build/output_G26_trial\>\""}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"result", " ", "=", " ", 
+    RowBox[{"importdata", "[", 
+     RowBox[{
+     "dof", ",", "1", ",", "\"\<_global_\>\"", ",", "0", ",", "foldername"}], 
+     "]"}]}], ";"}], "\[IndentingNewLine]"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"exactsolution", " ", "=", "  ", 
+    RowBox[{"importdata", "[", 
+     RowBox[{
+     "dof", ",", "1", ",", "\"\<_global_\>\"", ",", "1", ",", "foldername"}], 
+     "]"}]}], ";"}], "\[IndentingNewLine]"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"error", " ", "=", "  ", 
+    RowBox[{"importdata", "[", 
+     RowBox[{
+     "15360", ",", "1", ",", "\"\<_global_\>\"", ",", "2", ",", 
+      "foldername"}], "]"}]}], ";"}], 
+  "\[IndentingNewLine]"}], "\[IndentingNewLine]", 
+ RowBox[{"ListPlot3D", "[", 
+  RowBox[{
+   RowBox[{"result", "\[LeftDoubleBracket]", 
+    RowBox[{"All", ",", 
+     RowBox[{"{", 
+      RowBox[{"1", ",", "2", ",", "3"}], "}"}]}], "\[RightDoubleBracket]"}], 
+   ",", 
+   RowBox[{"RegionFunction", "\[Rule]", 
+    RowBox[{"Function", "[", 
+     RowBox[{
+      RowBox[{"{", 
+       RowBox[{"x", ",", "y"}], "}"}], ",", 
+      RowBox[{
+       SuperscriptBox["0.5", "2"], "<", 
+       RowBox[{
+        RowBox[{"x", "^", "2"}], "+", 
+        RowBox[{"y", "^", "2"}]}], "<", "4"}]}], "]"}]}]}], 
+  "]"}], "\[IndentingNewLine]", 
+ RowBox[{"ListPlot3D", "[", 
+  RowBox[{
+   RowBox[{"exactsolution", "\[LeftDoubleBracket]", 
+    RowBox[{"All", ",", 
+     RowBox[{"{", 
+      RowBox[{"1", ",", "2", ",", "3"}], "}"}]}], "\[RightDoubleBracket]"}], 
+   ",", 
+   RowBox[{"RegionFunction", "\[Rule]", 
+    RowBox[{"Function", "[", 
+     RowBox[{
+      RowBox[{"{", 
+       RowBox[{"x", ",", "y"}], "}"}], ",", 
+      RowBox[{
+       SuperscriptBox["0.5", "2"], "<", 
+       RowBox[{
+        RowBox[{"x", "^", "2"}], "+", 
+        RowBox[{"y", "^", "2"}]}], "<", "4"}]}], "]"}]}]}], "]"}]}], "Input",
+ CellChangeTimes->{{3.6849126415077047`*^9, 3.684912705308125*^9}}]
 }, Open  ]]
 }, Open  ]]
 },
@@ -35516,86 +35588,90 @@ StyleDefinitions->"Default.nb"
 (*CellTagsOutline
 CellTagsIndex->{
  "Info3684251344-8376011"->{
-  Cell[2124347, 35490, 431, 11, 42, "Print",
+  Cell[2124369, 35490, 431, 11, 42, "Print",
    CellTags->"Info3684251344-8376011"]}
  }
 *)
 (*CellTagsIndex
 CellTagsIndex->{
- {"Info3684251344-8376011", 2125140, 35517}
+ {"Info3684251344-8376011", 2127513, 35589}
  }
 *)
 (*NotebookFileOutline
 Notebook[{
 Cell[CellGroupData[{
 Cell[580, 22, 248, 4, 28, "Input"],
-Cell[831, 28, 138, 2, 28, "Output"]
+Cell[831, 28, 160, 2, 28, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[1006, 35, 99, 1, 64, "Section"],
-Cell[1108, 38, 2923, 67, 301, "Input"]
+Cell[1028, 35, 99, 1, 64, "Section"],
+Cell[1130, 38, 2923, 67, 301, "Input"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[4068, 110, 95, 1, 64, "Section"],
+Cell[4090, 110, 95, 1, 64, "Section"],
 Cell[CellGroupData[{
-Cell[4188, 115, 93, 1, 44, "Subsection"],
+Cell[4210, 115, 93, 1, 44, "Subsection"],
 Cell[CellGroupData[{
-Cell[4306, 120, 1405, 35, 114, "Input"],
-Cell[5714, 157, 125929, 2110, 215, 97381, 1640, "CachedBoxData", "BoxData", \
+Cell[4328, 120, 1405, 35, 114, "Input"],
+Cell[5736, 157, 125929, 2110, 215, 97381, 1640, "CachedBoxData", "BoxData", \
 "Output"]
 }, Open  ]]
 }, Closed]],
 Cell[CellGroupData[{
-Cell[131692, 2273, 93, 1, 36, "Subsection"],
+Cell[131714, 2273, 93, 1, 36, "Subsection"],
 Cell[CellGroupData[{
-Cell[131810, 2278, 105, 1, 35, "Subsubsection"],
-Cell[131918, 2281, 4090, 99, 450, "Input"]
+Cell[131832, 2278, 105, 1, 35, "Subsubsection"],
+Cell[131940, 2281, 4090, 99, 450, "Input"]
 }, Closed]],
 Cell[CellGroupData[{
-Cell[136045, 2385, 109, 1, 29, "Subsubsection"],
+Cell[136067, 2385, 109, 1, 29, "Subsubsection"],
 Cell[CellGroupData[{
-Cell[136179, 2390, 8618, 163, 411, "Input"],
-Cell[144800, 2555, 624317, 10282, 214, 596094, 9819, "CachedBoxData", \
+Cell[136201, 2390, 8618, 163, 411, "Input"],
+Cell[144822, 2555, 624317, 10282, 214, 596094, 9819, "CachedBoxData", \
 "BoxData", "Output"],
-Cell[769120, 12839, 595380, 9805, 212, 569731, 9384, "CachedBoxData", \
+Cell[769142, 12839, 595380, 9805, 212, 569731, 9384, "CachedBoxData", \
 "BoxData", "Output"],
-Cell[1364503, 22646, 208986, 3468, 219, "Output"]
+Cell[1364525, 22646, 208986, 3468, 219, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[1573526, 26119, 201, 5, 28, "Input"],
-Cell[1573730, 26126, 139, 1, 28, "Output"]
+Cell[1573548, 26119, 201, 5, 28, "Input"],
+Cell[1573752, 26126, 139, 1, 28, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[1573906, 26132, 159, 4, 49, "Input"],
-Cell[1574068, 26138, 114, 1, 28, "Output"]
+Cell[1573928, 26132, 159, 4, 49, "Input"],
+Cell[1574090, 26138, 114, 1, 28, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[1574219, 26144, 100, 1, 28, "Input"],
-Cell[1574322, 26147, 10132, 246, 227, "Output"]
+Cell[1574241, 26144, 100, 1, 28, "Input"],
+Cell[1574344, 26147, 10132, 246, 227, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[1584491, 26398, 403, 12, 56, "Input"],
-Cell[1584897, 26412, 4048, 76, 274, "Output"]
+Cell[1584513, 26398, 403, 12, 56, "Input"],
+Cell[1584919, 26412, 4048, 76, 274, "Output"]
 }, Open  ]]
 }, Open  ]]
 }, Closed]]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[1589018, 26496, 104, 1, 64, "Section"],
+Cell[1589040, 26496, 104, 1, 64, "Section"],
 Cell[CellGroupData[{
-Cell[1589147, 26501, 96, 1, 35, "Subsubsection"],
+Cell[1589169, 26501, 96, 1, 35, "Subsubsection"],
 Cell[CellGroupData[{
-Cell[1589268, 26506, 2392, 63, 197, "Input"],
-Cell[1591663, 26571, 8719, 221, 125, "Output"],
-Cell[1600385, 26794, 8935, 225, 159, "Output"],
-Cell[1609323, 27021, 270620, 4445, 189, "Output"],
-Cell[1879946, 31468, 244236, 4013, 189, "Output"]
+Cell[1589290, 26506, 2392, 63, 197, "Input"],
+Cell[1591685, 26571, 8719, 221, 125, "Output"],
+Cell[1600407, 26794, 8935, 225, 159, "Output"],
+Cell[1609345, 27021, 270620, 4445, 189, "Output"],
+Cell[1879968, 31468, 244236, 4013, 189, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[2124219, 35486, 125, 2, 28, "Input"],
-Cell[2124347, 35490, 431, 11, 42, "Print",
+Cell[2124241, 35486, 125, 2, 28, "Input"],
+Cell[2124369, 35490, 431, 11, 42, "Print",
  CellTags->"Info3684251344-8376011"]
 }, Open  ]]
+}, Closed]],
+Cell[CellGroupData[{
+Cell[2124849, 35507, 110, 1, 29, "Subsubsection"],
+Cell[2124962, 35510, 2201, 64, 214, "Input"]
 }, Open  ]]
 }, Open  ]]
 }

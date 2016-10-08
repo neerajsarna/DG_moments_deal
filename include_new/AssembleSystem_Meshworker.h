@@ -195,9 +195,10 @@ template<int dim>
 void 
 Base_Solver<dim>
 ::integrate_boundary_term_odd(DoFInfo &dinfo,
-                          CellInfo &info)
+                              CellInfo &info)
 {
  const FEValuesBase<dim> &fe_v = info.fe_values();
+ typename Triangulation<dim>::face_iterator face_itr= dinfo.face;
  FullMatrix<double> &cell_matrix = dinfo.matrix(0).matrix;
  Vector<double> &cell_rhs = dinfo.vector(0).block(0);
  const std::vector<double> &Jacobian_face = fe_v.get_JxW_values ();
@@ -222,7 +223,7 @@ for (unsigned int q = 0 ; q < fe_v.n_quadrature_points ; q++)
 
 
   system_info->build_BCrhs(fe_v.quadrature_point(q),fe_v.normal_vector(q),
-                          boundary_rhs_value);
+                          boundary_rhs_value,face_itr->boundary_id());
 
         // build the matrices needed
   Full_matrix Am = system_info->build_Aminus(fe_v.normal_vector(q));
@@ -261,6 +262,7 @@ Base_Solver<dim>
                           CellInfo &info)
 {
  const FEValuesBase<dim> &fe_v = info.fe_values();
+ typename Triangulation<dim>::face_iterator face_itr = dinfo.face;
  FullMatrix<double> &cell_matrix = dinfo.matrix(0).matrix;
  Vector<double> &cell_rhs = dinfo.vector(0).block(0);
  const std::vector<double> &Jacobian_face = fe_v.get_JxW_values ();
@@ -283,7 +285,7 @@ for (unsigned int q = 0 ; q < fe_v.n_quadrature_points ; q++)
 
   boundary_rhs_value = 0;                 
 
-  system_info->build_BCrhs(fe_v.quadrature_point(q),fe_v.normal_vector(q),boundary_rhs_value);
+  system_info->build_BCrhs(fe_v.quadrature_point(q),fe_v.normal_vector(q),boundary_rhs_value,face_itr.boundary_id());
 
         // build the matrices needed
   Eigen::MatrixXd Am = system_info->build_Aminus(fe_v.normal_vector(q));

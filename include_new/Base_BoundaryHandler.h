@@ -24,8 +24,11 @@ namespace BoundaryHandler
 
 			// fix the boundary conditions for vx by introducing the epsilon .
 			// If action == true only then B is fixed, else it's not fixed
-			void fix_B_vx(	const double epsilon,
-					 const bool action);
+			static void fix_B_vx(const double epsilon,
+					 			 const bool action,
+					 			 Sparse_matrix &B);
+
+			void check_B();
 
 			// build Inv(B.X_minus)
 			Full_matrix build_B_tilde_inv() const;
@@ -52,19 +55,19 @@ namespace BoundaryHandler
 	template<int dim>
 	void 
 	Base_BoundaryHandler_Char<dim>
-	::fix_B_vx(const double epsilon,const bool action)
+	::fix_B_vx(const double epsilon,const bool action,Sparse_matrix &B)
 	{
-		Assert(B->cols()!= 0 && B->rows()!= 0,ExcMessage("Matrix not initialized") );
+		Assert(B.cols()!= 0 && B.rows()!= 0,ExcMessage("Matrix not initialized") );
 		Assert(epsilon >= 0,ExcMessage("epsilon cant be negative"));
 
 		// we first compute the number of equations in the system
-		const unsigned int neqn_local = B->cols();
+		const unsigned int neqn_local = B.cols();
 
 		// every coefficient apart from the normal velocity itself should be changed 
 		if (action)
 			for (unsigned int i = 0 ; i < neqn_local ; i++)
 				if (i != 1)				// do nothing if the coefficient corresponds to the normal velocity						
-					B->coeffRef(0,i) *= epsilon;
+					B.coeffRef(0,i) *= epsilon;
 	}
 
 	template<int dim>

@@ -12,7 +12,8 @@ namespace BCrhs_systemA
 
 			virtual void BCrhs(const Tensor<1,dim,double> p,
 							  const Tensor<1,dim,double> normal_vector,
-							   Vector<double> &bc_rhs);
+							   Vector<double> &bc_rhs,
+							   const unsigned int b_id);
 	};
 
 	template<int dim>
@@ -25,7 +26,8 @@ namespace BCrhs_systemA
 	void
 	BCrhs_ring_char_systemA<dim>::BCrhs(const Tensor<1,dim,double> p,
 								  		const Tensor<1,dim,double> normal_vector,
-							   			Vector<double> &bc_rhs)
+							   			Vector<double> &bc_rhs,
+							   			const unsigned int b_id)
 	{
 			AssertDimension((int)bc_rhs.size(),this->constants.nBC);
 			Assert(dim > 1,ExcNotImplemented());
@@ -62,7 +64,8 @@ namespace BCrhs_systemA
 
 			virtual void BCrhs(const Tensor<1,dim,double> p,
 							  const Tensor<1,dim,double> normal_vector,
-							   Vector<double> &bc_rhs);
+							   Vector<double> &bc_rhs,
+							   const unsigned int b_id);
 	};
 
 	template<int dim>
@@ -75,7 +78,8 @@ namespace BCrhs_systemA
 	void
 	BCrhs_ring_odd_systemA<dim>::BCrhs(const Tensor<1,dim,double> p,
 								  		const Tensor<1,dim,double> normal_vector,
-							   			Vector<double> &bc_rhs)
+							   			Vector<double> &bc_rhs,
+							   			const unsigned int b_id)
 	{
 			AssertDimension((int)bc_rhs.size(),this->constants.nEqn);
 			Assert(dim > 1,ExcNotImplemented());
@@ -106,7 +110,8 @@ namespace BCrhs_systemA
 
 			virtual void BCrhs(const Tensor<1,dim,double> p,
 								  const Tensor<1,dim,double> normal_vector,
-								   Vector<double> &bc_rhs);		
+								   Vector<double> &bc_rhs,
+								   const unsigned int b_id);		
 	};
 
 	template<int dim>
@@ -119,7 +124,8 @@ namespace BCrhs_systemA
 	void 
 	BCrhs_periodic_char_systemA<dim>::BCrhs(const Tensor<1,dim,double> p,
 								  			const Tensor<1,dim,double> normal_vector,
-								   			Vector<double> &bc_rhs)
+								   			Vector<double> &bc_rhs,
+								   			const unsigned int b_id)
 	{
 			AssertDimension((int)bc_rhs.size(),this->constants.nBC);
 			Assert(dim > 1,ExcNotImplemented());
@@ -151,7 +157,8 @@ namespace BCrhs_systemA
 
 			virtual void BCrhs(const Tensor<1,dim,double> p,
 								  const Tensor<1,dim,double> normal_vector,
-								   Vector<double> &bc_rhs);		
+								   Vector<double> &bc_rhs,
+								   const unsigned int b_id);		
 	};
 
 	template<int dim>
@@ -164,7 +171,8 @@ namespace BCrhs_systemA
 	void 
 	BCrhs_periodic_odd_systemA<dim>::BCrhs(const Tensor<1,dim,double> p,
 								  			const Tensor<1,dim,double> normal_vector,
-								   			Vector<double> &bc_rhs)
+								   			Vector<double> &bc_rhs,
+								   			const unsigned int b_id)
 	{
 			AssertDimension((int)bc_rhs.size(),this->constants.nEqn);
 			Assert(dim > 1,ExcNotImplemented());
