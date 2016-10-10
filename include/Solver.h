@@ -62,7 +62,7 @@ namespace SolverDG
 
         SphericalManifold<dim> boundary;
         Triangulation<dim> triangulation;
-         GridIn<dim> gridin;
+        GridIn<dim> gridin;
         FESystem<dim> finite_element;
         DoFHandler<dim> dof_handler;
 
@@ -334,7 +334,6 @@ namespace SolverDG
       else
         h_adapt();
 
-
       switch(mesh_info.mesh_type)
       {
         case ring:
@@ -360,7 +359,6 @@ namespace SolverDG
           }
       }
 
-
       timer.enter_subsection("distributing dof");
       distribute_dof_allocate_matrix();
       timer.leave_subsection();
@@ -373,7 +371,7 @@ namespace SolverDG
         {
           cout << "assembling the matrix using meshworker...." << endl;
           // meshworker cannot presently handle periodic boundary conditions
-          Assert(mesh_info.mesh_type == periodic_square, ExcNotImplemented());
+          Assert(mesh_info.mesh_type != periodic_square, ExcNotImplemented());
           timer.enter_subsection("assemblation");
           assemble_system_meshworker();
           timer.leave_subsection();
@@ -388,7 +386,7 @@ namespace SolverDG
           break;
         }
       }
-
+      
       cout << "solving the system...." << endl;
       timer.enter_subsection("solving the system");
       solve(Pardiso);
@@ -405,11 +403,11 @@ namespace SolverDG
         prescribe_filenames(output_file_names,finite_element.degree);
         string file_for_grid;
         file_for_grid = this->sub_directory_names[0] + "/grid_"+"_DOF_" + to_string(dof_handler.n_dofs());
-        mesh_generation<dim>::print_grid(triangulation,file_for_grid);
-        //    print_convergence_table(output_file_names.file_for_convergence_tables);  
-            output_solution_details(triangulation,output_file_names.file_for_num_solution,
-                                    output_file_names.file_for_exact_solution,
-                                    output_file_names.file_for_error);
+        // mesh_generation<dim>::print_grid(triangulation,file_for_grid);
+        //print_convergence_table(output_file_names.file_for_convergence_tables);  
+         //output_solution_details(triangulation,output_file_names.file_for_num_solution,
+                                 // output_file_names.file_for_exact_solution,
+                                 // output_file_names.file_for_error);
 
 
       }

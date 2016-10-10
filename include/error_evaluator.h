@@ -74,6 +74,7 @@ Solver_DG<num_flux,dim>::error_evaluation(const Vector<double> &solution)
         cout << error_details << endl;
         cout << "**************************************************" << endl ;
 
+        printf("L2 %e  \n",L2_error);
         convergence_table.add_value(column_name_L2,L2_error);
         convergence_table.add_value(column_name_Linfty,Linfty_error);
         convergence_table.add_value("#degree of freedom",dof_handler.n_dofs());

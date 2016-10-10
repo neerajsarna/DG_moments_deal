@@ -193,7 +193,7 @@ Solver_DG<num_flux,dim>
     MKL_INT iparm[64];
     MKL_INT maxfct, mnum, phase, error, msglvl;
     
-    MKL_INT i, j;
+    MKL_INT i; 
     double ddum;          
     MKL_INT idum;         
     string uplo;

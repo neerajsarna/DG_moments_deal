@@ -91,17 +91,15 @@ namespace EquationGenerator
 	  		Full_matrix &B_hat);	
 
 
-	  	// number to be changed if need for more equations
-	  	vector<projector_data> tensor_project;
-
 	  	/*the following function develops a projector for a corresponding tensorial degree*/
-	  	void build_tensorial_projector(const double nx,const double ny);	
+	  	void build_tensorial_projector(const double nx,const double ny,
+	  								   std::vector<projector_data> &tensor_project);	
 
 	  	/*the following function places the matrix P at diagonal location idx,idx of matrix Sp*/
 	  	void SpBlock(const unsigned int idx,const Full_matrix P,Sparse_matrix &Sp);						
 
 	  	/*allocates memory for the tensor_projector*/
-	  	void init_tensor_data();
+	  	void init_tensor_data(std::vector<projector_data> &tensor_project);
 	
 	};
 
@@ -203,9 +201,6 @@ namespace EquationGenerator
 		for (unsigned int i = 0 ; i < num_equations.no_of_total_systems ; i++)
 			generate_matrices(system_data[i],i);
 					
-		cout << "tensor data memory allocation" << endl;
-		init_tensor_data();
-		cout << "finished allocation" << endl;
 	}
 
 	#include "develop_systems.h"

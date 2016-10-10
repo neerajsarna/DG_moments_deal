@@ -23,10 +23,10 @@ Ordering::Ordering( VectorXd &Array )
   for( int i = 0; i<n; i++ ) sorted[i] = i;
   sort(sorted.begin(),sorted.end(),*this);
   index = Map<VectorXi>(sorted.data(),n);
-};
+}
 
 bool Ordering::operator() (int i,int j) 
 { 
   return( array[i]<array[j] );
-};
+}
 }

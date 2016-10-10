@@ -1,7 +1,7 @@
 // the following routine allocates memory for the projector
 template<int num_flux,int dim> 
 void Base_EquationGenerator<num_flux,dim>
-::init_tensor_data()
+::init_tensor_data(std::vector<projector_data> &tensor_project)
 {
 	
 	const unsigned int no_of_tensors = tensor_info.free_index_info.size();
@@ -21,7 +21,8 @@ void Base_EquationGenerator<num_flux,dim>
 // build projectors corresponding to different degrees
 template<int num_flux,int dim> 
 void Base_EquationGenerator<num_flux,dim>
-::build_tensorial_projector(const double nx,const double ny)
+::build_tensorial_projector(const double nx,const double ny,
+						    std::vector<projector_data> &tensor_project)
 {
 
 	double nxnx = nx * nx;
@@ -187,17 +188,23 @@ template<int num_flux,int dim>
 Sparse_matrix Base_EquationGenerator<num_flux,dim>
 ::build_Projector(const Tensor<1,dim,double> normal_vector,const unsigned int system_id) 
 {
+		const double nx = normal_vector[0];
+		const double ny = normal_vector[1];
+
+		// first we construct the tensorial projector. The problem in the following implementations is, it is 
+		// memory intensive but we need to do the following for a parallel implementation.
+		std::vector<projector_data> tensor_project;
+		init_tensor_data(tensor_project);
+		build_tensorial_projector(nx,ny,tensor_project);
+
+		// the global projector
 		Sparse_matrix Projector;
 		Projector.resize(system_data[system_id].nEqn,system_data[system_id].nEqn);
-
-		double nx = normal_vector[0];
-		double ny = normal_vector[1];
-
 
 		Assert(Projector.rows() == system_data[system_id].nEqn 
 				|| Projector.cols() == system_data[system_id].nEqn,ExcNotInitialized());
 
-		build_tensorial_projector(nx,ny);
+		
 		const unsigned int neqn_local = num_equations.total_nEqn[system_id];
 
 	switch(neqn_local)
@@ -319,9 +326,6 @@ build_InvProjector(const Tensor<1,dim,double> normal_vector,const unsigned int s
 
 	double nx = normal_vector[0];
 	double ny = normal_vector[1];
-	double nxnx = nx * nx;
-	double nyny = ny * ny;
-
 	Assert(Inv_Projector.rows() == system_data[system_id].nEqn 
 			|| Inv_Projector.cols() == system_data[system_id].nEqn,
 			ExcNotInitialized());
@@ -401,8 +405,7 @@ build_BCrhs(const Tensor<1,dim,double> p,
 {
 
 	double norm = p.norm();
-	double x_cord = p[0];
-	double y_cord = p[1];
+double y_cord = p[1];
 	const unsigned int neqn_local = num_equations.total_nEqn[system_id];
 	const unsigned int nbc_local = num_equations.nBC[system_id];
 

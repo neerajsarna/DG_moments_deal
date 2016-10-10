@@ -1,0 +1,149 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 10.0' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       158,          7]
+NotebookDataLength[      5314,        140]
+NotebookOptionsPosition[      5057,        126]
+NotebookOutlinePosition[      5415,        142]
+CellTagsIndexPosition[      5372,        139]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+   RowBox[{"ProjectorGeneral2D", "[", "deg_", "]"}], ":=", 
+   RowBox[{"Module", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{
+      "result", ",", "project1", ",", "I", ",", "size", ",", "normalizer"}], 
+      "}"}], ",", "\[IndentingNewLine]", 
+     RowBox[{"(*", 
+      RowBox[{
+      "Projector", " ", "for", " ", "the", " ", "first", " ", "order", " ", 
+       "tensor"}], "*)"}], "\[IndentingNewLine]", 
+     RowBox[{
+      RowBox[{"project1", " ", "=", " ", 
+       RowBox[{"{", 
+        RowBox[{
+         RowBox[{"{", 
+          RowBox[{"nx", ",", "ny"}], "}"}], ",", 
+         RowBox[{"{", 
+          RowBox[{
+           RowBox[{"-", "ny"}], ",", "nx"}], "}"}]}], "}"}]}], ";", 
+      "\[IndentingNewLine]", 
+      RowBox[{"result", " ", "=", " ", "project1"}], ";", 
+      "\[IndentingNewLine]", "\[IndentingNewLine]", 
+      RowBox[{"Do", "[", "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{
+         RowBox[{"size", " ", "=", " ", 
+          RowBox[{"Length", "[", "result", "]"}]}], ";", 
+         "\[IndentingNewLine]", 
+         RowBox[{"result", "=", 
+          RowBox[{"KroneckerProduct", "[", 
+           RowBox[{"project1", ",", "result"}], "]"}]}], ";", 
+         "\[IndentingNewLine]", "\[IndentingNewLine]", 
+         RowBox[{"(*", 
+          RowBox[{
+          "now", " ", "we", " ", "contract", " ", "the", " ", "result"}], 
+          "*)"}], "\[IndentingNewLine]", 
+         RowBox[{"I", " ", "=", " ", 
+          RowBox[{"ConstantArray", "[", 
+           RowBox[{"0", ",", 
+            RowBox[{"{", 
+             RowBox[{
+              RowBox[{"Length", "[", "result", "]"}], ",", 
+              RowBox[{"ii", "+", "1"}]}], "}"}]}], "]"}]}], ";", 
+         "\[IndentingNewLine]", 
+         RowBox[{
+          RowBox[{"I", "\[LeftDoubleBracket]", 
+           RowBox[{
+            RowBox[{"1", ";;", "size"}], ",", 
+            RowBox[{"1", ";;", "size"}]}], "\[RightDoubleBracket]"}], "=", 
+          RowBox[{"IdentityMatrix", "[", "size", "]"}]}], ";", 
+         "\[IndentingNewLine]", 
+         RowBox[{
+          RowBox[{"I", "\[LeftDoubleBracket]", 
+           RowBox[{
+            RowBox[{
+             RowBox[{"(", 
+              RowBox[{"size", "+", "1"}], ")"}], ";;", 
+             RowBox[{"-", "1"}]}], ",", 
+            RowBox[{
+             RowBox[{"-", "size"}], ";;", 
+             RowBox[{"-", "1"}]}]}], "\[RightDoubleBracket]"}], "=", 
+          RowBox[{"IdentityMatrix", "[", "size", "]"}]}], ";", 
+         "\[IndentingNewLine]", "\[IndentingNewLine]", 
+         RowBox[{"result", " ", "=", " ", 
+          RowBox[{
+           RowBox[{"Transpose", "[", "I", "]"}], ".", "result", ".", "I"}]}], 
+         ";"}], "\[IndentingNewLine]", " ", ",", 
+        RowBox[{"{", 
+         RowBox[{"ii", ",", "2", ",", "deg"}], "}"}]}], "]"}], ";", 
+      "\[IndentingNewLine]", "\[IndentingNewLine]", 
+      RowBox[{"(*", 
+       RowBox[{
+       "extract", " ", "the", " ", "first", " ", "coloumn", " ", "of", " ", 
+        "result"}], "*)"}], "\[IndentingNewLine]", 
+      RowBox[{"normalizer", "=", 
+       RowBox[{"Abs", "[", 
+        RowBox[{
+         RowBox[{"result", "\[LeftDoubleBracket]", 
+          RowBox[{"All", ",", "1"}], "\[RightDoubleBracket]"}], "/.", 
+         RowBox[{"{", 
+          RowBox[{
+           RowBox[{"nx", "\[Rule]", "1"}], ",", 
+           RowBox[{"ny", "\[Rule]", "1"}]}], "}"}]}], "]"}]}], ";", 
+      "\[IndentingNewLine]", 
+      RowBox[{"Simplify", "[", 
+       RowBox[{
+        RowBox[{"Inverse", "[", 
+         RowBox[{"DiagonalMatrix", "[", "normalizer", "]"}], "]"}], ".", 
+        "result"}], "]"}]}]}], "\[IndentingNewLine]", "]"}]}], 
+  "\[IndentingNewLine]"}]], "Input",
+ CellChangeTimes->{{3.684649286141799*^9, 3.684649294012508*^9}, {
+  3.68464933132845*^9, 3.684649354962517*^9}, {3.6846502901634407`*^9, 
+  3.68465033036017*^9}, {3.684650882974352*^9, 3.684650901230226*^9}, {
+  3.6846509712274227`*^9, 3.6846510145872*^9}, {3.684651180903808*^9, 
+  3.6846512681486073`*^9}, {3.684651300081246*^9, 3.68465136538161*^9}, {
+  3.6846514001447153`*^9, 3.684651617050103*^9}, {3.684651709738833*^9, 
+  3.684651711596931*^9}, {3.68465179164489*^9, 3.684651828864956*^9}, {
+  3.684652054948073*^9, 3.6846520972040453`*^9}, {3.684657634054214*^9, 
+  3.684657718000705*^9}, {3.684657810839102*^9, 3.6846578109353657`*^9}, {
+  3.684657852478011*^9, 3.684657861163356*^9}, {3.6846580113058434`*^9, 
+  3.684658047378682*^9}, {3.6846594329193287`*^9, 3.6846594993187733`*^9}}]
+},
+WindowSize->{808, 651},
+WindowMargins->{{36, Automatic}, {16, Automatic}},
+FrontEndVersion->"10.0 for Mac OS X x86 (32-bit, 64-bit Kernel) (September 9, \
+2014)",
+StyleDefinitions->"Default.nb"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[558, 20, 4495, 104, 386, "Input"]
+}
+]
+*)
+
+(* End of internal cache information *)

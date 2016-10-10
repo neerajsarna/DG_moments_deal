@@ -90,7 +90,7 @@ mycode_out_EXTERNAL_OBJECTS =
 
 mycode.out: CMakeFiles/mycode.out.dir/main.cc.o
 mycode.out: CMakeFiles/mycode.out.dir/build.make
-mycode.out: /Applications/deal.II.app/Contents/Resources/lib/libdeal_II.8.4.1.dylib
+mycode.out: /Applications/deal.II.app/Contents/Resources/lib/libdeal_II.g.8.4.1.dylib
 mycode.out: /usr/lib/libbz2.dylib
 mycode.out: /usr/lib/libz.dylib
 mycode.out: /Applications/deal.II.app/Contents/Resources/opt/petsc-3e25e16/lib/libparmetis.dylib
