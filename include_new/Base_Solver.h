@@ -44,7 +44,7 @@ namespace FEM_Solver
 
         	// running routines for a ring
         	void distribute_dof_allocate_matrix();
-        	void run_ring(const unsigned int refine_cycles);
+        	void run_ring();
 
         	const MappingQ<dim> mapping;
         	const unsigned int ngp;

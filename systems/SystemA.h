@@ -96,7 +96,7 @@ namespace SystemA
 	::SystemA(const constant_data &constants,
 			  std::string &folder_name)
 	:
-	Base_SystemA<dim>(constants,folder_name)
+	Base_SystemA<dim>(constants,folder_name),
 	bcrhs_ring_char_systemA(constants),
 	bcrhs_ring_odd_systemA(constants),
 	bcrhs_periodic_char_systemA(constants),
@@ -153,7 +153,7 @@ namespace SystemA
 
 			case periodic_square:
 			{
-				switch(constants.bc_type)
+				switch(this->constants.bc_type)
 				{
 					case characteristic:
 					{

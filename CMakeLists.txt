@@ -1,5 +1,5 @@
 #setting the (name of the target
-SET(TARGET "moment_DG")
+SET(TARGET "dg_moments")
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.8)
 
@@ -14,9 +14,6 @@ SET(G++_COVERAGE_COMPILE_FLAGS7 "-Wl,--no-as-needed")
 
 SET(DEAL_II_DIR "/Applications/deal.II.app/Contents/Resources/lib/cmake")
 SET(MKL_DIR "/opt/intel//compilers_and_libraries_2016.3.170/mac/mkl")
-#SET(DEAL_II_DIR "/home/ns179556/dealii/lib/cmake")
-#SET(MKL_DIR "/opt/intel/mkl/11.3.2.181/compilers_and_libraries_2016.2.181/linux/mkl")
-#SET(MKL_DIR2 "/opt/intel/mkl/11.3.2.181/compilers_and_libraries_2016.2.181/linux/compiler/")
 
 FIND_PACKAGE(deal.II 8.3 QUIET
   HINTS ${deal.II_DIR} ${DEAL_II_DIR} ../ ../../ $ENV{DEAL_II_DIR}
@@ -40,21 +37,27 @@ ADD_DEFINITIONS(${G++_COVERAGE_COMPILE_FLAGS5})
 ADD_DEFINITIONS(${G++_COVERAGE_COMPILE_FLAGS6})
 ADD_DEFINITIONS(${G++_COVERAGE_COMPILE_FLAGS7})
 #adding the executables
-ADD_EXECUTABLE(mycode.out main.cc)
+
+ADD_EXECUTABLE(dg_moments.out main.cc)
 
 
-INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/include)
+INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/include_new)
+INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/periodic_square)
+INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/systems)
 INCLUDE_DIRECTORIES(/usr/local/include/eigen)
-#INCLUDE_DIRECTORIES(/home/ns179556/eigen)
-INCLUDE_DIRECTORIES(${MKL_DIR}/include)
+INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/Projector_Data)
+INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/Symmetrizer_Data)
+INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/ring)
 
-LINK_DIRECTORIES(${MKL_DIR}/lib/)
-#LINK_DIRECTORIES(${MKL_DIR}/lib/intel64/)
-#LINK_DIRECTORIES(${MKL_DIR2}/lib/intel64)
-TARGET_LINK_LIBRARIES(mycode.out libmkl_intel_ilp64.dylib libmkl_core.dylib libmkl_intel_thread.dylib libpthread.dylib libdl.dylib)
-#TARGET_LINK_LIBRARIES(mycode.out libiomp5.so libpthread.so libmkl_intel_ilp64.so libmkl_core.so libmkl_intel_thread.so libdl.so)
+# Locate GTest
+FIND_PACKAGE(GTest REQUIRED)
+INCLUDE_DIRECTORIES(${GTEST_INCLUDE_DIRS})
 
-DEAL_II_SETUP_TARGET(mycode.out)
+TARGET_LINK_LIBRARIES(dg_moments.out ${GTEST_LIBRARIES} libmkl_intel_ilp64.dylib libmkl_core.dylib libmkl_intel_thread.dylib libpthread.dylib libdl.dylib pthread)
+
+#TARGET_LINK_LIBRARIES(dg_moments.out ${GTEST_LIBRARIES} pthread)
+
+DEAL_II_SETUP_TARGET(dg_moments.out)
 ADD_CUSTOM_TARGET(release
   COMMAND ${CMAKE_COMMAND} -DCMAKE_BUILD_TYPE=Release ${CMAKE_SOURCE_DIR}
   COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target all

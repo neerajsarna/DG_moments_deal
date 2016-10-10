@@ -4,7 +4,6 @@
 namespace EquationGenerator
 {
 	using namespace dealii;
-	#include "basic_routines.h"
 
 	template<int dim>
 	class Base_EquationGenerator

@@ -1,7 +1,8 @@
 template<int dim>
 void
-Base_Solver<dim>::run_ring(const unsigned int refine_cycles)
+Base_Solver<dim>::run_ring()
 {
+	const unsigned int refine_cycles = constants.refine_cycles;
 	error_per_itr.resize(refine_cycles);
 
 	for (unsigned int i = 0 ; i < refine_cycles ; i ++)
@@ -15,13 +16,6 @@ Base_Solver<dim>::run_ring(const unsigned int refine_cycles)
 
 		// the following routine assembles
 		assemble_system_meshworker();
-
-		std::cout << "Memory Before Compression " << global_matrix.memory_consumption() << std::endl;
-
-		if(!global_matrix.is_compressed())
-			global_matrix.compress();
-
-		std::cout << "Memory After Compression " << global_matrix.memory_consumption() << std::endl;
 
 		// we initialize the object which will solve our system
 		// We do int the following way so as to keep the solver independent of all the other implementations.

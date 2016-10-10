@@ -285,7 +285,7 @@ for (unsigned int q = 0 ; q < fe_v.n_quadrature_points ; q++)
 
   boundary_rhs_value = 0;                 
 
-  system_info->build_BCrhs(fe_v.quadrature_point(q),fe_v.normal_vector(q),boundary_rhs_value,face_itr.boundary_id());
+  system_info->build_BCrhs(fe_v.quadrature_point(q),fe_v.normal_vector(q),boundary_rhs_value,face_itr->boundary_id());
 
         // build the matrices needed
   Eigen::MatrixXd Am = system_info->build_Aminus(fe_v.normal_vector(q));
