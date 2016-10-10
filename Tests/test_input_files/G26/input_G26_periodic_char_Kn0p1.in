@@ -2,7 +2,7 @@
 subsection Numerical Constants
 	set polynomial degree = 1
 	set mapping order = 2
-	set total h refinement cycles = 1
+	set total h refinement cycles = 3
 
 	# global = 0
 	# adaptive = 1
@@ -34,27 +34,27 @@ subsection Physical Constants
 	set error_variable = theta
 
  # there is no rho in system A, so this rho corresponds to theta
-    set force_variable = rho
+    set force_variable = theta
     
 	set alpha = 0.816496580927726
 
  # temperatures of different walls
-	set	theta0 = 1.0
+	set theta0 = 1.0
 	set theta1 = 1.0
-	set theta2 = 3.0
-	set theta3 = 4.0
+	set theta2 = 0.0
+	set theta3 = 0.0
 
  # normal velocity of different walls
 	set vn0 = 0.0
 	set vn1 = 0.0
-	set vn2 = 3.0
-	set vn3 = 4.0
+	set vn2 = 0.0
+	set vn3 = 0.0
 
  # tangential velocity of different walls
 	set vt0 = 0.0
 	set vt1 = 0.0
-	set vt2 = 3.0
-	set vt3 = 4.0
+	set vt2 = 0.0
+	set vt3 = 0.0
 end
 
 subsection System Properties
@@ -88,12 +88,12 @@ end
 
 subsection Printing Options
 	set print_all = false
-	set print_solution = true
+	set print_solution = false
 	set print_error = false
-	set print_exactsolution = true
-	set print_convergence_table = false
+	set print_exactsolution = false
+	set print_convergence_table = true
 end
 
 subsection Output Directory Name
-	set Main Output Directory = output_G26_trial
+	set Main Output Directory = output_G26_char_Kn0p1
 end

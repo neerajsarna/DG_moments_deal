@@ -126,7 +126,7 @@ namespace ForceType
 		public:
 			ForceType3(const constant_data &constants);
 
-			const unsigned int var_theta = dim + 1;
+			unsigned int var_theta;
 
 		// The source term
 		virtual void source_term(const std::vector<Point<dim>> &p,
@@ -151,7 +151,10 @@ namespace ForceType
 		Assert(p.size()!=0,ExcNotInitialized());
 		Assert(value.size()!=0,ExcNotInitialized());
 		AssertDimension(p.size(),value.size());
-		
+		var_theta = this->constants.variable_map.find(this->constants.force_variable)->second;
+
+		// now we need to check whether we captured the correct variable or not for the poisson heat conduction problem
+		Assert(var_theta == dim + 1,ExcMessage("Forcing not being applied to the energy equation"));
 
 		for (unsigned int i = 0 ; i < value.size() ; i++)
 			{

@@ -43,6 +43,7 @@ namespace PostProc
       		// error evaluation based upon gauss quadrature
 			void error_evaluation_QGauss(const Vector<double> &solution,
 										const unsigned int active_cells,
+										double &error_value,
 										const double hMax,
 									   ConvergenceTable &convergence_table);
 
@@ -54,6 +55,7 @@ namespace PostProc
 			// error evaluation based upon midpoint rule
 			void error_evaluation_QMidpoint(const Vector<double> &solution,
 											const unsigned int active_cells,
+											double &error_value,
 											const double hMax,
 									   		ConvergenceTable &convergence_table);
 
@@ -103,6 +105,13 @@ namespace PostProc
 			void compute_error_print_manuel(const Vector<double> &solution,
 											const unsigned int active_cells,
 											const double hMax);
+
+			// compute error manually. Sometimes we need to compute the error of the 
+			// orginal system. The following routine is for that purpose
+			void compute_error_unsymmetric(const Triangulation<dim> &triangulation,
+										   const Vector<double> &solution,
+										   const Sparse_matrix &S_half_inv,
+										   double &error_value);
 
 	};
 
@@ -175,13 +184,17 @@ namespace PostProc
 		fp = fopen(filename.c_str(),"w+");
 		AssertThrow(fp != NULL , ExcMessage("Could not open file for stamping"));
 
-		std::string parameters = "A0 " + std::to_string(constants.A0) + "\n"
-								 "A1 " + std::to_string(constants.A1) + "\n"
-								 "A2 " + std::to_string(constants.A2) + "\n"
-								 "poly degree " + std::to_string(constants.p) + "\n"
-								 "mapping order" + std::to_string(constants.mapping_order) + "\n"
-								 "uW " + std::to_string(constants.uW) + "\n" ;
-								 "tau " + std::to_string(constants.tau);
+		std::string parameters = "A0 " + std::to_string(constants.A0) + "\n" +
+								 "A1 " + std::to_string(constants.A1) + "\n" +
+								 "A2 " + std::to_string(constants.A2) + "\n" +
+								 "poly degree " + std::to_string(constants.p) + "\n" +
+								 "mapping order" + std::to_string(constants.mapping_order) + "\n" +
+								 "uW " + std::to_string(constants.uW) + "\n" +
+								 "tau " + std::to_string(constants.tau)+ "\n" +
+								 "nEqn " + std::to_string(constants.nEqn) + "\n" +
+								 "nBC" + std::to_string(constants.nBC) + "\n" +
+								 "bc_type" + std::to_string(constants.bc_type)+ "\n" +
+								 "force_type " + std::to_string(constants.force_type);
 
 		fprintf(fp, "%s\n",parameters.c_str());
 		fclose(fp);
@@ -191,6 +204,7 @@ namespace PostProc
 	void
 	Base_PostProc<dim>::error_evaluation_QGauss(const Vector<double> &solution,
 											   const unsigned int active_cells,
+											   double &error_value,
 											   const double hMax,
 											   ConvergenceTable &convergence_table)
 	{
@@ -235,14 +249,9 @@ namespace PostProc
         column_name_L2 = "#L2 in u(Using QGauss)" + std::to_string(component);
         column_name_Linfty = "#Linfty in u(Using QGauss)" + std::to_string(component);
 
-        std::string error_details;
-        error_details = " L2_error: " + std::to_string(L2_error) +" Linfty_error: " + std::to_string(Linfty_error) + 
-        				" #DOF: " + std::to_string(dof_handler->n_dofs()) +
-                        " #Cells " + std::to_string(active_cells); 
-
-        std::cout << "<<<<<<<<<<<<<<<<<<<<<Error detail>>>>>>>>>>>>>>>>>>>>>"<< std::endl ;
-        std::cout << error_details << std::endl;
-        std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl ;
+        std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<Error Details>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"  << std::endl;
+       	printf("L2_error: %e, Linf_error: %e, #DOF: %u, #Cells %u\n",L2_error,Linfty_error,dof_handler->n_dofs(),active_cells);
+       	std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<Error Details>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
 
         convergence_table.add_value(column_name_L2,L2_error);
         convergence_table.add_value(column_name_Linfty,Linfty_error);
@@ -319,6 +328,7 @@ namespace PostProc
 	void
 	Base_PostProc<dim>::error_evaluation_QMidpoint(const Vector<double> &solution,
 											   		const unsigned int active_cells,
+											   		double &error_value,
 											   		const double hMax,
 											   		ConvergenceTable &convergence_table)
 	{
@@ -345,6 +355,8 @@ namespace PostProc
 
         const double L2_error = error_per_cell.l2_norm();
 
+        error_value = L2_error;
+
         // computation of L_inifinity error
         error_per_cell = 0;
         VectorTools::integrate_difference (*mapping,*dof_handler,solution,
@@ -363,13 +375,11 @@ namespace PostProc
         column_name_L2 = "#L2 in u(Using QMidpoint)" + std::to_string(component);
         column_name_Linfty = "#Linfty in u(Using QMidpoint)" + std::to_string(component);
 
-        std::string error_details;
-        error_details = " L2_error: " + std::to_string(L2_error) +" Linfty_error: " + std::to_string(Linfty_error) + " #DOF: " + std::to_string(dof_handler->n_dofs()) +
-                        " #Cells " + std::to_string(active_cells); 
+       	
+       	std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<Error Details>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"  <<  std::endl;
+       	printf("L2_error: %e, Linf_error: %e, #DOF: %u, #Cells %u\n",L2_error,Linfty_error,dof_handler->n_dofs(),active_cells);
+       	std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<Error Details>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" <<  std::endl;
 
-        std::cout << "<<<<<<<<<<<<<<<<<<<<<Error detail>>>>>>>>>>>>>>>>>>>>>"<< std::endl ;
-        std::cout << error_details << std::endl;
-        std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl ;
 
         convergence_table.add_value(column_name_L2,L2_error);
         convergence_table.add_value(column_name_Linfty,Linfty_error);
@@ -756,5 +766,44 @@ namespace PostProc
 
         fclose(fp);
 
+   	}
+
+   	template<int dim>
+   	void
+   	Base_PostProc<dim>::compute_error_unsymmetric(const Triangulation<dim> &triangulation,
+												   const Vector<double> &solution,
+												   const Sparse_matrix &S_half_inv,
+												   double &error)
+   	{
+   		typename Triangulation<dim>::active_cell_iterator cell = triangulation.begin_active(),
+   														  endc = triangulation.end();
+
+   		Assert(triangulation.n_active_cells() != 0, ExcMessage("No grid available"));
+   		Assert(solution.size() !=0 ,ExcMessage("solution not available"));
+
+   		Vector<double> exact_solution_value(constants.nEqn);
+   		Vector<double> solution_value(constants.nEqn);
+   		Vector<double> error_value(triangulation.n_active_cells());
+   		const unsigned int component = constants.variable_map.find(constants.error_variable)->second;
+
+   		MatrixOpt::Base_MatrixOpt matrix_opt;
+
+
+   		for (; cell != endc ; cell++)
+   		{
+ 				
+					VectorTools::point_value(*dof_handler, solution, cell->center(),solution_value);// compute the exact solution first
+					base_exactsolution->vector_value(cell->center(),exact_solution_value);  	
+
+					exact_solution_value = 	matrix_opt.Sparse_matrix_dot_Vector(S_half_inv,exact_solution_value);	
+					solution_value = 	matrix_opt.Sparse_matrix_dot_Vector(S_half_inv,solution_value);	
+
+					// compute the Linf error at the cell center
+					error_value(cell->index()) = fabs(exact_solution_value(component) - solution_value(component));
+   		}
+
+   		const double Linf_error = error_value.linfty_norm();
+   		error = Linf_error;
+   		std::cout << "Linf error from unsymmetric system: " << Linf_error << " #Cells: "<< triangulation.n_active_cells() << std::endl;
    	}
 }

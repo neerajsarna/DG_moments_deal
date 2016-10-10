@@ -18,6 +18,11 @@ namespace FEM_Solver
                         ExactSolution::Base_ExactSolution<dim> *exact_solution
                         );
 
+
+
+            DeclException2 (ExcCellCenter, double, double,
+                        << "Cell Center = " << arg1 << "Neighbor Center = " << arg2 << "Mesh not lexiographical ");
+
 			const constant_data constants;
             ExactSolution::Base_ExactSolution<dim> *base_exactsolution;
 			EquationGenerator::Base_EquationGenerator<dim> *system_info;
@@ -48,6 +53,9 @@ namespace FEM_Solver
         	// running routines for a periodic box
         	void distribute_dof_allocate_matrix_periodic_box();
         	void run_periodic();
+
+            // same as above but just compute the error from the unsymmetric system
+            void run_periodic_unsymmetric();
 
         	// assembling routines for meshworker
     		// variables and functions for meshworker
@@ -110,6 +118,7 @@ namespace FEM_Solver
 
             // Data for post proc
             ConvergenceTable convergence_table;
+            std::vector<double> error_per_itr;
 
 
 	};

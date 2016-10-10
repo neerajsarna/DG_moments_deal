@@ -471,6 +471,7 @@ Base_Solver<dim>::assemble_system_periodic_char()
                     const double xcord_face_center = face_itr->center()(0);
                     const double ycord_cell_center = cell->center()(1);
 
+                    // check whether the cell is at the periodic boundary or at the wall
 
                     if ( fabs(xcord_face_center - constants.xl) <= 1e-10
                         || fabs(xcord_face_center - constants.xr) <= 1e-10 ) 
@@ -480,8 +481,8 @@ Base_Solver<dim>::assemble_system_periodic_char()
 
                       Assert(!neighbor->has_children(),
                              ExcMessage("periodic boundary only to used with zero level meshes"));
-                      Assert(neighbor->center()(1) == ycord_cell_center,
-                            ExcMessage("mesh not lexiograhical"));
+                      Assert(fabs(neighbor->center()(1) - ycord_cell_center) < 1e-8,
+                            ExcCellCenter(ycord_cell_center,neighbor->center()(1)));
 
                       const unsigned int neighbor_face = this->get_periodic_neighbor_face(xcord_face_center
                                                                                     ,ycord_cell_center);
@@ -714,7 +715,7 @@ Base_Solver<dim>::assemble_system_periodic_odd()
                       Assert(!neighbor->has_children(),
                              ExcMessage("periodic boundary only to used with zero level meshes"));
                       Assert(neighbor->center()(1) == ycord_cell_center,
-                            ExcMessage("mesh not lexiograhical"));
+                            ExcCellCenter(ycord_cell_center,neighbor->center()(1)));
 
                       const unsigned int neighbor_face = this->get_periodic_neighbor_face(xcord_face_center
                                                                                     ,ycord_cell_center);

@@ -35,8 +35,8 @@ namespace ExactSolution
 
 		// variables for which we need the 
 		const unsigned int ID_theta = this->constants.variable_map.find("theta")->second;
-		const unsigned int ID_stress = this->constants.variable_map.find("sigmayy")->second;
 		const unsigned int ID_heat = this->constants.variable_map.find("qy")->second;
+		const unsigned int ID_stress = this->constants.variable_map.find("sigmayy")->second;
 		const double y = p(1);
 
 		value = 0;
@@ -52,6 +52,7 @@ namespace ExactSolution
    								0.0011289587658037511*cosh(6.573421981221795*y);
 
 			value[ID_heat] = -0.21081851067789195*pow(y,3);
+
 		}
 
 		if (fabs(this->constants.tau - 0.3) < 1e-5)

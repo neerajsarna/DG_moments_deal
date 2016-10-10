@@ -1,8 +1,9 @@
 	// generate a ring shaped mesh internally
 	template<int dim>
 	void
-	Base_MeshGenerator<dim>::mesh_internal_periodic_square()
+	Base_MeshGenerator<dim>::mesh_internal_periodic_square(const unsigned int part_x,const unsigned int part_y)
 	{
+            triangulation.clear();
             Point<dim> p1;
             Point<dim> p2;
             std::vector<unsigned int > repetitions(dim);
@@ -13,8 +14,8 @@
             p2(0) = constants.xr;
             p2(1) = constants.yt;
 
-            repetitions[0] = constants.part_x;
-            repetitions[1] = constants.part_y;
+            repetitions[0] = part_x;
+            repetitions[1] = part_y;
 
             //The diagonal of the rectangle is the time joining p1 and p2
             GridGenerator::subdivided_hyper_rectangle(triangulation,

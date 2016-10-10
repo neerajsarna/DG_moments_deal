@@ -2,9 +2,12 @@ template<int dim>
 void
 Base_Solver<dim>::run_ring(const unsigned int refine_cycles)
 {
+	error_per_itr.resize(refine_cycles);
+
 	for (unsigned int i = 0 ; i < refine_cycles ; i ++)
 	{
 	
+		AssertDimension((int)error_per_itr.size(),constants.refine_cycles);
 
 		//now we distribute the dofs and allocate the memory for the global matrix. We have 
 		// already created the mesh so we can directly distribute the degrees of freedom now.
@@ -30,6 +33,7 @@ Base_Solver<dim>::run_ring(const unsigned int refine_cycles)
 
 		// // now we compute the error due to computation
 		postproc.error_evaluation_QGauss(solution,this->triangulation.n_active_cells(),
+										 error_per_itr[i],
 										GridTools::maximal_cell_diameter(this->triangulation),convergence_table);
 
 		postproc.print_options(this->triangulation,solution,i,refine_cycles,convergence_table);		

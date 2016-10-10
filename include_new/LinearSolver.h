@@ -176,7 +176,7 @@ namespace LinearSolver
       	printf ("\nERROR during numerical factorization: %lld", error);
       	exit (2);
       }
-      printf ("\nFactorization completed ... ");
+      printf ("\nFactorization completed ... \n");
 
     // Solving the system
       phase = 33;

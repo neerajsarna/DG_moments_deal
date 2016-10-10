@@ -52,6 +52,7 @@ namespace PeriodicityHandler
 	{
 		// collect the periodic faces of the mesh
 		// The ID of the periodic faces is 100 and 101
+    periodicity_vector.clear();
 		GridTools::collect_periodic_faces(dof_handler, 100,101,0,periodicity_vector);
 	}
 
@@ -120,6 +121,16 @@ namespace PeriodicityHandler
       Assert(xl < xr,ExcMessage("provided min of boundary greater than provided max"));
       Assert(periodicity_vector.size() !=0,ExcNotInitialized());
 
+      set_xl_face.clear();
+      set_xr_face.clear();
+      xminus1_set.clear();
+      xplus1_set.clear();
+
+      AssertDimension(set_xr_face.size(),0);
+      AssertDimension(set_xl_face.size(),0);
+      AssertDimension(xminus1_set.size(),0);
+      AssertDimension(xplus1_set.size(),0);
+
       unsigned int cells_cord_plus1 = 0;
       unsigned int cells_cord_minus1 = 0;
 
@@ -130,11 +141,20 @@ namespace PeriodicityHandler
         const typename DoFHandler<dim>::cell_iterator cell_1 = periodicity_vector[i].cell[0];
         const typename DoFHandler<dim>::cell_iterator cell_2 = periodicity_vector[i].cell[1];
 
+        Assert(!cell_1->has_children(),ExcMessage("only to be used with lowest level"));
+        Assert(!cell_2->has_children(),ExcMessage("only to be used with lowest level"));
+
         std::pair<double,typename DoFHandler<dim>::cell_iterator> pair_plus;
         std::pair<double,typename DoFHandler<dim>::cell_iterator> pair_minus;
 
         std::pair<double,unsigned int> pair_plus_face;
         std::pair<double,unsigned int> pair_minus_face;
+
+        const double y_center_cord1 = cell_1->center()(1);
+        const double y_center_cord2 = cell_2->center()(1);
+
+          Assert(fabs(y_center_cord2 - y_center_cord1) < 1e-10,
+                 ExcMessage("periodic cells have different y coordinates"));
 
         for (unsigned int face = 0 ; 
           face < GeometryInfo<dim>::faces_per_cell ;
@@ -146,33 +166,28 @@ namespace PeriodicityHandler
           const double x_cord1 = face_itr_1->center()(0);
           const double x_cord2 = face_itr_2->center()(0);
 
-          const double y_center_cord1 = cell_1->center()(1);
-          const double y_center_cord2 = cell_2->center()(1);
-
-          Assert(y_center_cord2 == y_center_cord1,
-                 ExcMessage("periodic cells have different y coordinates"));
-
-
 
           // computation for the first cell
           if (face_itr_1->at_boundary())
           {
-            if (x_cord1 == xr)       //Right edge division on the basis of cell center
+            if (fabs(x_cord1-xr) <1e-5)       //Right edge division on the basis of cell center
             {
               cells_cord_plus1 ++;
               pair_plus = std::make_pair(y_center_cord1,cell_1);
               pair_plus_face = std::make_pair(y_center_cord1,face);
 
+              Assert(fabs(y_center_cord1-cell_1->center()(1)) < 1e-10,ExcMessage("No match with original values"));
               xplus1_set.insert(pair_plus);
               set_xr_face.insert(pair_plus_face);
             }
 
-            if (x_cord1 == xl)        // Left edge
+            if (fabs(x_cord1-xl) <1e-5)        // Left edge
             {
               cells_cord_minus1 ++;
               pair_minus = std::make_pair(y_center_cord1,cell_1);
               pair_minus_face = std::make_pair(y_center_cord1,face);
 
+              Assert(fabs(y_center_cord1-cell_1->center()(1)) < 1e-10,ExcMessage("No match with original values"));
               xminus1_set.insert(pair_minus);
               set_xl_face.insert(pair_minus_face);
             }
@@ -181,22 +196,24 @@ namespace PeriodicityHandler
           // computation for the second cell
           if (face_itr_2->at_boundary())
           {
-            if (x_cord2 == xr)       // division on the basis of cell center
+            if (fabs(x_cord2-xr) <1e-5)       // division on the basis of cell center
             {
               cells_cord_plus1 ++;
               pair_plus = std::make_pair(y_center_cord2,cell_2);
               pair_plus_face = std::make_pair(y_center_cord2,face);
 
+              Assert(fabs(y_center_cord2-cell_2->center()(1)) < 1e-10,ExcMessage("No match with original values"));
               xplus1_set.insert(pair_plus);
               set_xr_face.insert(pair_plus_face);
             }
 
-            if (x_cord2 == xl)        // 
+            if (fabs(x_cord2-xl) <1e-5)        // 
             {
               cells_cord_minus1 ++;
               pair_minus = std::make_pair(y_center_cord2,cell_2);
               pair_minus_face = std::make_pair(y_center_cord2,face);
 
+              Assert(fabs(y_center_cord2-cell_2->center()(1)) < 1e-10,ExcMessage("No match with original values"));
               xminus1_set.insert(pair_minus);
               set_xl_face.insert(pair_minus_face);
             }

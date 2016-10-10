@@ -451,24 +451,14 @@ G26_period_sqr<dim>
 	const double y_coord = p[1];
 
    	// thetaw = 1
-	if (this->tau == 5.0)
-	{
-	value[this->variable_map.find("theta")->second] = -sqrt(3.0/2.0) * (-(sqrt(0.6666666666666666)*(-471.5554874736555 - 9.14476170639053*pow(y_coord,2) + 
-       													0.008164965809277261*pow(y_coord,4) + 
-       													470.28603054235964*cosh((65855813*y_coord)/5.00924885e8) - 
-       													2.842170943040401e-14*sinh((65855813*y_coord)/5.00924885e8))));
-   	// sigma_yy ()
-   	/*value[this->variable_map.find("sigmayy")->second] = 
+		if (fabs(this->tau - 0.1) < 1e-5)
+		{
 
-	// heat flux in the norma direction
-	value[this->variable_map.find("qy")->second] = 
+			value[3] = -1.2852476333586613 - 0.18289523412781067*pow(y_coord,2) + 0.408248290463863*pow(y_coord,4) + 
+   							  0.0015643311536178803*cosh(6.573421981221795 * y_coord) - 
+   							  2.168404344971009e-19*sinh(6.573421981221795 * y_coord);
 
-	value[this->variable_map.find("myyy")->second] = 
-
-   	value[this->variable_map.find("Delta")->second] = 
-
-   	value[this->variable_map.find("Ryy")->second] =  */
-	}
+		}
 
 
 }

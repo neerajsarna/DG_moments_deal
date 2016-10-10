@@ -25,11 +25,12 @@ namespace MeshGenerator
 			void print_mesh_info() const;
 
 			// print the grid to an eps file
-			void print_grid() const;
+			// The index is just used to manipulate the name of the file
+			void print_grid(const unsigned int index) const;
 
 			// generate ring shaped triangulation internally
 			void mesh_internal_ring();
-			void mesh_internal_periodic_square();
+			void mesh_internal_periodic_square(const unsigned int part_x,const unsigned int part_y);
 			void set_periodic_bid()const;
 
 			// read a ring shaped triangulation generated from gmsh
@@ -90,7 +91,7 @@ namespace MeshGenerator
 					}
 					case periodic_square:
 					{
-						mesh_internal_periodic_square();
+						mesh_internal_periodic_square(constants.part_x,constants.part_y);
 						break;
 					}
 					default:
@@ -155,9 +156,10 @@ namespace MeshGenerator
 	// the following routine prints the mesh to an eps file
 	template<int dim>
 	void
-	Base_MeshGenerator<dim>::print_grid()const
+	Base_MeshGenerator<dim>::print_grid(const unsigned int index)const
 	{
-	  std::ofstream out (output_file_name.c_str());
+	  std::string file_for_grid = output_file_name + std::to_string(index);
+	  std::ofstream out (file_for_grid.c_str());
       GridOut grid_out;
       grid_out.write_eps (triangulation, out);
 	}
