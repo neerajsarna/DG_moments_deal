@@ -1,0 +1,18 @@
+Guidelines to add a new system
+
+For the main code
+1. add exact solution, change the name
+CHANGE THE NUMBER OF EQUATIONS IN ASSERTION
+2. add system generation file, change the Ntensors and the name
+3. add the file for the exact solution and the system generation file in the main.cc file list
+
+
+For testing
+1. Copy the testing file into the new folder
+1. Add the system matrices
+2. Change the exact solution and the name
+2. change the solver routine by changing the name
+3. develop the input files
+4. change the CMakeLists.txt to include the new directory
+5. Add the shell script and change the name of the system being considered
+6. Make the shell script an executable

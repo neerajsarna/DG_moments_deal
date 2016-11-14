@@ -27,8 +27,6 @@ Integrate_PerCell.h
 ../../include_new/Base_Constants.h
 
 ../../include_new/Base_EquationGenerator.h
-basic_routines.h
-../../include_new/basic_routines.h
 
 ../../include_new/Base_ExactSolution.h
 
@@ -202,9 +200,25 @@ list
 algorithm
 -
 
+../../include_new/parse_command_line.h
+
 ../../periodic_square/Base_PeriodicityHandler.h
 
+../../periodic_square/ExactSolution_PoissonHeatConduction_G105.h
+
+../../periodic_square/ExactSolution_PoissonHeatConduction_G20.h
+
 ../../periodic_square/ExactSolution_PoissonHeatConduction_G26.h
+
+../../periodic_square/ExactSolution_PoissonHeatConduction_G35.h
+
+../../periodic_square/ExactSolution_PoissonHeatConduction_G45.h
+
+../../periodic_square/ExactSolution_PoissonHeatConduction_G56.h
+
+../../periodic_square/ExactSolution_PoissonHeatConduction_G71.h
+
+../../periodic_square/ExactSolution_PoissonHeatConduction_G84.h
 
 ../../periodic_square/MeshGenerator_PeriodicSquare.h
 
@@ -216,13 +230,13 @@ algorithm
 
 ../../systems/BCrhs_systemA.h
 
-../../systems/G26.h
+../../systems/G105.h
 
-../include_tests_G26/Test_Solver.h
+../include_tests_G105/Test_ExactSolution.h
 
-../include_tests_G26/basic_routines.h
+../include_tests_G105/Test_Solver.h
 
-../include_tests_G26/parse_command_line.h
+../include_tests_G105/basic_routines.h
 
 /Applications/deal.II.app/Contents/Resources/include/deal.II/algorithms/any_data.h
 deal.II/base/config.h
@@ -4542,6 +4556,18 @@ string.h
 fortran.h
 -
 
+/Users/neerajsarna/sciebo/DG_moments_deal/Tests/InvProjector_Data.h
+
+/Users/neerajsarna/sciebo/DG_moments_deal/Tests/Projector_Data.h
+
+/Users/neerajsarna/sciebo/DG_moments_deal/Tests/Test_ProjectorData.h
+Projector_Data.h
+/Users/neerajsarna/sciebo/DG_moments_deal/Tests/Projector_Data.h
+InvProjector_Data.h
+/Users/neerajsarna/sciebo/DG_moments_deal/Tests/InvProjector_Data.h
+
+/Users/neerajsarna/sciebo/DG_moments_deal/Tests/Test_SymmetrizerData.h
+
 /Users/neerajsarna/sciebo/DG_moments_deal/Tests/main.cc
 include_deal.h
 /Users/neerajsarna/sciebo/DG_moments_deal/Tests/include_deal.h
@@ -4579,8 +4605,6 @@ Base_EquationGenerator.h
 /Users/neerajsarna/sciebo/DG_moments_deal/Tests/Base_EquationGenerator.h
 LinearSolver.h
 /Users/neerajsarna/sciebo/DG_moments_deal/Tests/LinearSolver.h
-G26.h
-/Users/neerajsarna/sciebo/DG_moments_deal/Tests/G26.h
 Base_MeshGenerator.h
 /Users/neerajsarna/sciebo/DG_moments_deal/Tests/Base_MeshGenerator.h
 Base_PeriodicityHandler.h
@@ -4589,8 +4613,30 @@ Base_PostProc.h
 /Users/neerajsarna/sciebo/DG_moments_deal/Tests/Base_PostProc.h
 Base_Solver.h
 /Users/neerajsarna/sciebo/DG_moments_deal/Tests/Base_Solver.h
+ExactSolution_PoissonHeatConduction_G20.h
+/Users/neerajsarna/sciebo/DG_moments_deal/Tests/ExactSolution_PoissonHeatConduction_G20.h
+ExactSolution_PoissonHeatConduction_G35.h
+/Users/neerajsarna/sciebo/DG_moments_deal/Tests/ExactSolution_PoissonHeatConduction_G35.h
+ExactSolution_PoissonHeatConduction_G45.h
+/Users/neerajsarna/sciebo/DG_moments_deal/Tests/ExactSolution_PoissonHeatConduction_G45.h
+ExactSolution_PoissonHeatConduction_G56.h
+/Users/neerajsarna/sciebo/DG_moments_deal/Tests/ExactSolution_PoissonHeatConduction_G56.h
+ExactSolution_PoissonHeatConduction_G71.h
+/Users/neerajsarna/sciebo/DG_moments_deal/Tests/ExactSolution_PoissonHeatConduction_G71.h
+ExactSolution_PoissonHeatConduction_G84.h
+/Users/neerajsarna/sciebo/DG_moments_deal/Tests/ExactSolution_PoissonHeatConduction_G84.h
+ExactSolution_PoissonHeatConduction_G105.h
+/Users/neerajsarna/sciebo/DG_moments_deal/Tests/ExactSolution_PoissonHeatConduction_G105.h
+G105.h
+/Users/neerajsarna/sciebo/DG_moments_deal/Tests/G105.h
+Test_ExactSolution.h
+/Users/neerajsarna/sciebo/DG_moments_deal/Tests/Test_ExactSolution.h
 Test_Solver.h
 /Users/neerajsarna/sciebo/DG_moments_deal/Tests/Test_Solver.h
+Test_ProjectorData.h
+/Users/neerajsarna/sciebo/DG_moments_deal/Tests/Test_ProjectorData.h
+Test_SymmetrizerData.h
+/Users/neerajsarna/sciebo/DG_moments_deal/Tests/Test_SymmetrizerData.h
 
 /usr/local/include/boost/align/align.hpp
 boost/config.hpp

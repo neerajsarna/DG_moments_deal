@@ -22,7 +22,7 @@ namespace ExactSolution
 	:
 	Base_ExactSolution<dim>(constants,S_half)
 	{
-		Assert(constants.nEqn == 17,ExcMessage("Only a solution for G17"));
+		Assert(constants.nEqn == 17,ExcMessage("Only a solution for G26"));
 	}
 
 	template<int dim>
@@ -41,41 +41,46 @@ namespace ExactSolution
 
 		value = 0;
 
-		if (fabs(this->constants.tau - 0.1) < 1e-5 )
+		Assert(ID_theta == dim+1,ExcMessage("Wrong ID for theta"));
+
+		if(fabs(this->constants.alpha-0.816496580927726) < 1e-5)
 		{
+			if (fabs(this->constants.tau - 0.1) < 1e-5 )
+			{
 
-			value[ID_theta] = -1.2852476333586613 - 0.18289523412781067*pow(y,2) + 0.408248290463863*pow(y,4) + 
-   							  0.0015643311536178803*cosh(6.573421981221795 * y) - 
-   							  2.168404344971009e-19*sinh(6.573421981221795 * y);
+				value[ID_theta] = -1.2852476333586613 - 0.18289523412781067*pow(y,2) + 0.408248290463863*pow(y,4) + 
+				0.0015643311536178803*cosh(6.573421981221795 * y) - 
+				2.168404344971009e-19*sinh(6.573421981221795 * y);
 
-			value[ID_stress] = -0.002715290039756343 - 0.03771236166328255*pow(y,2) + 
-   								0.0011289587658037511*cosh(6.573421981221795*y);
+				value[ID_stress] = -0.002715290039756343 - 0.03771236166328255*pow(y,2) + 
+				0.0011289587658037511*cosh(6.573421981221795*y);
 
-			value[ID_heat] = -0.21081851067789195*pow(y,3);
+				value[ID_heat] = -0.21081851067789195*pow(y,3);
 
-		}
+			}
 
-		if (fabs(this->constants.tau - 0.3) < 1e-5)
-		{
-			value[ID_theta] = -1.3650564316627332 - 0.548685702383432*pow(y,2) + 0.13608276348795437*pow(y,4) + 
-   								0.09338201417693054*cosh(2.191140660407265*y);
+			if (fabs(this->constants.tau - 0.3) < 1e-5)
+			{
+				value[ID_theta] = -1.3650564316627332 - 0.548685702383432*pow(y,2) + 0.13608276348795437*pow(y,4) + 
+				0.09338201417693054*cosh(2.191140660407265*y);
 
-   			value[ID_stress] = -0.07331283107342124 - 0.1131370849898476*pow(y,2) + 
-   								0.06739266377815037*cosh(2.191140660407265*y);
+				value[ID_stress] = -0.07331283107342124 - 0.1131370849898476*pow(y,2) + 
+				0.06739266377815037*cosh(2.191140660407265*y);
 
-   			value[ID_heat] = -0.21081851067789195*pow(y,3);
-		}
+				value[ID_heat] = -0.21081851067789195*pow(y,3);
+			}
 
-		if (fabs(this->constants.tau - 0.5) < 1e-5)
-		{
-			value[ID_theta] = -1.7298151776227189 - 0.9144761706390533*pow(y,2) + 0.08164965809277261*pow(y,4) + 
-   								0.45942750968124524*cosh(1.314684396244359*y) - 
-   								2.7755575615628914e-17*sinh(1.314684396244359*y);
+			if (fabs(this->constants.tau - 0.5) < 1e-5)
+			{
+				value[ID_theta] = -1.7298151776227189 - 0.9144761706390533*pow(y,2) + 0.08164965809277261*pow(y,4) + 
+				0.45942750968124524*cosh(1.314684396244359*y) - 
+				2.7755575615628914e-17*sinh(1.314684396244359*y);
 
-   			value[ID_stress] = -0.3394112549695428 - 0.1885618083164127*pow(y,2) + 
-   								0.33156324548448296*cosh(1.314684396244359*y);
+				value[ID_stress] = -0.3394112549695428 - 0.1885618083164127*pow(y,2) + 
+				0.33156324548448296*cosh(1.314684396244359*y);
 
-   			value[ID_heat] = -0.21081851067789195*pow(y,3);
+				value[ID_heat] = -0.21081851067789195*pow(y,3);
+			}			
 		}
 
 		// The above values correspond to a unsymmetric system, therefore we now need to accomodate the symmetric system

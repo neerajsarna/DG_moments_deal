@@ -285,12 +285,12 @@ namespace Constants
 
 			prm.declare_entry("equations in the system",
 				"6",
-				Patterns::Integer(6,20),
+				Patterns::Integer(6,100),
 				"total number of equations in system");
 
 			prm.declare_entry("nBC",
 				"2",
-				Patterns::Integer(2,10),
+				Patterns::Integer(2,100),
 				"total number of boundary conditions needed for the system");
 
 				/*0 for force of system A and 1 for force of system B*/
@@ -503,11 +503,11 @@ namespace Constants
 	::allocate_variable_map()
 	{
 
-	  	Assert(constants.nEqn <= 17,ExcNotImplemented());
+	  	
 	  	std::vector<std::string> var_names = {"rho","vx","vy","theta","sigmaxx","sigmaxy","sigmayy","qx","qy","mxxx","mxxy","mxyy","myyy",
 	  								"Delta","Rxx","Rxy","Ryy"};
 
-	  	for (unsigned int i = 0 ; i < 17 ; i++)
+	  	for (unsigned int i = 0 ; i < var_names.size() ; i++)
 	  		constants.variable_map[var_names[i]] = i;
 	  
 	}

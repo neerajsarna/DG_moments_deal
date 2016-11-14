@@ -163,7 +163,7 @@ namespace ForceType
 				value[i] = 0;
 				AssertDimension((int)value[i].size(),this->constants.nEqn);
 
-				// the source term for the energy equation
+				// the source term for the energy equation. The factor appears from the symmetrizer
 				value[i](var_theta) = -factor * this->constants.alpha * pow(y_cord,2);
 			}
 

@@ -28,7 +28,7 @@ namespace TensorInfo
 			MatrixUI varIdx;
 			// we have the max tensorial degree because only then the projectors for individual tensors can be 
 			// constructed
-			const unsigned int max_tensorial_degree = 7;
+			const unsigned int max_tensorial_degree = 11;
 			unsigned int Ntensors;
 
 			// total number of equations in the system
@@ -117,7 +117,7 @@ namespace TensorInfo
 
 		varIdx.resize(Ntensors,2);
 		free_indices.resize(Ntensors,1);
-		Assert(max_tensorial_degree == 7,ExcNotImplemented());
+		Assert(max_tensorial_degree == 11,ExcNotImplemented());
 		
 		// dim == 1 has not been implemented
 		Assert(dim > 1,ExcNotImplemented());

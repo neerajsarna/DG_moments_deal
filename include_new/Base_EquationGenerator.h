@@ -486,6 +486,7 @@ namespace EquationGenerator
 		create_symmetric_matrix(system_data.P.matrix,base_tensorinfo.S_half,base_tensorinfo.S_half_inv);
 	}
 
+	// The following routine computes S_half.f where f is the external forcing into the system
 	template<int dim>
 	double
 	Base_EquationGenerator<dim>

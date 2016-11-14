@@ -221,7 +221,7 @@ namespace Test_Solver
 			}
 		}
 
-		if (constants.constants.bc_type == characteristic)
+		if (constants.constants.bc_type == odd)
 		{
 			if (fabs(constants.constants.tau - 0.1) < 1e-5)
 			{

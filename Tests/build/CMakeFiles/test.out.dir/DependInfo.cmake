@@ -11,7 +11,7 @@ set(CMAKE_CXX_COMPILER_ID "Clang")
 # The include file search paths:
 set(CMAKE_CXX_TARGET_INCLUDE_PATH
   "../../include_new"
-  "../include_tests_G26"
+  "../include_tests_G105"
   "../../periodic_square"
   "../../systems"
   "/usr/local/include/eigen"
