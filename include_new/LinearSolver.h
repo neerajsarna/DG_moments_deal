@@ -118,7 +118,7 @@ namespace LinearSolver
 		MKL_INT iparm[64];
 		MKL_INT maxfct, mnum, phase, error, msglvl;
 
-		MKL_INT i, j;
+		MKL_INT i;
 		double ddum;          
 		MKL_INT idum;         
 		std::string uplo;

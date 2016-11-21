@@ -88,7 +88,7 @@ namespace BCrhs
 	:
 	Base_BCrhs<dim>(constants),
 	B(B)
-	{;};
+	{;}
 
 	template<int dim>
 	void

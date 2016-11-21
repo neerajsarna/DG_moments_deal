@@ -164,7 +164,7 @@ namespace EquationGenerator
 		entry = dim + 1;
 		Assert(entry < dim + 3,ExcNotInitialized());
 		basefile[entry] = "odd_ID_";
-	};
+	}
 
 	template<int dim>
 	void Base_EquationGenerator<dim>
