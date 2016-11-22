@@ -357,7 +357,7 @@ namespace MatrixOpt
 	  	const typename TrilinosWrappers::SparseMatrix::const_iterator it_end = matrix.end();
 
 	  	for (; it != it_end; it++)
-	  		fprintf(fp,"%u %u %lf \n",it->row(),it->column(),it->value());
+	  		fprintf(fp,"%llu %llu %lf \n",it->row(),it->column(),it->value());
 	  	
 
 	  	fclose(fp);

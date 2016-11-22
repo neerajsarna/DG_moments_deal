@@ -24,7 +24,7 @@ namespace ForceType
 	Base_ForceType(const constant_data &constants)
 	:
 	constants(constants)
-	{;};
+	{;}
 
 	template<int dim>
 	class 
@@ -47,7 +47,7 @@ namespace ForceType
 	::ForceType1(const constant_data &constants)
 	:
 	Base_ForceType<dim>(constants)
-	{;};
+	{;}
 
 	template<int dim>
 	void 
@@ -139,7 +139,7 @@ namespace ForceType
 	::ForceType3(const constant_data &constants)
 	:
 	Base_ForceType<dim>(constants)
-	{;};
+	{;}
 
 	template<int dim>
 	void 

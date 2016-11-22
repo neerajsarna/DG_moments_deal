@@ -31,7 +31,7 @@ namespace ExactSolution
 	Function<dim>(constants.nEqn),
 	S_half(S_half),
 	constants(constants)
-	{;};
+	{;}
 
 	template<int dim>
 	double

@@ -11,13 +11,13 @@ namespace PostProc
 			Base_PostProc(const constant_data &constants,
 						  ExactSolution::Base_ExactSolution<dim> *exact_solution,
 						  const DoFHandler<dim> *dof_handle,
-						  const MappingQ<dim> *mapping_obj);
+						  const MappingQ<dim,dim> *mapping_obj);
 
 			// we need the following information from the calling routine for this class to work
 			ExactSolution::Base_ExactSolution<dim> *base_exactsolution;
 			const constant_data constants;
 			const DoFHandler<dim> *dof_handler;
-			const MappingQ<dim> *mapping;
+			const MappingQ<dim,dim> *mapping;
 
 
 			struct output_files
@@ -119,7 +119,7 @@ namespace PostProc
 	Base_PostProc<dim>::Base_PostProc(const constant_data &constants,
 									  ExactSolution::Base_ExactSolution<dim> *exact_solution,
 									  const DoFHandler<dim> *dof_handle,
-									  const MappingQ<dim> *mapping_obj)
+									  const MappingQ<dim,dim> *mapping_obj)
 	:
 	base_exactsolution(exact_solution),
 	constants(constants),

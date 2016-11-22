@@ -80,7 +80,7 @@ namespace Constants
 	void Base_Constants
 	::read_input_file(const string &input_file)
 	{
-		prm.read_input(input_file.c_str());
+		prm.parse_input(input_file.c_str());
 	}
 
 	void Base_Constants
@@ -546,7 +546,12 @@ namespace Constants
 			constants.print_error = prm.get_bool("print_error");
 			constants.print_exactsolution = prm.get_bool("print_exactsolution");
 			constants.print_convergence_table = prm.get_bool("print_convergence_table");
+            entered = true;
 		}
 		prm.leave_subsection();
+        
+        Assert(entered,ExcMessage("Did not read printing options."));
+            
+        
 	}
 }
