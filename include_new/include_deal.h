@@ -25,6 +25,16 @@
 #include <deal.II/lac/trilinos_precondition.h>
 #include <deal.II/lac/trilinos_solver.h>
 
+#include <deal.II/fe/fe_values.h>
+#include <deal.II/dofs/dof_handler.h>
+#include <deal.II/dofs/dof_accessor.h>
+
+#include <deal.II/fe/mapping_q1.h>
+#include <deal.II/fe/mapping_q.h>
+#include <deal.II/fe/fe_q.h>
+#include <deal.II/fe/fe_dgq.h>
+#include <deal.II/fe/fe_system.h>
+
 #include <deal.II/grid/tria.h>
 #include <deal.II/grid/grid_generator.h>
 #include <deal.II/grid/grid_refinement.h>
@@ -37,16 +47,9 @@
 #include <deal.II/grid/manifold_lib.h>
 #include <deal.II/grid/grid_tools.h>
 
-#include <deal.II/dofs/dof_handler.h>
-#include <deal.II/dofs/dof_accessor.h>
+
 #include <deal.II/dofs/dof_tools.h>
 #include <deal.II/dofs/dof_renumbering.h>
-
-#include <deal.II/fe/fe_values.h>
-#include <deal.II/fe/fe_dgq.h>
-#include <deal.II/fe/fe_q.h>
-#include <deal.II/fe/mapping_q1.h>
-#include <deal.II/fe/fe_system.h>
 
 #include <deal.II/numerics/vector_tools.h>
 #include <deal.II/numerics/matrix_tools.h>

@@ -10,10 +10,17 @@ SET(G++_COVERAGE_COMPILE_FLAGS4 "-Wno-reorder")
 SET(G++_COVERAGE_COMPILE_FLAGS5 "-Wno-missing-field-initializers")
 SET(G++_COVERAGE_COMPILE_FLAGS6 "-DMKL_ILP64 -m64")
 SET(G++_COVERAGE_COMPILE_FLAGS7 "-Wl,--no-as-needed")
+SET(G++_COVERAGE_COMPILE_FLAGS8 "-fmax-errors=2")
 
+#SET(DEAL_II_DIR "/Applications/deal.II.app/Contents/Resources/lib/cmake")
+SET(DEAL_II_DIR "/home/sarna/Documents/Libraries/dealii/lib/cmake")
 
-SET(DEAL_II_DIR "/Applications/deal.II.app/Contents/Resources/lib/cmake")
-SET(MKL_DIR "/opt/intel//compilers_and_libraries_2016.3.170/mac/mkl")
+#SET(MKL_DIR "/opt/intel//compilers_and_libraries_2016.3.170/mac/mkl")
+SET(MKL_DIR "/opt/intel/composer_xe_2013_sp1.0.080/mkl")
+
+#SET(EIGEN_DIR "/usr/local/include/eigen")
+SET(EIGEN_DIR "/home/sarna/Documents/Libraries/eigenv3/eigen")
+
 
 FIND_PACKAGE(deal.II 8.3 QUIET
   HINTS ${deal.II_DIR} ${DEAL_II_DIR} ../ ../../ $ENV{DEAL_II_DIR}
@@ -26,6 +33,8 @@ IF(NOT ${deal.II_FOUND})
     )
 ENDIF()
 
+
+
 DEAL_II_INITIALIZE_CACHED_VARIABLES()
 PROJECT(${TARGET})
 
@@ -36,6 +45,7 @@ ADD_DEFINITIONS(${G++_COVERAGE_COMPILE_FLAGS4})
 ADD_DEFINITIONS(${G++_COVERAGE_COMPILE_FLAGS5})
 ADD_DEFINITIONS(${G++_COVERAGE_COMPILE_FLAGS6})
 ADD_DEFINITIONS(${G++_COVERAGE_COMPILE_FLAGS7})
+ADD_DEFINITIONS(${G++_COVERAGE_COMPILE_FLAGS8})
 #adding the executables
 
 ADD_EXECUTABLE(test.out main.cc)
@@ -44,7 +54,7 @@ ADD_EXECUTABLE(test.out main.cc)
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/../include_new)
 
 #INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/include_tests_systemA)
-#INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/include_tests_G26)
+INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/include_tests_G26)
 #INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/include_tests_G20)
 #INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/include_tests_G35)
 #INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/include_tests_G45)
@@ -52,21 +62,27 @@ INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/../include_new)
 #INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/include_tests_G71)
 #INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/include_tests_G84)
 #INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/include_tests_G105)
-INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/include_tests_G120)
+#INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/include_tests_G120)
 
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/../periodic_square)
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/../systems)
-INCLUDE_DIRECTORIES(/usr/local/include/eigen)
+INCLUDE_DIRECTORIES(${EIGEN_DIR})
+
+
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/../Projector_Data)
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/../Symmetrizer_Data)
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/../ring)
 
+
+#FIND_PACKAGE(GTest REQUIRED)
+SET(GTEST_INCLUDE_DIRS "/home/sarna/Documents/Libraries/googletest/include")
+SET(GTEST_LIBRARIES "/home/sarna/Documents/Libraries/googletest/lib/libgtest.a")
+
 # Locate GTest
-FIND_PACKAGE(GTest REQUIRED)
 INCLUDE_DIRECTORIES(${GTEST_INCLUDE_DIRS})
 
-TARGET_LINK_LIBRARIES(test.out ${GTEST_LIBRARIES} libmkl_intel_ilp64.dylib libmkl_core.dylib libmkl_intel_thread.dylib libpthread.dylib libdl.dylib pthread)
-
+#TARGET_LINK_LIBRARIES(test.out ${GTEST_LIBRARIES} libmkl_intel_ilp64.dylib libmkl_core.dylib libmkl_intel_thread.dylib libpthread.dylib libdl.dylib pthread)
+TARGET_LINK_LIBRARIES(test.out ${GTEST_LIBRARIES} libiomp5.so libpthread.so libmkl_intel_ilp64.so libmkl_core.so libmkl_intel_thread.so libdl.so)
 #TARGET_LINK_LIBRARIES(test.out ${GTEST_LIBRARIES} pthread)
 
 DEAL_II_SETUP_TARGET(test.out)

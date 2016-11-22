@@ -5,6 +5,9 @@ template<int dim>
                         double nx,double ny,const unsigned int max_degree,
                       TensorInfo::Base_TensorInfo<dim> &base_tensorinfo)
 	{
+        
+        	Assert(max_degree <=10,dealii::StandardExceptions::ExcMessage("This tensorial degree not implemented."));
+        
 		// first we allocate the required memory
 		tensor_project.resize(base_tensorinfo.max_tensorial_degree + 1);
 

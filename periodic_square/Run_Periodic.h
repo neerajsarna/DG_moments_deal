@@ -61,7 +61,16 @@ Base_Solver<dim>::run_periodic()
 			}
 		}
 
+		// printing the matrices for comparison
+        if (i == 0)
+        {
+            MatrixOpt::Base_MatrixOpt matrix_opt;
+            matrix_opt.print_dealii_sparse(this->global_matrix,"global_matrix");
+            matrix_opt.print_dealii_vector(this->system_rhs,"system_rhs");
+            fflush(stdout);
+        }
 
+        
 		// we initialize the object which will solve our system
 		// We do int the following way so as to keep the solver independent of all the other implementations.
 		// This makes the code highly reusable. So one can directly copy the following class and use it somewhere

@@ -35,7 +35,7 @@ std::string input_file;
 #include "ExactSolution_PoissonHeatConduction_G105.h"
 #include "ExactSolution_PoissonHeatConduction_G120.h"
 
-//#include "G26.h"
+#include "G26.h"
 //#include "G20.h"
 //#include "G35.h"
 //#include "G45.h"
@@ -43,7 +43,7 @@ std::string input_file;
 //#include "G71.h"
 //#include "G84.h"
 //#include "G105.h"
-#include "G120.h"
+//#include "G120.h"
 //tests
 
 /**********Standard Tests for any system. Change The include directory from the make file*************/
@@ -71,5 +71,6 @@ int main(int argc,char **argv)
 	::testing::InitGoogleTest(&argc, argv);
 	const unsigned int result = RUN_ALL_TESTS();
 
+    std::cout <<"Results " << result<< std::endl;
 	return 0;
 }

@@ -380,8 +380,6 @@ Base_Solver<dim>::assemble_system_periodic_char()
       // counters 
       unsigned int boundary_wall = 0;
       unsigned int boundary_periodic = 0;
-      bool integrated_boundary = false;
-
       const QGauss<dim> quadrature(ngp);
       const QGauss<dim-1> face_quadrature(ngp_face);
 
@@ -463,8 +461,6 @@ Base_Solver<dim>::assemble_system_periodic_char()
 
               if (face_itr->at_boundary())
               { 
-                integrated_boundary = false;
-
                 // id of the boundary
                     const unsigned int b_id = face_itr->boundary_id();
 
@@ -497,8 +493,7 @@ Base_Solver<dim>::assemble_system_periodic_char()
                                         Jacobian_face,component,  
                                         cell);  
 
-                      integrated_boundary = true;
-                      boundary_periodic++;
+                     boundary_periodic++;
 
                     }
 
@@ -509,8 +504,7 @@ Base_Solver<dim>::assemble_system_periodic_char()
                                                   fe_v_face, Jacobian_face,
                                                   component, cell,b_id); 
 
-                        integrated_boundary = true;
-                        boundary_wall ++;
+                       boundary_wall ++;
 
                     }  
                 
@@ -611,7 +605,7 @@ Base_Solver<dim>::assemble_system_periodic_odd()
       // counters 
       unsigned int boundary_wall = 0;
       unsigned int boundary_periodic = 0;
-      bool integrated_boundary = false;
+
 
       const QGauss<dim> quadrature(ngp);
       const QGauss<dim-1> face_quadrature(ngp_face);
@@ -697,7 +691,7 @@ Base_Solver<dim>::assemble_system_periodic_odd()
 
               if (face_itr->at_boundary())
               { 
-                integrated_boundary = false;
+        
 
                 // id of the boundary
                 const unsigned int b_id = face_itr->boundary_id();
@@ -730,7 +724,6 @@ Base_Solver<dim>::assemble_system_periodic_odd()
                                         Jacobian_face,component,  
                                         cell);  
 
-                      integrated_boundary = true;
                       boundary_periodic++;
 
                     }
@@ -742,7 +735,6 @@ Base_Solver<dim>::assemble_system_periodic_odd()
                                                   fe_v_face, Jacobian_face,
                                                   component, cell,b_id); 
 
-                        integrated_boundary = true;
                         boundary_wall ++;
 
                     }  

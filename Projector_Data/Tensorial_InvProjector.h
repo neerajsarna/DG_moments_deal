@@ -11,8 +11,6 @@
 		// now we allocate memory for every individual projector
 		allocate_tensor_memory(tensor_project);
 
-		const double nxnx = nx * nx;
-		const double nyny = ny * ny;
 
 		AssertDimension(tensor_project.size(),max_tensorial_degree + 1);
 

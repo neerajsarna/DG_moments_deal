@@ -2,6 +2,7 @@ namespace FEM_Solver
 {
 	using namespace dealii;
 
+    
 	template<int dim>
 	class
 	Base_Solver:public MeshGenerator::Base_MeshGenerator<dim>,
@@ -46,7 +47,7 @@ namespace FEM_Solver
         	void distribute_dof_allocate_matrix();
         	void run_ring();
 
-        	const MappingQ<dim> mapping;
+        	MappingQ<dim,dim> mapping;
         	const unsigned int ngp;
         	const unsigned int ngp_face;
 

@@ -11,13 +11,13 @@ namespace PostProc
 			Base_PostProc(const constant_data &constants,
 						  ExactSolution::Base_ExactSolution<dim> *exact_solution,
 						  const DoFHandler<dim> *dof_handle,
-						  const MappingQ<dim,dim> *mapping_obj);
+						  const MappingQ<dim> *mapping_obj);
 
 			// we need the following information from the calling routine for this class to work
 			ExactSolution::Base_ExactSolution<dim> *base_exactsolution;
 			const constant_data constants;
 			const DoFHandler<dim> *dof_handler;
-			const MappingQ<dim,dim> *mapping;
+			const MappingQ<dim> *mapping;
 
 
 			struct output_files
@@ -250,7 +250,7 @@ namespace PostProc
         column_name_Linfty = "#Linfty in u(Using QGauss)" + std::to_string(component);
 
         std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<Error Details>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"  << std::endl;
-       	printf("L2_error: %e, Linf_error: %e, #DOF: %u, #Cells %u\n",L2_error,Linfty_error,dof_handler->n_dofs(),active_cells);
+       	printf("L2_error: %e, Linf_error: %e, #DOF: %llu, #Cells %llu\n",L2_error,Linfty_error,dof_handler->n_dofs(),active_cells);
        	std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<Error Details>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
 
         convergence_table.add_value(column_name_L2,L2_error);

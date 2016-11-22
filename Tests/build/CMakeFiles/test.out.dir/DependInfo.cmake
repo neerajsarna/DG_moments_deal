@@ -1,37 +1,43 @@
 # The set of languages for which implicit dependencies are needed:
-set(CMAKE_DEPENDS_LANGUAGES
+SET(CMAKE_DEPENDS_LANGUAGES
   "CXX"
   )
 # The set of files for implicit dependencies of each language:
-set(CMAKE_DEPENDS_CHECK_CXX
-  "/Users/neerajsarna/sciebo/DG_moments_deal/Tests/main.cc" "/Users/neerajsarna/sciebo/DG_moments_deal/Tests/build/CMakeFiles/test.out.dir/main.cc.o"
+SET(CMAKE_DEPENDS_CHECK_CXX
+  "/home/sarna/Documents/DG_moments/Tests/main.cc" "/home/sarna/Documents/DG_moments/Tests/build/CMakeFiles/test.out.dir/main.cc.o"
   )
-set(CMAKE_CXX_COMPILER_ID "Clang")
+SET(CMAKE_CXX_COMPILER_ID "GNU")
 
-# The include file search paths:
-set(CMAKE_CXX_TARGET_INCLUDE_PATH
-  "../../include_new"
-  "../include_tests_G105"
-  "../../periodic_square"
-  "../../systems"
-  "/usr/local/include/eigen"
-  "../../Projector_Data"
-  "../../Symmetrizer_Data"
-  "../../ring"
-  "/usr/local/include"
-  "/Applications/deal.II.app/Contents/Resources/include"
-  "/Applications/deal.II.app/Contents/Resources/include/deal.II/bundled"
-  "/Applications/deal.II.app/Contents/Resources/opt/openmpi-1.10.2/include"
-  "/Applications/deal.II.app/Contents/Resources/opt/petsc-3e25e16/include"
-  "/Applications/deal.II.app/Contents/Resources/opt/trilinos-0b08cd5/include"
-  "/Applications/deal.II.app/Contents/Resources/opt/oce-c0cdb53/include/oce"
-  "/Applications/deal.II.app/Contents/Resources/opt/p4est-8d811a8/include"
-  "/Applications/deal.II.app/Contents/Resources/opt/slepc-2c065dd/include"
+# Preprocessor definitions for this target.
+SET(CMAKE_TARGET_DEFINITIONS
+  "DEBUG"
   )
 
 # Targets to which this target links.
-set(CMAKE_TARGET_LINKED_INFO_FILES
+SET(CMAKE_TARGET_LINKED_INFO_FILES
   )
 
-# Fortran module output directory.
-set(CMAKE_Fortran_TARGET_MODULE_DIR "")
+# The include file search paths:
+SET(CMAKE_C_TARGET_INCLUDE_PATH
+  "../../include_new"
+  "../include_tests_G26"
+  "../../periodic_square"
+  "../../systems"
+  "/home/sarna/Documents/Libraries/eigenv3/eigen"
+  "../../Projector_Data"
+  "../../Symmetrizer_Data"
+  "../../ring"
+  "/home/sarna/Documents/Libraries/googletest/include"
+  "/home/sarna/Documents/Libraries/dealii/include"
+  "/home/sarna/Documents/Libraries/dealii/include/deal.II/bundled"
+  "/home/sarna/Documents/Libraries/mpich/include"
+  "/home/sarna/Documents/Libraries/tbb/include/tbb"
+  "/home/sarna/Documents/Libraries/metis/include"
+  "/home/sarna/Documents/Libraries/trilinos/include"
+  "/usr/bin/include"
+  "/home/sarna/Documents/Libraries/hdf5/include"
+  "/home/sarna/Documents/Libraries/oce/include/oce"
+  )
+SET(CMAKE_CXX_TARGET_INCLUDE_PATH ${CMAKE_C_TARGET_INCLUDE_PATH})
+SET(CMAKE_Fortran_TARGET_INCLUDE_PATH ${CMAKE_C_TARGET_INCLUDE_PATH})
+SET(CMAKE_ASM_TARGET_INCLUDE_PATH ${CMAKE_C_TARGET_INCLUDE_PATH})

@@ -3,7 +3,7 @@
 clear
 echo "Cmake"
 cmake ../.
-make release
+make debug
 
 
 read -p "Continue with execution?" yn
