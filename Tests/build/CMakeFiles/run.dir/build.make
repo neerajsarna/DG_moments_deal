@@ -38,10 +38,10 @@ EQUALS = =
 CMAKE_EDIT_COMMAND = /usr/bin/ccmake
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/sarna/Documents/DG_moments/Tests
+CMAKE_SOURCE_DIR = /home/sarna/Desktop/DG_moments/Tests
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/sarna/Documents/DG_moments/Tests/build
+CMAKE_BINARY_DIR = /home/sarna/Desktop/DG_moments/Tests/build
 
 # Utility rule file for run.
 
@@ -49,7 +49,7 @@ CMAKE_BINARY_DIR = /home/sarna/Documents/DG_moments/Tests/build
 include CMakeFiles/run.dir/progress.make
 
 CMakeFiles/run:
-	$(CMAKE_COMMAND) -E cmake_progress_report /home/sarna/Documents/DG_moments/Tests/build/CMakeFiles $(CMAKE_PROGRESS_1)
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/sarna/Desktop/DG_moments/Tests/build/CMakeFiles $(CMAKE_PROGRESS_1)
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold "Run with Debug configuration"
 	mycode.out
 
@@ -66,6 +66,6 @@ CMakeFiles/run.dir/clean:
 .PHONY : CMakeFiles/run.dir/clean
 
 CMakeFiles/run.dir/depend:
-	cd /home/sarna/Documents/DG_moments/Tests/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/sarna/Documents/DG_moments/Tests /home/sarna/Documents/DG_moments/Tests /home/sarna/Documents/DG_moments/Tests/build /home/sarna/Documents/DG_moments/Tests/build /home/sarna/Documents/DG_moments/Tests/build/CMakeFiles/run.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/sarna/Desktop/DG_moments/Tests/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/sarna/Desktop/DG_moments/Tests /home/sarna/Desktop/DG_moments/Tests /home/sarna/Desktop/DG_moments/Tests/build /home/sarna/Desktop/DG_moments/Tests/build /home/sarna/Desktop/DG_moments/Tests/build/CMakeFiles/run.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/run.dir/depend
 

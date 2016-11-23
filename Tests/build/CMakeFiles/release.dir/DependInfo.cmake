@@ -13,11 +13,12 @@ SET(CMAKE_C_TARGET_INCLUDE_PATH
   "../include_tests_G26"
   "../../periodic_square"
   "../../systems"
-  "/home/sarna/Documents/Libraries/eigenv3/eigen"
+  "/home/sarna/Desktop/Libraries/eigenv3/eigen"
   "../../Projector_Data"
   "../../Symmetrizer_Data"
   "../../ring"
-  "/home/sarna/Documents/Libraries/googletest/include"
+  "/opt/intel/composer_xe_2013_sp1.0.080/mkl/include"
+  "/home/sarna/Desktop/Libraries/googletest/include"
   )
 SET(CMAKE_CXX_TARGET_INCLUDE_PATH ${CMAKE_C_TARGET_INCLUDE_PATH})
 SET(CMAKE_Fortran_TARGET_INCLUDE_PATH ${CMAKE_C_TARGET_INCLUDE_PATH})

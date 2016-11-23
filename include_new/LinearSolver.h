@@ -27,7 +27,7 @@ namespace LinearSolver
 		                        Vector<double> &solution)
 	{
 
-          const Solver_Type solver_type = Pardiso;
+          const Solver_Type solver_type = Trilinos_GMRES;
           switch(solver_type)
           {
             case Trilinos_Direct:
@@ -49,11 +49,18 @@ namespace LinearSolver
               TrilinosWrappers::SolverGMRES::AdditionalData additional_data;
               TrilinosWrappers::SolverGMRES  solver (solver_control,additional_data);
 
+	      std::cout << "Preparing Preconditionar" << std::endl;
               TrilinosWrappers::PreconditionILU preconditioner;
               TrilinosWrappers::PreconditionILU::AdditionalData additional_data_PC(0,1e-5,1.01,0);
               preconditioner.initialize(global_matrix,additional_data_PC);
         
-              solver.solve (global_matrix, solution,system_rhs,preconditioner);
+              MatrixOpt::Base_MatrixOpt matrix_opt;
+              matrix_opt.print_dealii_sparse(global_matrix,"global_matrix_inside_lin_solve");
+              matrix_opt.print_dealii_vector(system_rhs,"system_rhs_inside_lin_solve");
+             
+	      fflush(stdout);
+ 	      std::cout << "solving...." << std::endl;
+	      solver.solve (global_matrix, solution,system_rhs,preconditioner);
               break;
             }
 
@@ -158,6 +165,7 @@ namespace LinearSolver
 
     // Symbolic Factorization
       phase = 11;
+      std::cout << "Symbolic Factorization" << std::endl;
       PARDISO (pt, &maxfct, &mnum, &mtype, &phase,
       	&n, a, ia, ja, &idum, &nrhs, iparm, &msglvl, &ddum, &ddum, &error);
       if ( error != 0 )
@@ -169,6 +177,7 @@ namespace LinearSolver
 
     // Numerical Factorization
       phase = 22;
+      std::cout << "Numerical Factorization" << std::endl;
       PARDISO (pt, &maxfct, &mnum, &mtype, &phase,
       	&n, a, ia, ja, &idum, &nrhs, iparm, &msglvl, &ddum, &ddum, &error);
       if ( error != 0 )
@@ -184,6 +193,8 @@ namespace LinearSolver
     iparm[11] = 0;        /* Conjugate transposed/transpose solve */
       uplo = "non-transposed";
 
+
+     std::cout << "Solving the system " << std::endl;
 
       pardiso (pt, &maxfct, &mnum, &mtype, &phase,
       	&n, a, ia, ja, &idum, &nrhs, iparm, &msglvl, b, x, &error);

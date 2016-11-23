@@ -1,4 +1,4 @@
-set(CMAKE_C_COMPILER "/home/sarna/Documents/Libraries/mpich/bin/mpicc")
+set(CMAKE_C_COMPILER "/home/sarna/Desktop/Libraries/mpich/bin/mpicc")
 set(CMAKE_C_COMPILER_ARG1 "")
 set(CMAKE_C_COMPILER_ID "GNU")
 set(CMAKE_C_COMPILER_VERSION "4.8.2")
@@ -49,7 +49,7 @@ endif()
 
 
 set(CMAKE_C_IMPLICIT_LINK_LIBRARIES "mpi;c")
-set(CMAKE_C_IMPLICIT_LINK_DIRECTORIES "/home/sarna/Documents/Libraries/mpich/lib;/opt/centos/devtoolset-2/root/usr/lib/gcc/x86_64-redhat-linux/4.8.2;/opt/centos/devtoolset-2/root/usr/lib/gcc;/opt/centos/devtoolset-2/root/usr/lib64;/lib64;/usr/lib64;/opt/intel/compilers_and_libraries_2016.3.210/linux/ipp/lib/intel64;/opt/intel/compilers_and_libraries_2016.3.210/linux/compiler/lib/intel64;/opt/intel/compilers_and_libraries_2016.3.210/linux/mkl/lib/intel64;/opt/intel/compilers_and_libraries_2016.3.210/linux/tbb/lib/intel64/gcc4.4;/opt/intel/compilers_and_libraries_2016.3.210/linux/daal/lib/intel64_lin;/opt/intel/compilers_and_libraries_2016.3.210/linux/tbb/lib/intel64_lin/gcc4.4;/opt/intel/compilers_and_libraries_2016.3.210/linux/compiler/lib/intel64_lin;/opt/centos/devtoolset-2/root/usr/lib")
+set(CMAKE_C_IMPLICIT_LINK_DIRECTORIES "/home/sarna/Desktop/Libraries/mpich/lib;/opt/centos/devtoolset-2/root/usr/lib/gcc/x86_64-redhat-linux/4.8.2;/opt/centos/devtoolset-2/root/usr/lib/gcc;/opt/centos/devtoolset-2/root/usr/lib64;/lib64;/usr/lib64;/opt/intel/compilers_and_libraries_2016.3.210/linux/ipp/lib/intel64;/opt/intel/compilers_and_libraries_2016.3.210/linux/compiler/lib/intel64;/opt/intel/compilers_and_libraries_2016.3.210/linux/mkl/lib/intel64;/opt/intel/compilers_and_libraries_2016.3.210/linux/tbb/lib/intel64/gcc4.4;/opt/intel/compilers_and_libraries_2016.3.210/linux/daal/lib/intel64_lin;/opt/intel/compilers_and_libraries_2016.3.210/linux/tbb/lib/intel64_lin/gcc4.4;/opt/intel/compilers_and_libraries_2016.3.210/linux/compiler/lib/intel64_lin;/opt/centos/devtoolset-2/root/usr/lib")
 set(CMAKE_C_IMPLICIT_LINK_FRAMEWORK_DIRECTORIES "")
 
 

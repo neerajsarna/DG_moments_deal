@@ -38,10 +38,10 @@ EQUALS = =
 CMAKE_EDIT_COMMAND = /usr/bin/ccmake
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/sarna/Documents/DG_moments/Tests
+CMAKE_SOURCE_DIR = /home/sarna/Desktop/DG_moments/Tests
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/sarna/Documents/DG_moments/Tests/build
+CMAKE_BINARY_DIR = /home/sarna/Desktop/DG_moments/Tests/build
 
 # Utility rule file for debug.
 
@@ -49,10 +49,10 @@ CMAKE_BINARY_DIR = /home/sarna/Documents/DG_moments/Tests/build
 include CMakeFiles/debug.dir/progress.make
 
 CMakeFiles/debug:
-	$(CMAKE_COMMAND) -E cmake_progress_report /home/sarna/Documents/DG_moments/Tests/build/CMakeFiles $(CMAKE_PROGRESS_1)
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/sarna/Desktop/DG_moments/Tests/build/CMakeFiles $(CMAKE_PROGRESS_1)
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold "Switch CMAKE_BUILD_TYPE to Debug"
-	/usr/bin/cmake -DCMAKE_BUILD_TYPE=Debug /home/sarna/Documents/DG_moments/Tests
-	/usr/bin/cmake --build /home/sarna/Documents/DG_moments/Tests/build --target all
+	/usr/bin/cmake -DCMAKE_BUILD_TYPE=Debug /home/sarna/Desktop/DG_moments/Tests
+	/usr/bin/cmake --build /home/sarna/Desktop/DG_moments/Tests/build --target all
 
 debug: CMakeFiles/debug
 debug: CMakeFiles/debug.dir/build.make
@@ -67,6 +67,6 @@ CMakeFiles/debug.dir/clean:
 .PHONY : CMakeFiles/debug.dir/clean
 
 CMakeFiles/debug.dir/depend:
-	cd /home/sarna/Documents/DG_moments/Tests/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/sarna/Documents/DG_moments/Tests /home/sarna/Documents/DG_moments/Tests /home/sarna/Documents/DG_moments/Tests/build /home/sarna/Documents/DG_moments/Tests/build /home/sarna/Documents/DG_moments/Tests/build/CMakeFiles/debug.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/sarna/Desktop/DG_moments/Tests/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/sarna/Desktop/DG_moments/Tests /home/sarna/Desktop/DG_moments/Tests /home/sarna/Desktop/DG_moments/Tests/build /home/sarna/Desktop/DG_moments/Tests/build /home/sarna/Desktop/DG_moments/Tests/build/CMakeFiles/debug.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/debug.dir/depend
 

@@ -38,10 +38,10 @@ EQUALS = =
 CMAKE_EDIT_COMMAND = /usr/bin/ccmake
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/sarna/Documents/DG_moments/Tests
+CMAKE_SOURCE_DIR = /home/sarna/Desktop/DG_moments/Tests
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/sarna/Documents/DG_moments/Tests/build
+CMAKE_BINARY_DIR = /home/sarna/Desktop/DG_moments/Tests/build
 
 # Include any dependencies generated for this target.
 include CMakeFiles/test.out.dir/depend.make
@@ -54,17 +54,17 @@ include CMakeFiles/test.out.dir/flags.make
 
 CMakeFiles/test.out.dir/main.cc.o: CMakeFiles/test.out.dir/flags.make
 CMakeFiles/test.out.dir/main.cc.o: ../main.cc
-	$(CMAKE_COMMAND) -E cmake_progress_report /home/sarna/Documents/DG_moments/Tests/build/CMakeFiles $(CMAKE_PROGRESS_1)
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/sarna/Desktop/DG_moments/Tests/build/CMakeFiles $(CMAKE_PROGRESS_1)
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object CMakeFiles/test.out.dir/main.cc.o"
-	/home/sarna/Documents/Libraries/mpich/bin/mpicxx   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/test.out.dir/main.cc.o -c /home/sarna/Documents/DG_moments/Tests/main.cc
+	/home/sarna/Desktop/Libraries/mpich/bin/mpicxx   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/test.out.dir/main.cc.o -c /home/sarna/Desktop/DG_moments/Tests/main.cc
 
 CMakeFiles/test.out.dir/main.cc.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/test.out.dir/main.cc.i"
-	/home/sarna/Documents/Libraries/mpich/bin/mpicxx  $(CXX_DEFINES) $(CXX_FLAGS) -E /home/sarna/Documents/DG_moments/Tests/main.cc > CMakeFiles/test.out.dir/main.cc.i
+	/home/sarna/Desktop/Libraries/mpich/bin/mpicxx  $(CXX_DEFINES) $(CXX_FLAGS) -E /home/sarna/Desktop/DG_moments/Tests/main.cc > CMakeFiles/test.out.dir/main.cc.i
 
 CMakeFiles/test.out.dir/main.cc.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/test.out.dir/main.cc.s"
-	/home/sarna/Documents/Libraries/mpich/bin/mpicxx  $(CXX_DEFINES) $(CXX_FLAGS) -S /home/sarna/Documents/DG_moments/Tests/main.cc -o CMakeFiles/test.out.dir/main.cc.s
+	/home/sarna/Desktop/Libraries/mpich/bin/mpicxx  $(CXX_DEFINES) $(CXX_FLAGS) -S /home/sarna/Desktop/DG_moments/Tests/main.cc -o CMakeFiles/test.out.dir/main.cc.s
 
 CMakeFiles/test.out.dir/main.cc.o.requires:
 .PHONY : CMakeFiles/test.out.dir/main.cc.o.requires
@@ -84,106 +84,106 @@ test_out_EXTERNAL_OBJECTS =
 
 test.out: CMakeFiles/test.out.dir/main.cc.o
 test.out: CMakeFiles/test.out.dir/build.make
-test.out: /home/sarna/Documents/Libraries/googletest/lib/libgtest.a
-test.out: /home/sarna/Documents/Libraries/dealii/lib/libdeal_II.g.so.8.5.0-pre
-test.out: /home/sarna/Documents/Libraries/tbb/lib/intel64/gcc4.7/libtbb_debug.so
+test.out: /home/sarna/Desktop/Libraries/googletest/lib/libgtest.a
+test.out: /home/sarna/Desktop/Libraries/dealii/lib/libdeal_II.g.so.8.5.0-pre
+test.out: /home/sarna/Desktop/Libraries/tbb/lib/intel64/gcc4.7/libtbb_debug.so
 test.out: /usr/lib64/libbz2.so
-test.out: /home/sarna/Documents/Libraries/mpich/lib/libmpifort.so
+test.out: /home/sarna/Desktop/Libraries/mpich/lib/libmpifort.so
 test.out: /usr/lib64/libz.so
-test.out: /home/sarna/Documents/Libraries/metis/lib/libmetis.so
-test.out: /home/sarna/Documents/Libraries/trilinos/lib/libmuelu-adapters.so
-test.out: /home/sarna/Documents/Libraries/trilinos/lib/libmuelu-interface.so
-test.out: /home/sarna/Documents/Libraries/trilinos/lib/libmuelu.so
-test.out: /home/sarna/Documents/Libraries/trilinos/lib/libteko.so
-test.out: /home/sarna/Documents/Libraries/trilinos/lib/libstratimikos.so
-test.out: /home/sarna/Documents/Libraries/trilinos/lib/libstratimikosbelos.so
-test.out: /home/sarna/Documents/Libraries/trilinos/lib/libstratimikosaztecoo.so
-test.out: /home/sarna/Documents/Libraries/trilinos/lib/libstratimikosamesos.so
-test.out: /home/sarna/Documents/Libraries/trilinos/lib/libstratimikosml.so
-test.out: /home/sarna/Documents/Libraries/trilinos/lib/libstratimikosifpack.so
-test.out: /home/sarna/Documents/Libraries/trilinos/lib/libifpack2-adapters.so
-test.out: /home/sarna/Documents/Libraries/trilinos/lib/libifpack2.so
-test.out: /home/sarna/Documents/Libraries/trilinos/lib/libanasazitpetra.so
-test.out: /home/sarna/Documents/Libraries/trilinos/lib/libModeLaplace.so
-test.out: /home/sarna/Documents/Libraries/trilinos/lib/libanasaziepetra.so
-test.out: /home/sarna/Documents/Libraries/trilinos/lib/libanasazi.so
-test.out: /home/sarna/Documents/Libraries/trilinos/lib/libamesos2.so
-test.out: /home/sarna/Documents/Libraries/trilinos/lib/libbelostpetra.so
-test.out: /home/sarna/Documents/Libraries/trilinos/lib/libbelosepetra.so
-test.out: /home/sarna/Documents/Libraries/trilinos/lib/libbelos.so
-test.out: /home/sarna/Documents/Libraries/trilinos/lib/libml.so
-test.out: /home/sarna/Documents/Libraries/trilinos/lib/libifpack.so
-test.out: /home/sarna/Documents/Libraries/trilinos/lib/libzoltan2.so
-test.out: /home/sarna/Documents/Libraries/trilinos/lib/libpamgen_extras.so
-test.out: /home/sarna/Documents/Libraries/trilinos/lib/libpamgen.so
-test.out: /home/sarna/Documents/Libraries/trilinos/lib/libamesos.so
-test.out: /home/sarna/Documents/Libraries/trilinos/lib/libgaleri-xpetra.so
-test.out: /home/sarna/Documents/Libraries/trilinos/lib/libgaleri-epetra.so
-test.out: /home/sarna/Documents/Libraries/trilinos/lib/libaztecoo.so
-test.out: /home/sarna/Documents/Libraries/trilinos/lib/libisorropia.so
-test.out: /home/sarna/Documents/Libraries/trilinos/lib/libxpetra-sup.so
-test.out: /home/sarna/Documents/Libraries/trilinos/lib/libxpetra.so
-test.out: /home/sarna/Documents/Libraries/trilinos/lib/libthyratpetra.so
-test.out: /home/sarna/Documents/Libraries/trilinos/lib/libthyraepetraext.so
-test.out: /home/sarna/Documents/Libraries/trilinos/lib/libthyraepetra.so
-test.out: /home/sarna/Documents/Libraries/trilinos/lib/libthyracore.so
-test.out: /home/sarna/Documents/Libraries/trilinos/lib/libepetraext.so
-test.out: /home/sarna/Documents/Libraries/trilinos/lib/libtpetraext.so
-test.out: /home/sarna/Documents/Libraries/trilinos/lib/libtpetrainout.so
-test.out: /home/sarna/Documents/Libraries/trilinos/lib/libtpetra.so
-test.out: /home/sarna/Documents/Libraries/trilinos/lib/libkokkostsqr.so
-test.out: /home/sarna/Documents/Libraries/trilinos/lib/libtpetrakernels.so
-test.out: /home/sarna/Documents/Libraries/trilinos/lib/libtpetraclassiclinalg.so
-test.out: /home/sarna/Documents/Libraries/trilinos/lib/libtpetraclassicnodeapi.so
-test.out: /home/sarna/Documents/Libraries/trilinos/lib/libtpetraclassic.so
-test.out: /home/sarna/Documents/Libraries/trilinos/lib/libtriutils.so
-test.out: /home/sarna/Documents/Libraries/trilinos/lib/libzoltan.so
-test.out: /home/sarna/Documents/Libraries/trilinos/lib/libepetra.so
-test.out: /home/sarna/Documents/Libraries/trilinos/lib/libsacado.so
-test.out: /home/sarna/Documents/Libraries/trilinos/lib/librtop.so
-test.out: /home/sarna/Documents/Libraries/trilinos/lib/libteuchoskokkoscomm.so
-test.out: /home/sarna/Documents/Libraries/trilinos/lib/libteuchoskokkoscompat.so
-test.out: /home/sarna/Documents/Libraries/trilinos/lib/libteuchosremainder.so
-test.out: /home/sarna/Documents/Libraries/trilinos/lib/libteuchosnumerics.so
-test.out: /home/sarna/Documents/Libraries/trilinos/lib/libteuchoscomm.so
-test.out: /home/sarna/Documents/Libraries/trilinos/lib/libteuchosparameterlist.so
-test.out: /home/sarna/Documents/Libraries/trilinos/lib/libteuchoscore.so
-test.out: /home/sarna/Documents/Libraries/trilinos/lib/libkokkosalgorithms.so
-test.out: /home/sarna/Documents/Libraries/trilinos/lib/libkokkoscontainers.so
-test.out: /home/sarna/Documents/Libraries/trilinos/lib/libkokkoscore.so
+test.out: /home/sarna/Desktop/Libraries/metis/lib/libmetis.so
+test.out: /home/sarna/Desktop/Libraries/trilinos_12.6/lib/libmuelu-adapters.so
+test.out: /home/sarna/Desktop/Libraries/trilinos_12.6/lib/libmuelu-interface.so
+test.out: /home/sarna/Desktop/Libraries/trilinos_12.6/lib/libmuelu.so
+test.out: /home/sarna/Desktop/Libraries/trilinos_12.6/lib/libteko.so
+test.out: /home/sarna/Desktop/Libraries/trilinos_12.6/lib/libstratimikos.so
+test.out: /home/sarna/Desktop/Libraries/trilinos_12.6/lib/libstratimikosbelos.so
+test.out: /home/sarna/Desktop/Libraries/trilinos_12.6/lib/libstratimikosaztecoo.so
+test.out: /home/sarna/Desktop/Libraries/trilinos_12.6/lib/libstratimikosamesos.so
+test.out: /home/sarna/Desktop/Libraries/trilinos_12.6/lib/libstratimikosml.so
+test.out: /home/sarna/Desktop/Libraries/trilinos_12.6/lib/libstratimikosifpack.so
+test.out: /home/sarna/Desktop/Libraries/trilinos_12.6/lib/libifpack2-adapters.so
+test.out: /home/sarna/Desktop/Libraries/trilinos_12.6/lib/libifpack2.so
+test.out: /home/sarna/Desktop/Libraries/trilinos_12.6/lib/libanasazitpetra.so
+test.out: /home/sarna/Desktop/Libraries/trilinos_12.6/lib/libModeLaplace.so
+test.out: /home/sarna/Desktop/Libraries/trilinos_12.6/lib/libanasaziepetra.so
+test.out: /home/sarna/Desktop/Libraries/trilinos_12.6/lib/libanasazi.so
+test.out: /home/sarna/Desktop/Libraries/trilinos_12.6/lib/libamesos2.so
+test.out: /home/sarna/Desktop/Libraries/trilinos_12.6/lib/libbelostpetra.so
+test.out: /home/sarna/Desktop/Libraries/trilinos_12.6/lib/libbelosepetra.so
+test.out: /home/sarna/Desktop/Libraries/trilinos_12.6/lib/libbelos.so
+test.out: /home/sarna/Desktop/Libraries/trilinos_12.6/lib/libml.so
+test.out: /home/sarna/Desktop/Libraries/trilinos_12.6/lib/libifpack.so
+test.out: /home/sarna/Desktop/Libraries/trilinos_12.6/lib/libzoltan2.so
+test.out: /home/sarna/Desktop/Libraries/trilinos_12.6/lib/libpamgen_extras.so
+test.out: /home/sarna/Desktop/Libraries/trilinos_12.6/lib/libpamgen.so
+test.out: /home/sarna/Desktop/Libraries/trilinos_12.6/lib/libamesos.so
+test.out: /home/sarna/Desktop/Libraries/trilinos_12.6/lib/libgaleri-xpetra.so
+test.out: /home/sarna/Desktop/Libraries/trilinos_12.6/lib/libgaleri-epetra.so
+test.out: /home/sarna/Desktop/Libraries/trilinos_12.6/lib/libaztecoo.so
+test.out: /home/sarna/Desktop/Libraries/trilinos_12.6/lib/libisorropia.so
+test.out: /home/sarna/Desktop/Libraries/trilinos_12.6/lib/libxpetra-sup.so
+test.out: /home/sarna/Desktop/Libraries/trilinos_12.6/lib/libxpetra.so
+test.out: /home/sarna/Desktop/Libraries/trilinos_12.6/lib/libthyratpetra.so
+test.out: /home/sarna/Desktop/Libraries/trilinos_12.6/lib/libthyraepetraext.so
+test.out: /home/sarna/Desktop/Libraries/trilinos_12.6/lib/libthyraepetra.so
+test.out: /home/sarna/Desktop/Libraries/trilinos_12.6/lib/libthyracore.so
+test.out: /home/sarna/Desktop/Libraries/trilinos_12.6/lib/libepetraext.so
+test.out: /home/sarna/Desktop/Libraries/trilinos_12.6/lib/libtpetraext.so
+test.out: /home/sarna/Desktop/Libraries/trilinos_12.6/lib/libtpetrainout.so
+test.out: /home/sarna/Desktop/Libraries/trilinos_12.6/lib/libtpetra.so
+test.out: /home/sarna/Desktop/Libraries/trilinos_12.6/lib/libkokkostsqr.so
+test.out: /home/sarna/Desktop/Libraries/trilinos_12.6/lib/libtpetrakernels.so
+test.out: /home/sarna/Desktop/Libraries/trilinos_12.6/lib/libtpetraclassiclinalg.so
+test.out: /home/sarna/Desktop/Libraries/trilinos_12.6/lib/libtpetraclassicnodeapi.so
+test.out: /home/sarna/Desktop/Libraries/trilinos_12.6/lib/libtpetraclassic.so
+test.out: /home/sarna/Desktop/Libraries/trilinos_12.6/lib/libtriutils.so
+test.out: /home/sarna/Desktop/Libraries/trilinos_12.6/lib/libzoltan.so
+test.out: /home/sarna/Desktop/Libraries/trilinos_12.6/lib/libepetra.so
+test.out: /home/sarna/Desktop/Libraries/trilinos_12.6/lib/libsacado.so
+test.out: /home/sarna/Desktop/Libraries/trilinos_12.6/lib/librtop.so
+test.out: /home/sarna/Desktop/Libraries/trilinos_12.6/lib/libteuchoskokkoscomm.so
+test.out: /home/sarna/Desktop/Libraries/trilinos_12.6/lib/libteuchoskokkoscompat.so
+test.out: /home/sarna/Desktop/Libraries/trilinos_12.6/lib/libteuchosremainder.so
+test.out: /home/sarna/Desktop/Libraries/trilinos_12.6/lib/libteuchosnumerics.so
+test.out: /home/sarna/Desktop/Libraries/trilinos_12.6/lib/libteuchoscomm.so
+test.out: /home/sarna/Desktop/Libraries/trilinos_12.6/lib/libteuchosparameterlist.so
+test.out: /home/sarna/Desktop/Libraries/trilinos_12.6/lib/libteuchoscore.so
+test.out: /home/sarna/Desktop/Libraries/trilinos_12.6/lib/libkokkosalgorithms.so
+test.out: /home/sarna/Desktop/Libraries/trilinos_12.6/lib/libkokkoscontainers.so
+test.out: /home/sarna/Desktop/Libraries/trilinos_12.6/lib/libkokkoscore.so
 test.out: /usr/lib64/liblapack.so
 test.out: /usr/lib64/libblas.so
-test.out: /home/sarna/Documents/Libraries/mpich/lib/libmpicxx.so
+test.out: /home/sarna/Desktop/Libraries/mpich/lib/libmpicxx.so
 test.out: /usr/bin/lib/libgsl.so
 test.out: /usr/bin/lib/libgslcblas.so
-test.out: /home/sarna/Documents/Libraries/hdf5/lib/libhdf5_hl.so
-test.out: /home/sarna/Documents/Libraries/hdf5/lib/libhdf5.so
-test.out: /home/sarna/Documents/Libraries/mpich/lib/libmpi.so
+test.out: /home/sarna/Desktop/Libraries/hdf5/lib/libhdf5_hl.so
+test.out: /home/sarna/Desktop/Libraries/hdf5/lib/libhdf5.so
+test.out: /home/sarna/Desktop/Libraries/mpich/lib/libmpi.so
 test.out: /usr/local/netcdf/3.6.3/lib/libnetcdf_c++.so
 test.out: /usr/local/netcdf/3.6.3/lib/libnetcdf.so
-test.out: /home/sarna/Documents/Libraries/oce/lib/libTKBO.so
-test.out: /home/sarna/Documents/Libraries/oce/lib/libTKBool.so
-test.out: /home/sarna/Documents/Libraries/oce/lib/libTKBRep.so
-test.out: /home/sarna/Documents/Libraries/oce/lib/libTKernel.so
-test.out: /home/sarna/Documents/Libraries/oce/lib/libTKFeat.so
-test.out: /home/sarna/Documents/Libraries/oce/lib/libTKFillet.so
-test.out: /home/sarna/Documents/Libraries/oce/lib/libTKG2d.so
-test.out: /home/sarna/Documents/Libraries/oce/lib/libTKG3d.so
-test.out: /home/sarna/Documents/Libraries/oce/lib/libTKGeomAlgo.so
-test.out: /home/sarna/Documents/Libraries/oce/lib/libTKGeomBase.so
-test.out: /home/sarna/Documents/Libraries/oce/lib/libTKHLR.so
-test.out: /home/sarna/Documents/Libraries/oce/lib/libTKIGES.so
-test.out: /home/sarna/Documents/Libraries/oce/lib/libTKMath.so
-test.out: /home/sarna/Documents/Libraries/oce/lib/libTKMesh.so
-test.out: /home/sarna/Documents/Libraries/oce/lib/libTKOffset.so
-test.out: /home/sarna/Documents/Libraries/oce/lib/libTKPrim.so
-test.out: /home/sarna/Documents/Libraries/oce/lib/libTKShHealing.so
-test.out: /home/sarna/Documents/Libraries/oce/lib/libTKSTEP.so
-test.out: /home/sarna/Documents/Libraries/oce/lib/libTKSTEPAttr.so
-test.out: /home/sarna/Documents/Libraries/oce/lib/libTKSTEPBase.so
-test.out: /home/sarna/Documents/Libraries/oce/lib/libTKSTL.so
-test.out: /home/sarna/Documents/Libraries/oce/lib/libTKTopAlgo.so
-test.out: /home/sarna/Documents/Libraries/oce/lib/libTKXSBase.so
+test.out: /home/sarna/Desktop/Libraries/oce/lib/libTKBO.so
+test.out: /home/sarna/Desktop/Libraries/oce/lib/libTKBool.so
+test.out: /home/sarna/Desktop/Libraries/oce/lib/libTKBRep.so
+test.out: /home/sarna/Desktop/Libraries/oce/lib/libTKernel.so
+test.out: /home/sarna/Desktop/Libraries/oce/lib/libTKFeat.so
+test.out: /home/sarna/Desktop/Libraries/oce/lib/libTKFillet.so
+test.out: /home/sarna/Desktop/Libraries/oce/lib/libTKG2d.so
+test.out: /home/sarna/Desktop/Libraries/oce/lib/libTKG3d.so
+test.out: /home/sarna/Desktop/Libraries/oce/lib/libTKGeomAlgo.so
+test.out: /home/sarna/Desktop/Libraries/oce/lib/libTKGeomBase.so
+test.out: /home/sarna/Desktop/Libraries/oce/lib/libTKHLR.so
+test.out: /home/sarna/Desktop/Libraries/oce/lib/libTKIGES.so
+test.out: /home/sarna/Desktop/Libraries/oce/lib/libTKMath.so
+test.out: /home/sarna/Desktop/Libraries/oce/lib/libTKMesh.so
+test.out: /home/sarna/Desktop/Libraries/oce/lib/libTKOffset.so
+test.out: /home/sarna/Desktop/Libraries/oce/lib/libTKPrim.so
+test.out: /home/sarna/Desktop/Libraries/oce/lib/libTKShHealing.so
+test.out: /home/sarna/Desktop/Libraries/oce/lib/libTKSTEP.so
+test.out: /home/sarna/Desktop/Libraries/oce/lib/libTKSTEPAttr.so
+test.out: /home/sarna/Desktop/Libraries/oce/lib/libTKSTEPBase.so
+test.out: /home/sarna/Desktop/Libraries/oce/lib/libTKSTL.so
+test.out: /home/sarna/Desktop/Libraries/oce/lib/libTKTopAlgo.so
+test.out: /home/sarna/Desktop/Libraries/oce/lib/libTKXSBase.so
 test.out: CMakeFiles/test.out.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --red --bold "Linking CXX executable test.out"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/test.out.dir/link.txt --verbose=$(VERBOSE)
@@ -200,6 +200,6 @@ CMakeFiles/test.out.dir/clean:
 .PHONY : CMakeFiles/test.out.dir/clean
 
 CMakeFiles/test.out.dir/depend:
-	cd /home/sarna/Documents/DG_moments/Tests/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/sarna/Documents/DG_moments/Tests /home/sarna/Documents/DG_moments/Tests /home/sarna/Documents/DG_moments/Tests/build /home/sarna/Documents/DG_moments/Tests/build /home/sarna/Documents/DG_moments/Tests/build/CMakeFiles/test.out.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/sarna/Desktop/DG_moments/Tests/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/sarna/Desktop/DG_moments/Tests /home/sarna/Desktop/DG_moments/Tests /home/sarna/Desktop/DG_moments/Tests/build /home/sarna/Desktop/DG_moments/Tests/build /home/sarna/Desktop/DG_moments/Tests/build/CMakeFiles/test.out.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/test.out.dir/depend
 

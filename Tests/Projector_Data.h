@@ -5,7 +5,7 @@
                         double nx,double ny,const unsigned int max_degree,
                       TensorInfo::Base_TensorInfo<dim> &base_tensorinfo)
 	{
-	        Assert(max_degree <=10,dealii::StandardExceptions::ExcMessage("Not Implemented for this tensorial degree"));
+	        Assert(max_degree <=11,dealii::StandardExceptions::ExcMessage("Not Implemented for this tensorial degree"));
 
 		// first we allocate the required memory
 		tensor_project.resize(base_tensorinfo.max_tensorial_degree + 1);

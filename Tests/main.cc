@@ -35,6 +35,8 @@ std::string input_file;
 #include "ExactSolution_PoissonHeatConduction_G105.h"
 #include "ExactSolution_PoissonHeatConduction_G120.h"
 
+#include "Test_LinearSolver.h"
+
 #include "G26.h"
 //#include "G20.h"
 //#include "G35.h"
@@ -54,10 +56,10 @@ std::string input_file;
 //#include "Test_BoundaryHandler_Char.h"
  //#include "Test_TensorInfo.h"
 // #include "Test_BoundaryHandler_Odd.h"
- #include "Test_ExactSolution.h"
- #include "Test_Solver.h"
-#include "Test_ProjectorData.h"
-#include "Test_SymmetrizerData.h"
+// #include "Test_ExactSolution.h"
+// #include "Test_Solver.h"
+// #include "Test_ProjectorData.h"
+// #include "Test_SymmetrizerData.h"
 
 int main(int argc,char **argv)
 {

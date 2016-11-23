@@ -38,10 +38,10 @@ EQUALS = =
 CMAKE_EDIT_COMMAND = /usr/bin/ccmake
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/sarna/Documents/DG_moments/Tests
+CMAKE_SOURCE_DIR = /home/sarna/Desktop/DG_moments/Tests
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/sarna/Documents/DG_moments/Tests/build
+CMAKE_BINARY_DIR = /home/sarna/Desktop/DG_moments/Tests/build
 
 # Utility rule file for release.
 
@@ -49,10 +49,10 @@ CMAKE_BINARY_DIR = /home/sarna/Documents/DG_moments/Tests/build
 include CMakeFiles/release.dir/progress.make
 
 CMakeFiles/release:
-	$(CMAKE_COMMAND) -E cmake_progress_report /home/sarna/Documents/DG_moments/Tests/build/CMakeFiles $(CMAKE_PROGRESS_1)
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/sarna/Desktop/DG_moments/Tests/build/CMakeFiles $(CMAKE_PROGRESS_1)
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold "Switch CMAKE_BUILD_TYPE to Release"
-	/usr/bin/cmake -DCMAKE_BUILD_TYPE=Release /home/sarna/Documents/DG_moments/Tests
-	/usr/bin/cmake --build /home/sarna/Documents/DG_moments/Tests/build --target all
+	/usr/bin/cmake -DCMAKE_BUILD_TYPE=Release /home/sarna/Desktop/DG_moments/Tests
+	/usr/bin/cmake --build /home/sarna/Desktop/DG_moments/Tests/build --target all
 
 release: CMakeFiles/release
 release: CMakeFiles/release.dir/build.make
@@ -67,6 +67,6 @@ CMakeFiles/release.dir/clean:
 .PHONY : CMakeFiles/release.dir/clean
 
 CMakeFiles/release.dir/depend:
-	cd /home/sarna/Documents/DG_moments/Tests/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/sarna/Documents/DG_moments/Tests /home/sarna/Documents/DG_moments/Tests /home/sarna/Documents/DG_moments/Tests/build /home/sarna/Documents/DG_moments/Tests/build /home/sarna/Documents/DG_moments/Tests/build/CMakeFiles/release.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/sarna/Desktop/DG_moments/Tests/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/sarna/Desktop/DG_moments/Tests /home/sarna/Desktop/DG_moments/Tests /home/sarna/Desktop/DG_moments/Tests/build /home/sarna/Desktop/DG_moments/Tests/build /home/sarna/Desktop/DG_moments/Tests/build/CMakeFiles/release.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/release.dir/depend
 
