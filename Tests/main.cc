@@ -36,6 +36,7 @@ std::string input_file;
 #include "ExactSolution_PoissonHeatConduction_G120.h"
 
 #include "Test_LinearSolver.h"
+#include "Test_FEValues.h"
 
 #include "G26.h"
 //#include "G20.h"

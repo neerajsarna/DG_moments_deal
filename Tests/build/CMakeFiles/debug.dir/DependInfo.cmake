@@ -11,6 +11,7 @@ SET(CMAKE_TARGET_LINKED_INFO_FILES
 SET(CMAKE_C_TARGET_INCLUDE_PATH
   "../../include_new"
   "../include_tests_G26"
+  "../Test_Generic"
   "../../periodic_square"
   "../../systems"
   "/home/sarna/Desktop/Libraries/eigenv3/eigen"
