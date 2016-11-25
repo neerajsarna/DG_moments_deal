@@ -11,6 +11,8 @@ SET(G++_COVERAGE_COMPILE_FLAGS5 "-Wno-missing-field-initializers")
 SET(G++_COVERAGE_COMPILE_FLAGS6 "-DMKL_ILP64 -m64")
 SET(G++_COVERAGE_COMPILE_FLAGS7 "-Wl,--no-as-needed")
 SET(G++_COVERAGE_COMPILE_FLAGS8 "-fmax-errors=2")
+SET(G++_COVERAGE_LINK_FLAGS    "-lm")
+
 
 #SET(DEAL_II_DIR "/Applications/deal.II.app/Contents/Resources/lib/cmake")
 SET(DEAL_II_DIR "/home/sarna/Desktop/Libraries/dealii/lib/cmake")
@@ -51,6 +53,8 @@ ADD_DEFINITIONS(${G++_COVERAGE_COMPILE_FLAGS8})
 ADD_EXECUTABLE(test.out main.cc)
 
 
+SET( CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} ${G++_COVERAGE_LINK_FLAGS}" )
+
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/../include_new)
 
 #INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/include_tests_systemA)
@@ -64,6 +68,7 @@ INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/include_tests_G26)
 #INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/include_tests_G105)
 #INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/include_tests_G120)
 
+INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/Test_Generic)
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/../periodic_square)
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/../systems)
 INCLUDE_DIRECTORIES(${EIGEN_DIR})
@@ -81,11 +86,11 @@ SET(GTEST_LIBRARIES "/home/sarna/Desktop/Libraries/googletest/lib/libgtest.a")
 # Locate GTest
 INCLUDE_DIRECTORIES(${GTEST_INCLUDE_DIRS})
 
+DEAL_II_SETUP_TARGET(test.out)
 #TARGET_LINK_LIBRARIES(test.out ${GTEST_LIBRARIES} libmkl_intel_ilp64.dylib libmkl_core.dylib libmkl_intel_thread.dylib libpthread.dylib libdl.dylib pthread)
 TARGET_LINK_LIBRARIES(test.out ${GTEST_LIBRARIES} libiomp5.so libpthread.so libmkl_intel_ilp64.so libmkl_core.so libmkl_intel_thread.so libdl.so)
 #TARGET_LINK_LIBRARIES(test.out ${GTEST_LIBRARIES} pthread)
 
-DEAL_II_SETUP_TARGET(test.out)
 ADD_CUSTOM_TARGET(release
   COMMAND ${CMAKE_COMMAND} -DCMAKE_BUILD_TYPE=Release ${CMAKE_SOURCE_DIR}
   COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target all

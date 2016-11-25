@@ -40,6 +40,7 @@ CMakeFiles/test.out.dir/main.cc.o: ../../ring/MeshGenerator_Ring.h
 CMakeFiles/test.out.dir/main.cc.o: ../../ring/Run_Ring.h
 CMakeFiles/test.out.dir/main.cc.o: ../../systems/BCrhs_systemA.h
 CMakeFiles/test.out.dir/main.cc.o: ../../systems/G26.h
+CMakeFiles/test.out.dir/main.cc.o: ../include_tests_G26/Test_Solver.h
 CMakeFiles/test.out.dir/main.cc.o: ../include_tests_G26/basic_routines.h
 CMakeFiles/test.out.dir/main.cc.o: ../Test_LinearSolver.h
 CMakeFiles/test.out.dir/main.cc.o: ../main.cc

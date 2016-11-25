@@ -27,7 +27,7 @@ namespace LinearSolver
 		                        Vector<double> &solution)
 	{
 
-          const Solver_Type solver_type = Trilinos_GMRES;
+          const Solver_Type solver_type = Pardiso;
           switch(solver_type)
           {
             case Trilinos_Direct:

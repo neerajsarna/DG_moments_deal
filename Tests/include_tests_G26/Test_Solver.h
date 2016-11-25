@@ -201,7 +201,7 @@ namespace Test_Solver
 
 		base_solver.run_periodic();
 
-	/*	Vector<double> exact_error(constants.constants.refine_cycles);
+		Vector<double> exact_error(constants.constants.refine_cycles);
 		AssertDimension(constants.constants.refine_cycles,3);
 
 		if (constants.constants.bc_type == characteristic)
@@ -237,7 +237,7 @@ namespace Test_Solver
 				exact_error(2) = 9.1524e-07;
 			}
 		}
-*/
+
 
 	}
 }
