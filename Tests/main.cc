@@ -24,7 +24,9 @@ std::string input_file;
 #include "Base_MeshGenerator.h"
 #include "Base_PeriodicityHandler.h"
 #include "Base_PostProc.h"
+#include "Base_NumericalIntegration.h"
 #include "Base_Solver.h"
+
 
 #include "ExactSolution_PoissonHeatConduction_G20.h"
 #include "ExactSolution_PoissonHeatConduction_G35.h"
@@ -35,8 +37,11 @@ std::string input_file;
 #include "ExactSolution_PoissonHeatConduction_G105.h"
 #include "ExactSolution_PoissonHeatConduction_G120.h"
 
+
+// certain generic tests which have to be performed independent of the system
 #include "Test_LinearSolver.h"
 #include "Test_FEValues.h"
+//#include "Test_MatrixOpt.h"
 
 #include "G26.h"
 //#include "G20.h"
@@ -53,7 +58,6 @@ std::string input_file;
 //#include "Test_BaseConstants.h"
  //#include "Test_ForceType.h" 
  //#include "Test_EquationGenerator.h"
-//#include "Test_MatrixOpt.h"
 //#include "Test_BoundaryHandler_Char.h"
  //#include "Test_TensorInfo.h"
 // #include "Test_BoundaryHandler_Odd.h"

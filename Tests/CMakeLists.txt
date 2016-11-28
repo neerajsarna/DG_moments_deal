@@ -13,15 +13,20 @@ SET(G++_COVERAGE_COMPILE_FLAGS7 "-Wl,--no-as-needed")
 SET(G++_COVERAGE_COMPILE_FLAGS8 "-fmax-errors=2")
 SET(G++_COVERAGE_LINK_FLAGS    "-lm")
 
+SET(LAPTOP ON)
 
-#SET(DEAL_II_DIR "/Applications/deal.II.app/Contents/Resources/lib/cmake")
-SET(DEAL_II_DIR "/home/sarna/Desktop/Libraries/dealii/lib/cmake")
+IF(LAPTOP)
+  MESSAGE("ENTERED IF")
+  SET(DEAL_II_DIR "/Applications/deal.II.app/Contents/Resources/lib/cmake")
+  SET(MKL_DIR "/opt/intel//compilers_and_libraries_2016.3.170/mac/mkl")
+ENDIF()
 
-#SET(MKL_DIR "/opt/intel//compilers_and_libraries_2016.3.170/mac/mkl")
-SET(MKL_DIR "/opt/intel/composer_xe_2013_sp1.0.080/mkl")
+#SET(DEAL_II_DIR "/home/sarna/Desktop/Libraries/dealii/lib/cmake")
 
-#SET(EIGEN_DIR "/usr/local/include/eigen")
-SET(EIGEN_DIR "/home/sarna/Desktop/Libraries/eigenv3/eigen")
+#SET(MKL_DIR "/opt/intel/composer_xe_2013_sp1.0.080/mkl")
+
+SET(EIGEN_DIR "/usr/local/include/eigen")
+#SET(EIGEN_DIR "/home/sarna/Desktop/Libraries/eigenv3/eigen")
 
 
 FIND_PACKAGE(deal.II 8.3 QUIET
@@ -79,16 +84,18 @@ INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/../Symmetrizer_Data)
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/../ring)
 INCLUDE_DIRECTORIES(${MKL_DIR}/include)
 
-#FIND_PACKAGE(GTest REQUIRED)
-SET(GTEST_INCLUDE_DIRS "/home/sarna/Desktop/Libraries/googletest/include")
-SET(GTEST_LIBRARIES "/home/sarna/Desktop/Libraries/googletest/lib/libgtest.a")
+FIND_PACKAGE(GTest REQUIRED)
+#SET(GTEST_INCLUDE_DIRS "/home/sarna/Desktop/Libraries/googletest/include")
+#SET(GTEST_LIBRARIES "/home/sarna/Desktop/Libraries/googletest/lib/libgtest.a")
 
 # Locate GTest
 INCLUDE_DIRECTORIES(${GTEST_INCLUDE_DIRS})
 
 DEAL_II_SETUP_TARGET(test.out)
-#TARGET_LINK_LIBRARIES(test.out ${GTEST_LIBRARIES} libmkl_intel_ilp64.dylib libmkl_core.dylib libmkl_intel_thread.dylib libpthread.dylib libdl.dylib pthread)
-TARGET_LINK_LIBRARIES(test.out ${GTEST_LIBRARIES} libiomp5.so libpthread.so libmkl_intel_ilp64.so libmkl_core.so libmkl_intel_thread.so libdl.so)
+
+
+TARGET_LINK_LIBRARIES(test.out ${GTEST_LIBRARIES} libmkl_intel_ilp64.dylib libmkl_core.dylib libmkl_intel_thread.dylib libpthread.dylib libdl.dylib pthread)
+#TARGET_LINK_LIBRARIES(test.out ${GTEST_LIBRARIES} libiomp5.so libpthread.so libmkl_intel_ilp64.so libmkl_core.so libmkl_intel_thread.so libdl.so)
 #TARGET_LINK_LIBRARIES(test.out ${GTEST_LIBRARIES} pthread)
 
 ADD_CUSTOM_TARGET(release

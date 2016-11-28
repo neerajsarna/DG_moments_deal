@@ -6,7 +6,8 @@ namespace FEM_Solver
 	template<int dim>
 	class
 	Base_Solver:public MeshGenerator::Base_MeshGenerator<dim>,
-				public PeriodicityHandler::Base_PeriodicityHandler<dim>
+				public PeriodicityHandler::Base_PeriodicityHandler<dim>,
+                public NumericalIntegration::Base_NumericalIntegration<dim> 
 	{
 		typedef MeshWorker::DoFInfo<dim> DoFInfo;
 		typedef MeshWorker::IntegrationInfo<dim> CellInfo;
@@ -27,6 +28,7 @@ namespace FEM_Solver
 			const constant_data constants;
             ExactSolution::Base_ExactSolution<dim> *base_exactsolution;
 			EquationGenerator::Base_EquationGenerator<dim> *system_info;
+            MatrixOpt::Base_MatrixOpt matrix_opt;
 
 			// the following order is important or else we run into trouble
 			FESystem<dim> finite_element;
@@ -85,7 +87,7 @@ namespace FEM_Solver
             void assemble_system_periodic_char();
             void assemble_system_periodic_odd();
 
-        	void integrate_cell_manuel(FullMatrix<double> &cell_matrix, Vector<double> &cell_rhs,
+        	void integrate_cell_manuel(Sparse_matrix &cell_matrix, Vector<double> &cell_rhs,
         								FEValuesBase<dim> &fe_v,  std::vector<double> &J,
         								std::vector<Vector<double>> &source_term_value, const typename DoFHandler<dim>::active_cell_iterator &cell);
 
@@ -107,10 +109,10 @@ namespace FEM_Solver
         									const typename DoFHandler<dim>::active_cell_iterator &cell,
                                             const unsigned int b_id);
 
-        	void integrate_face_manuel(FullMatrix<double> &u1_v1,
-        								FullMatrix<double> &u1_v2,
-        								FullMatrix<double> &u2_v1,
-        								FullMatrix<double> &u2_v2,
+        	void integrate_face_manuel(Full_matrix &u1_v1,
+                                       Full_matrix &u1_v2,
+                                       Full_matrix &u2_v1,
+                                       Full_matrix &u2_v2,
         								FEValuesBase<dim> &fe_v,
         								FEValuesBase<dim> &fe_v_neighbor,
         								std::vector<double> &J,
@@ -120,8 +122,6 @@ namespace FEM_Solver
             // Data for post proc
             ConvergenceTable convergence_table;
             std::vector<double> error_per_itr;
-
-
 	};
 
 	template<int dim>

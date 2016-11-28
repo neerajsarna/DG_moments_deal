@@ -80,7 +80,8 @@ namespace Constants
 	void Base_Constants
 	::read_input_file(const string &input_file)
 	{
-		prm.parse_input(input_file.c_str());
+		//prm.parse_input(input_file.c_str());
+		prm.read_input(input_file.c_str());
 	}
 
 	void Base_Constants
