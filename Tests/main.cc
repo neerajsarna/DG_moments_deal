@@ -44,14 +44,15 @@ std::string input_file;
 //#include "Test_MatrixOpt.h"
 
 #include "G26.h"
-//#include "G20.h"
-//#include "G35.h"
-//#include "G45.h"
-//#include "G56.h"
-//#include "G71.h"
-//#include "G84.h"
-//#include "G105.h"
-//#include "G120.h"
+#include "G20.h"
+#include "G35.h"
+#include "G45.h"
+#include "G56.h"
+#include "G71.h"
+#include "G84.h"
+#include "G105.h"
+#include "G120.h"
+
 //tests
 
 /**********Standard Tests for any system. Change The include directory from the make file*************/

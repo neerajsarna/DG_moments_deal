@@ -14,19 +14,22 @@ SET(G++_COVERAGE_COMPILE_FLAGS8 "-fmax-errors=2")
 SET(G++_COVERAGE_LINK_FLAGS    "-lm")
 
 SET(LAPTOP ON)
+SET(TURBINE OFF)
 
 IF(LAPTOP)
-  MESSAGE("ENTERED IF")
+  MESSAGE("ON LAPTOP")
   SET(DEAL_II_DIR "/Applications/deal.II.app/Contents/Resources/lib/cmake")
   SET(MKL_DIR "/opt/intel//compilers_and_libraries_2016.3.170/mac/mkl")
+  SET(EIGEN_DIR "/usr/local/include/eigen")
 ENDIF()
 
-#SET(DEAL_II_DIR "/home/sarna/Desktop/Libraries/dealii/lib/cmake")
+IF(TURBINE)
+  SET("ON TURBINE")
+  SET(DEAL_II_DIR "/home/sarna/Desktop/Libraries/dealii/lib/cmake")
+  SET(MKL_DIR "/opt/intel/composer_xe_2013_sp1.0.080/mkl")
+  SET(EIGEN_DIR "/home/sarna/Desktop/Libraries/eigenv3/eigen")
+ENDIF()
 
-#SET(MKL_DIR "/opt/intel/composer_xe_2013_sp1.0.080/mkl")
-
-SET(EIGEN_DIR "/usr/local/include/eigen")
-#SET(EIGEN_DIR "/home/sarna/Desktop/Libraries/eigenv3/eigen")
 
 
 FIND_PACKAGE(deal.II 8.3 QUIET
@@ -63,15 +66,52 @@ SET( CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} ${G++_COVERAGE_LINK_FLAG
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/../include_new)
 
 #INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/include_tests_systemA)
-INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/include_tests_G26)
-#INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/include_tests_G20)
-#INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/include_tests_G35)
-#INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/include_tests_G45)
-#INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/include_tests_G56)
-#INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/include_tests_G71)
-#INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/include_tests_G84)
-#INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/include_tests_G105)
-#INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/include_tests_G120)
+
+IF(G26)
+  MESSAGE("${G26}")
+  MESSAGE("Running TESTS on G26")
+  INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/include_tests_G26)
+ENDIF()
+
+IF(G20)
+  MESSAGE("Running TESTS on G20")
+  INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/include_tests_G20)
+ENDIF()
+
+IF(G35)
+  MESSAGE("Running TESTS on G35")
+  INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/include_tests_G35)
+ENDIF()
+
+IF(G45)
+  MESSAGE("Running TESTS on G45")
+  INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/include_tests_G45)
+ENDIF()
+
+IF(G56)
+  MESSAGE("Running TESTS on G56")
+  INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/include_tests_G56)
+ENDIF()
+
+IF(G71)
+  MESSAGE("Running TESTS on G71")
+  INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/include_tests_G71)
+ENDIF()
+
+IF(G84)
+  MESSAGE("Running TESTS on G84")
+  INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/include_tests_G84)
+ENDIF()
+
+IF(G105)
+  MESSAGE("Running TESTS on G105")
+  INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/include_tests_G105)
+ENDIF()
+
+IF(G120)
+  MESSAGE("Running TESTS on G120")
+  INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/include_tests_G120)
+ENDIF()
 
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/Test_Generic)
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/../periodic_square)
@@ -84,9 +124,17 @@ INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/../Symmetrizer_Data)
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/../ring)
 INCLUDE_DIRECTORIES(${MKL_DIR}/include)
 
-FIND_PACKAGE(GTest REQUIRED)
-#SET(GTEST_INCLUDE_DIRS "/home/sarna/Desktop/Libraries/googletest/include")
-#SET(GTEST_LIBRARIES "/home/sarna/Desktop/Libraries/googletest/lib/libgtest.a")
+
+IF(LAPTOP )
+  FIND_PACKAGE(GTest REQUIRED)
+ENDIF()
+
+IF(TURBINE)
+  SET(GTEST_INCLUDE_DIRS "/home/sarna/Desktop/Libraries/googletest/include")
+  SET(GTEST_LIBRARIES "/home/sarna/Desktop/Libraries/googletest/lib/libgtest.a")
+ENDIF()
+
+
 
 # Locate GTest
 INCLUDE_DIRECTORIES(${GTEST_INCLUDE_DIRS})
@@ -94,9 +142,15 @@ INCLUDE_DIRECTORIES(${GTEST_INCLUDE_DIRS})
 DEAL_II_SETUP_TARGET(test.out)
 
 
+IF(LAPTOP)
 TARGET_LINK_LIBRARIES(test.out ${GTEST_LIBRARIES} libmkl_intel_ilp64.dylib libmkl_core.dylib libmkl_intel_thread.dylib libpthread.dylib libdl.dylib pthread)
-#TARGET_LINK_LIBRARIES(test.out ${GTEST_LIBRARIES} libiomp5.so libpthread.so libmkl_intel_ilp64.so libmkl_core.so libmkl_intel_thread.so libdl.so)
-#TARGET_LINK_LIBRARIES(test.out ${GTEST_LIBRARIES} pthread)
+ENDIF()
+
+IF(TURBINE)
+TARGET_LINK_LIBRARIES(test.out ${GTEST_LIBRARIES} libiomp5.so libpthread.so libmkl_intel_ilp64.so libmkl_core.so libmkl_intel_thread.so libdl.so)
+ENDIF()
+
+
 
 ADD_CUSTOM_TARGET(release
   COMMAND ${CMAKE_COMMAND} -DCMAKE_BUILD_TYPE=Release ${CMAKE_SOURCE_DIR}

@@ -658,8 +658,7 @@ Base_Solver<dim>::assemble_system_periodic_odd()
       // make computation faster
      this->Compute_Shape_Value(mapping,constants.p,ngp,cell);
 
-     TimerOutput timer (std::cout, TimerOutput::summary,
-                   TimerOutput::wall_times);
+     
 
       for (; cell != endc ; cell++) 
       {
@@ -678,7 +677,7 @@ Base_Solver<dim>::assemble_system_periodic_odd()
         integrate_cell_manuel(cell_matrix,cell_rhs,
                               fe_v,Jacobians_interior,
                               source_term_value,cell);
-        timer.leave_subsection();      
+     
 
 
             for(unsigned int face  = 0; face< GeometryInfo<dim>::faces_per_cell; face++ )
@@ -778,7 +777,7 @@ Base_Solver<dim>::assemble_system_periodic_odd()
                                          Jacobian_face,component,  
                                          cell);
 
-                   timer.leave_subsection();
+                   
                   }
 
                   
@@ -829,7 +828,7 @@ Base_Solver<dim>::assemble_system_periodic_odd()
                 global_matrix.add(local_dof_indices[i],local_dof_indices_neighbor[j],u2_v1(i,j));
                 global_matrix.add(local_dof_indices_neighbor[i],local_dof_indices[j],u1_v2(i,j)) ;
               }
-               timer.leave_subsection();
+               
             }
               
 
