@@ -191,7 +191,7 @@ namespace Test_FEValues
 											  * J[q];
 
 
-			Mass_x = numerical_integration.Compute_Mass_shape_grad_x(fe_values, num_dof, J,cell);
+			Mass_x = numerical_integration.Compute_Mass_shape_grad_x(fe_values, num_dof, J);
 
 
 			for (unsigned int i = 0 ; i < num_dof ; i++)
@@ -201,7 +201,7 @@ namespace Test_FEValues
 											  * J[q];
 
 
-			Mass_y = numerical_integration.Compute_Mass_shape_grad_y(fe_values, num_dof, J,cell);
+			Mass_y = numerical_integration.Compute_Mass_shape_grad_y(fe_values, num_dof, J);
 
 			for (unsigned int i = 0 ; i < num_dof ; i++)
 				for (unsigned int j = 0 ; j < num_dof ; j++)
@@ -210,7 +210,7 @@ namespace Test_FEValues
 											  * J[q];
 
 
-			Mass = numerical_integration.Compute_Mass_shape_value(fe_values, num_dof, J,cell);
+			Mass = numerical_integration.Compute_Mass_shape_value(fe_values, num_dof, J);
 
 
 			for (unsigned int i = 0 ; i < num_dof ; i++)
@@ -311,8 +311,8 @@ namespace Test_FEValues
 			cell_matrix_manuel.setZero();
 
 			J = fe_values.get_JxW_values();
-			Mass_x = numerical_integration.Compute_Mass_shape_grad_x(fe_values, num_dof_per_comp, J,cell);
-			Mass_y = numerical_integration.Compute_Mass_shape_grad_y(fe_values, num_dof_per_comp, J,cell);
+			Mass_x = numerical_integration.Compute_Mass_shape_grad_x(fe_values, num_dof_per_comp, J);
+			Mass_y = numerical_integration.Compute_Mass_shape_grad_y(fe_values, num_dof_per_comp, J);
 
 			// first the faster computation
 			// The reason it is faster is that we not assemble or compute the component of Mass_x for every equation and every 

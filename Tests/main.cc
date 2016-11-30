@@ -18,7 +18,7 @@ std::string input_file;
 #include "BCrhs_systemA.h"
 #include "Base_ExactSolution.h"
 #include "ExactSolution_PoissonHeatConduction_G26.h"
-//#include "ExactSolution_SystemA.h"
+#include "ExactSolution_SystemA.h"
 #include "Base_EquationGenerator.h"
 #include "LinearSolver.h"
 #include "Base_MeshGenerator.h"
@@ -43,6 +43,7 @@ std::string input_file;
 #include "Test_FEValues.h"
 //#include "Test_MatrixOpt.h"
 
+#include "SystemA.h"
 #include "G26.h"
 #include "G20.h"
 #include "G35.h"
@@ -64,6 +65,7 @@ std::string input_file;
 // #include "Test_BoundaryHandler_Odd.h"
 // #include "Test_ExactSolution.h"
  #include "Test_Solver.h"
+ //#include "Test_Production.h"
 // #include "Test_ProjectorData.h"
 // #include "Test_SymmetrizerData.h"
 

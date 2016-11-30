@@ -22,7 +22,7 @@ namespace Test_Solver
 
 		if (constants.constants.mesh_type == ring)
 		{
-			base_solver.print_grid();
+			base_solver.print_grid(0);
 
 			// triangulation should have some number of cell
 			EXPECT_NE(base_solver.triangulation.n_active_cells(),0);

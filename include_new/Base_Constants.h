@@ -305,6 +305,11 @@ namespace Constants
 				"0",
 				Patterns::Integer(0,1),
 				"Type of BC");
+
+			prm.declare_entry("Collision_Operator",
+				"0",
+				Patterns::Integer(0,1),
+				"Type of collision operator");
 		}
 		prm.leave_subsection();
 
@@ -408,6 +413,8 @@ namespace Constants
 
 			constants.force_type = (Force_Type)prm.get_integer("force type");
 			constants.bc_type = (BC_Type)prm.get_integer("BC type");
+			constants.coll_op = (Collision_Operator)prm.get_integer("Collision_Operator");
+
 		}
 		prm.leave_subsection();
 

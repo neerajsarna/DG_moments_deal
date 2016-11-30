@@ -31,9 +31,9 @@ Base_Solver<dim>
 
   // matrix which stores Integrate phi * phi_x dx. Mass_y is the same but for the y-derivative and Mass is the normal mass
   // matrix.
-  Mass_x = this->Compute_Mass_shape_grad_x(fe_v, indices_per_cell, J,cell);
-  Mass_y = this->Compute_Mass_shape_grad_y(fe_v, indices_per_cell, J,cell);
-  Mass = this->Compute_Mass_shape_value(fe_v, indices_per_cell, J,cell);
+  Mass_x = this->Compute_Mass_shape_grad_x(fe_v, indices_per_cell, J);
+  Mass_y = this->Compute_Mass_shape_grad_y(fe_v, indices_per_cell, J);
+  Mass = this->Compute_Mass_shape_value(fe_v, indices_per_cell, J);
 
   cell_matrix = matrix_opt.compute_A_outer_B(system_info->system_data.A[0].matrix,Mass_x) 
                     +  matrix_opt.compute_A_outer_B(system_info->system_data.A[1].matrix,Mass_y)

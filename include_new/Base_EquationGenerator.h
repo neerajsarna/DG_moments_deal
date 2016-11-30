@@ -137,7 +137,7 @@ namespace EquationGenerator
 			virtual void reinit_BCrhs() = 0;
 
 			double force_factor;
-			void reinit_P();
+			void reinit_P(const std::string &folder_name);
 
 	};
 
@@ -611,23 +611,51 @@ namespace EquationGenerator
 	template<>
 	void
 	Base_EquationGenerator<2>
-	::reinit_P()
+	::reinit_P(const std::string &folder_name)
 	{
+		AssertDimension(system_data.P.matrix.rows(),constants.nEqn);
+		AssertDimension(system_data.P.matrix.cols(),constants.nEqn);
+
 		if (constants.nEqn == 6)
 		{
 			for (int i = 1 ; i < constants.nEqn ; i ++)
 				system_data.P.matrix.coeffRef(i,i) = 1/constants.tau;
 
-			system_data.P.matrix.makeCompressed();
+			
 		}
 		else
 		{
 			const unsigned int num_conserved = 4;
-			for (int i =  num_conserved; i < constants.nEqn ; i++)
-				system_data.P.matrix.coeffRef(i,i) = 1/constants.tau;
 
-			system_data.P.matrix.makeCompressed();
+			switch(constants.coll_op)
+			{
+				case BGK:
+				{
+					for (int i =  num_conserved; i < constants.nEqn ; i++)
+						system_data.P.matrix.coeffRef(i,i) = 1/constants.tau;					
+
+					break;
+				}
+				case Boltzmann_MM:
+				{
+					std::string file_for_P = folder_name + "MM_P_"+std::to_string(constants.nEqn)+".txt";
+					this->build_triplet(system_data.P.Row_Col_Value,file_for_P);
+
+					// develop the matrix 
+					this->build_matrix_from_triplet(system_data.P.matrix,system_data.P.Row_Col_Value);
+					system_data.P.matrix /= constants.tau;
+					break;
+				}
+				default:
+				{
+					Assert(1 == 0,ExcMessage("Should not have reached here"));
+					break;
+				}
+			}
+			
 		}
+
+		system_data.P.matrix.makeCompressed();
 	}
 
 	template<int dim>
@@ -638,7 +666,7 @@ namespace EquationGenerator
 		this->generate_matrices(this->system_data,this->constants.nEqn,this->constants.nBC,folder_name);
 
 		// we now develop the P matrix
-		reinit_P();	
+		reinit_P(folder_name);	
 
 
 		// if the number of equations are not equal to 6 then we fix the normal relaxation velocity

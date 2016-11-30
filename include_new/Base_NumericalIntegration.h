@@ -11,39 +11,35 @@ namespace NumericalIntegration
 				Full_matrix shape_values;
 
 				// gauss points are the number of gauss points in a particular direction
-				void Compute_Shape_Value(MappingQ<dim> &mapping,
+				void Compute_Shape_Value(const MappingQ<dim> &mapping,
 										 const unsigned int p,
 										 const unsigned int gauss_points,
 										 typename DoFHandler<dim>::active_cell_iterator &cell);
 
 				// gauss points are the number of gauss points in one particular direction
 				// compute the mass matrix M such that M_{ij} = \int \phi_i \pd_x\phi_i dx
-				Full_matrix Compute_Mass_shape_grad_x(FEValuesBase<dim> &fe_v,
+				Full_matrix Compute_Mass_shape_grad_x(const FEValuesBase<dim> &fe_v,
 							 							const unsigned int dofs_per_component,
-							  							std::vector<double> &J,
-														const typename DoFHandler<dim>::active_cell_iterator &cell);
+							  							const std::vector<double> &J);
 
-				Full_matrix Compute_Mass_shape_grad_y(FEValuesBase<dim> &fe_v,
+				Full_matrix Compute_Mass_shape_grad_y(const FEValuesBase<dim> &fe_v,
 														const unsigned int dofs_per_component,
-														std::vector<double> &J,
-										 				const typename DoFHandler<dim>::active_cell_iterator &cell);
+														const std::vector<double> &J);
 
-				Full_matrix Compute_Mass_shape_grad_z(FEValuesBase<dim> &fe_v,
+				Full_matrix Compute_Mass_shape_grad_z(const FEValuesBase<dim> &fe_v,
 														const unsigned int dofs_per_component,
-														std::vector<double> &J,
-										 				const typename DoFHandler<dim>::active_cell_iterator &cell);
+														const std::vector<double> &J);
 
-				Full_matrix Compute_Mass_shape_value(FEValuesBase<dim> &fe_v,
+				Full_matrix Compute_Mass_shape_value(const FEValuesBase<dim> &fe_v,
 														const unsigned int dofs_per_component,
-														std::vector<double> &J,
-										 				const typename DoFHandler<dim>::active_cell_iterator &cell);
+														const std::vector<double> &J);
 
 				// compute the mass matrix for the edge share between the cell and the neighbor
-				Full_matrix Compute_Mass_cell_neighbor(FEValuesBase<dim> &fe_v1,
-													   FEValuesBase<dim> &fe_v2,
+				Full_matrix Compute_Mass_cell_neighbor(const FEValuesBase<dim> &fe_v1,
+													   const FEValuesBase<dim> &fe_v2,
 													   const unsigned int dofs_per_component1,
 													   const unsigned int dofs_per_component2,
-													   std::vector<double> &J);
+													   const std::vector<double> &J);
 	};
 
 	template<int dim>
@@ -54,7 +50,7 @@ namespace NumericalIntegration
 	template<int dim>
 	void
 	Base_NumericalIntegration<dim>::
-	Compute_Shape_Value(MappingQ<dim> &mapping,
+	Compute_Shape_Value(const MappingQ<dim> &mapping,
 						const unsigned int p,
 						const unsigned int gauss_points,
 						typename DoFHandler<dim>::active_cell_iterator &cell)
@@ -87,10 +83,9 @@ namespace NumericalIntegration
 	template<int dim>
 	Full_matrix
 	Base_NumericalIntegration<dim>::
-	Compute_Mass_shape_grad_x(FEValuesBase<dim> &fe_v,
+	Compute_Mass_shape_grad_x(const FEValuesBase<dim> &fe_v,
 							 const unsigned int dofs_per_component,
-							  std::vector<double> &J,
-							const typename DoFHandler<dim>::active_cell_iterator &cell)
+							  const std::vector<double> &J)
 	{
 
 		const unsigned int total_ngp = J.size();	
@@ -119,10 +114,9 @@ namespace NumericalIntegration
 	template<int dim>
 	Full_matrix
 	Base_NumericalIntegration<dim>::
-	Compute_Mass_shape_grad_y(FEValuesBase<dim> &fe_v,
+	Compute_Mass_shape_grad_y(const FEValuesBase<dim> &fe_v,
 							 const unsigned int dofs_per_component,
-							  std::vector<double> &J,
-							const typename DoFHandler<dim>::active_cell_iterator &cell)
+							  const std::vector<double> &J)
 	{
 
 		const unsigned int total_ngp = J.size();	
@@ -149,10 +143,9 @@ namespace NumericalIntegration
 	template<int dim>
 	Full_matrix
 	Base_NumericalIntegration<dim>::
-	Compute_Mass_shape_grad_z(FEValuesBase<dim> &fe_v,
+	Compute_Mass_shape_grad_z(const FEValuesBase<dim> &fe_v,
 							 const unsigned int dofs_per_component,
-							  std::vector<double> &J,
-							const typename DoFHandler<dim>::active_cell_iterator &cell)
+							  const std::vector<double> &J)
 	{
 
 		const unsigned int total_ngp = J.size();
@@ -182,10 +175,9 @@ namespace NumericalIntegration
 	template<int dim>
 	Full_matrix
 	Base_NumericalIntegration<dim>::
-	Compute_Mass_shape_value(FEValuesBase<dim> &fe_v,
+	Compute_Mass_shape_value(const FEValuesBase<dim> &fe_v,
 							 const unsigned int dofs_per_component,
-							  std::vector<double> &J,
-							const typename DoFHandler<dim>::active_cell_iterator &cell)
+							  const std::vector<double> &J)
 	{
 
 		const unsigned int total_ngp = J.size();
@@ -215,11 +207,11 @@ namespace NumericalIntegration
 	template<int dim>
 	Full_matrix
 	Base_NumericalIntegration<dim>::
-	Compute_Mass_cell_neighbor(FEValuesBase<dim> &fe_v1,
-							   FEValuesBase<dim> &fe_v2,
+	Compute_Mass_cell_neighbor(const FEValuesBase<dim> &fe_v1,
+							   const FEValuesBase<dim> &fe_v2,
 						       const unsigned int dofs_per_component1,
 							   const unsigned int dofs_per_component2,
-							   std::vector<double> &J)
+							   const std::vector<double> &J)
 	{
 		const unsigned int total_ngp = J.size();
 		const unsigned int num_dof_per_comp1 = fe_v1.get_fe().dofs_per_cell/fe_v1.get_fe().n_components();				

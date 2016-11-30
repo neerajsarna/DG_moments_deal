@@ -151,7 +151,7 @@ namespace TensorInfo
 		free_indices.resize(varIdx.rows(),1);
 		Assert(varIdx.rows() != 0 || varIdx.cols() != 0,ExcNotInitialized());
 		Assert(free_indices.size() != 0,ExcNotInitialized());
-		Assert(max_tensorial_degree == 7,ExcNotImplemented());
+		
 
 
 		Assert(compute_max_tensorial_degree() <= max_tensorial_degree,ExcMessage("Projector and Symmetrizer data not available for this tensorial degree"));
