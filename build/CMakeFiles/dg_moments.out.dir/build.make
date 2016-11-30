@@ -90,7 +90,6 @@ dg_moments_out_EXTERNAL_OBJECTS =
 
 dg_moments.out: CMakeFiles/dg_moments.out.dir/main.cc.o
 dg_moments.out: CMakeFiles/dg_moments.out.dir/build.make
-dg_moments.out: /usr/local/lib/libgtest.a
 dg_moments.out: /Applications/deal.II.app/Contents/Resources/lib/libdeal_II.g.8.4.1.dylib
 dg_moments.out: /usr/lib/libbz2.dylib
 dg_moments.out: /usr/lib/libz.dylib

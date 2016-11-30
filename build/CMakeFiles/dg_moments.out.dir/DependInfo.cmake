@@ -24,7 +24,7 @@ set(CMAKE_CXX_TARGET_INCLUDE_PATH
   "../Projector_Data"
   "../Symmetrizer_Data"
   "../ring"
-  "/usr/local/include"
+  "/opt/intel/compilers_and_libraries_2016.3.170/mac/mkl/include"
   "/Applications/deal.II.app/Contents/Resources/include"
   "/Applications/deal.II.app/Contents/Resources/include/deal.II/bundled"
   "/Applications/deal.II.app/Contents/Resources/opt/openmpi-1.10.2/include"

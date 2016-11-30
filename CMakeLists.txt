@@ -10,10 +10,27 @@ SET(G++_COVERAGE_COMPILE_FLAGS4 "-Wno-reorder")
 SET(G++_COVERAGE_COMPILE_FLAGS5 "-Wno-missing-field-initializers")
 SET(G++_COVERAGE_COMPILE_FLAGS6 "-DMKL_ILP64 -m64")
 SET(G++_COVERAGE_COMPILE_FLAGS7 "-Wl,--no-as-needed")
+SET(G++_COVERAGE_COMPILE_FLAGS8 "-fmax-errors=2")
+SET(G++_COVERAGE_LINK_FLAGS    "-lm")
 
 
-SET(DEAL_II_DIR "/Applications/deal.II.app/Contents/Resources/lib/cmake")
-SET(MKL_DIR "/opt/intel//compilers_and_libraries_2016.3.170/mac/mkl")
+SET(LAPTOP ON)
+SET(TURBINE OFF)
+
+IF(LAPTOP)
+  MESSAGE("ON LAPTOP")
+  SET(DEAL_II_DIR "/Applications/deal.II.app/Contents/Resources/lib/cmake")
+  SET(MKL_DIR "/opt/intel//compilers_and_libraries_2016.3.170/mac/mkl")
+  SET(EIGEN_DIR "/usr/local/include/eigen")
+ENDIF()
+
+IF(TURBINE)
+  SET("ON TURBINE")
+  SET(DEAL_II_DIR "/home/sarna/Desktop/Libraries/dealii/lib/cmake")
+  SET(MKL_DIR "/opt/intel/composer_xe_2013_sp1.0.080/mkl")
+  SET(EIGEN_DIR "/home/sarna/Desktop/Libraries/eigenv3/eigen")
+ENDIF()
+
 
 FIND_PACKAGE(deal.II 8.3 QUIET
   HINTS ${deal.II_DIR} ${DEAL_II_DIR} ../ ../../ $ENV{DEAL_II_DIR}
@@ -36,28 +53,36 @@ ADD_DEFINITIONS(${G++_COVERAGE_COMPILE_FLAGS4})
 ADD_DEFINITIONS(${G++_COVERAGE_COMPILE_FLAGS5})
 ADD_DEFINITIONS(${G++_COVERAGE_COMPILE_FLAGS6})
 ADD_DEFINITIONS(${G++_COVERAGE_COMPILE_FLAGS7})
+ADD_DEFINITIONS(${G++_COVERAGE_COMPILE_FLAGS8})
 #adding the executables
 
 ADD_EXECUTABLE(dg_moments.out main.cc)
 
 
+SET( CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} ${G++_COVERAGE_LINK_FLAGS}" )
+
+
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/include_new)
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/periodic_square)
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/systems)
-INCLUDE_DIRECTORIES(/usr/local/include/eigen)
+INCLUDE_DIRECTORIES(${EIGEN_DIR})
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/Projector_Data)
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/Symmetrizer_Data)
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/ring)
+INCLUDE_DIRECTORIES(${MKL_DIR}/include)
 
-# Locate GTest
-FIND_PACKAGE(GTest REQUIRED)
-INCLUDE_DIRECTORIES(${GTEST_INCLUDE_DIRS})
-
-TARGET_LINK_LIBRARIES(dg_moments.out ${GTEST_LIBRARIES} libmkl_intel_ilp64.dylib libmkl_core.dylib libmkl_intel_thread.dylib libpthread.dylib libdl.dylib pthread)
-
-#TARGET_LINK_LIBRARIES(dg_moments.out ${GTEST_LIBRARIES} pthread)
 
 DEAL_II_SETUP_TARGET(dg_moments.out)
+
+
+IF(LAPTOP)
+TARGET_LINK_LIBRARIES(dg_moments.out libmkl_intel_ilp64.dylib libmkl_core.dylib libmkl_intel_thread.dylib libpthread.dylib libdl.dylib pthread)
+ENDIF()
+
+IF(TURBINE)
+TARGET_LINK_LIBRARIES(dg_moments.out libiomp5.so libpthread.so libmkl_intel_ilp64.so libmkl_core.so libmkl_intel_thread.so libdl.so)
+ENDIF()
+
 ADD_CUSTOM_TARGET(release
   COMMAND ${CMAKE_COMMAND} -DCMAKE_BUILD_TYPE=Release ${CMAKE_SOURCE_DIR}
   COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target all
