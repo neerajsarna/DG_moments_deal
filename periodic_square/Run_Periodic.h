@@ -26,26 +26,34 @@ Base_Solver<dim>::run_periodic()
 {
 
 	error_per_itr.resize(constants.refine_cycles);
+
+	TimerOutput timer (std::cout, TimerOutput::summary,
+                   TimerOutput::wall_times);
 	
 	for (int i = 0 ; i < constants.refine_cycles ; i++)
 	{
 
 		AssertDimension((int)error_per_itr.size(),constants.refine_cycles);
 
+		timer.enter_subsection("Develop Periodicity");
 		// first we develop the periodic faces using internal functions of dealii
 		this->develop_periodic_faces(dof_handler);
 
 		// now we construct the required data structure
 		this->divide_periodicity();
 
+		timer.leave_subsection();
 
 		//now we distribute the dofs and allocate the memory for the global matrix. We have 
 		// already created the mesh so we can directly distribute the degrees of freedom now.
+		timer.enter_subsection("Distribute Dof");
 		distribute_dof_allocate_matrix_periodic_box();
+		timer.leave_subsection();
 
 
 
 		// cannot use meshworker for the present problem
+		timer.enter_subsection("Assemble");
 		switch(constants.bc_type)
 		{
 			case characteristic:
@@ -60,14 +68,18 @@ Base_Solver<dim>::run_periodic()
 				break;
 			}
 		}
+		timer.leave_subsection();
 
-
+        
 		// we initialize the object which will solve our system
 		// We do int the following way so as to keep the solver independent of all the other implementations.
 		// This makes the code highly reusable. So one can directly copy the following class and use it somewhere
 		// else is one wants to.
+		timer.enter_subsection("System Solver");
 		LinearSolver::LinearSolver linear_solver(global_matrix,system_rhs,solution);
+		timer.leave_subsection();
 
+		timer.enter_subsection("Post Proc");
 		PostProc::Base_PostProc<dim> postproc(constants,base_exactsolution,&dof_handler, &mapping);
 
 		// now we compute the error due to computation
@@ -77,10 +89,12 @@ Base_Solver<dim>::run_periodic()
 
 		postproc.print_options(this->triangulation,solution,i,constants.refine_cycles,convergence_table);	
 
+		timer.leave_subsection();
+
 		// now we refine the grid by changing the number of parts in the y direction
 		//But we do not want to wast time in refining the grid in the last refinement cycle
 		if (i < constants.refine_cycles - 1)
-			this->mesh_internal_periodic_square(constants.part_x,constants.part_y + 50 * (i + 1));
+			this->mesh_internal_periodic_square(constants.part_x,constants.part_y + 100 * (i + 1));
 
 	}
  }

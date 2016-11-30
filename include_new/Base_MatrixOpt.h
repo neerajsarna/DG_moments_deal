@@ -50,7 +50,15 @@ namespace MatrixOpt
 			// computes the flux matrix for a sparse matrix
 			Full_matrix compute_Aminus(Sparse_matrix &A);
 
-			// computes the difference between a full matrix and a sparse matrix
+			//compute the dydadic product of A and B i.e 
+			Full_matrix compute_A_outer_B(Full_matrix &A,Full_matrix &B);
+
+			Sparse_matrix compute_A_outer_B(Full_matrix &A,Sparse_matrix &B);
+
+			Sparse_matrix compute_A_outer_B(Sparse_matrix &A,Full_matrix &B);
+
+			Sparse_matrix compute_A_outer_B(Sparse_matrix &A,Sparse_matrix &B);
+
 
 			// prints a full matrix
 			void print_eigen_mat(Full_matrix &full_matrix,
@@ -398,5 +406,102 @@ namespace MatrixOpt
 		}
 
 		return(result);
+	  }
+
+	  // the following function expects result to be initialized before hand
+	  Full_matrix Base_MatrixOpt::compute_A_outer_B(Full_matrix &A,Full_matrix &B)
+	  {
+	  	
+
+
+	  	const unsigned int rows_A = A.rows();
+	  	const unsigned int cols_A = A.cols();
+	  	const unsigned int rows_B = B.rows();
+	  	const unsigned int cols_B = B.cols();
+	  	Full_matrix result(rows_A * rows_B,cols_A * cols_B);
+
+
+	  	AssertDimension(result.rows(),rows_A * rows_B);
+	  	AssertDimension(result.cols(),cols_A * cols_B);
+
+	  	for (unsigned int i = 0 ; i < rows_A ; i ++)
+	  		for (unsigned int j = 0 ; j < cols_A ; j++)
+	  			result.block(i * rows_B, j * cols_B, rows_B,cols_B) = A(i,j) * B;
+
+	  	return(result);
+	  }
+
+	  	  // the following function expects result to be initialized before hand
+	  Sparse_matrix Base_MatrixOpt::compute_A_outer_B(Full_matrix &A,Sparse_matrix &B)
+	  {
+	  	
+	  	const unsigned int rows_A = A.rows();
+	  	const unsigned int cols_A = A.cols();
+	  	const unsigned int rows_B = B.rows();
+	  	const unsigned int cols_B = B.cols();
+	  	Sparse_matrix result(rows_A * rows_B, cols_A * cols_B);
+
+	  	AssertDimension(result.rows(),rows_A * rows_B);
+	  	AssertDimension(result.cols(),cols_A * cols_B);
+
+	  	for (unsigned int i = 0 ; i < rows_A ; i ++)
+	  		for (unsigned int j = 0 ; j < cols_A ; j++)
+	  			for (unsigned int m = 0 ; m < B.outerSize(); m++)
+          			for (Sparse_matrix::InnerIterator n(B,m); n ; ++n)
+	  					result.coeffRef(i * rows_B + n.row(),j * cols_B + n.col()) = A(i,j) * n.value();
+
+
+	  	result.makeCompressed();
+	  	return(result);
+	  }
+
+	  Sparse_matrix Base_MatrixOpt::compute_A_outer_B(Sparse_matrix &A,Full_matrix &B)
+	  {
+
+	  	const unsigned int rows_A = A.rows();
+	  	const unsigned int cols_A = A.cols();
+	  	const unsigned int rows_B = B.rows();
+	  	const unsigned int cols_B = B.cols();
+	  	Sparse_matrix result(rows_A * rows_B,cols_A * cols_B);
+
+
+	  	AssertDimension(result.rows(),rows_A * rows_B);
+	  	AssertDimension(result.cols(),cols_A * cols_B);
+
+	  	for (unsigned int i = 0 ; i < A.outerSize(); i++)
+          	for (Sparse_matrix::InnerIterator j(A,i); j ; ++j)
+	  			for (unsigned int k = 0 ; k < rows_B ; k ++)
+          			for (unsigned int l = 0 ; l < cols_B ; l ++)
+	  					result.coeffRef(j.row() * rows_B + k,j.col() * cols_B + l) = j.value() * B(k,l);
+
+
+	  	result.makeCompressed();
+	  	return(result);
+	  }
+
+	  Sparse_matrix Base_MatrixOpt::compute_A_outer_B(Sparse_matrix &A,Sparse_matrix &B)
+	  {
+	 
+
+	  	const unsigned int rows_A = A.rows();
+	  	const unsigned int cols_A = A.cols();
+	  	const unsigned int rows_B = B.rows();
+	  	const unsigned int cols_B = B.cols();
+	  	Sparse_matrix result(rows_A * rows_B, cols_A * cols_B);
+
+
+	  	AssertDimension(result.rows(),rows_A * rows_B);
+	  	AssertDimension(result.cols(),cols_A * cols_B);
+
+	  	for (unsigned int i = 0 ; i < A.outerSize(); i++)
+          	for (Sparse_matrix::InnerIterator j(A,i); j ; ++j)
+	  			for (unsigned int k = 0 ; k < B.outerSize(); k++)
+          			for (Sparse_matrix::InnerIterator l(B,k); l ; ++l)
+	  					result.coeffRef(j.row() * rows_B + l.row(),j.col() * cols_B + l.col())
+	  											 = j.value() * l.value();
+
+
+	  	result.makeCompressed();
+	  	return(result);
 	  }
 }

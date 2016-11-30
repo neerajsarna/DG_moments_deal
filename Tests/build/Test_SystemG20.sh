@@ -2,7 +2,7 @@
 
 clear
 echo "Testing G20"
-BaseDir="xml:/Users/neerajsarna/sciebo/DG_moments_deal/Tests/Test_Reports"
+BaseDir=$1
 
 #first we do single core checking
 echo "Test Single Core Kn0p1 Odd Boundary Conditions"

@@ -201,42 +201,42 @@ namespace Test_Solver
 
 		base_solver.run_periodic();
 
-		Vector<double> exact_error(constants.constants.refine_cycles);
-		AssertDimension(constants.constants.refine_cycles,3);
+		// Vector<double> exact_error(constants.constants.refine_cycles);
+		// AssertDimension(constants.constants.refine_cycles,3);
 
-		if (constants.constants.bc_type == characteristic)
-		{
-			if (fabs(constants.constants.tau - 0.1) < 1e-5)
-			{
-				exact_error(0) = 3.2643e-06;
-				exact_error(1) = 1.4575e-06;
-				exact_error(2) = 8.2171e-07;
-			}			
+		// if (constants.constants.bc_type == characteristic)
+		// {
+		// 	if (fabs(constants.constants.tau - 0.1) < 1e-5)
+		// 	{
+		// 		exact_error(0) = 3.2643e-06;
+		// 		exact_error(1) = 1.4575e-06;
+		// 		exact_error(2) = 8.2171e-07;
+		// 	}			
 
-			if (fabs(constants.constants.tau - 0.3) < 1e-5)
-			{
-				exact_error(0) = 3.2508e-06;
-				exact_error(1) = 1.4470e-06;
-				exact_error(2) = 8.1457e-07;
-			}
-		}
+		// 	if (fabs(constants.constants.tau - 0.3) < 1e-5)
+		// 	{
+		// 		exact_error(0) = 3.2508e-06;
+		// 		exact_error(1) = 1.4470e-06;
+		// 		exact_error(2) = 8.1457e-07;
+		// 	}
+		// }
 
-		if (constants.constants.bc_type == odd)
-		{
-			if (fabs(constants.constants.tau - 0.1) < 1e-5)
-			{
-				exact_error(0) = 4.4436e-06;
-				exact_error(1) = 1.9785e-06;
-				exact_error(2) = 1.1139e-06;
-			}			
+		// if (constants.constants.bc_type == odd)
+		// {
+		// 	if (fabs(constants.constants.tau - 0.1) < 1e-5)
+		// 	{
+		// 		exact_error(0) = 4.4436e-06;
+		// 		exact_error(1) = 1.9785e-06;
+		// 		exact_error(2) = 1.1139e-06;
+		// 	}			
 
-			if (fabs(constants.constants.tau - 0.3) < 1e-5)
-			{
-				exact_error(0) = 3.6525e-06;
-				exact_error(1) = 1.6258e-06;
-				exact_error(2) = 9.1524e-07;
-			}
-		}
+		// 	if (fabs(constants.constants.tau - 0.3) < 1e-5)
+		// 	{
+		// 		exact_error(0) = 3.6525e-06;
+		// 		exact_error(1) = 1.6258e-06;
+		// 		exact_error(2) = 9.1524e-07;
+		// 	}
+		// }
 
 
 	}

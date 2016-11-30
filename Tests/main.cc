@@ -24,7 +24,9 @@ std::string input_file;
 #include "Base_MeshGenerator.h"
 #include "Base_PeriodicityHandler.h"
 #include "Base_PostProc.h"
+#include "Base_NumericalIntegration.h"
 #include "Base_Solver.h"
+
 
 #include "ExactSolution_PoissonHeatConduction_G20.h"
 #include "ExactSolution_PoissonHeatConduction_G35.h"
@@ -35,29 +37,35 @@ std::string input_file;
 #include "ExactSolution_PoissonHeatConduction_G105.h"
 #include "ExactSolution_PoissonHeatConduction_G120.h"
 
-//#include "G26.h"
-//#include "G20.h"
-//#include "G35.h"
-//#include "G45.h"
-//#include "G56.h"
-//#include "G71.h"
-//#include "G84.h"
-//#include "G105.h"
+
+// certain generic tests which have to be performed independent of the system
+#include "Test_LinearSolver.h"
+#include "Test_FEValues.h"
+//#include "Test_MatrixOpt.h"
+
+#include "G26.h"
+#include "G20.h"
+#include "G35.h"
+#include "G45.h"
+#include "G56.h"
+#include "G71.h"
+#include "G84.h"
+#include "G105.h"
 #include "G120.h"
+
 //tests
 
 /**********Standard Tests for any system. Change The include directory from the make file*************/
 //#include "Test_BaseConstants.h"
  //#include "Test_ForceType.h" 
  //#include "Test_EquationGenerator.h"
-//#include "Test_MatrixOpt.h"
 //#include "Test_BoundaryHandler_Char.h"
  //#include "Test_TensorInfo.h"
 // #include "Test_BoundaryHandler_Odd.h"
- #include "Test_ExactSolution.h"
+// #include "Test_ExactSolution.h"
  #include "Test_Solver.h"
-#include "Test_ProjectorData.h"
-#include "Test_SymmetrizerData.h"
+// #include "Test_ProjectorData.h"
+// #include "Test_SymmetrizerData.h"
 
 int main(int argc,char **argv)
 {
@@ -71,5 +79,6 @@ int main(int argc,char **argv)
 	::testing::InitGoogleTest(&argc, argv);
 	const unsigned int result = RUN_ALL_TESTS();
 
+    std::cout <<"Results " << result<< std::endl;
 	return 0;
 }

@@ -12,10 +12,10 @@ Base_Solver<dim>::assemble_system_char()
       const QGauss<dim-1> face_quadrature(ngp_face);
 
 
-      const UpdateFlags update_flags               = update_values
-      | update_gradients
-      | update_q_points
-      | update_JxW_values,
+
+      const UpdateFlags update_flags               = update_gradients
+                                                    | update_q_points
+                                                    | update_JxW_values,
       face_update_flags          = update_values
       | update_q_points
       | update_JxW_values
@@ -37,15 +37,16 @@ Base_Solver<dim>::assemble_system_char()
       std::vector<types::global_dof_index> local_dof_indices(dofs_per_cell);
       std::vector<types::global_dof_index> local_dof_indices_neighbor(dofs_per_cell);
 
-      FullMatrix<double> cell_matrix(dofs_per_cell,dofs_per_cell);                  // contribution from the interior
+      Sparse_matrix cell_matrix(dofs_per_cell,dofs_per_cell);                  // contribution from the interior
       FullMatrix<double> boundary_matrix(dofs_per_cell,dofs_per_cell);
       Vector<double>     cell_rhs(dofs_per_cell);                                   // rhs from the current cell
 
+
       // matrices for the boundary terms
-      FullMatrix<double> u1_v1(dofs_per_cell,dofs_per_cell);      // relating current to current
-      FullMatrix<double> u1_v2(dofs_per_cell,dofs_per_cell);  // relating current to neighbor
-      FullMatrix<double> u2_v1(dofs_per_cell,dofs_per_cell);  // relating neighbor to current
-      FullMatrix<double> u2_v2(dofs_per_cell,dofs_per_cell);  // relating neighbor to current
+      Full_matrix u1_v1(dofs_per_cell,dofs_per_cell);      // relating current to current
+      Full_matrix u1_v2(dofs_per_cell,dofs_per_cell);  // relating current to neighbor
+      Full_matrix u2_v1(dofs_per_cell,dofs_per_cell);  // relating neighbor to current
+      Full_matrix u2_v2(dofs_per_cell,dofs_per_cell);  // relating neighbor to current
 
       // std::vectors to make computations faster
       std::vector<double> Jacobians_interior(total_ngp);
@@ -61,10 +62,11 @@ Base_Solver<dim>::assemble_system_char()
       // end of std::vector to
       // make computation faster
      
+      this->Compute_Shape_Value(mapping,constants.p,ngp,cell);
+
 
       for (; cell != endc ; cell++) 
       {
-        cell_matrix = 0;
         cell_rhs = 0;
         cell->get_dof_indices(local_dof_indices);
 
@@ -84,10 +86,7 @@ Base_Solver<dim>::assemble_system_char()
               const typename DoFHandler<dim>::face_iterator face_itr = cell->face(face);
               Jacobian_face = fe_v_face.get_JxW_values();
               
-              u1_v1 = 0;
-              u1_v2 = 0;
-              u2_v1 = 0;
-              u2_v2 = 0;
+
               boundary_matrix = 0;
 
               if (face_itr->at_boundary())
@@ -172,9 +171,11 @@ Base_Solver<dim>::assemble_system_char()
             }
               
 
-             for (unsigned int i = 0 ; i < dofs_per_cell ; i++)
-              for (unsigned int j = 0 ; j < dofs_per_cell ; j++)
-                global_matrix.add(local_dof_indices[i],local_dof_indices[j],cell_matrix(i,j));
+            for (unsigned int m = 0 ; m < cell_matrix.outerSize(); m++)
+                for (Sparse_matrix::InnerIterator n(cell_matrix,m); n ; ++n)
+                  global_matrix.add(local_dof_indices[n.row()],local_dof_indices[n.col()],n.value());
+
+             
               
              for(unsigned int i = 0 ; i < dofs_per_cell ; i++)
               system_rhs(local_dof_indices[i]) += cell_rhs(i);
@@ -198,10 +199,9 @@ Base_Solver<dim>::assemble_system_odd()
       const QGauss<dim-1> face_quadrature(ngp_face);
 
 
-      const UpdateFlags update_flags               = update_values
-      | update_gradients
-      | update_q_points
-      | update_JxW_values,
+      const UpdateFlags update_flags               =  update_gradients
+                                                     | update_q_points
+                                                     | update_JxW_values,
       face_update_flags          = update_values
       | update_q_points
       | update_JxW_values
@@ -223,15 +223,15 @@ Base_Solver<dim>::assemble_system_odd()
       std::vector<types::global_dof_index> local_dof_indices(dofs_per_cell);
       std::vector<types::global_dof_index> local_dof_indices_neighbor(dofs_per_cell);
 
-      FullMatrix<double> cell_matrix(dofs_per_cell,dofs_per_cell);                  // contribution from the interior
+      Sparse_matrix cell_matrix(dofs_per_cell,dofs_per_cell);                  // contribution from the interior
       FullMatrix<double> boundary_matrix(dofs_per_cell,dofs_per_cell);
       Vector<double>     cell_rhs(dofs_per_cell);                                   // rhs from the current cell
 
       // matrices for the boundary terms
-      FullMatrix<double> u1_v1(dofs_per_cell,dofs_per_cell);      // relating current to current
-      FullMatrix<double> u1_v2(dofs_per_cell,dofs_per_cell);  // relating current to neighbor
-      FullMatrix<double> u2_v1(dofs_per_cell,dofs_per_cell);  // relating neighbor to current
-      FullMatrix<double> u2_v2(dofs_per_cell,dofs_per_cell);  // relating neighbor to current
+      Full_matrix u1_v1(dofs_per_cell,dofs_per_cell);      // relating current to current
+      Full_matrix u1_v2(dofs_per_cell,dofs_per_cell);  // relating current to neighbor
+      Full_matrix u2_v1(dofs_per_cell,dofs_per_cell);  // relating neighbor to current
+      Full_matrix u2_v2(dofs_per_cell,dofs_per_cell);  // relating neighbor to current
 
       // std::vectors to make computations faster
       std::vector<double> Jacobians_interior(total_ngp);
@@ -247,10 +247,12 @@ Base_Solver<dim>::assemble_system_odd()
       // end of std::vector to
       // make computation faster
      
+      this->Compute_Shape_Value(mapping,constants.p,ngp,cell);
+      
 
       for (; cell != endc ; cell++) 
       {
-        cell_matrix = 0;
+
         cell_rhs = 0;
         cell->get_dof_indices(local_dof_indices);
 
@@ -270,10 +272,7 @@ Base_Solver<dim>::assemble_system_odd()
               const typename DoFHandler<dim>::face_iterator face_itr = cell->face(face);
               Jacobian_face = fe_v_face.get_JxW_values();
               
-              u1_v1 = 0;
-              u1_v2 = 0;
-              u2_v1 = 0;
-              u2_v2 = 0;
+
               boundary_matrix = 0;
 
               if (face_itr->at_boundary())
@@ -358,9 +357,9 @@ Base_Solver<dim>::assemble_system_odd()
             }
               
 
-             for (unsigned int i = 0 ; i < dofs_per_cell ; i++)
-              for (unsigned int j = 0 ; j < dofs_per_cell ; j++)
-                global_matrix.add(local_dof_indices[i],local_dof_indices[j],cell_matrix(i,j));
+            for (unsigned int m = 0 ; m < cell_matrix.outerSize(); m++)
+                for (Sparse_matrix::InnerIterator n(cell_matrix,m); n ; ++n)
+                  global_matrix.add(local_dof_indices[n.row()],local_dof_indices[n.col()],n.value());
               
              for(unsigned int i = 0 ; i < dofs_per_cell ; i++)
               system_rhs(local_dof_indices[i]) += cell_rhs(i);
@@ -380,8 +379,6 @@ Base_Solver<dim>::assemble_system_periodic_char()
       // counters 
       unsigned int boundary_wall = 0;
       unsigned int boundary_periodic = 0;
-      bool integrated_boundary = false;
-
       const QGauss<dim> quadrature(ngp);
       const QGauss<dim-1> face_quadrature(ngp_face);
 
@@ -411,15 +408,15 @@ Base_Solver<dim>::assemble_system_periodic_char()
       std::vector<types::global_dof_index> local_dof_indices(dofs_per_cell);
       std::vector<types::global_dof_index> local_dof_indices_neighbor(dofs_per_cell);
 
-      FullMatrix<double> cell_matrix(dofs_per_cell,dofs_per_cell);                  // contribution from the interior
+      Sparse_matrix cell_matrix(dofs_per_cell,dofs_per_cell);                  // contribution from the interior
       FullMatrix<double> boundary_matrix(dofs_per_cell,dofs_per_cell);
       Vector<double>     cell_rhs(dofs_per_cell);                                   // rhs from the current cell
 
       // matrices for the boundary terms
-      FullMatrix<double> u1_v1(dofs_per_cell,dofs_per_cell);      // relating current to current
-      FullMatrix<double> u1_v2(dofs_per_cell,dofs_per_cell);  // relating current to neighbor
-      FullMatrix<double> u2_v1(dofs_per_cell,dofs_per_cell);  // relating neighbor to current
-      FullMatrix<double> u2_v2(dofs_per_cell,dofs_per_cell);  // relating neighbor to current
+      Full_matrix u1_v1(dofs_per_cell,dofs_per_cell);      // relating current to current
+      Full_matrix u1_v2(dofs_per_cell,dofs_per_cell);  // relating current to neighbor
+      Full_matrix u2_v1(dofs_per_cell,dofs_per_cell);  // relating neighbor to current
+      Full_matrix u2_v2(dofs_per_cell,dofs_per_cell);  // relating neighbor to current
 
       // std::vectors to make computations faster
       std::vector<double> Jacobians_interior(total_ngp);
@@ -432,10 +429,10 @@ Base_Solver<dim>::assemble_system_periodic_char()
       for (unsigned int i = 0 ; i < dofs_per_cell ; i++)
         component(i) = finite_element.system_to_component_index(i).first;
       
+      this->Compute_Shape_Value(mapping,constants.p,ngp,cell);
 
       for (; cell != endc ; cell++) 
       {
-        cell_matrix = 0;
         cell_rhs = 0;
         cell->get_dof_indices(local_dof_indices);
 
@@ -454,17 +451,11 @@ Base_Solver<dim>::assemble_system_periodic_char()
               fe_v_face.reinit(cell,face);
               const typename DoFHandler<dim>::face_iterator face_itr = cell->face(face);
               Jacobian_face = fe_v_face.get_JxW_values();
-              
-              u1_v1 = 0;
-              u1_v2 = 0;
-              u2_v1 = 0;
-              u2_v2 = 0;
+
               boundary_matrix = 0;
 
               if (face_itr->at_boundary())
               { 
-                integrated_boundary = false;
-
                 // id of the boundary
                     const unsigned int b_id = face_itr->boundary_id();
 
@@ -497,8 +488,7 @@ Base_Solver<dim>::assemble_system_periodic_char()
                                         Jacobian_face,component,  
                                         cell);  
 
-                      integrated_boundary = true;
-                      boundary_periodic++;
+                     boundary_periodic++;
 
                     }
 
@@ -509,8 +499,7 @@ Base_Solver<dim>::assemble_system_periodic_char()
                                                   fe_v_face, Jacobian_face,
                                                   component, cell,b_id); 
 
-                        integrated_boundary = true;
-                        boundary_wall ++;
+                       boundary_wall ++;
 
                     }  
                 
@@ -585,9 +574,11 @@ Base_Solver<dim>::assemble_system_periodic_char()
             }
               
 
-             for (unsigned int i = 0 ; i < dofs_per_cell ; i++)
-              for (unsigned int j = 0 ; j < dofs_per_cell ; j++)
-                global_matrix.add(local_dof_indices[i],local_dof_indices[j],cell_matrix(i,j));
+            for (unsigned int m = 0 ; m < cell_matrix.outerSize(); m++)
+                for (Sparse_matrix::InnerIterator n(cell_matrix,m); n ; ++n)
+                  global_matrix.add(local_dof_indices[n.row()],local_dof_indices[n.col()],n.value());
+
+             
               
              for(unsigned int i = 0 ; i < dofs_per_cell ; i++)
               system_rhs(local_dof_indices[i]) += cell_rhs(i);
@@ -611,7 +602,7 @@ Base_Solver<dim>::assemble_system_periodic_odd()
       // counters 
       unsigned int boundary_wall = 0;
       unsigned int boundary_periodic = 0;
-      bool integrated_boundary = false;
+
 
       const QGauss<dim> quadrature(ngp);
       const QGauss<dim-1> face_quadrature(ngp_face);
@@ -642,15 +633,15 @@ Base_Solver<dim>::assemble_system_periodic_odd()
       std::vector<types::global_dof_index> local_dof_indices(dofs_per_cell);
       std::vector<types::global_dof_index> local_dof_indices_neighbor(dofs_per_cell);
 
-      FullMatrix<double> cell_matrix(dofs_per_cell,dofs_per_cell);                  // contribution from the interior
+      Sparse_matrix cell_matrix(dofs_per_cell,dofs_per_cell);                  // contribution from the interior
       FullMatrix<double> boundary_matrix(dofs_per_cell,dofs_per_cell);
       Vector<double>     cell_rhs(dofs_per_cell);                                   // rhs from the current cell
 
       // matrices for the boundary terms
-      FullMatrix<double> u1_v1(dofs_per_cell,dofs_per_cell);      // relating current to current
-      FullMatrix<double> u1_v2(dofs_per_cell,dofs_per_cell);  // relating current to neighbor
-      FullMatrix<double> u2_v1(dofs_per_cell,dofs_per_cell);  // relating neighbor to current
-      FullMatrix<double> u2_v2(dofs_per_cell,dofs_per_cell);  // relating neighbor to current
+      Full_matrix u1_v1(dofs_per_cell,dofs_per_cell);      // relating current to current
+      Full_matrix u1_v2(dofs_per_cell,dofs_per_cell);  // relating current to neighbor
+      Full_matrix u2_v1(dofs_per_cell,dofs_per_cell);  // relating neighbor to current
+      Full_matrix u2_v2(dofs_per_cell,dofs_per_cell);  // relating neighbor to current
 
       // std::vectors to make computations faster
       std::vector<double> Jacobians_interior(total_ngp);
@@ -665,22 +656,29 @@ Base_Solver<dim>::assemble_system_periodic_odd()
       
       // end of std::vector to
       // make computation faster
+     this->Compute_Shape_Value(mapping,constants.p,ngp,cell);
+
      
 
       for (; cell != endc ; cell++) 
       {
-        cell_matrix = 0;
+        
         cell_rhs = 0;
         cell->get_dof_indices(local_dof_indices);
 
+        
         fe_v.reinit(cell);
+        
+
         Jacobians_interior = fe_v.get_JxW_values();
         system_info->source_term(fe_v.get_quadrature_points(),source_term_value);
 
+        
         integrate_cell_manuel(cell_matrix,cell_rhs,
                               fe_v,Jacobians_interior,
                               source_term_value,cell);
-      
+     
+
 
             for(unsigned int face  = 0; face< GeometryInfo<dim>::faces_per_cell; face++ )
             {
@@ -689,15 +687,12 @@ Base_Solver<dim>::assemble_system_periodic_odd()
               const typename DoFHandler<dim>::face_iterator face_itr = cell->face(face);
               Jacobian_face = fe_v_face.get_JxW_values();
               
-              u1_v1 = 0;
-              u1_v2 = 0;
-              u2_v1 = 0;
-              u2_v2 = 0;
               boundary_matrix = 0;
 
+           
               if (face_itr->at_boundary())
               { 
-                integrated_boundary = false;
+             
 
                 // id of the boundary
                 const unsigned int b_id = face_itr->boundary_id();
@@ -724,13 +719,14 @@ Base_Solver<dim>::assemble_system_periodic_odd()
 
 
                       // integrate the face between the cell and the periodic neighbor
+                      
                       integrate_face_manuel(u1_v1,u1_v2,
                                         u2_v1,u2_v2,
                                         fe_v_face,fe_v_face_neighbor,
                                         Jacobian_face,component,  
                                         cell);  
+                      
 
-                      integrated_boundary = true;
                       boundary_periodic++;
 
                     }
@@ -738,21 +734,27 @@ Base_Solver<dim>::assemble_system_periodic_odd()
                     // if the face is not on the peridic boundary 
                     else 
                     {
+                      
                         integrate_boundary_manuel_odd(boundary_matrix, cell_rhs,
                                                   fe_v_face, Jacobian_face,
                                                   component, cell,b_id); 
 
-                        integrated_boundary = true;
+                      
                         boundary_wall ++;
 
                     }  
                 
                 
-                //print_dealii_matrix(boundary_matrix,"boundary matrix");
+
               }
+             
+              
                 else
                {
+              
+                
                  neighbor = cell->neighbor(face);
+                
 
                  if (cell->neighbor_is_coarser(face))
                  {
@@ -767,11 +769,15 @@ Base_Solver<dim>::assemble_system_periodic_odd()
 
                    fe_v_subface_neighbor.reinit(neighbor,neighbor_face_no.first,neighbor_face_no.second);
 
+
+                   
                    integrate_face_manuel(u1_v1,u1_v2,
                                          u2_v1,u2_v2,
                                          fe_v_face,fe_v_subface_neighbor,
                                          Jacobian_face,component,  
                                          cell);
+
+                   
                   }
 
                   
@@ -790,20 +796,27 @@ Base_Solver<dim>::assemble_system_periodic_odd()
 
                   neighbor->get_dof_indices(local_dof_indices_neighbor);
 
+
+
                   const unsigned int neighbor_face_no = cell->neighbor_of_neighbor(face);
                   fe_v_face_neighbor.reinit(neighbor,neighbor_face_no);
+
+
                   
                   integrate_face_manuel(u1_v1,u1_v2,
                                         u2_v1,u2_v2,
                                         fe_v_face,fe_v_face_neighbor,
                                         Jacobian_face,component,  
                                         cell);   
+                  
   
                  }
                 }
   
+               
   
 
+                
    
                for (unsigned int i = 0 ; i < dofs_per_cell ; i++)
               for (unsigned int j = 0 ; j < dofs_per_cell ; j++)
@@ -815,16 +828,20 @@ Base_Solver<dim>::assemble_system_periodic_odd()
                 global_matrix.add(local_dof_indices[i],local_dof_indices_neighbor[j],u2_v1(i,j));
                 global_matrix.add(local_dof_indices_neighbor[i],local_dof_indices[j],u1_v2(i,j)) ;
               }
+               
             }
               
 
-             for (unsigned int i = 0 ; i < dofs_per_cell ; i++)
-              for (unsigned int j = 0 ; j < dofs_per_cell ; j++)
-                global_matrix.add(local_dof_indices[i],local_dof_indices[j],cell_matrix(i,j));
+            
+            for (unsigned int m = 0 ; m < cell_matrix.outerSize(); m++)
+                for (Sparse_matrix::InnerIterator n(cell_matrix,m); n ; ++n)
+                  global_matrix.add(local_dof_indices[n.row()],local_dof_indices[n.col()],n.value());
               
              for(unsigned int i = 0 ; i < dofs_per_cell ; i++)
               system_rhs(local_dof_indices[i]) += cell_rhs(i);
 
+            
+             
      
     }
 
