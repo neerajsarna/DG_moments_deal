@@ -1,8 +1,8 @@
 
 subsection Numerical Constants
-	set polynomial degree = 1
-	set mapping order = 2
-	set total h refinement cycles = 3
+	set polynomial degree = 3
+	set mapping order = 4
+	set total h refinement cycles = 8
 
 	# global = 0
 	# adaptive = 1
@@ -18,23 +18,27 @@ end
 
 subsection Physical Constants
  # constants corresponding to exact solution for system A
-	set	tau = 1.0
+  #CAUTION CAUTION CAUTION: uW = 1 * tau
+	set	uW = 10.0
+	set	tau = 10.0
 	set	zeta = 1.0				
 	set	chi = 1.0
 	set	theta0 = 2.0
 	set  theta1 = 1.0
 
- #CAUTION CAUTION CAUTION: uW = 1 * tau
-	set	uW = 1.0
+
 	set	A0 = 0.0
 	set	A1 = 0.2
 	set	A2 = 0.1
 	set kappa  = 0.0
 	set epsilon = 1e-5
+ 
  # the mapping for system A is different. So to compare the values for theta, we need to use rho
 	set error_variable = rho
- # there is no rho in system A, so rho corrresponds to theta
-	set force_variable = rho
+
+ # there is no rho in system A, so this rho corresponds to theta
+    set force_variable = rho
+    
 	set alpha = 1.0
 end
 
@@ -42,12 +46,12 @@ subsection System Properties
 	set system_id = 6
 	set equations in the system = 6
 	set nBC = 2
-	
+
 	# 0 for force of systemA,1 for force of systemB
 	set force type = 0
 
 	# 0 for characteristic and 1 for odd
-	set BC type = 1
+	set BC type = 0
 end
 
 subsection Mesh Info
@@ -76,5 +80,5 @@ subsection Printing Options
 end
 
 subsection Output Directory Name
-	set Main Output Directory = output_systemA_Ring_Kn0p1_char
+	set Main Output Directory = output_systemA_Ring_Kn10p0_char
 end
