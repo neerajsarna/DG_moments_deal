@@ -73,9 +73,6 @@ Base_Solver<dim>
 	typename DoFHandler<dim>::active_cell_iterator cell = dof_handler.begin_active();
 	typename DoFHandler<dim>::active_cell_iterator endc = dof_handler.end();
 
-  // we will now initialize the shape values. We should now be carefull because of the share memory architecture
-  this->Compute_Shape_Value(mapping,constants.p,ngp,cell);
-
   switch(constants.bc_type)
   {
     case odd:
@@ -138,33 +135,60 @@ template<int dim>
  
 	const FEValuesBase<dim> &fe_v = info.fe_values();
 	FullMatrix<double> &cell_matrix = dinfo.matrix(0).matrix;
-	const std::vector<double> &J = fe_v.get_JxW_values ();
+	const std::vector<double> &Jacobians_interior = fe_v.get_JxW_values ();
 	const FiniteElement<dim> &fe_in_cell = info.finite_element();
 
 	const unsigned int dofs_per_cell = fe_in_cell.dofs_per_cell;
 	const unsigned int components_per_cell  = fe_in_cell.n_components();
 	const unsigned int indices_per_cell = dofs_per_cell/components_per_cell;
+	std::vector<std::vector<double>> component_to_system(components_per_cell,std::vector<double> (indices_per_cell));
 
-  Full_matrix Mass_x(indices_per_cell,indices_per_cell);
-  Full_matrix Mass_y(indices_per_cell,indices_per_cell);
-  Full_matrix Mass(indices_per_cell,indices_per_cell);
-  Full_matrix cell_matrix_dummy(dofs_per_cell,dofs_per_cell);
+	for (unsigned int i = 0 ; i < components_per_cell ; i ++)
+		for (unsigned int j = 0 ; j < indices_per_cell ; j ++)
+			component_to_system[i][j] = fe_in_cell.component_to_system_index(i,j); 
+	
 
-  // matrix which stores Integrate phi * phi_x dx. Mass_y is the same but for the y-derivative and Mass is the normal mass
-  // matrix.
-  Mass_x = this->Compute_Mass_shape_grad_x(fe_v, indices_per_cell, J);
-  Mass_y = this->Compute_Mass_shape_grad_y(fe_v, indices_per_cell, J);
-  Mass = this->Compute_Mass_shape_value(fe_v, indices_per_cell, J);
+	for (unsigned int q = 0 ; q < fe_v.n_quadrature_points ; q++)
+	{
+		double jacobian_value = Jacobians_interior[q];
+		
+		for (unsigned int index_test = 0 ; index_test < indices_per_cell ; index_test++)
+		  for (unsigned int index_sol = 0 ; index_sol < indices_per_cell ; index_sol++ )
+		  {
+			for (unsigned int space = 0 ; space < dim ; space++)
+		   		for (unsigned int m = 0 ; m < system_info->system_data.A[space].matrix.outerSize(); m++)
+				{
+					const int dof_test = component_to_system[m][index_test];
+					const double shape_value_test = fe_v.shape_value(dof_test,q);
 
-  cell_matrix_dummy = matrix_opt.compute_A_outer_B(system_info->system_data.A[0].matrix,Mass_x) 
-                    +  matrix_opt.compute_A_outer_B(system_info->system_data.A[1].matrix,Mass_y)
-                    +  matrix_opt.compute_A_outer_B(system_info->system_data.P.matrix,Mass);
+					for (Sparse_matrix::InnerIterator n(system_info->system_data.A[space].matrix,m); n ; ++n)
+	
+					{
+						int dof_sol = component_to_system[n.col()][index_sol];
+						double grad_value_sol = fe_v.shape_grad(dof_sol,q)[space];
 
+						cell_matrix(dof_test,dof_sol) += shape_value_test * n.value()
+								* grad_value_sol * jacobian_value;	
+					}
+				}
+			for (unsigned int m = 0 ; m < system_info->system_data.P.matrix.outerSize(); m++)
+			{
+				const int dof_test = component_to_system[m][index_test];
+				const double shape_value_test = fe_v.shape_value(dof_test,q);
 
-  // now we need to copy the memory, this should not be very slow and the overall algorithm should be faster than before
-  for (unsigned int i = 0 ; i < dofs_per_cell ; i++)
-    for (unsigned int j = 0 ; j < dofs_per_cell ; j++)
-      cell_matrix(i,j) = cell_matrix_dummy(i,j);
+				for (Sparse_matrix::InnerIterator n(system_info->system_data.P.matrix,m); n ; ++n)
+					{
+						const int dof_sol = component_to_system[n.col()][index_sol];
+						const double shape_value_sol = fe_v.shape_value(dof_sol,q);
+
+						cell_matrix(dof_test,dof_sol) += shape_value_test * n.value()
+								* shape_value_sol * jacobian_value;	
+					}
+			}
+
+		 }
+		
+	}
 }
 
 template<int dim> 
@@ -320,64 +344,45 @@ Base_Solver<dim>
   FullMatrix<double> &u1_v2 = dinfo2.matrix(0,true).matrix;
   FullMatrix<double> &u2_v2 = dinfo2.matrix(0,false).matrix;
 
-  const std::vector<double> &J = fe_v.get_JxW_values ();
+  const std::vector<double> &Jacobian_face = fe_v.get_JxW_values ();
 
-  const FiniteElement<dim> &fe_in_cell1 = info1.finite_element();
-  const FiniteElement<dim> &fe_in_cell2 = info2.finite_element();
-    
-    const unsigned int dofs_per_cell1 = fe_in_cell1.dofs_per_cell;
-    const unsigned int n_components1 = fe_in_cell1.n_components();
-    const unsigned int dofs_per_component1 = dofs_per_cell1/n_components1;
+  const FiniteElement<dim> &fe_in_cell = info1.finite_element();
+  const unsigned int dofs_per_cell = fe_v.dofs_per_cell;
+  std::vector<unsigned int> component(dofs_per_cell);
 
-    const unsigned int dofs_per_cell2 = fe_in_cell2.dofs_per_cell;
-    const unsigned int n_components2 = fe_in_cell2.n_components();
-    const unsigned int dofs_per_component2 = dofs_per_cell2/n_components2;
+  for (unsigned int i = 0 ; i < dofs_per_cell ; i ++)
+    component[i] = fe_in_cell.system_to_component_index(i).first;
 
-    AssertDimension(dofs_per_cell1,dofs_per_cell2);
-    Full_matrix u1_v1_dummy(dofs_per_cell1,dofs_per_cell1);
-    Full_matrix u1_v2_dummy(dofs_per_cell2,dofs_per_cell1);
-    Full_matrix u2_v2_dummy(dofs_per_cell2,dofs_per_cell2);
-    Full_matrix u2_v1_dummy(dofs_per_cell1,dofs_per_cell2);
+  for (unsigned int q = 0 ; q < fe_v.n_quadrature_points ; q++)
+  {
+                  // build the matrices needed
+    Eigen::MatrixXd Am = system_info->build_Aminus(fe_v.normal_vector(q));
+    Eigen::MatrixXd Am_neighbor = system_info->build_Aminus(-fe_v.normal_vector(q));
+    double jacobian_value = Jacobian_face[q];
 
-    //CAUTION: ASSUMPTION OF STRAIGHT EDGES IN THE INTERIOR
-    Tensor<1,dim> outward_normal = fe_v.normal_vector(0);
-    Eigen::MatrixXd Am = system_info->build_Aminus(outward_normal);
-    Eigen::MatrixXd Am_neighbor = system_info->build_Aminus(-outward_normal);
+    for (unsigned int i = 0 ; i < dofs_per_cell ; i ++)
+    {
+      const double shape_value_test = fe_v.shape_value(i,q);
+      const double shape_value_test_neighbor = fe_v_neighbor.shape_value(i,q);
 
-
-    Full_matrix Mass_u1_v1(dofs_per_component1,dofs_per_component1);
-    Full_matrix Mass_u2_v1(dofs_per_component1,dofs_per_component2);
-    Full_matrix Mass_u2_v2(dofs_per_component2,dofs_per_component2);
-    Full_matrix Mass_u1_v2(dofs_per_component2,dofs_per_component1);
-
-    Mass_u1_v1 = this->Compute_Mass_cell_neighbor(fe_v,
-                                                   fe_v,dofs_per_component1,
-                                                  dofs_per_component1,J);
-
-    Mass_u2_v1 = this->Compute_Mass_cell_neighbor(fe_v,
-                                                   fe_v_neighbor,dofs_per_component1,
-                                                  dofs_per_component2,J);
-
-    Mass_u2_v2 =  this->Compute_Mass_cell_neighbor(fe_v_neighbor,
-                                                   fe_v_neighbor,dofs_per_component2,
-                                                  dofs_per_component2,J);
-
-    Mass_u1_v2 =  this->Compute_Mass_cell_neighbor(fe_v_neighbor,
-                                                   fe_v,dofs_per_component2,
-                                                  dofs_per_component1,J);
-
-    u1_v1_dummy = 0.5 * matrix_opt.compute_A_outer_B(Am,Mass_u1_v1);
-    u2_v1_dummy = -0.5 * matrix_opt.compute_A_outer_B(Am,Mass_u2_v1);
-    u1_v2_dummy = -0.5 * matrix_opt.compute_A_outer_B(Am_neighbor,Mass_u1_v2);
-    u2_v2_dummy = 0.5 * matrix_opt.compute_A_outer_B(Am_neighbor,Mass_u2_v2);
-
-    // now we need to copy into the dealii matrix
-    for (unsigned int i = 0 ; i < dofs_per_cell1 ; i++)
-      for (unsigned int j = 0 ; j < dofs_per_cell1 ; j++)
+      for (unsigned int j = 0 ; j < dofs_per_cell ; j ++)
       {
-        u1_v1(i,j)  = u1_v1_dummy(i,j);
-        u2_v1(i,j)  = u2_v1_dummy(i,j);
-        u1_v2(i,j)  = u1_v2_dummy(i,j);
-        u2_v2(i,j)  = u2_v2_dummy(i,j);
+	       const double shape_value_sol = fe_v.shape_value(j,q);
+	       const double shape_value_neighbor = fe_v_neighbor.shape_value(j,q);
+
+          u1_v1(i,j) += 0.5 * shape_value_test * Am(component[i],component[j]) 
+                        * shape_value_sol * jacobian_value;
+
+          u2_v1(i,j) -= 0.5 * shape_value_test * Am(component[i],component[j]) 
+                        * shape_value_neighbor * jacobian_value;
+
+          u2_v2(i,j) += 0.5 * shape_value_test_neighbor * Am_neighbor(component[i],component[j])
+                        * shape_value_neighbor * jacobian_value;
+
+          u1_v2(i,j) -= 0.5 * shape_value_test_neighbor * Am_neighbor(component[i],component[j]) 
+                        * shape_value_sol * jacobian_value;
+
       }
+    }
+  }
 }

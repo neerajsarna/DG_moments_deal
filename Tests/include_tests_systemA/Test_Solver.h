@@ -3,35 +3,6 @@ namespace Test_Solver
 	using namespace dealii;
 
 
-
-	TEST(MeshGenerationRing,HandlesMeshGenerationRing)
-	{
-		const unsigned int dim = 2;
-		ASSERT_EQ(dim,2) << "3D not implemented" << std::endl;
-
-		std::string folder_name = "../system_matrices/";
-		Constants::Base_Constants constants(input_file);
-		SystemA::SystemA<dim> systemA(constants.constants,folder_name);
-
-		// now we need an object for the exact solution
-		ExactSolution::ExactSolution_SystemA_ring<dim>  exact_solution_systemA(constants.constants,systemA.base_tensorinfo.S_half);
-
-		FEM_Solver::Base_Solver<dim> base_solver("mesh_file_name","grid",constants.constants,&systemA,
-											 	&exact_solution_systemA);
-
-
-		if (constants.constants.mesh_type == ring)
-		{
-			base_solver.print_grid(0);
-
-			// triangulation should have some number of cell
-			EXPECT_NE(base_solver.triangulation.n_active_cells(),0);
-
-		}
-
-
-	}
-
 	TEST(PeriodicityHandler,HandlesPeriodicityManagement)
 	{
 		const unsigned int dim = 2;
@@ -161,46 +132,14 @@ namespace Test_Solver
 											 &exact_solution_systemA);
 
 
-		// we copy the routine from Run_Ring.h since we wish to explicitly compute the error values
-		Vector<double> error_per_run(constants.constants.refine_cycles);
-
-		for (int i = 0 ; i < constants.constants.refine_cycles ; i++)
-		{
-			base_solver.distribute_dof_allocate_matrix();
-		
-			switch(constants.constants.assembly_type)
-		  		{	
-					case meshworker:
-					{
-						base_solver.assemble_system_meshworker();
-						break;
-					}
-
-					// case manuel:
-					// {
-					// 	assemble_system();
-					// 	break;
-					// }
-					default :
-					{
-						Assert(1 == 0,ExcMessage("Should not have reached here"));
-						break;
-					}
-		 		}
-
-			LinearSolver::LinearSolver linear_solver(base_solver.global_matrix,base_solver.system_rhs,base_solver.solution);
-
-			PostProc::Base_PostProc<dim> postproc(base_solver.constants,&exact_solution_systemA,&base_solver.dof_handler, &base_solver.mapping);
-
-			error_per_run(i) = postproc.L2_error_QGauss(base_solver.solution,base_solver.triangulation.n_active_cells());
-
-			std::cout << "L2 error " << error_per_run(i) << std::endl;
-			if (i != constants.constants.refine_cycles - 1)
-				base_solver.triangulation.refine_global(1);
-
-		}
+		// now we solve the required system
+		// The decision regarding a manuel assembly or an automated assembly is taken inside of run_ring.
+		base_solver.run_ring();
 
 		Assert(constants.constants.refine_cycles == 3,ExcMessage("The refine cycles requested for have not been implemented"));
+		Assert(constants.constants.p == 1,ExcNotImplemented());
+		Assert(constants.constants.mapping_order == 2 , ExcNotImplemented());
+		Assert(fabs(constants.constants.tau -10.0) >1e-5,ExcNotImplemented());
 
 		Vector<double> exact_error(constants.constants.refine_cycles);
 
@@ -222,7 +161,7 @@ namespace Test_Solver
 
 
 			for (int i = 0 ; i < constants.constants.refine_cycles ; i++)
-				EXPECT_NEAR(error_per_run(i),exact_error(i),1e-5);			
+				EXPECT_NEAR(base_solver.error_per_itr[i],exact_error(i),1e-5);			
 		}
 
 		if (fabs(constants.constants.tau - 1.0) < 1e-5)
@@ -243,7 +182,7 @@ namespace Test_Solver
 
 
 			for (int i = 0 ; i < constants.constants.refine_cycles ; i++)
-				EXPECT_NEAR(error_per_run(i),exact_error(i),1e-5);				
+				EXPECT_NEAR(base_solver.error_per_itr[i],exact_error(i),1e-5);				
 		}
 
 

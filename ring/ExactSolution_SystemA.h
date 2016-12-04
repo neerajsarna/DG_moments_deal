@@ -23,12 +23,20 @@ namespace ExactSolution
 	{
 		Assert(this->constants.nEqn == 6,ExcMessage("incorrect equation number"));
 
+		bool entered = false;
+
+		Assert(fabs(this->constants.A0 - 0.0) < 1e-5 &&
+			fabs(this->constants.A1 - 0.2) < 1e-5 &&
+			fabs(this->constants.A2 - 0.1) < 1e-5 &&
+			fabs(this->constants.uW - this->constants.tau) < 1e-5, ExcMessage("Please load the exact solution for this test problem"));
+
 		// different test cases
 		if (fabs(this->constants.A0 - 0.0) < 1e-5 &&
 			fabs(this->constants.A1 - 0.2) < 1e-5 &&
 			fabs(this->constants.A2 - 0.1) < 1e-5 &&
 			fabs(this->constants.uW - this->constants.tau) < 1e-5)
 		{
+
 			if (fabs(this->constants.tau - 0.01) < 1e-5)
 			{
 					this->C1 = -258.6317250754188;
@@ -37,6 +45,7 @@ namespace ExactSolution
 					this->C4 = 6.490985249358112;
 					this->K1 = 9.713664158637732e28;
 					this->K2 = 1.0821414602962837e-127;					
+					entered = true;
 			}
 
 				if( fabs(this->constants.tau - 0.1) < 1e-5 )
@@ -47,6 +56,7 @@ namespace ExactSolution
 					this->C4 = 0.11342119104343287;
 					this->K1 = 53.97166647969362;
 					this->K2 = 1.26255082813026e-15;
+					entered = true;
 				}
 
 				if( fabs(this->constants.tau - 1.0) < 1e-5 )
@@ -57,6 +67,7 @@ namespace ExactSolution
 					this->C4 = -0.10358631917431671;
 					this->K1 = 0.18803597175199138;
 					this->K2 = 0.003604064889912796;
+					entered = true;
 
 				}
 
@@ -68,12 +79,15 @@ namespace ExactSolution
 					this->C4 = -0.004296145849336291;
 					this->K1 = 0.18900239036185373;
 					this->K2 = -0.6486989954482233;
-
+					entered = true;
 				}
 
 				this->lambda1 = sqrt(2 * this->constants.zeta);
+				
 		}
 
+		Assert(fabs(this->lambda1-sqrt(2 * this->constants.zeta)) < 1e-5 , ExcMessage("Parameters not initialized for the exact solution"));
+		Assert(entered,ExcMessage("Parameters for exact solution not initialized"));
 
 	}
 

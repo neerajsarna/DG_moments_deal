@@ -231,6 +231,7 @@ namespace PostProc
 
         const double L2_error = error_per_cell.l2_norm();
 
+        error_value = L2_error;
         // computation of L_inifinity error
         error_per_cell = 0;
         VectorTools::integrate_difference (*mapping,*dof_handler,solution,

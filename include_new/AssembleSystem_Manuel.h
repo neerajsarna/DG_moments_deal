@@ -1,4 +1,4 @@
-// many variations of the same assembler, need to optimize the could length later
+// implementation of the odd boundary conditions
 template<int dim> 
 void 
 Base_Solver<dim>::assemble_system_char()
@@ -12,10 +12,9 @@ Base_Solver<dim>::assemble_system_char()
       const QGauss<dim-1> face_quadrature(ngp_face);
 
 
-
-      const UpdateFlags update_flags               = update_gradients
-                                                    | update_q_points
-                                                    | update_JxW_values,
+      const UpdateFlags update_flags               =  update_gradients
+                                                     | update_q_points
+                                                     | update_JxW_values,
       face_update_flags          = update_values
       | update_q_points
       | update_JxW_values
@@ -41,7 +40,6 @@ Base_Solver<dim>::assemble_system_char()
       FullMatrix<double> boundary_matrix(dofs_per_cell,dofs_per_cell);
       Vector<double>     cell_rhs(dofs_per_cell);                                   // rhs from the current cell
 
-
       // matrices for the boundary terms
       Full_matrix u1_v1(dofs_per_cell,dofs_per_cell);      // relating current to current
       Full_matrix u1_v2(dofs_per_cell,dofs_per_cell);  // relating current to neighbor
@@ -54,7 +52,7 @@ Base_Solver<dim>::assemble_system_char()
 
       // component corresponding to every dof
       Vector<double> component(dofs_per_cell);
-      std::vector<Vector<double>> source_term_value(total_ngp,Vector<double>(this->nEqn));
+      std::vector<Vector<double>> source_term_value(total_ngp,Vector<double>(constants.nEqn));
 
       for (unsigned int i = 0 ; i < dofs_per_cell ; i++)
         component(i) = finite_element.system_to_component_index(i).first;
@@ -63,21 +61,27 @@ Base_Solver<dim>::assemble_system_char()
       // make computation faster
      
       this->Compute_Shape_Value(mapping,constants.p,ngp,cell);
+      
 
-
-      for (; cell != endc ; cell++) 
+  for (; cell != endc ; cell++) 
       {
+        
         cell_rhs = 0;
         cell->get_dof_indices(local_dof_indices);
 
+        
         fe_v.reinit(cell);
+        
+
         Jacobians_interior = fe_v.get_JxW_values();
         system_info->source_term(fe_v.get_quadrature_points(),source_term_value);
 
+        
         integrate_cell_manuel(cell_matrix,cell_rhs,
                               fe_v,Jacobians_interior,
                               source_term_value,cell);
-      
+     
+
 
             for(unsigned int face  = 0; face< GeometryInfo<dim>::faces_per_cell; face++ )
             {
@@ -86,26 +90,39 @@ Base_Solver<dim>::assemble_system_char()
               const typename DoFHandler<dim>::face_iterator face_itr = cell->face(face);
               Jacobian_face = fe_v_face.get_JxW_values();
               
-
               boundary_matrix = 0;
 
+           
               if (face_itr->at_boundary())
               { 
-                integrated_boundary = false;
+             
 
+                // id of the boundary
                 const unsigned int b_id = face_itr->boundary_id();
 
+                      
                 integrate_boundary_manuel_char(boundary_matrix, cell_rhs,
                                               fe_v_face, Jacobian_face,
                                               component, cell,b_id); 
-                integrated_boundary = true;
 
-                
-                
+                      
+                // assemble the terms on the boundary
+                for (unsigned int i = 0 ; i < dofs_per_cell ; i++)
+                  for (unsigned int j = 0 ; j < dofs_per_cell ; j++)
+                  {
+               
+                   Assert(sparsity_pattern.exists(local_dof_indices[i],local_dof_indices[j]),ExcNoElementInSparsity(local_dof_indices[i],local_dof_indices[j]));
+                   global_matrix.add(local_dof_indices[i],local_dof_indices[j],boundary_matrix(i,j));
+                  }
               }
+             
+              
                 else
                {
+              
+                
                  neighbor = cell->neighbor(face);
+                
 
                  if (cell->neighbor_is_coarser(face))
                  {
@@ -120,11 +137,31 @@ Base_Solver<dim>::assemble_system_char()
 
                    fe_v_subface_neighbor.reinit(neighbor,neighbor_face_no.first,neighbor_face_no.second);
 
+
+                   
                    integrate_face_manuel(u1_v1,u1_v2,
                                          u2_v1,u2_v2,
                                          fe_v_face,fe_v_subface_neighbor,
                                          Jacobian_face,component,  
                                          cell);
+
+
+                  for (unsigned int i = 0 ; i < dofs_per_cell ; i++)
+                  for (unsigned int j = 0 ; j < dofs_per_cell ; j++)
+                  {
+               
+                   Assert(sparsity_pattern.exists(local_dof_indices[i],local_dof_indices[j]),ExcNoElementInSparsity(local_dof_indices[i],local_dof_indices[j]));
+                   Assert(sparsity_pattern.exists(local_dof_indices[i],local_dof_indices_neighbor[j]),ExcNoElementInSparsity(local_dof_indices[i],local_dof_indices_neighbor[j]));
+                   Assert(sparsity_pattern.exists(local_dof_indices_neighbor[i],local_dof_indices[j]),ExcNoElementInSparsity(local_dof_indices_neighbor[i],local_dof_indices[j]));
+                   Assert(sparsity_pattern.exists(local_dof_indices_neighbor[i],local_dof_indices_neighbor[j]),ExcNoElementInSparsity(local_dof_indices_neighbor[i],local_dof_indices_neighbor[j]));
+
+                   global_matrix.add(local_dof_indices[i],local_dof_indices[j],u1_v1(i,j));
+                   global_matrix.add(local_dof_indices_neighbor[i],local_dof_indices_neighbor[j],u2_v2(i,j));
+
+                   global_matrix.add(local_dof_indices[i],local_dof_indices_neighbor[j],u2_v1(i,j));
+                   global_matrix.add(local_dof_indices_neighbor[i],local_dof_indices[j],u1_v2(i,j)) ;
+                  }   
+                   
                   }
 
                   
@@ -143,45 +180,56 @@ Base_Solver<dim>::assemble_system_char()
 
                   neighbor->get_dof_indices(local_dof_indices_neighbor);
 
+
+
                   const unsigned int neighbor_face_no = cell->neighbor_of_neighbor(face);
                   fe_v_face_neighbor.reinit(neighbor,neighbor_face_no);
+
+
                   
                   integrate_face_manuel(u1_v1,u1_v2,
                                         u2_v1,u2_v2,
                                         fe_v_face,fe_v_face_neighbor,
                                         Jacobian_face,component,  
                                         cell);   
+                 // assemble the part from faces
+                for (unsigned int i = 0 ; i < dofs_per_cell ; i++)
+                  for (unsigned int j = 0 ; j < dofs_per_cell ; j++)
+                  {
+               
+                   Assert(sparsity_pattern.exists(local_dof_indices[i],local_dof_indices[j]),ExcNoElementInSparsity(local_dof_indices[i],local_dof_indices[j]));
+                   Assert(sparsity_pattern.exists(local_dof_indices[i],local_dof_indices_neighbor[j]),ExcNoElementInSparsity(local_dof_indices[i],local_dof_indices_neighbor[j]));
+                   Assert(sparsity_pattern.exists(local_dof_indices_neighbor[i],local_dof_indices[j]),ExcNoElementInSparsity(local_dof_indices_neighbor[i],local_dof_indices[j]));
+                   Assert(sparsity_pattern.exists(local_dof_indices_neighbor[i],local_dof_indices_neighbor[j]),ExcNoElementInSparsity(local_dof_indices_neighbor[i],local_dof_indices_neighbor[j]));
+
+                   global_matrix.add(local_dof_indices[i],local_dof_indices[j],u1_v1(i,j));
+                   global_matrix.add(local_dof_indices_neighbor[i],local_dof_indices_neighbor[j],u2_v2(i,j));
+
+                   global_matrix.add(local_dof_indices[i],local_dof_indices_neighbor[j],u2_v1(i,j));
+                   global_matrix.add(local_dof_indices_neighbor[i],local_dof_indices[j],u1_v2(i,j)) ;
+                  }                  
   
                  }
+
+
                 }
-	
-	
-
-	 
-               for (unsigned int i = 0 ; i < dofs_per_cell ; i++)
-              for (unsigned int j = 0 ; j < dofs_per_cell ; j++)
-              {
-               
-                global_matrix.add(local_dof_indices[i],local_dof_indices[j],u1_v1(i,j) + boundary_matrix(i,j));
-                global_matrix.add(local_dof_indices_neighbor[i],local_dof_indices_neighbor[j],u2_v2(i,j));
-
-                global_matrix.add(local_dof_indices[i],local_dof_indices_neighbor[j],u2_v1(i,j));
-                global_matrix.add(local_dof_indices_neighbor[i],local_dof_indices[j],u1_v2(i,j)) ;
-              }
             }
               
 
+            
             for (unsigned int m = 0 ; m < cell_matrix.outerSize(); m++)
                 for (Sparse_matrix::InnerIterator n(cell_matrix,m); n ; ++n)
+                {
+                  Assert(n.row() < dofs_per_cell, ExcMessage("In appropriate size"));
+                  Assert(n.col() < dofs_per_cell, ExcMessage("In appropriate size"));
                   global_matrix.add(local_dof_indices[n.row()],local_dof_indices[n.col()],n.value());
-
-             
+                }
               
              for(unsigned int i = 0 ; i < dofs_per_cell ; i++)
               system_rhs(local_dof_indices[i]) += cell_rhs(i);
-
-	   
-	  }
+         
+     
+    }
 
   }
 
@@ -239,7 +287,7 @@ Base_Solver<dim>::assemble_system_odd()
 
       // component corresponding to every dof
       Vector<double> component(dofs_per_cell);
-      std::vector<Vector<double>> source_term_value(total_ngp,Vector<double>(this->nEqn));
+      std::vector<Vector<double>> source_term_value(total_ngp,Vector<double>(constants.nEqn));
 
       for (unsigned int i = 0 ; i < dofs_per_cell ; i++)
         component(i) = finite_element.system_to_component_index(i).first;
@@ -250,20 +298,25 @@ Base_Solver<dim>::assemble_system_odd()
       this->Compute_Shape_Value(mapping,constants.p,ngp,cell);
       
 
-      for (; cell != endc ; cell++) 
+  for (; cell != endc ; cell++) 
       {
-
+        
         cell_rhs = 0;
         cell->get_dof_indices(local_dof_indices);
 
+        
         fe_v.reinit(cell);
+        
+
         Jacobians_interior = fe_v.get_JxW_values();
         system_info->source_term(fe_v.get_quadrature_points(),source_term_value);
 
+        
         integrate_cell_manuel(cell_matrix,cell_rhs,
                               fe_v,Jacobians_interior,
                               source_term_value,cell);
-      
+     
+
 
             for(unsigned int face  = 0; face< GeometryInfo<dim>::faces_per_cell; face++ )
             {
@@ -272,26 +325,39 @@ Base_Solver<dim>::assemble_system_odd()
               const typename DoFHandler<dim>::face_iterator face_itr = cell->face(face);
               Jacobian_face = fe_v_face.get_JxW_values();
               
-
               boundary_matrix = 0;
 
+           
               if (face_itr->at_boundary())
               { 
-                integrated_boundary = false;
+             
 
+                // id of the boundary
                 const unsigned int b_id = face_itr->boundary_id();
 
+                      
                 integrate_boundary_manuel_odd(boundary_matrix, cell_rhs,
                                               fe_v_face, Jacobian_face,
                                               component, cell,b_id); 
-                integrated_boundary = true;
 
-                
-                
+                      
+                // assemble the terms on the boundary
+                for (unsigned int i = 0 ; i < dofs_per_cell ; i++)
+                  for (unsigned int j = 0 ; j < dofs_per_cell ; j++)
+                  {
+               
+                   Assert(sparsity_pattern.exists(local_dof_indices[i],local_dof_indices[j]),ExcNoElementInSparsity(local_dof_indices[i],local_dof_indices[j]));
+                   global_matrix.add(local_dof_indices[i],local_dof_indices[j],boundary_matrix(i,j));
+                  }
               }
+             
+              
                 else
                {
+              
+                
                  neighbor = cell->neighbor(face);
+                
 
                  if (cell->neighbor_is_coarser(face))
                  {
@@ -306,11 +372,31 @@ Base_Solver<dim>::assemble_system_odd()
 
                    fe_v_subface_neighbor.reinit(neighbor,neighbor_face_no.first,neighbor_face_no.second);
 
+
+                   
                    integrate_face_manuel(u1_v1,u1_v2,
                                          u2_v1,u2_v2,
                                          fe_v_face,fe_v_subface_neighbor,
                                          Jacobian_face,component,  
                                          cell);
+
+
+                  for (unsigned int i = 0 ; i < dofs_per_cell ; i++)
+                  for (unsigned int j = 0 ; j < dofs_per_cell ; j++)
+                  {
+               
+                   Assert(sparsity_pattern.exists(local_dof_indices[i],local_dof_indices[j]),ExcNoElementInSparsity(local_dof_indices[i],local_dof_indices[j]));
+                   Assert(sparsity_pattern.exists(local_dof_indices[i],local_dof_indices_neighbor[j]),ExcNoElementInSparsity(local_dof_indices[i],local_dof_indices_neighbor[j]));
+                   Assert(sparsity_pattern.exists(local_dof_indices_neighbor[i],local_dof_indices[j]),ExcNoElementInSparsity(local_dof_indices_neighbor[i],local_dof_indices[j]));
+                   Assert(sparsity_pattern.exists(local_dof_indices_neighbor[i],local_dof_indices_neighbor[j]),ExcNoElementInSparsity(local_dof_indices_neighbor[i],local_dof_indices_neighbor[j]));
+
+                   global_matrix.add(local_dof_indices[i],local_dof_indices[j],u1_v1(i,j));
+                   global_matrix.add(local_dof_indices_neighbor[i],local_dof_indices_neighbor[j],u2_v2(i,j));
+
+                   global_matrix.add(local_dof_indices[i],local_dof_indices_neighbor[j],u2_v1(i,j));
+                   global_matrix.add(local_dof_indices_neighbor[i],local_dof_indices[j],u1_v2(i,j)) ;
+                  }   
+                   
                   }
 
                   
@@ -329,46 +415,58 @@ Base_Solver<dim>::assemble_system_odd()
 
                   neighbor->get_dof_indices(local_dof_indices_neighbor);
 
+
+
                   const unsigned int neighbor_face_no = cell->neighbor_of_neighbor(face);
                   fe_v_face_neighbor.reinit(neighbor,neighbor_face_no);
+
+
                   
                   integrate_face_manuel(u1_v1,u1_v2,
                                         u2_v1,u2_v2,
                                         fe_v_face,fe_v_face_neighbor,
                                         Jacobian_face,component,  
                                         cell);   
+                 // assemble the part from faces
+                for (unsigned int i = 0 ; i < dofs_per_cell ; i++)
+                  for (unsigned int j = 0 ; j < dofs_per_cell ; j++)
+                  {
+               
+                   Assert(sparsity_pattern.exists(local_dof_indices[i],local_dof_indices[j]),ExcNoElementInSparsity(local_dof_indices[i],local_dof_indices[j]));
+                   Assert(sparsity_pattern.exists(local_dof_indices[i],local_dof_indices_neighbor[j]),ExcNoElementInSparsity(local_dof_indices[i],local_dof_indices_neighbor[j]));
+                   Assert(sparsity_pattern.exists(local_dof_indices_neighbor[i],local_dof_indices[j]),ExcNoElementInSparsity(local_dof_indices_neighbor[i],local_dof_indices[j]));
+                   Assert(sparsity_pattern.exists(local_dof_indices_neighbor[i],local_dof_indices_neighbor[j]),ExcNoElementInSparsity(local_dof_indices_neighbor[i],local_dof_indices_neighbor[j]));
+
+                   global_matrix.add(local_dof_indices[i],local_dof_indices[j],u1_v1(i,j));
+                   global_matrix.add(local_dof_indices_neighbor[i],local_dof_indices_neighbor[j],u2_v2(i,j));
+
+                   global_matrix.add(local_dof_indices[i],local_dof_indices_neighbor[j],u2_v1(i,j));
+                   global_matrix.add(local_dof_indices_neighbor[i],local_dof_indices[j],u1_v2(i,j)) ;
+                  }                  
   
                  }
+
+
                 }
-  
-  
-
-   
-               for (unsigned int i = 0 ; i < dofs_per_cell ; i++)
-              for (unsigned int j = 0 ; j < dofs_per_cell ; j++)
-              {
-               
-                global_matrix.add(local_dof_indices[i],local_dof_indices[j],u1_v1(i,j) + boundary_matrix(i,j));
-                global_matrix.add(local_dof_indices_neighbor[i],local_dof_indices_neighbor[j],u2_v2(i,j));
-
-                global_matrix.add(local_dof_indices[i],local_dof_indices_neighbor[j],u2_v1(i,j));
-                global_matrix.add(local_dof_indices_neighbor[i],local_dof_indices[j],u1_v2(i,j)) ;
-              }
             }
               
 
+            
             for (unsigned int m = 0 ; m < cell_matrix.outerSize(); m++)
                 for (Sparse_matrix::InnerIterator n(cell_matrix,m); n ; ++n)
+                {
+                  Assert(n.row() < dofs_per_cell, ExcMessage("In appropriate size"));
+                  Assert(n.col() < dofs_per_cell, ExcMessage("In appropriate size"));
                   global_matrix.add(local_dof_indices[n.row()],local_dof_indices[n.col()],n.value());
+                }
               
              for(unsigned int i = 0 ; i < dofs_per_cell ; i++)
               system_rhs(local_dof_indices[i]) += cell_rhs(i);
-
+         
      
     }
 
   }
-
 // special routine to handle periodicity
 template<int dim> 
 void 
@@ -487,6 +585,22 @@ Base_Solver<dim>::assemble_system_periodic_char()
                                         fe_v_face,fe_v_face_neighbor,
                                         Jacobian_face,component,  
                                         cell);  
+                
+                for (unsigned int i = 0 ; i < dofs_per_cell ; i++)
+                  for (unsigned int j = 0 ; j < dofs_per_cell ; j++)
+                  {
+               
+                   Assert(sparsity_pattern.exists(local_dof_indices[i],local_dof_indices[j]),ExcNoElementInSparsity(local_dof_indices[i],local_dof_indices[j]));
+                   Assert(sparsity_pattern.exists(local_dof_indices[i],local_dof_indices_neighbor[j]),ExcNoElementInSparsity(local_dof_indices[i],local_dof_indices_neighbor[j]));
+                   Assert(sparsity_pattern.exists(local_dof_indices_neighbor[i],local_dof_indices[j]),ExcNoElementInSparsity(local_dof_indices_neighbor[i],local_dof_indices[j]));
+                   Assert(sparsity_pattern.exists(local_dof_indices_neighbor[i],local_dof_indices_neighbor[j]),ExcNoElementInSparsity(local_dof_indices_neighbor[i],local_dof_indices_neighbor[j]));
+
+                   global_matrix.add(local_dof_indices[i],local_dof_indices[j],u1_v1(i,j));
+                   global_matrix.add(local_dof_indices_neighbor[i],local_dof_indices_neighbor[j],u2_v2(i,j));
+
+                   global_matrix.add(local_dof_indices[i],local_dof_indices_neighbor[j],u2_v1(i,j));
+                   global_matrix.add(local_dof_indices_neighbor[i],local_dof_indices[j],u1_v2(i,j)) ;
+                  }                  
 
                      boundary_periodic++;
 
@@ -495,13 +609,21 @@ Base_Solver<dim>::assemble_system_periodic_char()
                     // if the face is not on the peridic boundary 
                     else 
                     {
-                        integrate_boundary_manuel_char(boundary_matrix, cell_rhs,
-                                                  fe_v_face, Jacobian_face,
-                                                  component, cell,b_id); 
+                      integrate_boundary_manuel_char(boundary_matrix, cell_rhs,
+                                                      fe_v_face, Jacobian_face,
+                                                      component, cell,b_id); 
 
-                       boundary_wall ++;
+                      boundary_wall ++;
+                                       // assemble the terms on the boundary
+                      for (unsigned int i = 0 ; i < dofs_per_cell ; i++)
+                        for (unsigned int j = 0 ; j < dofs_per_cell ; j++)
+                        {
 
-                    }  
+                         Assert(sparsity_pattern.exists(local_dof_indices[i],local_dof_indices[j]),ExcNoElementInSparsity(local_dof_indices[i],local_dof_indices[j]));
+                         global_matrix.add(local_dof_indices[i],local_dof_indices[j],boundary_matrix(i,j));
+                        }
+
+                     }  
                 
                 
                 //print_dealii_matrix(boundary_matrix,"boundary matrix");
@@ -528,6 +650,22 @@ Base_Solver<dim>::assemble_system_periodic_char()
                                          fe_v_face,fe_v_subface_neighbor,
                                          Jacobian_face,component,  
                                          cell);
+
+                   for (unsigned int i = 0 ; i < dofs_per_cell ; i++)
+                    for (unsigned int j = 0 ; j < dofs_per_cell ; j++)
+                    {
+
+                     Assert(sparsity_pattern.exists(local_dof_indices[i],local_dof_indices[j]),ExcNoElementInSparsity(local_dof_indices[i],local_dof_indices[j]));
+                     Assert(sparsity_pattern.exists(local_dof_indices[i],local_dof_indices_neighbor[j]),ExcNoElementInSparsity(local_dof_indices[i],local_dof_indices_neighbor[j]));
+                     Assert(sparsity_pattern.exists(local_dof_indices_neighbor[i],local_dof_indices[j]),ExcNoElementInSparsity(local_dof_indices_neighbor[i],local_dof_indices[j]));
+                     Assert(sparsity_pattern.exists(local_dof_indices_neighbor[i],local_dof_indices_neighbor[j]),ExcNoElementInSparsity(local_dof_indices_neighbor[i],local_dof_indices_neighbor[j]));
+
+                     global_matrix.add(local_dof_indices[i],local_dof_indices[j],u1_v1(i,j));
+                     global_matrix.add(local_dof_indices_neighbor[i],local_dof_indices_neighbor[j],u2_v2(i,j));
+
+                     global_matrix.add(local_dof_indices[i],local_dof_indices_neighbor[j],u2_v1(i,j));
+                     global_matrix.add(local_dof_indices_neighbor[i],local_dof_indices[j],u1_v2(i,j)) ;
+                   }                  
                   }
 
                   
@@ -553,24 +691,29 @@ Base_Solver<dim>::assemble_system_periodic_char()
                                         u2_v1,u2_v2,
                                         fe_v_face,fe_v_face_neighbor,
                                         Jacobian_face,component,  
-                                        cell);   
+                                        cell);  
+
+
+                  for (unsigned int i = 0 ; i < dofs_per_cell ; i++)
+                    for (unsigned int j = 0 ; j < dofs_per_cell ; j++)
+                    {
+
+                     Assert(sparsity_pattern.exists(local_dof_indices[i],local_dof_indices[j]),ExcNoElementInSparsity(local_dof_indices[i],local_dof_indices[j]));
+                     Assert(sparsity_pattern.exists(local_dof_indices[i],local_dof_indices_neighbor[j]),ExcNoElementInSparsity(local_dof_indices[i],local_dof_indices_neighbor[j]));
+                     Assert(sparsity_pattern.exists(local_dof_indices_neighbor[i],local_dof_indices[j]),ExcNoElementInSparsity(local_dof_indices_neighbor[i],local_dof_indices[j]));
+                     Assert(sparsity_pattern.exists(local_dof_indices_neighbor[i],local_dof_indices_neighbor[j]),ExcNoElementInSparsity(local_dof_indices_neighbor[i],local_dof_indices_neighbor[j]));
+
+                     global_matrix.add(local_dof_indices[i],local_dof_indices[j],u1_v1(i,j));
+                     global_matrix.add(local_dof_indices_neighbor[i],local_dof_indices_neighbor[j],u2_v2(i,j));
+
+                     global_matrix.add(local_dof_indices[i],local_dof_indices_neighbor[j],u2_v1(i,j));
+                     global_matrix.add(local_dof_indices_neighbor[i],local_dof_indices[j],u1_v2(i,j)) ;
+                   }                   
   
                  }
                 }
   
-  
-
-   
-               for (unsigned int i = 0 ; i < dofs_per_cell ; i++)
-              for (unsigned int j = 0 ; j < dofs_per_cell ; j++)
-              {
                
-                global_matrix.add(local_dof_indices[i],local_dof_indices[j],u1_v1(i,j) + boundary_matrix(i,j));
-                global_matrix.add(local_dof_indices_neighbor[i],local_dof_indices_neighbor[j],u2_v2(i,j));
-
-                global_matrix.add(local_dof_indices[i],local_dof_indices_neighbor[j],u2_v1(i,j));
-                global_matrix.add(local_dof_indices_neighbor[i],local_dof_indices[j],u1_v2(i,j)) ;
-              }
             }
               
 
@@ -602,8 +745,6 @@ Base_Solver<dim>::assemble_system_periodic_odd()
       // counters 
       unsigned int boundary_wall = 0;
       unsigned int boundary_periodic = 0;
-
-
       const QGauss<dim> quadrature(ngp);
       const QGauss<dim-1> face_quadrature(ngp_face);
 
@@ -654,31 +795,21 @@ Base_Solver<dim>::assemble_system_periodic_odd()
       for (unsigned int i = 0 ; i < dofs_per_cell ; i++)
         component(i) = finite_element.system_to_component_index(i).first;
       
-      // end of std::vector to
-      // make computation faster
-     this->Compute_Shape_Value(mapping,constants.p,ngp,cell);
-
-     
+      this->Compute_Shape_Value(mapping,constants.p,ngp,cell);
 
       for (; cell != endc ; cell++) 
       {
-        
         cell_rhs = 0;
         cell->get_dof_indices(local_dof_indices);
 
-        
         fe_v.reinit(cell);
-        
-
         Jacobians_interior = fe_v.get_JxW_values();
         system_info->source_term(fe_v.get_quadrature_points(),source_term_value);
 
-        
         integrate_cell_manuel(cell_matrix,cell_rhs,
                               fe_v,Jacobians_interior,
                               source_term_value,cell);
-     
-
+      
 
             for(unsigned int face  = 0; face< GeometryInfo<dim>::faces_per_cell; face++ )
             {
@@ -686,20 +817,18 @@ Base_Solver<dim>::assemble_system_periodic_odd()
               fe_v_face.reinit(cell,face);
               const typename DoFHandler<dim>::face_iterator face_itr = cell->face(face);
               Jacobian_face = fe_v_face.get_JxW_values();
-              
+
               boundary_matrix = 0;
 
-           
               if (face_itr->at_boundary())
               { 
-             
-
                 // id of the boundary
-                const unsigned int b_id = face_itr->boundary_id();
+                    const unsigned int b_id = face_itr->boundary_id();
 
                     const double xcord_face_center = face_itr->center()(0);
                     const double ycord_cell_center = cell->center()(1);
 
+                    // check whether the cell is at the periodic boundary or at the wall
 
                     if ( fabs(xcord_face_center - constants.xl) <= 1e-10
                         || fabs(xcord_face_center - constants.xr) <= 1e-10 ) 
@@ -709,7 +838,7 @@ Base_Solver<dim>::assemble_system_periodic_odd()
 
                       Assert(!neighbor->has_children(),
                              ExcMessage("periodic boundary only to used with zero level meshes"));
-                      Assert(neighbor->center()(1) == ycord_cell_center,
+                      Assert(fabs(neighbor->center()(1) - ycord_cell_center) < 1e-8,
                             ExcCellCenter(ycord_cell_center,neighbor->center()(1)));
 
                       const unsigned int neighbor_face = this->get_periodic_neighbor_face(xcord_face_center
@@ -719,42 +848,57 @@ Base_Solver<dim>::assemble_system_periodic_odd()
 
 
                       // integrate the face between the cell and the periodic neighbor
-                      
                       integrate_face_manuel(u1_v1,u1_v2,
                                         u2_v1,u2_v2,
                                         fe_v_face,fe_v_face_neighbor,
                                         Jacobian_face,component,  
                                         cell);  
-                      
+                
+                for (unsigned int i = 0 ; i < dofs_per_cell ; i++)
+                  for (unsigned int j = 0 ; j < dofs_per_cell ; j++)
+                  {
+               
+                   Assert(sparsity_pattern.exists(local_dof_indices[i],local_dof_indices[j]),ExcNoElementInSparsity(local_dof_indices[i],local_dof_indices[j]));
+                   Assert(sparsity_pattern.exists(local_dof_indices[i],local_dof_indices_neighbor[j]),ExcNoElementInSparsity(local_dof_indices[i],local_dof_indices_neighbor[j]));
+                   Assert(sparsity_pattern.exists(local_dof_indices_neighbor[i],local_dof_indices[j]),ExcNoElementInSparsity(local_dof_indices_neighbor[i],local_dof_indices[j]));
+                   Assert(sparsity_pattern.exists(local_dof_indices_neighbor[i],local_dof_indices_neighbor[j]),ExcNoElementInSparsity(local_dof_indices_neighbor[i],local_dof_indices_neighbor[j]));
 
-                      boundary_periodic++;
+                   global_matrix.add(local_dof_indices[i],local_dof_indices[j],u1_v1(i,j));
+                   global_matrix.add(local_dof_indices_neighbor[i],local_dof_indices_neighbor[j],u2_v2(i,j));
+
+                   global_matrix.add(local_dof_indices[i],local_dof_indices_neighbor[j],u2_v1(i,j));
+                   global_matrix.add(local_dof_indices_neighbor[i],local_dof_indices[j],u1_v2(i,j)) ;
+                  }                  
+
+                     boundary_periodic++;
 
                     }
 
                     // if the face is not on the peridic boundary 
                     else 
                     {
-                      
-                        integrate_boundary_manuel_odd(boundary_matrix, cell_rhs,
-                                                  fe_v_face, Jacobian_face,
-                                                  component, cell,b_id); 
+                      integrate_boundary_manuel_odd(boundary_matrix, cell_rhs,
+                                                      fe_v_face, Jacobian_face,
+                                                      component, cell,b_id); 
 
-                      
-                        boundary_wall ++;
+                      boundary_wall ++;
+                                       // assemble the terms on the boundary
+                      for (unsigned int i = 0 ; i < dofs_per_cell ; i++)
+                        for (unsigned int j = 0 ; j < dofs_per_cell ; j++)
+                        {
 
-                    }  
+                         Assert(sparsity_pattern.exists(local_dof_indices[i],local_dof_indices[j]),ExcNoElementInSparsity(local_dof_indices[i],local_dof_indices[j]));
+                         global_matrix.add(local_dof_indices[i],local_dof_indices[j],boundary_matrix(i,j));
+                        }
+
+                     }  
                 
                 
-
+                //print_dealii_matrix(boundary_matrix,"boundary matrix");
               }
-             
-              
                 else
                {
-              
-                
                  neighbor = cell->neighbor(face);
-                
 
                  if (cell->neighbor_is_coarser(face))
                  {
@@ -769,15 +913,27 @@ Base_Solver<dim>::assemble_system_periodic_odd()
 
                    fe_v_subface_neighbor.reinit(neighbor,neighbor_face_no.first,neighbor_face_no.second);
 
-
-                   
                    integrate_face_manuel(u1_v1,u1_v2,
                                          u2_v1,u2_v2,
                                          fe_v_face,fe_v_subface_neighbor,
                                          Jacobian_face,component,  
                                          cell);
 
-                   
+                   for (unsigned int i = 0 ; i < dofs_per_cell ; i++)
+                    for (unsigned int j = 0 ; j < dofs_per_cell ; j++)
+                    {
+
+                     Assert(sparsity_pattern.exists(local_dof_indices[i],local_dof_indices[j]),ExcNoElementInSparsity(local_dof_indices[i],local_dof_indices[j]));
+                     Assert(sparsity_pattern.exists(local_dof_indices[i],local_dof_indices_neighbor[j]),ExcNoElementInSparsity(local_dof_indices[i],local_dof_indices_neighbor[j]));
+                     Assert(sparsity_pattern.exists(local_dof_indices_neighbor[i],local_dof_indices[j]),ExcNoElementInSparsity(local_dof_indices_neighbor[i],local_dof_indices[j]));
+                     Assert(sparsity_pattern.exists(local_dof_indices_neighbor[i],local_dof_indices_neighbor[j]),ExcNoElementInSparsity(local_dof_indices_neighbor[i],local_dof_indices_neighbor[j]));
+
+                     global_matrix.add(local_dof_indices[i],local_dof_indices[j],u1_v1(i,j));
+                     global_matrix.add(local_dof_indices_neighbor[i],local_dof_indices_neighbor[j],u2_v2(i,j));
+
+                     global_matrix.add(local_dof_indices[i],local_dof_indices_neighbor[j],u2_v1(i,j));
+                     global_matrix.add(local_dof_indices_neighbor[i],local_dof_indices[j],u1_v2(i,j)) ;
+                   }                  
                   }
 
                   
@@ -796,52 +952,48 @@ Base_Solver<dim>::assemble_system_periodic_odd()
 
                   neighbor->get_dof_indices(local_dof_indices_neighbor);
 
-
-
                   const unsigned int neighbor_face_no = cell->neighbor_of_neighbor(face);
                   fe_v_face_neighbor.reinit(neighbor,neighbor_face_no);
-
-
                   
                   integrate_face_manuel(u1_v1,u1_v2,
                                         u2_v1,u2_v2,
                                         fe_v_face,fe_v_face_neighbor,
                                         Jacobian_face,component,  
-                                        cell);   
-                  
+                                        cell);  
+
+
+                  for (unsigned int i = 0 ; i < dofs_per_cell ; i++)
+                    for (unsigned int j = 0 ; j < dofs_per_cell ; j++)
+                    {
+                     
+                     Assert(sparsity_pattern.exists(local_dof_indices[i],local_dof_indices[j]),ExcNoElementInSparsity(local_dof_indices[i],local_dof_indices[j]));
+                     Assert(sparsity_pattern.exists(local_dof_indices[i],local_dof_indices_neighbor[j]),ExcNoElementInSparsity(local_dof_indices[i],local_dof_indices_neighbor[j]));
+                     Assert(sparsity_pattern.exists(local_dof_indices_neighbor[i],local_dof_indices[j]),ExcNoElementInSparsity(local_dof_indices_neighbor[i],local_dof_indices[j]));
+                     Assert(sparsity_pattern.exists(local_dof_indices_neighbor[i],local_dof_indices_neighbor[j]),ExcNoElementInSparsity(local_dof_indices_neighbor[i],local_dof_indices_neighbor[j]));
+
+                     global_matrix.add(local_dof_indices[i],local_dof_indices[j],u1_v1(i,j));
+                     global_matrix.add(local_dof_indices_neighbor[i],local_dof_indices_neighbor[j],u2_v2(i,j));
+
+                     global_matrix.add(local_dof_indices[i],local_dof_indices_neighbor[j],u2_v1(i,j));
+                     global_matrix.add(local_dof_indices_neighbor[i],local_dof_indices[j],u1_v2(i,j)) ;
+                   }                   
   
                  }
                 }
   
                
-  
-
-                
-   
-               for (unsigned int i = 0 ; i < dofs_per_cell ; i++)
-              for (unsigned int j = 0 ; j < dofs_per_cell ; j++)
-              {
-               
-                global_matrix.add(local_dof_indices[i],local_dof_indices[j],u1_v1(i,j) + boundary_matrix(i,j));
-                global_matrix.add(local_dof_indices_neighbor[i],local_dof_indices_neighbor[j],u2_v2(i,j));
-
-                global_matrix.add(local_dof_indices[i],local_dof_indices_neighbor[j],u2_v1(i,j));
-                global_matrix.add(local_dof_indices_neighbor[i],local_dof_indices[j],u1_v2(i,j)) ;
-              }
-               
             }
               
 
-            
             for (unsigned int m = 0 ; m < cell_matrix.outerSize(); m++)
                 for (Sparse_matrix::InnerIterator n(cell_matrix,m); n ; ++n)
                   global_matrix.add(local_dof_indices[n.row()],local_dof_indices[n.col()],n.value());
+
+             
               
              for(unsigned int i = 0 ; i < dofs_per_cell ; i++)
               system_rhs(local_dof_indices[i]) += cell_rhs(i);
 
-            
-             
      
     }
 
@@ -850,4 +1002,3 @@ Base_Solver<dim>::assemble_system_periodic_odd()
 
   }
 
-  #include "Integrate_PerCell.h"

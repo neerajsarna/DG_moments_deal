@@ -63,7 +63,7 @@ std::string input_file;
 //#include "Test_BoundaryHandler_Char.h"
  //#include "Test_TensorInfo.h"
 // #include "Test_BoundaryHandler_Odd.h"
-// #include "Test_ExactSolution.h"
+ #include "Test_ExactSolution.h"
  #include "Test_Solver.h"
  //#include "Test_Production.h"
 // #include "Test_ProjectorData.h"

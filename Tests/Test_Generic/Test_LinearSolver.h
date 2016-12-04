@@ -22,7 +22,8 @@ namespace Test_LinearSolver
 		}
 
 
-		LinearSolver::LinearSolver linear_solver(global_matrix,system_rhs,solution);
+		LinearSolver::LinearSolver linear_solver;
+		linear_solver.solve_trilinos(global_matrix,system_rhs,solution);
  		std::cout << "Solution " << std::endl;
 		std::cout << solution << std::endl;             
            }

@@ -96,6 +96,7 @@ namespace Constants
 			constants.refine_cycles = prm.get_integer("total h refinement cycles");
 			constants.refinement = (Refinement)prm.get_integer("type of refinement");
 			constants.assembly_type = (Assembly_Type)prm.get_integer("assembly type");
+			constants.matrix_type = (Matrix_Type)prm.get_integer("matrix_type");
 		}
 		prm.leave_subsection();
 
@@ -133,6 +134,11 @@ namespace Constants
 				"0",
 				Patterns::Integer(0,1),
 				"type of assembly");
+
+			prm.declare_entry("matrix_type",
+				"0",
+				Patterns::Integer(0,1),
+				"type of global matrix");
 		}
 		prm.leave_subsection();
 
@@ -309,7 +315,7 @@ namespace Constants
 			prm.declare_entry("Collision_Operator",
 				"0",
 				Patterns::Integer(0,1),
-				"Type of collision operator");
+				"Type of Collision Operator");
 		}
 		prm.leave_subsection();
 

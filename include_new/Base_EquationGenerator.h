@@ -643,6 +643,8 @@ namespace EquationGenerator
 
 					// develop the matrix 
 					this->build_matrix_from_triplet(system_data.P.matrix,system_data.P.Row_Col_Value);
+
+					// need to scale the production terms as per the Knudsen number
 					system_data.P.matrix /= constants.tau;
 					break;
 				}

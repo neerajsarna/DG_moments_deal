@@ -12,22 +12,28 @@ namespace LinearSolver
 	public:
     enum Solver_Type
     {Trilinos_Direct,Trilinos_GMRES,Pardiso};
+    const Solver_Type solver_type = Pardiso;
 
-		LinearSolver(TrilinosWrappers::SparseMatrix &global_matrix,Vector<double> &system_rhs,
-			           Vector<double> &solution);
+		LinearSolver(){};
 
 
+    void solve_trilinos(TrilinosWrappers::SparseMatrix &global_matrix,Vector<double> &system_rhs,
+                 Vector<double> &solution);
+
+    void solve_eigen(Sparse_matrix &global_matrix,Vector<double> &system_rhs,
+                    Vector<double> &solution);
 
 		void PardisoSolve(MKL_INT *ia,MKL_INT *ja,double *a,double *b,double *x,MKL_INT n);
 
 
 	};
 
-	LinearSolver::LinearSolver(TrilinosWrappers::SparseMatrix &global_matrix,Vector<double> &system_rhs,
+  // solving routines for a trilinos sparse matrix
+	void LinearSolver::solve_trilinos(TrilinosWrappers::SparseMatrix &global_matrix,Vector<double> &system_rhs,
 		                        Vector<double> &solution)
 	{
 
-          const Solver_Type solver_type = Pardiso;
+          
           switch(solver_type)
           {
             case Trilinos_Direct:
@@ -108,6 +114,38 @@ namespace LinearSolver
           }
 
 	}
+
+  void LinearSolver::solve_eigen(Sparse_matrix &global_matrix,Vector<double> &system_rhs,
+                            Vector<double> &solution)
+  {
+    std::cout << "Solving Eigen Matrix " << std::endl;
+    Assert(solver_type == Pardiso,ExcMessage("No other solver works with eigen matrices presently"));
+    Assert(global_matrix.isCompressed(),ExcMessage("Compressed Matrix is a must"));
+
+    const int *row_ptr = global_matrix.outerIndexPtr();
+    const int *col_ind = global_matrix.innerIndexPtr();
+
+    const int n_rows = global_matrix.rows();
+    const int nnz = global_matrix.nonZeros();
+
+    MKL_INT *ia;
+    MKL_INT *ja;
+
+
+    ia = (MKL_INT*)calloc(n_rows+1,sizeof(MKL_INT));
+    ja = (MKL_INT*)calloc(nnz,sizeof(MKL_INT));
+
+
+    for (long int i = 0 ; i < n_rows + 1 ; i++)
+      ia[i]  = row_ptr[i];
+
+
+    for (long int j = 0 ; j < nnz ; j ++)
+      ja[j] = col_ind[j];
+
+    PardisoSolve(ia , ja , global_matrix.valuePtr(),
+                 &system_rhs(0),&solution(0),global_matrix.rows());
+  }
 
 
 	

@@ -24,10 +24,15 @@ enum Mesh_type
 enum Meshing_Options 
 {read_msh, generate_internal};
 
-// BGK is the BGK collision opeartor
-// Boltzmann_MM is the Boltzmann collision operator with Maxell's Molecules
+
 enum Collision_Operator
 {BGK,Boltzmann_MM};
+
+enum Matrix_Type
+{
+	Trilinos_Mat,Eigen_Mat
+};
+
 /*storing data related to tensors*/
 struct tensor_data
 {
@@ -50,6 +55,7 @@ struct constant_data
 	
 	Force_Type force_type;
 	BC_Type bc_type;
+	Matrix_Type matrix_type;
 
 		// physical constants
 	double tau;

@@ -1,75 +1,60 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuites tests="24" failures="0" disabled="0" errors="0" timestamp="2016-10-05T16:21:58" time="1.54" name="AllTests">
-  <testsuite name="ForceTypeUnSymm" tests="1" failures="0" disabled="0" errors="0" time="0.004">
-    <testcase name="HandlesForcingUnSymm" status="run" time="0.004" classname="ForceTypeUnSymm" />
+<testsuites tests="7" failures="2" disabled="0" errors="0" timestamp="2016-12-04T01:00:18" time="0.163" name="AllTests">
+  <testsuite name="LinearSolver" tests="1" failures="0" disabled="0" errors="0" time="0.021">
+    <testcase name="HandlesLinearSolver" status="run" time="0.021" classname="LinearSolver" />
   </testsuite>
-  <testsuite name="ForceSystemA" tests="1" failures="0" disabled="0" errors="0" time="0.014">
-    <testcase name="HandlesForceSystemA" status="run" time="0.014" classname="ForceSystemA" />
+  <testsuite name="FEValues" tests="1" failures="0" disabled="0" errors="0" time="0.004">
+    <testcase name="HandlesFEValues" status="run" time="0.004" classname="FEValues" />
   </testsuite>
-  <testsuite name="DevelopingSystem" tests="1" failures="0" disabled="0" errors="0" time="0.015">
-    <testcase name="HandlingDevelopingSystems" status="run" time="0.015" classname="DevelopingSystem" />
+  <testsuite name="DofIndex" tests="1" failures="0" disabled="0" errors="0" time="0.001">
+    <testcase name="HandlesDofIndex" status="run" time="0.001" classname="DofIndex" />
   </testsuite>
-  <testsuite name="TestingOrdering" tests="1" failures="0" disabled="0" errors="0" time="0">
-    <testcase name="HandlesOrdering" status="run" time="0" classname="TestingOrdering" />
+  <testsuite name="MassMatrix" tests="1" failures="0" disabled="0" errors="0" time="0.03">
+    <testcase name="HandlesMassMatrix" status="run" time="0.03" classname="MassMatrix" />
   </testsuite>
-  <testsuite name="TestXminusDummyMat" tests="1" failures="0" disabled="0" errors="0" time="0.002">
-    <testcase name="HandlingXminus" status="run" time="0.002" classname="TestXminusDummyMat" />
+  <testsuite name="FasterAssemblation" tests="1" failures="0" disabled="0" errors="0" time="0.062">
+    <testcase name="TestFasterAssemblation" status="run" time="0.062" classname="FasterAssemblation" />
   </testsuite>
-  <testsuite name="TestXminusSystemA" tests="1" failures="0" disabled="0" errors="0" time="0.02">
-    <testcase name="HandlingXminusSystemA" status="run" time="0.02" classname="TestXminusSystemA" />
+  <testsuite name="PeriodicityHandler" tests="1" failures="1" disabled="0" errors="0" time="0.026">
+    <testcase name="HandlesPeriodicityManagement" status="run" time="0.026" classname="PeriodicityHandler">
+      <failure message="unknown file&#x0A;C++ exception with description &quot;&#x0A;--------------------------------------------------------&#x0A;An error occurred in line &lt;1197&gt; of file &lt;../source/grid/grid_in.cc&gt; in function&#x0A;    void dealii::GridIn&lt;2, 2&gt;::read_msh(std::istream &amp;) [dim = 2, spacedim = 2]&#x0A;The violated condition was: &#x0A;    in&#x0A;The name and call sequence of the exception was:&#x0A;    ExcIO()&#x0A;Additional Information: &#x0A;An input/output error has occurred. There are a number of reasons why this may be happening, both for reading and writing operations.&#x0A;&#x0A;If this happens during an operation that tries to read data: First, you may be trying to read from a file that doesn&apos;t exist or that is not readable given its file permissions. Second, deal.II uses this error at times if it tries to read information from a file but where the information in the file does not correspond to the expected format. An example would be a truncated file, or a mesh file that contains not only sections that describe the vertices and cells, but also sections for additional data that deal.II does not understand.&#x0A;&#x0A;If this happens during an operation that tries to write data: you may be trying to write to a file to which file or directory permissions do not allow you to write. A typical example is where you specify an output file in a directory that does not exist.&#x0A;--------------------------------------------------------&#x0A;&quot; thrown in the test body." type=""><![CDATA[unknown file
+C++ exception with description "
+--------------------------------------------------------
+An error occurred in line <1197> of file <../source/grid/grid_in.cc> in function
+    void dealii::GridIn<2, 2>::read_msh(std::istream &) [dim = 2, spacedim = 2]
+The violated condition was: 
+    in
+The name and call sequence of the exception was:
+    ExcIO()
+Additional Information: 
+An input/output error has occurred. There are a number of reasons why this may be happening, both for reading and writing operations.
+
+If this happens during an operation that tries to read data: First, you may be trying to read from a file that doesn't exist or that is not readable given its file permissions. Second, deal.II uses this error at times if it tries to read information from a file but where the information in the file does not correspond to the expected format. An example would be a truncated file, or a mesh file that contains not only sections that describe the vertices and cells, but also sections for additional data that deal.II does not understand.
+
+If this happens during an operation that tries to write data: you may be trying to write to a file to which file or directory permissions do not allow you to write. A typical example is where you specify an output file in a directory that does not exist.
+--------------------------------------------------------
+" thrown in the test body.]]></failure>
+    </testcase>
   </testsuite>
-  <testsuite name="TestLambdaXcomputationSystemA" tests="1" failures="0" disabled="0" errors="0" time="0.023">
-    <testcase name="HandlingEigenDecomp" status="run" time="0.023" classname="TestLambdaXcomputationSystemA" />
-  </testsuite>
-  <testsuite name="AmodComputationSystemA" tests="1" failures="0" disabled="0" errors="0" time="0.023">
-    <testcase name="HandlingAmod" status="run" time="0.023" classname="AmodComputationSystemA" />
-  </testsuite>
-  <testsuite name="AminusComputationSystemA" tests="1" failures="0" disabled="0" errors="0" time="0.025">
-    <testcase name="HandlingAminus" status="run" time="0.025" classname="AminusComputationSystemA" />
-  </testsuite>
-  <testsuite name="CompareFloatMat" tests="1" failures="0" disabled="0" errors="0" time="0">
-    <testcase name="HandlesCompareFloatMat" status="run" time="0" classname="CompareFloatMat" />
-  </testsuite>
-  <testsuite name="BMatSystemA" tests="1" failures="0" disabled="0" errors="0" time="0.015">
-    <testcase name="HandlesBMatSystemA" status="run" time="0.015" classname="BMatSystemA" />
-  </testsuite>
-  <testsuite name="XminusBXminusInv" tests="1" failures="0" disabled="0" errors="0" time="0.016">
-    <testcase name="HandlesXminusBXminusInv" status="run" time="0.016" classname="XminusBXminusInv" />
-  </testsuite>
-  <testsuite name="BhatCheck" tests="1" failures="0" disabled="0" errors="0" time="0.014">
-    <testcase name="HandlesBhat" status="run" time="0.014" classname="BhatCheck" />
-  </testsuite>
-  <testsuite name="BCrhs" tests="1" failures="0" disabled="0" errors="0" time="0.015">
-    <testcase name="HandlesBCrhsSystemA" status="run" time="0.015" classname="BCrhs" />
-  </testsuite>
-  <testsuite name="Projector" tests="1" failures="0" disabled="0" errors="0" time="0.014">
-    <testcase name="HandlesSystemAProjector" status="run" time="0.014" classname="Projector" />
-  </testsuite>
-  <testsuite name="InvProjector" tests="1" failures="0" disabled="0" errors="0" time="0.017">
-    <testcase name="HandlesSystemAInvProjector" status="run" time="0.017" classname="InvProjector" />
-  </testsuite>
-  <testsuite name="AminusAnSystemA" tests="1" failures="0" disabled="0" errors="0" time="0.016">
-    <testcase name="HandlesAminusAnSystemA" status="run" time="0.016" classname="AminusAnSystemA" />
-  </testsuite>
-  <testsuite name="BCOddSystemA" tests="1" failures="0" disabled="0" errors="0" time="0.015">
-    <testcase name="HandlingBCOddSystemA" status="run" time="0.015" classname="BCOddSystemA" />
-  </testsuite>
-  <testsuite name="BCrhsOddSystemARing" tests="1" failures="0" disabled="0" errors="0" time="0.017">
-    <testcase name="HandlingBCrhsOddSystemARing" status="run" time="0.017" classname="BCrhsOddSystemARing" />
-  </testsuite>
-  <testsuite name="BCrhsPeriodicSystemA" tests="1" failures="0" disabled="0" errors="0" time="0.014">
-    <testcase name="HandlesPeriodicBoxBCrhsSystemA" status="run" time="0.014" classname="BCrhsPeriodicSystemA" />
-  </testsuite>
-  <testsuite name="ExactSolutionRingSystemA" tests="1" failures="0" disabled="0" errors="0" time="0.014">
-    <testcase name="HandlesExactSolutionRingSystemA" status="run" time="0.014" classname="ExactSolutionRingSystemA" />
-  </testsuite>
-  <testsuite name="MeshGenerationRing" tests="1" failures="0" disabled="0" errors="0" time="0.018">
-    <testcase name="HandlesMeshGenerationRing" status="run" time="0.018" classname="MeshGenerationRing" />
-  </testsuite>
-  <testsuite name="PeriodicityHandler" tests="1" failures="0" disabled="0" errors="0" time="0.016">
-    <testcase name="HandlesPeriodicityManagement" status="run" time="0.016" classname="PeriodicityHandler" />
-  </testsuite>
-  <testsuite name="SolvingSystemA" tests="1" failures="0" disabled="0" errors="0" time="1.212">
-    <testcase name="HandlesSolvingSystemA" status="run" time="1.212" classname="SolvingSystemA" />
+  <testsuite name="SolvingSystemA" tests="1" failures="1" disabled="0" errors="0" time="0.019">
+    <testcase name="HandlesSolvingSystemA" status="run" time="0.019" classname="SolvingSystemA">
+      <failure message="unknown file&#x0A;C++ exception with description &quot;&#x0A;--------------------------------------------------------&#x0A;An error occurred in line &lt;1197&gt; of file &lt;../source/grid/grid_in.cc&gt; in function&#x0A;    void dealii::GridIn&lt;2, 2&gt;::read_msh(std::istream &amp;) [dim = 2, spacedim = 2]&#x0A;The violated condition was: &#x0A;    in&#x0A;The name and call sequence of the exception was:&#x0A;    ExcIO()&#x0A;Additional Information: &#x0A;An input/output error has occurred. There are a number of reasons why this may be happening, both for reading and writing operations.&#x0A;&#x0A;If this happens during an operation that tries to read data: First, you may be trying to read from a file that doesn&apos;t exist or that is not readable given its file permissions. Second, deal.II uses this error at times if it tries to read information from a file but where the information in the file does not correspond to the expected format. An example would be a truncated file, or a mesh file that contains not only sections that describe the vertices and cells, but also sections for additional data that deal.II does not understand.&#x0A;&#x0A;If this happens during an operation that tries to write data: you may be trying to write to a file to which file or directory permissions do not allow you to write. A typical example is where you specify an output file in a directory that does not exist.&#x0A;--------------------------------------------------------&#x0A;&quot; thrown in the test body." type=""><![CDATA[unknown file
+C++ exception with description "
+--------------------------------------------------------
+An error occurred in line <1197> of file <../source/grid/grid_in.cc> in function
+    void dealii::GridIn<2, 2>::read_msh(std::istream &) [dim = 2, spacedim = 2]
+The violated condition was: 
+    in
+The name and call sequence of the exception was:
+    ExcIO()
+Additional Information: 
+An input/output error has occurred. There are a number of reasons why this may be happening, both for reading and writing operations.
+
+If this happens during an operation that tries to read data: First, you may be trying to read from a file that doesn't exist or that is not readable given its file permissions. Second, deal.II uses this error at times if it tries to read information from a file but where the information in the file does not correspond to the expected format. An example would be a truncated file, or a mesh file that contains not only sections that describe the vertices and cells, but also sections for additional data that deal.II does not understand.
+
+If this happens during an operation that tries to write data: you may be trying to write to a file to which file or directory permissions do not allow you to write. A typical example is where you specify an output file in a directory that does not exist.
+--------------------------------------------------------
+" thrown in the test body.]]></failure>
+    </testcase>
   </testsuite>
 </testsuites>
