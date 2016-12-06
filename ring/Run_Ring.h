@@ -8,6 +8,8 @@ Base_Solver<dim>::run_ring()
 	TimerOutput timer (std::cout, TimerOutput::summary,
                    TimerOutput::wall_times);
 
+	Assert(constants.mesh_type = ring,ExcMessage("Incorrect mesh type"));
+
 	for (unsigned int i = 0 ; i < refine_cycles ; i ++)
 	{
 	

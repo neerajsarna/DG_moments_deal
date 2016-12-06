@@ -329,7 +329,7 @@ namespace Constants
 				/*0 for ring and 1 for periodic square*/
 			prm.declare_entry("mesh type",
 				"0",
-				Patterns::Integer(0,1),
+				Patterns::Integer(0,2),
 				"type of mesh");
 
 				/*0 to read from gmsh

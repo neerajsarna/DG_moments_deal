@@ -118,6 +118,8 @@ namespace BCrhs
 
 		bc_rhs = 0;
 
+		
+
 		for (unsigned int m = 0 ; m < B.outerSize() ; m++)
 			for (Sparse_matrix::InnerIterator n(B,m); n ; ++n)
 			{
@@ -189,18 +191,25 @@ namespace BCrhs
 			const unsigned int ID_vy = this->constants.variable_map.find("vy")->second;
 			bc_rhs = 0;
 
+			
+
 			for (unsigned int m = 0 ; m < B.outerSize() ; m++)
 				for (Sparse_matrix::InnerIterator n(B,m); n ; ++n)
 				{
 					const double odd_coeff = B.coeffRef(n.row(),odd_ID(n.row(),0));
 
+
 					// the assumption in this implementation is the order in which the variables
 					// appear in the odd_ID is the same order in which the boundary conditions have been specified.
 
-					Assert(fabs(odd_coeff) > 1e-10,ExcMessage("Assumption broken down "));
+					
  			   		// only provide a boundary value for the temperature and no condition for velocity equation
 					if (n.col() == ID_theta && n.row() > 0)
+					{
+						
 						bc_rhs(odd_ID(n.row(),0)) += -sqrt(3.0/2.0) * thetaW * n.value()/odd_coeff;
+
+					}
 
 					if (n.col() == ID_vy && n.row() > 0)
 						bc_rhs(odd_ID(n.row(),0)) += vt * n.value()/odd_coeff;

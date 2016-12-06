@@ -47,6 +47,8 @@ namespace PostProc
 										const double hMax,
 									   ConvergenceTable &convergence_table);
 
+			double compute_L2_norm(const Vector<double> &solution,const unsigned int active_cells);
+
 			// return the value of the L2_erro
 			double L2_error_QGauss(const Vector<double> &solution,const unsigned int active_cells);
 			double Linfty_error_QGauss(const Vector<double> &solution,const unsigned int active_cells);
@@ -199,6 +201,33 @@ namespace PostProc
 		fprintf(fp, "%s\n",parameters.c_str());
 		fclose(fp);
 	}
+
+
+	template<int dim>
+	double
+	Base_PostProc<dim>::compute_L2_norm(const Vector<double> &solution,const unsigned int active_cells)
+	{
+		unsigned int component = constants.variable_map.find(constants.error_variable)->second;
+		Vector<double> norm_per_cell(active_cells); 
+		const unsigned int ngp = constants.p + 1;
+
+		ComponentSelectFunction<dim> weight(component,constants.nEqn);                              // used to compute only the error in theta
+
+		ZeroFunction<dim> zero_function(constants.nEqn);
+
+        // computation of L2 error
+        VectorTools::integrate_difference (*mapping,*dof_handler,solution,
+          									zero_function,
+          									norm_per_cell,
+          									QGauss<dim>(ngp),
+          									VectorTools::L2_norm,
+          									&weight); 
+
+
+        return(norm_per_cell.l2_norm());
+
+	}
+
 	// evaluate the error using gaussian qaudrature
 	template<int dim>
 	void

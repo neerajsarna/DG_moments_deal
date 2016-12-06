@@ -53,6 +53,7 @@ Base_Solver<dim>::run_periodic()
 	TimerOutput timer (std::cout, TimerOutput::summary,
                    TimerOutput::wall_times);
 	
+	Assert(constants.mesh_type == periodic_square,ExcMessage("Incorrect mesh"));
 	for (int i = 0 ; i < constants.refine_cycles ; i++)
 	{
 

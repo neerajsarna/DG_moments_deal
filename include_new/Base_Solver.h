@@ -55,6 +55,8 @@ namespace FEM_Solver
         	void run_ring();
             void run_ring_eigen();
 
+            void run_square();
+
         	MappingQ<dim,dim> mapping;
         	const unsigned int ngp;
         	const unsigned int ngp_face;
@@ -209,5 +211,6 @@ namespace FEM_Solver
     #include "AssembleSystem_Manuel_Eigen.h"
   	#include "Run_Ring.h"
     #include "Run_Periodic.h"
+    #include "Run_Square.h"
 
 }

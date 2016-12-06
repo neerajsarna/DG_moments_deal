@@ -15,6 +15,8 @@ SET(G++_COVERAGE_LINK_FLAGS    "-lm")
 
 SET(LAPTOP ON)
 SET(TURBINE OFF)
+SET(CLUSTER OFF)
+
 
 IF(LAPTOP)
   MESSAGE("ON LAPTOP")
@@ -29,6 +31,16 @@ IF(TURBINE)
   SET(MKL_DIR "/opt/intel/composer_xe_2013_sp1.0.080/mkl")
   SET(EIGEN_DIR "/home/sarna/Desktop/Libraries/eigenv3/eigen")
 ENDIF()
+
+
+IF(CLUSTER)
+  SET("ON CLUSTER")
+  SET(DEAL_II_DIR "/home/ns179556/dealii/lib/cmake")
+  SET(MKL_DIR "/opt/intel/mkl/2017.0.098/mkl")
+  SET(EIGEN_DIR "/home/ns179556/eigen")
+  SET(MKL_LIB_DIR "/opt/intel/mkl/10.2.6.038/lib/64")
+ENDIF()
+
 
 
 
@@ -126,6 +138,7 @@ INCLUDE_DIRECTORIES(${EIGEN_DIR})
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/../Projector_Data)
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/../Symmetrizer_Data)
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/../ring)
+INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/../square)
 INCLUDE_DIRECTORIES(${MKL_DIR}/include)
 
 
@@ -138,6 +151,12 @@ IF(TURBINE)
   SET(GTEST_LIBRARIES "/home/sarna/Desktop/Libraries/googletest/lib/libgtest.a")
 ENDIF()
 
+
+IF(CLUSTER)
+  SET(MKL_LIBRARY "/usr/local_rwth/sw/turbomole/tm6.5/libso/em64t-unknown-linux-gnu_mpi/libiomp5.so")
+  SET(GTEST_INCLUDE_DIRS "/home/ns179556/google_testing/include")
+  SET(GTEST_LIBRARIES "/home/ns179556/google_testing/lib/libgtest.a")
+ENDIF()
 
 
 # Locate GTest
@@ -154,6 +173,9 @@ IF(TURBINE)
 TARGET_LINK_LIBRARIES(test.out ${GTEST_LIBRARIES} libiomp5.so libpthread.so libmkl_intel_ilp64.so libmkl_core.so libmkl_intel_thread.so libdl.so)
 ENDIF()
 
+IF(CLUSTER)
+TARGET_LINK_LIBRARIES(test.out ${MKL_LIBRARY} ${GTEST_LIBRARIES} libpthread.so libmkl_intel_ilp64.so libmkl_core.so libmkl_intel_thread.so libdl.so)
+ENDIF()
 
 
 ADD_CUSTOM_TARGET(release

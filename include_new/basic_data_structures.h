@@ -18,7 +18,7 @@ enum BC_Type
 // ring domain for systemA and systemB
 // periodic_square for head conduction and Couette flow problem
 enum Mesh_type
-{ring,periodic_square};
+{ring,periodic_square,square};
 
 // how to generate using dealii or generate using gmsh
 enum Meshing_Options 

@@ -11,6 +11,7 @@ BASEDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 echo "Base Directory of the present script "
 echo $BASEDIR
 
+rm test.out
 rm -rf CMakeFiles/ CMakeCache.txt
 cmake -D G$1=ON ../.
 make debug
