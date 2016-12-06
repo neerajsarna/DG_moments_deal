@@ -176,11 +176,14 @@ namespace FEM_Solver
 
         sparsity_pattern.copy_from(dsp);
 
+	sparsity_pattern.compress();
         global_matrix.reinit(sparsity_pattern);   
 
         solution.reinit (dof_handler.n_dofs());
         system_rhs.reinit (dof_handler.n_dofs());
 
+	std::cout << "Memory by sparsity pattern " << sparsity_pattern.memory_consumption() << std::endl;
+	std::cout << "Memory by global matrix " << global_matrix.memory_consumption() << std::endl;
     }
 
     //same as above but we now initialize a sparse matrix from eigen

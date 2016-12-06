@@ -14,7 +14,7 @@ echo $BASEDIR
 rm test.out
 rm -rf CMakeFiles/ CMakeCache.txt
 cmake -D G$1=ON ../.
-make debug
+make release
 
 
 ./$2/Test_System.sh "xml:$BASEDIR/$2/Test_ReportsG$1" $1

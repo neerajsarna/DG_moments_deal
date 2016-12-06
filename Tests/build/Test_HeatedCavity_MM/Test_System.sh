@@ -1,6 +1,5 @@
 #!/bin/bash
 
-clear
 echo "Testing $2"
 BaseDir=$1
 export count=0

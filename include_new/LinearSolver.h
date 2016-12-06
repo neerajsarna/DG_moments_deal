@@ -100,14 +100,13 @@ namespace LinearSolver
 
 
               global_matrix.clear();
-              // temp_system_matrix.DeleteMemory();
-              // temp_system_matrix2.DeleteMemory();
-
-              PardisoSolve(ia,ja,
+              
+	      PardisoSolve(ia,ja,
                             values,&system_rhs(0),&solution(0),n_rows);
 
               free(ia);
               free(ja);
+	      //free(values);
 
               break;
             }

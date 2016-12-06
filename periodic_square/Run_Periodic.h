@@ -254,7 +254,7 @@ Base_Solver<dim>::run_periodic_eigen()
 		// else is one wants to.
 		timer.enter_subsection("System Solver");
 		LinearSolver::LinearSolver linear_solver;
-		linear_solver.solve_trilinos(global_matrix_eigen,system_rhs,solution);
+		linear_solver.solve_eigen(global_matrix_eigen,system_rhs,solution);
 		timer.leave_subsection();
 
 		timer.enter_subsection("Post Proc");
