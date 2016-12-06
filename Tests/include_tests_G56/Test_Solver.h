@@ -5,32 +5,32 @@ namespace Test_Solver
 
 
 
-	TEST(ChecksPeriodicGrid,HandlesPeridicGrid)
-	{
-		const unsigned int dim = 2;
-		ASSERT_EQ(dim,2) << "3D not implemented" << std::endl;
+	// TEST(ChecksPeriodicGrid,HandlesPeridicGrid)
+	// {
+	// 	const unsigned int dim = 2;
+	// 	ASSERT_EQ(dim,2) << "3D not implemented" << std::endl;
 
-		std::string folder_name = "../system_matrices/";
-		Constants::Base_Constants constants(input_file);
-		G56::G56<dim> G56(constants.constants,folder_name);
+	// 	std::string folder_name = "../system_matrices/";
+	// 	Constants::Base_Constants constants(input_file);
+	// 	G56::G56<dim> G56(constants.constants,folder_name);
 
-		ExactSolution::G56_PoissonHeat<dim>  G56_PoissonHeat(constants.constants,G56.base_tensorinfo.S_half);
-		FEM_Solver::Base_Solver<dim> base_solver("mesh_file_name","grid",
-												constants.constants,&G56,
-											 	&G56_PoissonHeat);
-
-
-		if (constants.constants.mesh_type == periodic_square)
-		{
-			base_solver.print_grid(0);
-
-			// triangulation should have some number of cell
-			EXPECT_NE(base_solver.triangulation.n_active_cells(),0);
-
-		}
+	// 	ExactSolution::G56_PoissonHeat<dim>  G56_PoissonHeat(constants.constants,G56.base_tensorinfo.S_half);
+	// 	FEM_Solver::Base_Solver<dim> base_solver("mesh_file_name","grid",
+	// 											constants.constants,&G56,
+	// 										 	&G56_PoissonHeat);
 
 
-	}
+	// 	if (constants.constants.mesh_type == periodic_square)
+	// 	{
+	// 		base_solver.print_grid(0);
+
+	// 		// triangulation should have some number of cell
+	// 		EXPECT_NE(base_solver.triangulation.n_active_cells(),0);
+
+	// 	}
+
+
+	// }
 
 	// TEST(PeriodicityHandler,HandlesPeriodicityManagement)
 	// {
@@ -181,7 +181,72 @@ namespace Test_Solver
 	// }
 	
 
-	TEST(PoissonHeatG56,HandlesPoissonHeatG56)
+	// TEST(PoissonHeatG56,HandlesPoissonHeatG56)
+	// {
+	// 	const unsigned int dim = 2;
+	// 	ASSERT_EQ(dim,2) << "3D not implemented" << std::endl;
+
+	// 	std::string folder_name = "../system_matrices/";
+	// 	Constants::Base_Constants constants(input_file);
+	// 	G56::G56<dim> G56(constants.constants,folder_name);
+
+	// 	ExactSolution::G56_PoissonHeat<dim>  G56_PoissonHeat(constants.constants,G56.base_tensorinfo.S_half);
+
+	// 	FEM_Solver::Base_Solver<dim> base_solver("mesh_file_name",
+	// 										 "grid",
+	// 										 constants.constants,
+	// 										 &G56,
+	// 										 &G56_PoissonHeat);
+
+
+	// 	base_solver.run_periodic();
+
+	// 	Vector<double> exact_error(constants.constants.refine_cycles);
+	// 	//AssertDimension(constants.constants.refine_cycles,3);
+
+	// 	// // error in theta for every refine cycle
+	// 	// if (constants.constants.bc_type == characteristic)
+	// 	// {
+	// 	// 	if (fabs(constants.constants.tau - 0.1) < 1e-5)
+	// 	// 	{
+	// 	// 		exact_error(0) = 3.0915e-06;
+	// 	// 		exact_error(1) = 1.3782e-06;
+	// 	// 		exact_error(2) = 7.7645e-07;
+				
+	// 	// 	}			
+
+	// 	// 	if (fabs(constants.constants.tau - 0.3) < 1e-5)
+	// 	// 	{
+	// 	// 		exact_error(0) = 3.0799e-06;
+	// 	// 		exact_error(1) = 1.3703e-06;
+	// 	// 		exact_error(2) = 7.7118e-07;
+	// 	// 	}
+	// 	// }
+
+	// 	// if (constants.constants.bc_type == odd)
+	// 	// {
+	// 	// 	if (fabs(constants.constants.tau - 0.1) < 1e-5)
+	// 	// 	{
+	// 	// 		exact_error(0) = 5.9937e-06;
+	// 	// 		exact_error(1) = 2.6761e-06;
+	// 	// 		exact_error(2) = 1.5088e-06;
+	// 	// 	}			
+
+	// 	// 	if (fabs(constants.constants.tau - 0.3) < 1e-5)
+	// 	// 	{
+	// 	// 		exact_error(0) = 4.6088e-06;
+	// 	// 		exact_error(1) = 2.0543e-06;
+	// 	// 		exact_error(2) = 1.1572e-06;
+	// 	// 	}
+	// 	// }
+
+
+	// 	// for (unsigned int i =0 ; (int)i <constants.constants.refine_cycles ; i++)
+	// 	// 	EXPECT_NEAR(base_solver.error_per_itr[i],exact_error(i),1e-5);
+
+	// }
+
+	TEST(SquareCavityG56,SquareCavityG56)
 	{
 		const unsigned int dim = 2;
 		ASSERT_EQ(dim,2) << "3D not implemented" << std::endl;
@@ -199,50 +264,7 @@ namespace Test_Solver
 											 &G56_PoissonHeat);
 
 
-		base_solver.run_periodic();
-
-		Vector<double> exact_error(constants.constants.refine_cycles);
-		//AssertDimension(constants.constants.refine_cycles,3);
-
-		// // error in theta for every refine cycle
-		// if (constants.constants.bc_type == characteristic)
-		// {
-		// 	if (fabs(constants.constants.tau - 0.1) < 1e-5)
-		// 	{
-		// 		exact_error(0) = 3.0915e-06;
-		// 		exact_error(1) = 1.3782e-06;
-		// 		exact_error(2) = 7.7645e-07;
-				
-		// 	}			
-
-		// 	if (fabs(constants.constants.tau - 0.3) < 1e-5)
-		// 	{
-		// 		exact_error(0) = 3.0799e-06;
-		// 		exact_error(1) = 1.3703e-06;
-		// 		exact_error(2) = 7.7118e-07;
-		// 	}
-		// }
-
-		// if (constants.constants.bc_type == odd)
-		// {
-		// 	if (fabs(constants.constants.tau - 0.1) < 1e-5)
-		// 	{
-		// 		exact_error(0) = 5.9937e-06;
-		// 		exact_error(1) = 2.6761e-06;
-		// 		exact_error(2) = 1.5088e-06;
-		// 	}			
-
-		// 	if (fabs(constants.constants.tau - 0.3) < 1e-5)
-		// 	{
-		// 		exact_error(0) = 4.6088e-06;
-		// 		exact_error(1) = 2.0543e-06;
-		// 		exact_error(2) = 1.1572e-06;
-		// 	}
-		// }
-
-
-		// for (unsigned int i =0 ; (int)i <constants.constants.refine_cycles ; i++)
-		// 	EXPECT_NEAR(base_solver.error_per_itr[i],exact_error(i),1e-5);
+		base_solver.run_square();
 
 	}
 }

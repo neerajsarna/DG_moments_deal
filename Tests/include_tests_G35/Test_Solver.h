@@ -4,32 +4,32 @@ namespace Test_Solver
 
 
 
-	TEST(ChecksPeriodicGrid,HandlesPeridicGrid)
-	{
-		const unsigned int dim = 2;
-		ASSERT_EQ(dim,2) << "3D not implemented" << std::endl;
+	// TEST(ChecksPeriodicGrid,HandlesPeridicGrid)
+	// {
+	// 	const unsigned int dim = 2;
+	// 	ASSERT_EQ(dim,2) << "3D not implemented" << std::endl;
 
-		std::string folder_name = "../system_matrices/";
-		Constants::Base_Constants constants(input_file);
-		G35::G35<dim> G35(constants.constants,folder_name);
+	// 	std::string folder_name = "../system_matrices/";
+	// 	Constants::Base_Constants constants(input_file);
+	// 	G35::G35<dim> G35(constants.constants,folder_name);
 
-		ExactSolution::G35_PoissonHeat<dim>  G35_PoissonHeat(constants.constants,G35.base_tensorinfo.S_half);
-		FEM_Solver::Base_Solver<dim> base_solver("mesh_file_name","grid",
-												constants.constants,&G35,
-											 	&G35_PoissonHeat);
-
-
-		if (constants.constants.mesh_type == periodic_square)
-		{
-			base_solver.print_grid(0);
-
-			// triangulation should have some number of cell
-			EXPECT_NE(base_solver.triangulation.n_active_cells(),0);
-
-		}
+	// 	ExactSolution::G35_PoissonHeat<dim>  G35_PoissonHeat(constants.constants,G35.base_tensorinfo.S_half);
+	// 	FEM_Solver::Base_Solver<dim> base_solver("mesh_file_name","grid",
+	// 											constants.constants,&G35,
+	// 										 	&G35_PoissonHeat);
 
 
-	}
+	// 	if (constants.constants.mesh_type == periodic_square)
+	// 	{
+	// 		base_solver.print_grid(0);
+
+	// 		// triangulation should have some number of cell
+	// 		EXPECT_NE(base_solver.triangulation.n_active_cells(),0);
+
+	// 	}
+
+
+	// }
 
 	// TEST(PeriodicityHandler,HandlesPeriodicityManagement)
 	// {
@@ -124,64 +124,130 @@ namespace Test_Solver
 	// 	}
 	// }
 
-	// understanding the grid refinement for a periodic square
-	TEST(GridRefinementPeriodicSquare,HandlesRefinement)
-	{
-		const unsigned int dim = 2;
-		ASSERT_EQ(dim,2) << "3D not implemented" << std::endl;
+	// // understanding the grid refinement for a periodic square
+	// TEST(GridRefinementPeriodicSquare,HandlesRefinement)
+	// {
+	// 	const unsigned int dim = 2;
+	// 	ASSERT_EQ(dim,2) << "3D not implemented" << std::endl;
 
-		std::string folder_name = "../system_matrices/";
-		Constants::Base_Constants constants(input_file);
-		G35::G35<dim> G35(constants.constants,folder_name);
+	// 	std::string folder_name = "../system_matrices/";
+	// 	Constants::Base_Constants constants(input_file);
+	// 	G35::G35<dim> G35(constants.constants,folder_name);
 
-		ExactSolution::G35_PoissonHeat<dim>  G35_PoissonHeat(constants.constants,G35.base_tensorinfo.S_half);
+	// 	ExactSolution::G35_PoissonHeat<dim>  G35_PoissonHeat(constants.constants,G35.base_tensorinfo.S_half);
 
-		FEM_Solver::Base_Solver<dim> base_solver("mesh_file_name",
-												"grid",
-												constants.constants,
-												&G35,
-												&G35_PoissonHeat);		
+	// 	FEM_Solver::Base_Solver<dim> base_solver("mesh_file_name",
+	// 											"grid",
+	// 											constants.constants,
+	// 											&G35,
+	// 											&G35_PoissonHeat);		
 
-		for (int i = 0 ; i < constants.constants.refine_cycles ; i++)
-		{
+	// 	for (int i = 0 ; i < constants.constants.refine_cycles ; i++)
+	// 	{
 
-		// first we develop the periodic faces using internal functions of dealii
-			base_solver.develop_periodic_faces(base_solver.dof_handler);
+	// 	// first we develop the periodic faces using internal functions of dealii
+	// 		base_solver.develop_periodic_faces(base_solver.dof_handler);
 
-		// now we construct the required data structure
-			base_solver.divide_periodicity();
+	// 	// now we construct the required data structure
+	// 		base_solver.divide_periodicity();
 
 			
-			//The first entry and the ycoord of the second entry should match
-				for (std::map<double, typename DoFHandler<dim>::cell_iterator>::iterator it = base_solver.xplus1_set.begin();
-						 it != base_solver.xplus1_set.end() ;it++)
-					EXPECT_NEAR(it->first,it->second->center()(1),1e-8);
+	// 		//The first entry and the ycoord of the second entry should match
+	// 			for (std::map<double, typename DoFHandler<dim>::cell_iterator>::iterator it = base_solver.xplus1_set.begin();
+	// 					 it != base_solver.xplus1_set.end() ;it++)
+	// 				EXPECT_NEAR(it->first,it->second->center()(1),1e-8);
 
 
-				for (std::map<double, typename DoFHandler<dim>::cell_iterator>::iterator it = base_solver.xminus1_set.begin();
-						 it != base_solver.xminus1_set.end() ;it++)
-					EXPECT_NEAR(it->first,it->second->center()(1),1e-8);
+	// 			for (std::map<double, typename DoFHandler<dim>::cell_iterator>::iterator it = base_solver.xminus1_set.begin();
+	// 					 it != base_solver.xminus1_set.end() ;it++)
+	// 				EXPECT_NEAR(it->first,it->second->center()(1),1e-8);
 
 
-			// check the ycoordinates of the periodic pairs
-			for (int j = 0 ; j < (int)base_solver.periodicity_vector.size(); j++)
-			{
-				const typename DoFHandler<dim>::cell_iterator cell_1 = base_solver.periodicity_vector[i].cell[0];
-        		const typename DoFHandler<dim>::cell_iterator cell_2 = base_solver.periodicity_vector[i].cell[1];
+	// 		// check the ycoordinates of the periodic pairs
+	// 		for (int j = 0 ; j < (int)base_solver.periodicity_vector.size(); j++)
+	// 		{
+	// 			const typename DoFHandler<dim>::cell_iterator cell_1 = base_solver.periodicity_vector[i].cell[0];
+ //        		const typename DoFHandler<dim>::cell_iterator cell_2 = base_solver.periodicity_vector[i].cell[1];
 
-        		// the ycoordinates of the cells should be the same
-        		EXPECT_NEAR(cell_1->center()(1),cell_2->center()(1),1e-5);
-			}
+ //        		// the ycoordinates of the cells should be the same
+ //        		EXPECT_NEAR(cell_1->center()(1),cell_2->center()(1),1e-5);
+	// 		}
 
-			if (i < constants.constants.refine_cycles - 1)
-				base_solver.mesh_internal_periodic_square(constants.constants.part_x,constants.constants.part_y + 50 * (i + 1));
+	// 		if (i < constants.constants.refine_cycles - 1)
+	// 			base_solver.mesh_internal_periodic_square(constants.constants.part_x,constants.constants.part_y + 50 * (i + 1));
 
-		}
-	}
+	// 	}
+	// }
 
 
 
-	TEST(PoissonHeatG35,HandlesPoissonHeatG35)
+	// TEST(PoissonHeatG35,HandlesPoissonHeatG35)
+	// {
+	// 	const unsigned int dim = 2;
+	// 	ASSERT_EQ(dim,2) << "3D not implemented" << std::endl;
+
+	// 	std::string folder_name = "../system_matrices/";
+	// 	Constants::Base_Constants constants(input_file);
+	// 	G35::G35<dim> G35(constants.constants,folder_name);
+
+	// 	ExactSolution::G35_PoissonHeat<dim>  G35_PoissonHeat(constants.constants,G35.base_tensorinfo.S_half);
+
+	// 	FEM_Solver::Base_Solver<dim> base_solver("mesh_file_name",
+	// 										 "grid",
+	// 										 constants.constants,
+	// 										 &G35,
+	// 										 &G35_PoissonHeat);
+
+
+	// 	base_solver.run_periodic();
+
+	// // 	Vector<double> exact_error(constants.constants.refine_cycles);
+	// // 	AssertDimension(constants.constants.refine_cycles,3);
+
+	// // 	// // error in theta for every refine cycle
+	// // 	if (constants.constants.bc_type == characteristic)
+	// // 	{
+	// // 		if (fabs(constants.constants.tau - 0.1) < 1e-5)
+	// // 		{
+	// // 			exact_error(0) = 3.0915e-06;
+	// // 			exact_error(1) = 1.3782e-06;
+	// // 			exact_error(2) = 7.7645e-07;
+				
+	// // 		}			
+
+	// // 		if (fabs(constants.constants.tau - 0.3) < 1e-5)
+	// // 		{
+	// // 			exact_error(0) = 3.0799e-06;
+	// // 			exact_error(1) = 1.3703e-06;
+	// // 			exact_error(2) = 7.7118e-07;
+	// // 		}
+	// // 	}
+
+	// // 	if (constants.constants.bc_type == odd)
+	// // 	{
+	// // 		if (fabs(constants.constants.tau - 0.1) < 1e-5)
+	// // 		{
+	// // 			exact_error(0) = 5.9937e-06;
+	// // 			exact_error(1) = 2.6761e-06;
+	// // 			exact_error(2) = 1.5088e-06;
+	// // 		}			
+
+	// // 		if (fabs(constants.constants.tau - 0.3) < 1e-5)
+	// // 		{
+	// // 			exact_error(0) = 4.6088e-06;
+	// // 			exact_error(1) = 2.0543e-06;
+	// // 			exact_error(2) = 1.1572e-06;
+	// // 		}
+	// // 	}
+
+
+	// // 	for (unsigned int i =0 ; (int)i <constants.constants.refine_cycles ; i++)
+	// // 		EXPECT_NEAR(base_solver.error_per_itr[i],exact_error(i),1e-5);
+
+	// // }
+
+
+	TEST(SquareCavityG35,SquareCavityG35)
 	{
 		const unsigned int dim = 2;
 		ASSERT_EQ(dim,2) << "3D not implemented" << std::endl;
@@ -199,50 +265,7 @@ namespace Test_Solver
 											 &G35_PoissonHeat);
 
 
-		base_solver.run_periodic();
+		base_solver.run_square();
 
-	// 	Vector<double> exact_error(constants.constants.refine_cycles);
-	// 	AssertDimension(constants.constants.refine_cycles,3);
-
-	// 	// // error in theta for every refine cycle
-	// 	if (constants.constants.bc_type == characteristic)
-	// 	{
-	// 		if (fabs(constants.constants.tau - 0.1) < 1e-5)
-	// 		{
-	// 			exact_error(0) = 3.0915e-06;
-	// 			exact_error(1) = 1.3782e-06;
-	// 			exact_error(2) = 7.7645e-07;
-				
-	// 		}			
-
-	// 		if (fabs(constants.constants.tau - 0.3) < 1e-5)
-	// 		{
-	// 			exact_error(0) = 3.0799e-06;
-	// 			exact_error(1) = 1.3703e-06;
-	// 			exact_error(2) = 7.7118e-07;
-	// 		}
-	// 	}
-
-	// 	if (constants.constants.bc_type == odd)
-	// 	{
-	// 		if (fabs(constants.constants.tau - 0.1) < 1e-5)
-	// 		{
-	// 			exact_error(0) = 5.9937e-06;
-	// 			exact_error(1) = 2.6761e-06;
-	// 			exact_error(2) = 1.5088e-06;
-	// 		}			
-
-	// 		if (fabs(constants.constants.tau - 0.3) < 1e-5)
-	// 		{
-	// 			exact_error(0) = 4.6088e-06;
-	// 			exact_error(1) = 2.0543e-06;
-	// 			exact_error(2) = 1.1572e-06;
-	// 		}
-	// 	}
-
-
-	// 	for (unsigned int i =0 ; (int)i <constants.constants.refine_cycles ; i++)
-	// 		EXPECT_NEAR(base_solver.error_per_itr[i],exact_error(i),1e-5);
-
-	// }
+	}
 }
