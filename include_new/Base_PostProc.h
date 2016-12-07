@@ -45,7 +45,8 @@ namespace PostProc
 										const unsigned int active_cells,
 										double &error_value,
 										const double hMax,
-									   ConvergenceTable &convergence_table);
+									   ConvergenceTable &convergence_table,
+									   const double residual);
 
 			double compute_L2_norm(const Vector<double> &solution,const unsigned int active_cells);
 
@@ -59,7 +60,8 @@ namespace PostProc
 											const unsigned int active_cells,
 											double &error_value,
 											const double hMax,
-									   		ConvergenceTable &convergence_table);
+									   		ConvergenceTable &convergence_table,
+							const double residual);
 
 			double L2_error_QMidpoint(const Vector<double> &solution,const unsigned int active_cells);
 			double Linfty_error_QMidpoint(const Vector<double> &solution,const unsigned int active_cells);
@@ -235,7 +237,8 @@ namespace PostProc
 											   const unsigned int active_cells,
 											   double &error_value,
 											   const double hMax,
-											   ConvergenceTable &convergence_table)
+											   ConvergenceTable &convergence_table,
+						    const double residual)
 	{
 		used_qgauss = true;
 
@@ -275,12 +278,13 @@ namespace PostProc
                 
         std::string column_name_L2;
         std::string column_name_Linfty;
+	std::string column_name_residual = "#Residual" ;
 
         column_name_L2 = "#L2 in u(Using QGauss)" + std::to_string(component);
         column_name_Linfty = "#Linfty in u(Using QGauss)" + std::to_string(component);
 
-        std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<Error Details>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"  << std::endl;
-       	printf("L2_error: %e, Linf_error: %e, #DOF: %llu, #Cells %llu\n",L2_error,Linfty_error,dof_handler->n_dofs(),active_cells);
+        std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<Error Details>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"  << std::endl;
+       	printf("L2_error: %e, Linf_error: %e, #DOF: %llu, #Cells %llu, #Residual %e \n",L2_error,Linfty_error,dof_handler->n_dofs(),active_cells,residual);
        	std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<Error Details>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
 
         convergence_table.add_value(column_name_L2,L2_error);
@@ -288,10 +292,13 @@ namespace PostProc
         convergence_table.add_value("#degree of freedom",dof_handler->n_dofs());
         convergence_table.add_value("#number of cells",active_cells);
         convergence_table.add_value("#hMax",hMax);
+	convergence_table.add_value("#Residual",residual);
 
         convergence_table.set_scientific(column_name_L2,true);
         convergence_table.set_scientific(column_name_Linfty,true);
         convergence_table.set_scientific("#hMax",true);
+	convergence_table.set_scientific(column_name_residual,true);
+
 	}
 
 
@@ -360,7 +367,8 @@ namespace PostProc
 											   		const unsigned int active_cells,
 											   		double &error_value,
 											   		const double hMax,
-											   		ConvergenceTable &convergence_table)
+											   		ConvergenceTable &convergence_table,
+						     const double residual)
 	{
 
 		used_midpoint = false;

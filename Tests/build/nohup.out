@@ -9790,3 +9790,141 @@ L2_error: 2.761281e-08, Linf_error: 5.137116e-08, #DOF: 280000, #Cells 1000
 [==========] 7 tests from 7 test cases ran. (4122655 ms total)
 [  PASSED  ] 7 tests.
 Results 0
+Using ../test_faster_code/input_systemA_ring_char_meshworker_Kn0p1.in as input file[==========] Running 7 tests from 7 test cases.
+[----------] Global test environment set-up.
+[----------] 1 test from LinearSolver
+[ RUN      ] LinearSolver.HandlesLinearSolver
+Symbolic Factorization
+
+Reordering completed ... Numerical Factorization
+
+Factorization completed ... 
+Solving the system 
+Solution 
+1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 
+
+Residual 2.23607
+[       OK ] LinearSolver.HandlesLinearSolver (72 ms)
+[----------] 1 test from LinearSolver (73 ms total)
+
+[----------] 1 test from FEValues
+[ RUN      ] FEValues.HandlesFEValues
+[       OK ] FEValues.HandlesFEValues (15 ms)
+[----------] 1 test from FEValues (15 ms total)
+
+[----------] 1 test from DofIndex
+[ RUN      ] DofIndex.HandlesDofIndex
+[       OK ] DofIndex.HandlesDofIndex (0 ms)
+[----------] 1 test from DofIndex (0 ms total)
+
+[----------] 1 test from MassMatrix
+[ RUN      ] MassMatrix.HandlesMassMatrix
+[       OK ] MassMatrix.HandlesMassMatrix (3 ms)
+[----------] 1 test from MassMatrix (3 ms total)
+
+[----------] 1 test from FasterAssemblation
+[ RUN      ] FasterAssemblation.TestFasterAssemblation
+[       OK ] FasterAssemblation.TestFasterAssemblation (5 ms)
+[----------] 1 test from FasterAssemblation (5 ms total)
+
+[----------] 1 test from SolvingSystemA
+[ RUN      ] SolvingSystemA.HandlesSolvingSystemA
+Distributing dof 
+Assembling
+Using meshwoker 
+Symbolic Factorization
+
+Reordering completed ... Numerical Factorization
+
+Factorization completed ... 
+Solving the system 
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<Error Details>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+L2_error: 7.604268e-01, Linf_error: 3.998264e-01, #DOF: 240, #Cells 10, #Residual 2.751443e+00 
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<Error Details>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+Distributing dof 
+Assembling
+Using meshwoker 
+Symbolic Factorization
+
+Reordering completed ... Numerical Factorization
+
+Factorization completed ... 
+Solving the system 
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<Error Details>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+L2_error: 1.645138e-01, Linf_error: 9.419686e-02, #DOF: 960, #Cells 40, #Residual 1.892594e+00 
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<Error Details>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+Distributing dof 
+Assembling
+Using meshwoker 
+Symbolic Factorization
+
+Reordering completed ... Numerical Factorization
+
+Factorization completed ... 
+Solving the system 
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<Error Details>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+L2_error: 2.899600e-02, Linf_error: 1.793038e-02, #DOF: 3840, #Cells 160, #Residual 1.304174e+00 
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<Error Details>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+Distributing dof 
+Assembling
+Using meshwoker 
+Symbolic Factorization
+
+Reordering completed ... Numerical Factorization
+
+Factorization completed ... 
+Solving the system 
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<Error Details>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+L2_error: 4.655403e-03, Linf_error: 3.532548e-03, #DOF: 15360, #Cells 640, #Residual 9.056294e-01 
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<Error Details>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+Distributing dof 
+Assembling
+Using meshwoker 
+Symbolic Factorization
+
+Reordering completed ... Numerical Factorization
+
+Factorization completed ... 
+Solving the system 
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<Error Details>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+L2_error: 7.927361e-04, Linf_error: 6.526398e-04, #DOF: 61440, #Cells 2560, #Residual 6.335328e-01 
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<Error Details>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+Distributing dof 
+Assembling
+Using meshwoker 
+Symbolic Factorization
+
+Reordering completed ... Numerical Factorization
+
+Factorization completed ... 
+Solving the system 
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<Error Details>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+L2_error: 1.629634e-04, Linf_error: 2.009448e-04, #DOF: 245760, #Cells 10240, #Residual 4.453609e-01 
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<Error Details>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+Distributing dof 
+Assembling
+Using meshwoker 
+Symbolic Factorization
+
+Reordering completed ... Numerical Factorization
+
+Factorization completed ... 
+Solving the system 
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<Error Details>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+L2_error: 3.888674e-05, Linf_error: 6.301734e-05, #DOF: 983040, #Cells 40960, #Residual 3.139570e-01 
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<Error Details>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+Distributing dof 
+Assembling
+Using meshwoker 
+Symbolic Factorization
+
+Reordering completed ... Numerical Factorization
+
+Factorization completed ... 
+Solving the system 
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<Error Details>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+L2_error: 9.794753e-06, Linf_error: 1.883821e-05, #DOF: 3932160, #Cells 163840, #Residual 2.216549e-01 
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<Error Details>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+Distributing dof 
+Assembling
+Using meshwoker 
