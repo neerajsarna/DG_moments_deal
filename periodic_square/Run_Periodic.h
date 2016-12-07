@@ -101,9 +101,11 @@ Base_Solver<dim>::run_periodic()
 		// We do int the following way so as to keep the solver independent of all the other implementations.
 		// This makes the code highly reusable. So one can directly copy the following class and use it somewhere
 		// else is one wants to.
-		timer.enter_subsection("System Solver");
+		
+		timer.enter_subsection("Linear Solver");
 		LinearSolver::LinearSolver linear_solver;
-		linear_solver.solve_trilinos(global_matrix,system_rhs,solution);
+		linear_solver.develop_pardiso_data(global_matrix,sparsity_pattern);
+		double residual = linear_solver.solve_with_pardiso(system_rhs,solution);
 		timer.leave_subsection();
 
 		timer.enter_subsection("Post Proc");
@@ -112,7 +114,8 @@ Base_Solver<dim>::run_periodic()
 		// now we compute the error due to computation
 		postproc.error_evaluation_QGauss(solution,this->triangulation.n_active_cells(),
 										 error_per_itr[i],
-										GridTools::maximal_cell_diameter(this->triangulation),convergence_table);
+										GridTools::maximal_cell_diameter(this->triangulation),
+										convergence_table,residual);
 
 		postproc.print_options(this->triangulation,solution,i,constants.refine_cycles,convergence_table);	
 

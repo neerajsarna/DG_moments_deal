@@ -78,7 +78,8 @@ Base_Solver<dim>::run_ring()
 
 		timer.enter_subsection("Linear Solver");
 		LinearSolver::LinearSolver linear_solver;
-		linear_solver.solve_trilinos(global_matrix,system_rhs,solution);
+		linear_solver.develop_pardiso_data(global_matrix,sparsity_pattern);
+		double residual = linear_solver.solve_with_pardiso(system_rhs,solution);
 		timer.leave_subsection();
 
 		timer.enter_subsection("Post Processing");
@@ -87,7 +88,8 @@ Base_Solver<dim>::run_ring()
 		// // now we compute the error due to computation
 		postproc.error_evaluation_QGauss(solution,this->triangulation.n_active_cells(),
 										 error_per_itr[i],
-										GridTools::maximal_cell_diameter(this->triangulation),convergence_table);
+										GridTools::maximal_cell_diameter(this->triangulation),convergence_table,
+										residual);
 
 		postproc.print_options(this->triangulation,solution,i,refine_cycles,convergence_table);		
 		timer.leave_subsection();

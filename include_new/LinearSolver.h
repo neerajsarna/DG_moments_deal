@@ -11,8 +11,8 @@ namespace LinearSolver
 
 	public:
     enum Solver_Type
-    {Trilinos_Direct,Trilinos_GMRES,Pardiso};
-    const Solver_Type solver_type = Pardiso;
+    {Trilinos_Direct,Trilinos_GMRES};
+    const Solver_Type solver_type = Trilinos_Direct;
 
 		LinearSolver(){};
 
@@ -23,16 +23,74 @@ namespace LinearSolver
     void solve_eigen(Sparse_matrix &global_matrix,Vector<double> &system_rhs,
                     Vector<double> &solution);
 
+    double solve_with_pardiso(Vector<double> &system_rhs,
+                          Vector<double> &solution);
 		void PardisoSolve(MKL_INT *ia,MKL_INT *ja,double *a,double *b,double *x,MKL_INT n);
 
+    MatrixOpt::Base_MatrixOpt matrix_opt;
+
+    // data for pardiso
+    MKL_INT *IA;
+    MKL_INT *JA;
+    double *V;
+    unsigned int n_rows;
+    unsigned int nnz;
+
+    void develop_pardiso_data(TrilinosWrappers::SparseMatrix &matrix,
+                              TrilinosWrappers::SparsityPattern &sparsity_pattern);
 
 	};
+
+  void LinearSolver::develop_pardiso_data(TrilinosWrappers::SparseMatrix &matrix,
+                                          TrilinosWrappers::SparsityPattern &sparsity_pattern)
+  {
+   n_rows = matrix.m();
+   nnz = matrix.n_nonzero_elements();
+
+
+
+   IA = (MKL_INT*)calloc(n_rows+1,sizeof(MKL_INT));
+   JA = (MKL_INT*)calloc(nnz,sizeof(MKL_INT));
+   V = (double*)calloc(nnz,sizeof(double));
+
+    
+    matrix_opt.COO_to_CSR(matrix,IA,JA,V);
+
+    // now we release the old memory
+    matrix.clear();
+    sparsity_pattern.clear();
+  }
+
+
+  double LinearSolver::solve_with_pardiso(Vector<double> &system_rhs,
+                                        Vector<double> &solution)
+  {
+    Assert(system_rhs.size() == n_rows,ExcNotInitialized());
+    Assert(solution.size() == n_rows,ExcNotInitialized());
+
+      PardisoSolve(IA,JA,                    
+                  V,&system_rhs(0),&solution(0),n_rows);
+
+      Vector<double> res(n_rows);
+
+      matrix_opt.Sparse_matrix_dot_Vector(IA,JA,
+                                                              V,res,n_rows);
+
+      res -=system_rhs;
+
+      free(IA);
+      free(JA);
+      free(V);
+
+      return(res.l2_norm());
+  }
 
   // solving routines for a trilinos sparse matrix
 	void LinearSolver::solve_trilinos(TrilinosWrappers::SparseMatrix &global_matrix,Vector<double> &system_rhs,
 		                        Vector<double> &solution)
 	{
 
+    Assert(1 == 0, ExcMessage("Please use pardiso"));
           
           switch(solver_type)
           {
@@ -70,45 +128,11 @@ namespace LinearSolver
               break;
             }
 
-            case Pardiso:
+            default:
             {
-            	std::cout << "Using Pardiso " << std::endl;
-              const long long int n_rows = global_matrix.m();
-              const long long int nnz = global_matrix.n_nonzero_elements();
-
-             const Epetra_CrsMatrix temp_system_matrix = global_matrix.trilinos_matrix();
-              
-              Epetra_CrsMatrix temp_system_matrix2 = temp_system_matrix; 
-              Epetra_IntSerialDenseVector row_ptr = temp_system_matrix2.ExpertExtractIndexOffset();
-              Epetra_IntSerialDenseVector col_ind = temp_system_matrix2.ExpertExtractIndices();
-              double *values = temp_system_matrix2.ExpertExtractValues();
-
-              MKL_INT *ia;
-              MKL_INT *ja;
-              
-
-              ia = (MKL_INT*)calloc(n_rows+1,sizeof(MKL_INT));
-              ja = (MKL_INT*)calloc(nnz,sizeof(MKL_INT));
-
-
-              for (long int i = 0 ; i < n_rows + 1 ; i++)
-                ia[i]  = row_ptr[i];
-            
-
-              for (long int j = 0 ; j < nnz ; j ++)
-                ja[j] = col_ind[j];
-
-
-              global_matrix.clear();
-              
-	      PardisoSolve(ia,ja,
-                            values,&system_rhs(0),&solution(0),n_rows);
-
-              free(ia);
-              free(ja);
-	      //free(values);
-
+              Assert(1 == 0, ExcMessage("Should not have reached here"));
               break;
+
             }
           }
 
@@ -118,7 +142,7 @@ namespace LinearSolver
                             Vector<double> &solution)
   {
     std::cout << "Solving Eigen Matrix " << std::endl;
-    Assert(solver_type == Pardiso,ExcMessage("No other solver works with eigen matrices presently"));
+    //Assert(solver_type == Pardiso,ExcMessage("No other solver works with eigen matrices presently"));
     Assert(global_matrix.isCompressed(),ExcMessage("Compressed Matrix is a must"));
 
     const int *row_ptr = global_matrix.outerIndexPtr();

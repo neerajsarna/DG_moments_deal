@@ -36,7 +36,7 @@ namespace FEM_Solver
 			// the following order is important or else we run into trouble
 			FESystem<dim> finite_element;
 			DoFHandler<dim> dof_handler;
-			SparsityPattern sparsity_pattern;
+			TrilinosWrappers::SparsityPattern sparsity_pattern;
 			
 			
 			// A matrix in the final Ax = b
@@ -176,14 +176,12 @@ namespace FEM_Solver
 
         sparsity_pattern.copy_from(dsp);
 
-	sparsity_pattern.compress();
+	    sparsity_pattern.compress();
         global_matrix.reinit(sparsity_pattern);   
 
         solution.reinit (dof_handler.n_dofs());
         system_rhs.reinit (dof_handler.n_dofs());
 
-	std::cout << "Memory by sparsity pattern " << sparsity_pattern.memory_consumption() << std::endl;
-	std::cout << "Memory by global matrix " << global_matrix.memory_consumption() << std::endl;
     }
 
     //same as above but we now initialize a sparse matrix from eigen

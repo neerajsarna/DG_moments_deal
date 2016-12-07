@@ -84,6 +84,11 @@ namespace MatrixOpt
 
 			// a dot product between sparse matrix and a vector
 			Vector<double> Sparse_matrix_dot_Vector(const Sparse_matrix &matrix,const Vector<double> &vec);
+			void COO_to_CSR(const TrilinosWrappers::SparseMatrix &matrix, MKL_INT *IA,MKL_INT *JA,double *V);
+
+			Vector<double> Sparse_matrix_dot_Vector(const MKL_INT *ia,const MKL_INT *ja,
+                                                                 const double *values,const Vector<double> &vec,
+                                                                const double size);
 	};
 
 	// constructor of the structure
@@ -504,4 +509,103 @@ namespace MatrixOpt
 	  	result.makeCompressed();
 	  	return(result);
 	  }
+
+	  void Base_MatrixOpt::COO_to_CSR(const TrilinosWrappers::SparseMatrix &matrix, MKL_INT *IA,MKL_INT *JA,double *V)
+	  {
+
+	  	std::cout << "Developing CSR " << std::endl;
+	  	fflush(stdout);
+
+	  	const unsigned int n_rows = matrix.m();
+	  	const unsigned int nnz = matrix.n_nonzero_elements();
+
+	  	// we check the sizes of the various input pointers
+	  	Assert(sizeof(IA)/sizeof(MKL_INT) != 0,ExcNotInitialized());
+		Assert(sizeof(JA)/sizeof(MKL_INT) != 0,ExcNotInitialized());
+		Assert(sizeof(V)/sizeof(double) != 0,ExcNotInitialized());
+
+	  	typename TrilinosWrappers::SparseMatrix::const_iterator it = matrix.begin(),
+	  														    it_end = matrix.end();
+
+	  	typename TrilinosWrappers::SparseMatrix::const_iterator it_dummy = matrix.begin();
+
+
+	  	 unsigned int counter = 1;
+	  	 std::vector<unsigned int> row_index(nnz);
+	  	 unsigned int row_counter = 1;
+	  	 unsigned int rows_captured = 1;
+	  	 IA[0] = 0;
+	  	 JA[0] = it->column();
+	  	 V[0] = it->value();
+	  	 row_index[0] = it->row();
+	  	 it++;
+
+	  	for (; it != it_end ; it++)
+	  	{
+	  		Assert(counter <= nnz ,ExcMessage("Inappropriate counter"));
+	  		
+	  		V[counter] = it->value();
+	  		JA[counter] = it->column();
+	  		row_index[counter] = it->row();
+
+	  		Assert(row_index[counter-1] <= row_index[counter],ExcMessage("row indices not sorted"));
+
+	  			// if the row of the entries is the same then we increase the counter
+	  		if(row_index[counter] == row_index[counter-1])
+	  			row_counter++;
+
+	  			// if the rows of the entries is not the same the new add this location to IA
+	  		else
+	  		{
+	  			// set the counter back to default
+	  			IA[rows_captured] = row_counter + IA[rows_captured-1];
+
+	  			rows_captured ++;
+	  			row_counter = 1;
+	  		}
+
+	  		Assert(rows_captured <= n_rows,ExcMessage("Too many rows captured"));
+	  		
+
+	  		counter ++;
+	  		
+	  	}
+
+	  	Assert(rows_captured == n_rows,ExcMessage("Incorrect number of rows captured"));
+
+	  	// the final entry
+	  	IA[n_rows] = nnz;
+	  	row_index.clear();
+
+	  	std::cout << "Finished Developing CSR "<< std::endl;
+	  	
+	  }
+
+
+	  // size the number of rows in the matrix
+	  Vector<double> Base_MatrixOpt::Sparse_matrix_dot_Vector(const MKL_INT *ia,const MKL_INT *ja,
+                                                                 const double *values,const Vector<double> &vec,
+                                                                const double size)
+        {
+                Assert(sizeof(ia) != 0,ExcNotInitialized());
+                Assert(sizeof(ja) != 0,ExcNotInitialized());
+                Assert(sizeof(values) != 0,ExcNotInitialized());
+                Assert(vec.size() !=0,ExcNotInitialized());
+
+                Vector<double> result(size);
+                int k = 0;
+
+
+                for (unsigned int i = 0 ; i < size ; i++)
+                        for (unsigned int j = ia[i] ; j < ia[i + 1] ; j++)
+                        {
+                                k = ja[j];
+                                result(i) += values[j] * vec(k);
+
+
+                        }
+
+
+                return(result);
+        }
 }

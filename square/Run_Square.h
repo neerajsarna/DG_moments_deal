@@ -78,7 +78,8 @@ Base_Solver<dim>::run_square()
 
 		timer.enter_subsection("Linear Solver");
 		LinearSolver::LinearSolver linear_solver;
-		linear_solver.solve_trilinos(global_matrix,system_rhs,solution);
+		linear_solver.develop_pardiso_data(global_matrix,sparsity_pattern);
+		double residual = linear_solver.solve_with_pardiso(system_rhs,solution);
 		timer.leave_subsection();
 
 		// we do not have the exact solution so we dont do post processing.
@@ -87,7 +88,7 @@ Base_Solver<dim>::run_square()
 
 		// now we compute the error due to computation
 		const double l2_norm = postproc.compute_L2_norm(solution,this->triangulation.n_active_cells());
-		std::cout << "l2_norm of error variable " << l2_norm << std::endl;
+		std::cout << "l2_norm of error variable " << l2_norm << "Residual " << residual <<  std::endl;
 
 		 postproc.print_options(this->triangulation,solution,i,refine_cycles,convergence_table);		
 		// timer.leave_subsection();
