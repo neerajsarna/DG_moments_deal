@@ -47,14 +47,26 @@ namespace LinearSolver
    n_rows = matrix.m();
    nnz = matrix.n_nonzero_elements();
 
-
+   const Epetra_CrsMatrix mat1 = matrix.trilinos_matrix();
+   Epetra_CrsMatrix mat2 = mat1;
+   Epetra_IntSerialDenseVector row_ptr = mat2.ExpertExtractIndexOffset();
+   Epetra_IntSerialDenseVector col_ind = mat2.ExpertExtractIndices();
+   double *values = mat2.ExpertExtractValues();	 
 
    IA = (MKL_INT*)calloc(n_rows+1,sizeof(MKL_INT));
    JA = (MKL_INT*)calloc(nnz,sizeof(MKL_INT));
-   V = (double*)calloc(nnz,sizeof(double));
+   V = (double*)calloc(nnz,sizeof(double));   
 
-    
-    matrix_opt.COO_to_CSR(matrix,IA,JA,V);
+   for (unsigned int i = 0 ; i < n_rows + 1; i++)
+		IA[i] = row_ptr[i];
+
+   for (unsigned int i = 0 ; i < nnz ; i++)
+   {
+	JA[i] = col_ind[i];
+	V[i] = values[i];
+   }
+	
+ //  matrix_opt.COO_to_CSR(matrix,IA,JA,V);
 
     // now we release the old memory
     matrix.clear();
