@@ -245,4 +245,26 @@ namespace Test_Solver
 		// 	EXPECT_NEAR(base_solver.error_per_itr[i],exact_error(i),1e-5);
 
 	}
+
+	TEST(SquareCavityG84,SquareCavityG84)
+	{
+		const unsigned int dim = 2;
+		ASSERT_EQ(dim,2) << "3D not implemented" << std::endl;
+
+		std::string folder_name = "../system_matrices/";
+		Constants::Base_Constants constants(input_file);
+		G84::G84<dim> G84(constants.constants,folder_name);
+
+		ExactSolution::G84_PoissonHeat<dim>  G84_PoissonHeat(constants.constants,G84.base_tensorinfo.S_half);
+
+		FEM_Solver::Base_Solver<dim> base_solver("mesh_file_name",
+											 "grid",
+											 constants.constants,
+											 &G84,
+											 &G84_PoissonHeat);
+
+
+		base_solver.run_square();
+
+	}
 }

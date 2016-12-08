@@ -245,4 +245,26 @@ namespace Test_Solver
 		// 	EXPECT_NEAR(base_solver.error_per_itr[i],exact_error(i),1e-5);
 
 	}
+
+	TEST(SquareCavityG71,SquareCavityG71)
+	{
+		const unsigned int dim = 2;
+		ASSERT_EQ(dim,2) << "3D not implemented" << std::endl;
+
+		std::string folder_name = "../system_matrices/";
+		Constants::Base_Constants constants(input_file);
+		G71::G71<dim> G71(constants.constants,folder_name);
+
+		ExactSolution::G71_PoissonHeat<dim>  G71_PoissonHeat(constants.constants,G71.base_tensorinfo.S_half);
+
+		FEM_Solver::Base_Solver<dim> base_solver("mesh_file_name",
+											 "grid",
+											 constants.constants,
+											 &G71,
+											 &G71_PoissonHeat);
+
+
+		base_solver.run_square();
+
+	}
 }

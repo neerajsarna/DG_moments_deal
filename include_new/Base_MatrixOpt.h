@@ -599,7 +599,11 @@ namespace MatrixOpt
                 for (unsigned int i = 0 ; i < size ; i++)
                         for (unsigned int j = ia[i] ; j < ia[i + 1] ; j++)
                         {
+                        		// this gives us the column number
                                 k = ja[j];
+
+                                // values[j] gives us the entry of the matrix and 
+                                // vec(k) gives us the entry of the input vecotr
                                 result(i) += values[j] * vec(k);
 
 

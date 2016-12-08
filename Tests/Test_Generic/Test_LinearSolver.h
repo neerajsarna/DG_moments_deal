@@ -33,4 +33,46 @@ namespace Test_LinearSolver
     }
 
 
+    TEST(ResidualComputation,HandlesResidualComputation)
+    {
+    	MKL_INT *ia;
+    	MKL_INT *ja;
+    	double *values;
+
+    	// consider a diagonal matrix first
+    	const unsigned int n_rows = 3;
+    	const unsigned int nnz = 3;
+
+    	ia =(MKL_INT*)calloc(n_rows + 1,sizeof(MKL_INT));
+    	ja = (MKL_INT*)calloc(nnz,sizeof(MKL_INT));
+    	values = (double*)calloc(nnz,sizeof(double));
+
+    	ia[0] = 0;
+    	ia[1] = 1;
+    	ia[2] = 2;
+    	ia[3] = nnz;
+
+    	ja[0] = 0;
+    	ja[1] = 1;
+    	ja[2] = 2;
+
+    	values[0] = 1;
+    	values[1] = 1;
+    	values[2] = 1;
+
+    	Vector<double> vec(3);
+    	vec(0) = 1;
+    	vec(1) = 2;
+    	vec(2) = 3;
+
+    	MatrixOpt::Base_MatrixOpt matrix_opt;
+    	Vector<double> result = matrix_opt.Sparse_matrix_dot_Vector(ia, ja,
+                                            values,vec,n_rows);
+
+
+
+    	std::cout << "Results Sparse Matrix Product " << result << std::endl;
+
+
+    }
 }

@@ -87,10 +87,8 @@ namespace LinearSolver
       PardisoSolve(IA,JA,                    
                   V,&system_rhs(0),&solution(0),n_rows);
 
-      Vector<double> res(n_rows);
-
-      matrix_opt.Sparse_matrix_dot_Vector(IA,JA,
-                                                              V,res,n_rows);
+      Vector<double> res = matrix_opt.Sparse_matrix_dot_Vector(IA,JA,
+                                          V,solution,n_rows);
 
       res -=system_rhs;
 
