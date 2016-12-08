@@ -47,11 +47,15 @@ namespace LinearSolver
    n_rows = matrix.m();
    nnz = matrix.n_nonzero_elements();
 
-   const Epetra_CrsMatrix mat1 = matrix.trilinos_matrix();
-   Epetra_CrsMatrix mat2 = mat1;
-   Epetra_IntSerialDenseVector row_ptr = mat2.ExpertExtractIndexOffset();
-   Epetra_IntSerialDenseVector col_ind = mat2.ExpertExtractIndices();
-   double *values = mat2.ExpertExtractValues();	 
+   Epetra_CrsMatrix mat1 = matrix.trilinos_matrix();
+
+   matrix.clear();
+   sparsity_pattern.clear();
+
+   //Epetra_CrsMatrix mat2 = mat1;
+   Epetra_IntSerialDenseVector row_ptr = mat1.ExpertExtractIndexOffset();
+   Epetra_IntSerialDenseVector col_ind = mat1.ExpertExtractIndices();
+   double *values = mat1.ExpertExtractValues();	 
 
    IA = (MKL_INT*)calloc(n_rows+1,sizeof(MKL_INT));
    JA = (MKL_INT*)calloc(nnz,sizeof(MKL_INT));
