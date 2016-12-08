@@ -5,13 +5,13 @@ Base_Solver<dim>::run_ring()
 	const unsigned int refine_cycles = constants.refine_cycles;
 	error_per_itr.resize(refine_cycles);
 
-	TimerOutput timer (std::cout, TimerOutput::summary,
-                   TimerOutput::wall_times);
-
 	Assert(constants.mesh_type == ring,ExcMessage("Incorrect mesh type"));
 
 	for (unsigned int i = 0 ; i < refine_cycles ; i ++)
 	{
+
+        	TimerOutput timer (std::cout, TimerOutput::summary,
+                	   TimerOutput::wall_times);
 	
 		AssertDimension((int)error_per_itr.size(),constants.refine_cycles);
 
@@ -23,6 +23,9 @@ Base_Solver<dim>::run_ring()
 		timer.enter_subsection("Dof Distribution");
 		distribute_dof_allocate_matrix();
 		timer.leave_subsection();
+
+		std::cout << "#CELLS " << this->triangulation.n_active_cells() << std::endl;
+		std::cout << "Memory by dof handler(Gb) " << dof_handler.memory_consumption()/pow(10,9)<< std::endl;	
 
 		// the following routine assembles
 		std::cout << "Assembling" << std::endl;
@@ -78,6 +81,7 @@ Base_Solver<dim>::run_ring()
 
 		timer.enter_subsection("Linear Solver");
 		LinearSolver::LinearSolver linear_solver;
+		std::cout << "Preparing data for pardiso " << std::endl;
 		linear_solver.develop_pardiso_data(global_matrix,sparsity_pattern);
 		double residual = linear_solver.solve_with_pardiso(system_rhs,solution);
 		timer.leave_subsection();

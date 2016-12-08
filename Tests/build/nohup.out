@@ -9928,3 +9928,43 @@ L2_error: 9.794753e-06, Linf_error: 1.883821e-05, #DOF: 3932160, #Cells 163840, 
 Distributing dof 
 Assembling
 Using meshwoker 
+Using ../test_faster_code/input_systemA_ring_char_meshworker_Kn0p1.in as input file[==========] Running 7 tests from 7 test cases.
+[----------] Global test environment set-up.
+[----------] 1 test from LinearSolver
+[ RUN      ] LinearSolver.HandlesLinearSolver
+Symbolic Factorization
+
+Reordering completed ... Numerical Factorization
+
+Factorization completed ... 
+Solving the system 
+Solution 
+1.000e+00 1.000e+00 1.000e+00 1.000e+00 1.000e+00 
+
+Residual 2.23607
+[       OK ] LinearSolver.HandlesLinearSolver (61 ms)
+[----------] 1 test from LinearSolver (61 ms total)
+
+[----------] 1 test from FEValues
+[ RUN      ] FEValues.HandlesFEValues
+[       OK ] FEValues.HandlesFEValues (19 ms)
+[----------] 1 test from FEValues (19 ms total)
+
+[----------] 1 test from DofIndex
+[ RUN      ] DofIndex.HandlesDofIndex
+[       OK ] DofIndex.HandlesDofIndex (0 ms)
+[----------] 1 test from DofIndex (0 ms total)
+
+[----------] 1 test from MassMatrix
+[ RUN      ] MassMatrix.HandlesMassMatrix
+[       OK ] MassMatrix.HandlesMassMatrix (1 ms)
+[----------] 1 test from MassMatrix (1 ms total)
+
+[----------] 1 test from FasterAssemblation
+[ RUN      ] FasterAssemblation.TestFasterAssemblation
+[       OK ] FasterAssemblation.TestFasterAssemblation (2 ms)
+[----------] 1 test from FasterAssemblation (2 ms total)
+
+[----------] 1 test from SolvingSystemA
+[ RUN      ] SolvingSystemA.HandlesSolvingSystemA
+Distributing dof 
