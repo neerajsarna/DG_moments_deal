@@ -362,7 +362,7 @@ namespace Constants
 
 			prm.declare_entry("part_x",
 				"2",
-				Patterns::Integer(1,50),
+				Patterns::Integer(1,1000),
 				"parts in x");
 
 			prm.declare_entry("part_y",

@@ -5,14 +5,15 @@ Base_Solver<dim>::run_square()
 	const unsigned int refine_cycles = constants.refine_cycles;
 	error_per_itr.resize(refine_cycles);
 
-	TimerOutput timer (std::cout, TimerOutput::summary,
-                   TimerOutput::wall_times);
-
 	Assert(constants.mesh_type == Mesh_type::square, ExcMessage("Inappropriate mesh type"));
+
 
 	for (unsigned int i = 0 ; i < refine_cycles ; i ++)
 	{
 	
+		TimerOutput timer (std::cout, TimerOutput::summary,
+                   TimerOutput::wall_times);
+
 		AssertDimension((int)error_per_itr.size(),constants.refine_cycles);
 
 		Assert(constants.matrix_type == Trilinos_Mat, ExcMessage("Algorithm only for an eigen system matrix"));
@@ -20,9 +21,16 @@ Base_Solver<dim>::run_square()
 		// already created the mesh so we can directly distribute the degrees of freedom now.
 
 		std::cout << "Distributing dof " << std::endl;
+		fflush(stdout);
 		timer.enter_subsection("Dof Distribution");
 		distribute_dof_allocate_matrix();
 		timer.leave_subsection();
+		std::cout << "Finished Dof Distribution " << std::endl;
+		fflush(stdout);
+
+	
+		std::cout << "#Cells: " << this->triangulation.n_active_cells() << std::endl;
+		std::cout << "#Dofs:  " << this->dof_handler.n_dofs() << std::endl;
 
 		// the following routine assembles
 		std::cout << "Assembling" << std::endl;
@@ -78,7 +86,11 @@ Base_Solver<dim>::run_square()
 
 		timer.enter_subsection("Linear Solver");
 		LinearSolver::LinearSolver linear_solver;
+
+		std::cout << "Developing Pardiso data " << std::endl;
 		linear_solver.develop_pardiso_data(global_matrix,sparsity_pattern);
+
+		std::cout << "Solving the system" << std::endl;
 		double residual = linear_solver.solve_with_pardiso(system_rhs,solution);
 		timer.leave_subsection();
 
