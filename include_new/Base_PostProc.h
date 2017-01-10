@@ -555,26 +555,25 @@ namespace PostProc
 	AssertThrow(fp_solution != NULL,ExcMessage("file not open"));
 
 	fprintf(fp_solution, "#%s\n","x y at the midpoint of each cell all the solution components");
+	Vector<double> solution_value(constants.nEqn);
+	
 
 	for (; cell != endc ; cell++)
-		for (unsigned int vertex = 0 ; vertex < GeometryInfo<dim>::vertices_per_cell ; vertex ++)
-		{
+	{
+		solution_value = 0;
+		VectorTools::point_value(*dof_handler, solution, cell->center(),solution_value);	
 
-		Vector<double> solution_value(constants.nEqn);
-		VectorTools::point_value(*dof_handler, solution, cell->vertex(vertex),solution_value);	
+                for (unsigned int space = 0 ; space < dim ; space ++)
+                        fprintf(fp_solution, "%f ",cell->center()[space]);
+
+		// we only print variables uptill theta
+                for (int i = 0 ; i < 4 ; i++)
+                        fprintf(fp_solution, "%f ",solution_value(i));
+
 		
+		fprintf(fp_solution,"\n");
+	}
 
-		for (unsigned int space = 0 ; space < dim ; space ++)
-			fprintf(fp_solution, "%f ",cell->vertex(vertex)[space]);
-		
-
-		for (int i = 0 ; i < constants.nEqn ; i++)
-			fprintf(fp_solution, "%f ",solution_value(i));
-		
-
-		fprintf(fp_solution, "\n");
-			
-		}
 
 	fclose(fp_solution);
    	}

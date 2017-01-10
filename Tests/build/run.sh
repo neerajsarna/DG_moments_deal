@@ -7,6 +7,7 @@
 clear
 echo "CMAKE"
 
+export OMP_NUM_THREADS=16
 BASEDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 echo "Base Directory of the present script "
 echo $BASEDIR

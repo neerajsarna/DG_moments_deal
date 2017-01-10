@@ -181,7 +181,7 @@ namespace Test_Solver
 	// }
 	
 
-	TEST(PoissonHeatG84,HandlesPoissonHeatG84)
+/*	TEST(PoissonHeatG84,HandlesPoissonHeatG84)
 	{
 		const unsigned int dim = 2;
 		ASSERT_EQ(dim,2) << "3D not implemented" << std::endl;
@@ -245,6 +245,7 @@ namespace Test_Solver
 		// 	EXPECT_NEAR(base_solver.error_per_itr[i],exact_error(i),1e-5);
 
 	}
+*/
 
 	TEST(SquareCavityG84,SquareCavityG84)
 	{
