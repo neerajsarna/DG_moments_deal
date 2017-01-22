@@ -6,13 +6,14 @@ Base_Solver<dim>::run_ring()
 	error_per_itr.resize(refine_cycles);
 
 	Assert(constants.mesh_type == ring,ExcMessage("Incorrect mesh type"));
+    
+    TimerOutput timer (std::cout, TimerOutput::summary,
+                	   TimerOutput::wall_times);
+
 
 	for (unsigned int i = 0 ; i < refine_cycles ; i ++)
 	{
 
-        	TimerOutput timer (std::cout, TimerOutput::summary,
-                	   TimerOutput::wall_times);
-	
 		AssertDimension((int)error_per_itr.size(),constants.refine_cycles);
 
 		Assert(constants.matrix_type == Trilinos_Mat, ExcMessage("Algorithm only for an eigen system matrix"));
@@ -98,8 +99,19 @@ Base_Solver<dim>::run_ring()
 		postproc.print_options(this->triangulation,solution,i,refine_cycles,convergence_table);		
 		timer.leave_subsection();
 
+		this->print_grid(i);
+
 		// Grid refinement should be done in the end.
-		this->refinement_handling(i,refine_cycles);
+		timer.enter_subsection("Grid Refinement");
+		this->refinement_handling(i,refine_cycles,
+									this->triangulation.n_active_cells(),
+									&mapping,
+									base_exactsolution,
+									&dof_handler,
+									solution);
+
+		timer.leave_subsection();
+
 
 	}
 

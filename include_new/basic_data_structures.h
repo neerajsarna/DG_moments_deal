@@ -10,7 +10,7 @@ enum Force_Type
 {type1,type2,type3,type4};
 
 enum Refinement
-{global,adaptive,adaptive_kelly};
+{global,apriori};
 
 enum BC_Type
 {characteristic,odd};

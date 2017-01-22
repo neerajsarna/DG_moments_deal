@@ -41,7 +41,24 @@ namespace MeshGenerator
 
 			// the following routine handles the refinement of the grid
 			void refinement_handling(const unsigned int present_cycle,
-									 const unsigned int total_cycles);
+									 const unsigned int total_cycles,
+									 const unsigned int active_cells,
+										   const MappingQ<dim> *mapping,
+										    ExactSolution::Base_ExactSolution<dim> *base_exactsolution,
+									  		const DoFHandler<dim> *dof_handler,
+									  		const Vector<double> &solution);
+
+			Vector<double> compute_L2_manuel(const unsigned int active_cells,
+										   const MappingQ<dim> *mapping,
+										    ExactSolution::Base_ExactSolution<dim> *base_exactsolution,
+									  		const DoFHandler<dim> *dof_handler,
+									  		const Vector<double> &solution);
+
+			void adapt_apriori(const unsigned int active_cells,
+										   const MappingQ<dim> *mapping,
+										    ExactSolution::Base_ExactSolution<dim> *base_exactsolution,
+									  		const DoFHandler<dim> *dof_handler,
+									  		const Vector<double> &solution);
 	};
 
 	template<int dim>
@@ -175,12 +192,119 @@ namespace MeshGenerator
 	template<int dim>
 	void
 	Base_MeshGenerator<dim>::refinement_handling(const unsigned int present_cycle,
-												 const unsigned int total_cycles)
+												 const unsigned int total_cycles,
+												 const unsigned int active_cells,
+										   const MappingQ<dim> *mapping,
+										    ExactSolution::Base_ExactSolution<dim> *base_exactsolution,
+									  		const DoFHandler<dim> *dof_handler,
+									  		const Vector<double> &solution)
 	{
 		// if its not the last cycle then we refine
-		if (present_cycle != total_cycles - 1)
-			triangulation.refine_global(1);
+		switch(constants.refinement)
+		{
+			case global:
+			{
+				if (present_cycle != total_cycles - 1)
+					triangulation.refine_global(1);				
+
+				break;
+			}
+
+			case apriori:
+			{
+						if (present_cycle != total_cycles - 1)
+								adapt_apriori(active_cells, mapping, base_exactsolution, dof_handler, solution);
+
+						break;
+			}
+
+			default:
+			{
+				Assert(1 == 0, ExcMessage("Should not have reached here"));
+				break;
+			}
+		}
+
 	}
+
+	template<int dim>
+	void 
+	Base_MeshGenerator<dim>::adapt_apriori(const unsigned int active_cells,
+										   const MappingQ<dim> *mapping,
+										    ExactSolution::Base_ExactSolution<dim> *base_exactsolution,
+									  		const DoFHandler<dim> *dof_handler,
+									  		const Vector<double> &solution)
+	{
+
+        Vector<double> error_per_cell(active_cells);      
+
+        error_per_cell = compute_L2_manuel(active_cells,
+										   mapping,
+										    base_exactsolution,
+									  		dof_handler,
+									  		solution);
+
+        GridRefinement::refine_and_coarsen_fixed_number (triangulation,
+             error_per_cell,
+             0.3, 0.1);
+
+        triangulation.execute_coarsening_and_refinement();       
+
+
+	}
+
+	template<int dim>
+	Vector<double> 
+	Base_MeshGenerator<dim>::compute_L2_manuel(const unsigned int active_cells,
+										   const MappingQ<dim> *mapping,
+										    ExactSolution::Base_ExactSolution<dim> *base_exactsolution,
+									  		const DoFHandler<dim> *dof_handler,
+									  		const Vector<double> &solution)
+	{
+		  const UpdateFlags update_flags  = update_values | update_JxW_values | update_quadrature_points;
+		  QGauss<dim> quadrature(constants.p+1);
+
+  		  FEValues<dim>  fe_v(*mapping,dof_handler->get_fe(),quadrature, update_flags);
+  		  typename DoFHandler<dim>::active_cell_iterator cell = dof_handler->begin_active(),
+  											      	end_c = dof_handler->end();
+
+  		  const int total_ngp = quadrature.size();
+  		  std::vector<double> Jacobians_interior(total_ngp);
+  		  Vector<double> error_per_cell(active_cells);
+
+  		  std::vector<Vector<double>> solution_value(total_ngp);
+  		  Vector<double> exact_solution_value(constants.nEqn);
+
+  		  for (unsigned int i = 0 ; i < total_ngp ; i ++)
+  		  	solution_value[i].reinit(constants.nEqn);
+
+  		  error_per_cell = 0;
+  		  unsigned int counter = 0;
+
+
+  		  //std::cout << "Manuel computation **************" << std::endl;
+  		  for(; cell != end_c ; cell++)
+  		  {
+  		  	 fe_v.reinit(cell);
+  			 Jacobians_interior = fe_v.get_JxW_values();
+
+  			 fe_v.get_function_values(solution,solution_value);
+
+  			 for (unsigned int q = 0 ; q < total_ngp ; q++)
+  			 {
+  			 	base_exactsolution->vector_value(fe_v.quadrature_point(q),exact_solution_value); 
+  			 	error_per_cell(counter) += pow(exact_solution_value(0)-solution_value[q](0),2) * Jacobians_interior[q];
+  			 }
+
+  			 error_per_cell(counter) = sqrt(error_per_cell(counter));
+  			
+  			 counter ++;
+  		  }
+
+  		  return(error_per_cell);
+	}
+
+
 
 	#include "MeshGenerator_Ring.h"
 	#include "MeshGenerator_PeriodicSquare.h"

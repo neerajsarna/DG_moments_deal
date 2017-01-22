@@ -139,6 +139,7 @@ namespace Constants
 				"0",
 				Patterns::Integer(0,1),
 				"type of global matrix");
+
 		}
 		prm.leave_subsection();
 

@@ -36,6 +36,7 @@ namespace PostProc
 
       		// we prescribe the filename for the output routines
       		void prescribe_file_names();
+      		void prescribe_raw_names(const std::string refinement_name);
 
       		// we make the required directories
       		void make_directories();
@@ -143,23 +144,55 @@ namespace PostProc
 	}
 
 	template<int dim>
+	void 
+	Base_PostProc<dim>::prescribe_raw_names(const std::string refinement_name)
+	{
+		const int poly_degree = constants.p;
+		
+		  output_file_names.file_for_convergence_tables = constants.sub_directory_names[2] + "/convergence_table_" + refinement_name + "_degree_"
+                                                          + std::to_string(poly_degree);
+
+          output_file_names.file_for_num_solution = constants.sub_directory_names[1] + "/numerical_solution_"+ refinement_name + "_degree_"
+                                                          + std::to_string(poly_degree)+"_DOF_"+std::to_string(dof_handler->n_dofs());
+
+          output_file_names.file_for_exact_solution = constants.sub_directory_names[1] + "/exact_solution_" + refinement_name + "_degree_"
+                                                          + std::to_string(poly_degree)+"_DOF_"+std::to_string(dof_handler->n_dofs());
+
+          output_file_names.file_for_error = constants.sub_directory_names[1] + "/error_"+ refinement_name + "_degree_"
+                                                          + std::to_string(poly_degree)+"_DOF_"+std::to_string(dof_handler->n_dofs());
+
+
+	}
+
+	template<int dim>
 	void
 	Base_PostProc<dim>::prescribe_file_names()
 	{
 		  const unsigned int poly_degree = constants.p;
 
 		  Assert(constants.sub_directory_names.size() != 0,ExcMessage("Not initialized"));
-		  output_file_names.file_for_convergence_tables = constants.sub_directory_names[2] + "/convergence_table_global_degree_"
-                                                          + std::to_string(poly_degree);
 
-          output_file_names.file_for_num_solution = constants.sub_directory_names[1] + "/numerical_solution_global_degree_"
-                                                          + std::to_string(poly_degree)+"_DOF_"+std::to_string(dof_handler->n_dofs());
+		  switch(constants.refinement)
+		  {
+		  	case global:
+		  	{
+		  		prescribe_raw_names("global");
+		  		break;
+		  	}
 
-          output_file_names.file_for_exact_solution = constants.sub_directory_names[1] + "/exact_solution_global_degree_"
-                                                          + std::to_string(poly_degree)+"_DOF_"+std::to_string(dof_handler->n_dofs());
+		  	case apriori:
+		  	{
+		  		prescribe_raw_names("apriori");
+		  		break;
+		  	}
 
-          output_file_names.file_for_error = constants.sub_directory_names[1] + "/error_global_degree_"
-                                                          + std::to_string(poly_degree)+"_DOF_"+std::to_string(dof_handler->n_dofs());
+		  	default:
+		  	{
+		  		Assert(1 == 0, ExcMessage("Should not have reached here"));
+		  		break;
+		  	}
+		  }
+
 
 	}
 

@@ -106,7 +106,9 @@ Base_Solver<dim>::run_square()
 		// timer.leave_subsection();
 
 		// Grid refinement should be done in the end.
-		this->refinement_handling(i,refine_cycles);
+		this->refinement_handling(i,refine_cycles,
+								  this->triangulation.n_active_cells(),
+							 	  &mapping,base_exactsolution,&dof_handler, solution);
 
 	}
 

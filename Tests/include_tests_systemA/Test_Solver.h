@@ -114,7 +114,107 @@ namespace Test_Solver
 	// 	}
 	// }
 
-	TEST(SolvingSystemA,HandlesSolvingSystemA)
+	// TEST(SolvingSystemA,HandlesSolvingSystemA)
+	// {
+	// 	const unsigned int dim = 2;
+	// 	ASSERT_EQ(dim,2) << "3D not implemented" << std::endl;
+
+	// 	std::string folder_name = "../system_matrices/";
+	// 	Constants::Base_Constants constants(input_file);
+	// 	SystemA::SystemA<dim> systemA(constants.constants,folder_name);
+
+	// 	ExactSolution::ExactSolution_SystemA_ring<dim>  exact_solution_systemA(constants.constants,systemA.base_tensorinfo.S_half);
+
+	// 	FEM_Solver::Base_Solver<dim> base_solver("mesh_file_name",
+	// 										 "grid",
+	// 										 constants.constants,
+	// 										 &systemA,
+	// 										 &exact_solution_systemA);
+
+
+	// 	// now we solve the required system
+	// 	// The decision regarding a manuel assembly or an automated assembly is taken inside of run_ring.
+	// 	base_solver.run_ring();
+
+	// 	Assert(constants.constants.refine_cycles == 3,ExcMessage("The refine cycles requested for have not been implemented"));
+	// 	Assert(constants.constants.p == 1,ExcNotImplemented());
+	// 	Assert(constants.constants.mapping_order == 2 , ExcNotImplemented());
+	// 	Assert(fabs(constants.constants.tau -10.0) >1e-5,ExcNotImplemented());
+
+	// 	Vector<double> exact_error(constants.constants.refine_cycles);
+
+	// 	if (fabs(constants.constants.tau - 0.1) < 1e-5)
+	// 	{
+	// 		if(constants.constants.bc_type == characteristic)
+	// 		{
+	// 			exact_error(0) = 7.6043e-01;
+	// 			exact_error(1) = 1.6451e-01;
+	// 			exact_error(2) = 2.8996e-02;
+	// 		}
+
+	// 		if (constants.constants.bc_type == odd)
+	// 		{
+	// 			exact_error(0) = 8.5794e-01;
+	// 			exact_error(1) = 2.0796e-01;
+	// 			exact_error(2) = 4.5868e-02;
+	// 		}
+
+
+	// 		for (int i = 0 ; i < constants.constants.refine_cycles ; i++)
+	// 			EXPECT_NEAR(base_solver.error_per_itr[i],exact_error(i),1e-5);			
+	// 	}
+
+	// 	if (fabs(constants.constants.tau - 1.0) < 1e-5)
+	// 	{
+	// 		if(constants.constants.bc_type == characteristic)
+	// 		{
+	// 			exact_error(0) = 2.1383e-01;
+	// 			exact_error(1) = 1.4952e-01;
+	// 			exact_error(2) = 7.6967e-02;
+	// 		}
+
+	// 		if (constants.constants.bc_type == odd)
+	// 		{
+	// 			exact_error(0) = 2.2221e-01;
+	// 			exact_error(1) = 1.5103e-01;
+	// 			exact_error(2) = 7.7323e-02;
+	// 		}
+
+
+	// 		for (int i = 0 ; i < constants.constants.refine_cycles ; i++)
+	// 			EXPECT_NEAR(base_solver.error_per_itr[i],exact_error(i),1e-5);				
+	// 	}
+
+
+	// }
+
+
+	// TEST(SolvingSystemAFaster,HandlesSolvingSystemAFaster)
+	// {
+	// 	const unsigned int dim = 2;
+	// 	ASSERT_EQ(dim,2) << "3D not implemented" << std::endl;
+
+	// 	std::string folder_name = "../system_matrices/";
+	// 	Constants::Base_Constants constants(input_file);
+	// 	SystemA::SystemA<dim> systemA(constants.constants,folder_name);
+
+	// 	ExactSolution::ExactSolution_SystemA_ring<dim>  exact_solution_systemA(constants.constants,systemA.base_tensorinfo.S_half);
+
+	// 	FEM_Solver::Base_Solver<dim> base_solver("mesh_file_name",
+	// 										 "grid",
+	// 										 constants.constants,
+	// 										 &systemA,
+	// 										 &exact_solution_systemA);
+
+
+	// 	// now we solve the required system
+	// 	// The decision regarding a manuel assembly or an automated assembly is taken inside of run_ring.
+	// 	base_solver.run_ring();
+
+
+	// }
+
+	TEST(AdaptedSolvingSystemA,HandlerAprioriSystemA)
 	{
 		const unsigned int dim = 2;
 		ASSERT_EQ(dim,2) << "3D not implemented" << std::endl;
@@ -134,83 +234,6 @@ namespace Test_Solver
 
 		// now we solve the required system
 		// The decision regarding a manuel assembly or an automated assembly is taken inside of run_ring.
-		base_solver.run_ring();
-
-		Assert(constants.constants.refine_cycles == 3,ExcMessage("The refine cycles requested for have not been implemented"));
-		Assert(constants.constants.p == 1,ExcNotImplemented());
-		Assert(constants.constants.mapping_order == 2 , ExcNotImplemented());
-		Assert(fabs(constants.constants.tau -10.0) >1e-5,ExcNotImplemented());
-
-		Vector<double> exact_error(constants.constants.refine_cycles);
-
-		if (fabs(constants.constants.tau - 0.1) < 1e-5)
-		{
-			if(constants.constants.bc_type == characteristic)
-			{
-				exact_error(0) = 7.6043e-01;
-				exact_error(1) = 1.6451e-01;
-				exact_error(2) = 2.8996e-02;
-			}
-
-			if (constants.constants.bc_type == odd)
-			{
-				exact_error(0) = 8.5794e-01;
-				exact_error(1) = 2.0796e-01;
-				exact_error(2) = 4.5868e-02;
-			}
-
-
-			for (int i = 0 ; i < constants.constants.refine_cycles ; i++)
-				EXPECT_NEAR(base_solver.error_per_itr[i],exact_error(i),1e-5);			
-		}
-
-		if (fabs(constants.constants.tau - 1.0) < 1e-5)
-		{
-			if(constants.constants.bc_type == characteristic)
-			{
-				exact_error(0) = 2.1383e-01;
-				exact_error(1) = 1.4952e-01;
-				exact_error(2) = 7.6967e-02;
-			}
-
-			if (constants.constants.bc_type == odd)
-			{
-				exact_error(0) = 2.2221e-01;
-				exact_error(1) = 1.5103e-01;
-				exact_error(2) = 7.7323e-02;
-			}
-
-
-			for (int i = 0 ; i < constants.constants.refine_cycles ; i++)
-				EXPECT_NEAR(base_solver.error_per_itr[i],exact_error(i),1e-5);				
-		}
-
-
-	}
-
-
-	TEST(SolvingSystemAFaster,HandlesSolvingSystemAFaster)
-	{
-		const unsigned int dim = 2;
-		ASSERT_EQ(dim,2) << "3D not implemented" << std::endl;
-
-		std::string folder_name = "../system_matrices/";
-		Constants::Base_Constants constants(input_file);
-		SystemA::SystemA<dim> systemA(constants.constants,folder_name);
-
-		ExactSolution::ExactSolution_SystemA_ring<dim>  exact_solution_systemA(constants.constants,systemA.base_tensorinfo.S_half);
-
-		FEM_Solver::Base_Solver<dim> base_solver("mesh_file_name",
-											 "grid",
-											 constants.constants,
-											 &systemA,
-											 &exact_solution_systemA);
-
-
-		// now we solve the required system
-		// The decision regarding a manuel assembly or an automated assembly is taken inside of run_ring.
-		base_solver.run_ring();
-
-
+		base_solver.run_ring();		
 	}
 }
