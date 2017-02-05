@@ -100,6 +100,7 @@ Base_Solver<dim>::run_ring()
 		timer.leave_subsection();
 
 		this->print_grid(i);
+		postproc.print_Linfty_error_to_file(solution,this->triangulation.n_active_cells());
 
 		// Grid refinement should be done in the end.
 		timer.enter_subsection("Grid Refinement");

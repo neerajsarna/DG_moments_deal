@@ -236,23 +236,32 @@ namespace MeshGenerator
 									  		const Vector<double> &solution)
 	{
 
+        unsigned int component = constants.variable_map.find(constants.error_variable)->second;
+
+        const unsigned int ngp = constants.p + 1;
+        // error per cell of the domain
         Vector<double> error_per_cell(active_cells);      
 
-        error_per_cell = compute_L2_manuel(active_cells,
-										   mapping,
-										    base_exactsolution,
-									  		dof_handler,
-									  		solution);
+        ComponentSelectFunction<dim> weight(component,constants.nEqn);                              // used to compute only the error in theta
+
+        // computation of L2 error
+        VectorTools::integrate_difference (*mapping,*dof_handler,solution,
+          									*base_exactsolution,
+          									error_per_cell,
+          									QGauss<dim>(ngp),
+          									VectorTools::Linfty_norm,
+          									&weight);  
 
         GridRefinement::refine_and_coarsen_fixed_number (triangulation,
              error_per_cell,
-             0.3, 0.1);
+             0.3, 0.0);
 
         triangulation.execute_coarsening_and_refinement();       
 
 
 	}
 
+	// same as the integrate_difference function but manuel
 	template<int dim>
 	Vector<double> 
 	Base_MeshGenerator<dim>::compute_L2_manuel(const unsigned int active_cells,

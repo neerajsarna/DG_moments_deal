@@ -83,6 +83,9 @@ namespace PostProc
 			void print_error_to_file(const Triangulation<dim> &triangulation,
 							 		 const Vector<double> &solution);
 
+			void print_L2_error_to_file(const Vector<double> &solution,const unsigned int active_cells);
+			void print_Linfty_error_to_file(const Vector<double> &solution,const unsigned int active_cells);
+
 			void print_exactsolution_to_file(const Triangulation<dim> &triangulation);
 
 			// print the solution depending upon printing options
@@ -657,6 +660,105 @@ namespace PostProc
 	fclose(fp_error);
    	}
 
+	template<int dim>
+	void
+	Base_PostProc<dim>::print_L2_error_to_file(const Vector<double> &solution,
+										  const unsigned int active_cells)
+	{
+		// error variable comes from Basics. The following is the component in which
+		// we wish to find the error.
+        unsigned int component = constants.variable_map.find(constants.error_variable)->second;
+
+        const unsigned int ngp = constants.p + 1;
+        // error per cell of the domain
+        Vector<double> error_per_cell(active_cells);      
+
+        ComponentSelectFunction<dim> weight(component,constants.nEqn);                              // used to compute only the error in theta
+
+        // computation of L2 error
+        VectorTools::integrate_difference (*mapping,*dof_handler,solution,
+          									*base_exactsolution,
+          									error_per_cell,
+          									QGauss<dim>(ngp),
+          									VectorTools::L2_norm,
+          									&weight);  
+
+
+        typename DoFHandler<dim>::active_cell_iterator cell = dof_handler->begin_active(), endc = dof_handler->end();
+
+
+		FILE *fp_error;
+
+		fp_error = fopen(output_file_names.file_for_error.c_str(),"w+");
+
+		AssertThrow(fp_error != NULL,ExcMessage("file not open"));
+
+		fprintf(fp_error, "#%s\n","x y at the midpoint of each cell and the error in every component");
+		unsigned int counter = 0;
+
+        for(; cell != endc ; cell++)
+        {
+			for (int space = 0 ; space < dim ; space ++)
+				fprintf(fp_error, "%f ",cell->center()[space]);
+
+			fprintf(fp_error,"%f \n",error_per_cell(counter));
+			counter ++;
+        }
+
+        fclose(fp_error);
+
+                
+	}
+
+	template<int dim>
+	void
+	Base_PostProc<dim>::print_Linfty_error_to_file(const Vector<double> &solution,
+										  const unsigned int active_cells)
+	{
+		// error variable comes from Basics. The following is the component in which
+		// we wish to find the error.
+        unsigned int component = constants.variable_map.find(constants.error_variable)->second;
+
+        const unsigned int ngp = constants.p + 1;
+        // error per cell of the domain
+        Vector<double> error_per_cell(active_cells);      
+
+        ComponentSelectFunction<dim> weight(component,constants.nEqn);                              // used to compute only the error in theta
+
+        // computation of L2 error
+        VectorTools::integrate_difference (*mapping,*dof_handler,solution,
+          									*base_exactsolution,
+          									error_per_cell,
+          									QGauss<dim>(ngp),
+          									VectorTools::Linfty_norm,
+          									&weight);  
+
+
+        typename DoFHandler<dim>::active_cell_iterator cell = dof_handler->begin_active(), endc = dof_handler->end();
+
+
+		FILE *fp_error;
+
+		fp_error = fopen(output_file_names.file_for_error.c_str(),"w+");
+
+		AssertThrow(fp_error != NULL,ExcMessage("file not open"));
+
+		fprintf(fp_error, "#%s\n","x y at the midpoint of each cell and the error in every component");
+		unsigned int counter = 0;
+
+        for(; cell != endc ; cell++)
+        {
+			for (int space = 0 ; space < dim ; space ++)
+				fprintf(fp_error, "%f ",cell->center()[space]);
+
+			fprintf(fp_error,"%f \n",error_per_cell(counter));
+			counter ++;
+        }
+
+        fclose(fp_error);
+
+                
+	}
 
     template<int dim>
    	void 
