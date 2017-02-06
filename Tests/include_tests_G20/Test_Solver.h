@@ -226,4 +226,65 @@ namespace Test_Solver
 	}
 
 
+	// we would like to know the maximum number of cell which can be allocated for various equations
+	TEST(MaxCells,HandlesMaxCells)
+	{
+			const int dim = 2;
+			Assert(dim ==2 ,ExcNotImplemented());
+
+			Triangulation<dim> triangulation;
+
+			triangulation.clear();
+            Point<dim> p1;
+            Point<dim> p2;
+            std::vector<unsigned int > repetitions(dim);
+
+            p1(0) = -0.5;
+            p1(1) = -0.5;
+
+            p2(0) = 0.5;
+            p2(1) = 0.5;
+
+            repetitions[0] = 100;
+            repetitions[1] = 100;
+
+            //The diagonal of the rectangle is the time joining p1 and p2
+            GridGenerator::subdivided_hyper_rectangle(triangulation,
+                                      	              repetitions,
+                                        	            p1,
+                                            	        p2);
+
+			FESystem<dim> finite_element(FE_DGQ<dim>(1),10);
+			DoFHandler<dim> dof_handler(triangulation);
+
+			TrilinosWrappers::SparsityPattern sparsity_pattern;
+			
+			
+			// A matrix in the final Ax = b
+			TrilinosWrappers::SparseMatrix global_matrix;
+
+			std::cout << "distributing dof " << std::endl;
+			dof_handler.distribute_dofs(finite_element);
+
+			DynamicSparsityPattern dsp(dof_handler.n_dofs(),dof_handler.n_dofs());
+
+
+			std::cout << "making flux sparsity pattern " << std::endl;
+			fflush(stdout);
+			DoFTools::make_flux_sparsity_pattern (dof_handler, dsp);
+
+			std::cout << "copying sparsity pattern from dsp" << std::endl;
+			fflush(stdout);
+			sparsity_pattern.copy_from(dsp);
+
+			std::cout << "compressing " << std::endl;
+			fflush(stdout);
+			sparsity_pattern.compress();
+
+			std::cout << "initializing the global matrix " << std::endl;
+			fflush(stdout);
+			global_matrix.reinit(sparsity_pattern);   
+	}
+
+
 }
