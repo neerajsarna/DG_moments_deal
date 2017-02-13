@@ -50,7 +50,7 @@ include CMakeFiles/run.dir/progress.make
 
 CMakeFiles/run:
 	$(CMAKE_COMMAND) -E cmake_progress_report /home/sarna/Desktop/DG_moments_dealii/Tests/build/CMakeFiles $(CMAKE_PROGRESS_1)
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold "Run with Release configuration"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold "Run with Debug configuration"
 	mycode.out
 
 run: CMakeFiles/run

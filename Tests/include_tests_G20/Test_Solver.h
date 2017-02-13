@@ -203,7 +203,7 @@ namespace Test_Solver
 
 	// }
 
-	TEST(SquareCavityG20,SquareCavityG20)
+/*	TEST(SquareCavityG20,SquareCavityG20)
 	{
 		const unsigned int dim = 2;
 		ASSERT_EQ(dim,2) << "3D not implemented" << std::endl;
@@ -224,7 +224,7 @@ namespace Test_Solver
 		base_solver.run_square();
 
 	}
-
+*/
 
 	// we would like to know the maximum number of cell which can be allocated for various equations
 	TEST(MaxCells,HandlesMaxCells)
@@ -254,7 +254,7 @@ namespace Test_Solver
                                         	            p1,
                                             	        p2);
 
-			FESystem<dim> finite_element(FE_DGQ<dim>(1),10);
+			FESystem<dim> finite_element(FE_DGQ<dim>(1),50);
 			DoFHandler<dim> dof_handler(triangulation);
 
 			TrilinosWrappers::SparsityPattern sparsity_pattern;
@@ -267,23 +267,26 @@ namespace Test_Solver
 			dof_handler.distribute_dofs(finite_element);
 
 			DynamicSparsityPattern dsp(dof_handler.n_dofs(),dof_handler.n_dofs());
-
-
+					
 			std::cout << "making flux sparsity pattern " << std::endl;
 			fflush(stdout);
 			DoFTools::make_flux_sparsity_pattern (dof_handler, dsp);
+			std::cout << "memory consumption by dsp " << dsp.memory_consumption()*1e-9 << std::endl;
+			std::cout << "number of non-zeroes " << dsp.n_nonzero_elements() << std::endl;
+			std::cout << "number of degrees of freedom " << dof_handler.n_dofs() << std::endl;	
+		
+			//std::cout << "copying sparsity pattern from dsp" << std::endl;
+			//fflush(stdout);
+			//sparsity_pattern.copy_from(dsp);
+			//	std::cout << "compressing " << std::endl;
+			//fflush(stdout);
+			//sparsity_pattern.compress();
+			//std::cout << "memory consumption by sparsity_pattern " << sparsity_pattern.memory_consumption() << std::endl;
 
-			std::cout << "copying sparsity pattern from dsp" << std::endl;
-			fflush(stdout);
-			sparsity_pattern.copy_from(dsp);
-
-			std::cout << "compressing " << std::endl;
-			fflush(stdout);
-			sparsity_pattern.compress();
 
 			std::cout << "initializing the global matrix " << std::endl;
 			fflush(stdout);
-			global_matrix.reinit(sparsity_pattern);   
+			global_matrix.reinit(dsp);   
 	}
 
 

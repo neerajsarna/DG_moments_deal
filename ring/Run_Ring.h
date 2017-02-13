@@ -22,6 +22,7 @@ Base_Solver<dim>::run_ring()
 		std::cout << "Distributing dof " << std::endl;
 		timer.enter_subsection("Dof Distribution");
 		distribute_dof_allocate_matrix();
+		allocate_vectors();
 		timer.leave_subsection();
 
 		std::cout << "#CELLS " << this->triangulation.n_active_cells() << std::endl;

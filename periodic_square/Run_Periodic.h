@@ -34,12 +34,12 @@ Base_Solver<dim>::distribute_dof_allocate_matrix_periodic_box()
   
     this->add_periodic_sparsity(dsp);
 
-    sparsity_pattern.copy_from(dsp);
+//    sparsity_pattern.copy_from(dsp);
  
-    global_matrix.reinit(sparsity_pattern);   
+    global_matrix.reinit(dsp);   
  
-    solution.reinit (dof_handler.n_dofs());
-    system_rhs.reinit (dof_handler.n_dofs());
+  //  solution.reinit (dof_handler.n_dofs());
+  //  system_rhs.reinit (dof_handler.n_dofs());
 
 }
 
@@ -72,6 +72,7 @@ Base_Solver<dim>::run_periodic()
 		// already created the mesh so we can directly distribute the degrees of freedom now.
 		timer.enter_subsection("Distribute Dof");
 		distribute_dof_allocate_matrix_periodic_box();
+		allocate_vectors();
 		timer.leave_subsection();
 
 

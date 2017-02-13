@@ -84,9 +84,9 @@ test_out_EXTERNAL_OBJECTS =
 
 test.out: CMakeFiles/test.out.dir/main.cc.o
 test.out: CMakeFiles/test.out.dir/build.make
-test.out: /home/sarna/Desktop/Libraries/dealii/lib/libdeal_II.so.8.5.0-pre
+test.out: /home/sarna/Desktop/Libraries/dealii/lib/libdeal_II.g.so.8.5.0-pre
 test.out: /home/sarna/Desktop/Libraries/googletest/lib/libgtest.a
-test.out: /home/sarna/Desktop/Libraries/tbb/lib/intel64/gcc4.7/libtbb.so
+test.out: /home/sarna/Desktop/Libraries/tbb/lib/intel64/gcc4.7/libtbb_debug.so
 test.out: /usr/lib64/libbz2.so
 test.out: /home/sarna/Desktop/Libraries/mpich/lib/libmpifort.so
 test.out: /usr/lib64/libz.so

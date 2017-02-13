@@ -33,13 +33,48 @@ void Run()
 
 				default:
 				{
-					Assert(1 == 0,ExcMessage("Should not have reached here"));
+					AssertThrow(1 == 0,ExcMessage("Should not have reached here"));
 					break;
 				}
 				
 			}
 			break;
 		}
+
+		case 13:
+		{
+			G20::G20<dim> G20(constants.constants,folder_name);
+
+			ExactSolution::G20_PoissonHeat<dim>  G20_PoissonHeat(constants.constants,G20.base_tensorinfo.S_half);
+
+			FEM_Solver::Base_Solver<dim> base_solver("mesh_file_name",
+													 "grid",
+													 constants.constants,
+													 &G20,
+													 &G20_PoissonHeat);
+
+			switch(G20.constants.mesh_type)
+			{
+				case periodic_square:
+				{
+					base_solver.run_periodic();
+					break;
+				}
+
+				case square_domain:
+				{
+					base_solver.run_square();
+					break;
+				}
+				default:
+				{
+					AssertThrow(1 == 0,ExcMessage("Should not have reached here"));
+					break;
+				}
+			}
+			break;
+		}
+
 
 		case 17:
 		{
@@ -60,9 +95,16 @@ void Run()
 					base_solver.run_periodic();
 					break;
 				}
+
+				case square_domain:
+				{
+					base_solver.run_square();
+					break;
+				}
+
 				default:
 				{
-					Assert(1 == 0,ExcMessage("Should not have reached here"));
+					AssertThrow(1 == 0,ExcMessage("Should not have reached here"));
 					break;
 				}
 			}
@@ -88,9 +130,16 @@ void Run()
 					base_solver.run_periodic();
 					break;
 				}
+
+				case square_domain:
+				{
+					base_solver.run_square();
+					break;
+				}
+
 				default:
 				{
-					Assert(1 == 0,ExcMessage("Should not have reached here"));
+					AssertThrow(1 == 0,ExcMessage("Should not have reached here"));
 					break;
 				}
 			}
@@ -116,6 +165,13 @@ void Run()
 					base_solver.run_periodic();
 					break;
 				}
+
+				case square_domain:
+				{
+					base_solver.run_square();
+					break;
+				}
+
 				default:
 				{
 					Assert(1 == 0,ExcMessage("Should not have reached here"));
@@ -144,9 +200,15 @@ void Run()
 					base_solver.run_periodic();
 					break;
 				}
+
+				case square_domain:
+				{
+					base_solver.run_square();
+					break;
+				}
 				default:
 				{
-					Assert(1 == 0,ExcMessage("Should not have reached here"));
+					AssertThrow(1 == 0,ExcMessage("Should not have reached here"));
 					break;
 				}
 			}
@@ -172,9 +234,16 @@ void Run()
 					base_solver.run_periodic();
 					break;
 				}
+
+				case square_domain:
+				{
+					base_solver.run_square();
+					break;
+				}
+
 				default:
 				{
-					Assert(1 == 0,ExcMessage("Should not have reached here"));
+					AssertThrow(1 == 0,ExcMessage("Should not have reached here"));
 					break;
 				}
 			}
@@ -200,9 +269,16 @@ void Run()
 					base_solver.run_periodic();
 					break;
 				}
+
+				case square_domain:
+				{
+					base_solver.run_square();
+					break;
+				}
+
 				default:
 				{
-					Assert(1 == 0,ExcMessage("Should not have reached here"));
+					AssertThrow(1 == 0,ExcMessage("Should not have reached here"));
 					break;
 				}
 			}
@@ -228,9 +304,15 @@ void Run()
 					base_solver.run_periodic();
 					break;
 				}
+
+				case square_domain:
+				{
+					base_solver.run_square();
+					break;
+				}
 				default:
 				{
-					Assert(1 == 0,ExcMessage("Should not have reached here"));
+					AssertThrow(1 == 0,ExcMessage("Should not have reached here"));
 					break;
 				}
 			}
@@ -256,6 +338,12 @@ void Run()
 					base_solver.run_periodic();
 					break;
 				}
+
+				case square_domain:
+				{
+					base_solver.run_square();
+					break;
+				}
 				default:
 				{
 					Assert(1 == 0,ExcMessage("Should not have reached here"));
@@ -268,7 +356,7 @@ void Run()
 
 		default:
 		{
-			Assert(1 == 0,ExcMessage("Should not have reached here"));
+			AssertThrow(1 == 0,ExcMessage("Should not have reached here"));
 			break;
 		}
 	}

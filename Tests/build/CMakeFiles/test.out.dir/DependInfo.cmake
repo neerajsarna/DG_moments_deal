@@ -8,6 +8,11 @@ SET(CMAKE_DEPENDS_CHECK_CXX
   )
 SET(CMAKE_CXX_COMPILER_ID "GNU")
 
+# Preprocessor definitions for this target.
+SET(CMAKE_TARGET_DEFINITIONS
+  "DEBUG"
+  )
+
 # Targets to which this target links.
 SET(CMAKE_TARGET_LINKED_INFO_FILES
   )
@@ -15,7 +20,7 @@ SET(CMAKE_TARGET_LINKED_INFO_FILES
 # The include file search paths:
 SET(CMAKE_C_TARGET_INCLUDE_PATH
   "../../include_new"
-  "../include_tests_G84"
+  "../include_tests_G20"
   "../Test_Generic"
   "../../periodic_square"
   "../../systems"

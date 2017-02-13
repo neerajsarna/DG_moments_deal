@@ -5,7 +5,7 @@ Base_Solver<dim>::run_square()
 	const unsigned int refine_cycles = constants.refine_cycles;
 	error_per_itr.resize(refine_cycles);
 
-	Assert(constants.mesh_type == Mesh_type::square, ExcMessage("Inappropriate mesh type"));
+	Assert(constants.mesh_type == Mesh_type::square_domain, ExcMessage("Inappropriate mesh type"));
 
 
 	for (unsigned int i = 0 ; i < refine_cycles ; i ++)
@@ -24,6 +24,7 @@ Base_Solver<dim>::run_square()
 		fflush(stdout);
 		timer.enter_subsection("Dof Distribution");
 		distribute_dof_allocate_matrix();
+		allocate_vectors();
 		timer.leave_subsection();
 		std::cout << "Finished Dof Distribution " << std::endl;
 		fflush(stdout);
@@ -72,7 +73,7 @@ Base_Solver<dim>::run_square()
 
 			default:
 			{
-				Assert(1==0,ExcMessage("Should not have reached here"));
+				AssertThrow(1==0,ExcMessage("Should not have reached here"));
 				break;
 			}
 		}

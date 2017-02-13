@@ -73,7 +73,7 @@ namespace MeshGenerator
 
 					default:
 					{
-						Assert(1 == 0,ExcMessage("should not have reached here"));
+						AssertThrow(1 == 0,ExcMessage("should not have reached here"));
 						break;
 					}
 				}
@@ -97,14 +97,14 @@ namespace MeshGenerator
 						break;
 					}
 
-					case Mesh_type::square:
+					case Mesh_type::square_domain:
 					{
 						mesh_internal_square(constants.part_x,constants.part_y);
 						break;
 					}
 					default:
 					{
-						Assert(1 == 0,ExcMessage("Should not have reached here"));
+						AssertThrow(1 == 0,ExcMessage("Should not have reached here"));
 						break;
 					}
 				}
