@@ -40,6 +40,10 @@ namespace PostProc
       		// we make the required directories
       		void make_directories();
 
+      		double compute_residual(Vector<double> &solution,FESystem<dim> &finite_element,
+										  EquationGenerator::Base_EquationGenerator<dim> *system_info,
+										  const unsigned int active_cells);
+
       		// error evaluation based upon gauss quadrature
 			void error_evaluation_QGauss(const Vector<double> &solution,
 										const unsigned int active_cells,
@@ -202,6 +206,118 @@ namespace PostProc
 
 		fprintf(fp, "%s\n",parameters.c_str());
 		fclose(fp);
+	}
+
+	template<int dim>
+	double 
+	Base_PostProc<dim>::compute_residual(Vector<double> &solution,FESystem<dim> &finite_element,
+										  EquationGenerator::Base_EquationGenerator<dim> *system_info,
+										  const unsigned int active_cells)
+	{
+			typename DoFHandler<dim>::active_cell_iterator cell = dof_handler->begin_active(), endc = dof_handler->end();
+
+			// we dont need much precision with the residual computation so we will simply use the midpoint quadrature rule 
+			// for the following computation
+
+			QGauss<dim> quadrature(constants.p + 2);
+			const int total_ngp = quadrature.size();
+
+			// an array for quadrature points
+			std::vector<Point<dim>> q_points(quadrature.size());
+
+
+			// we now have the update flags
+			const UpdateFlags update_flags               =  update_gradients
+                                                     | update_q_points
+                                                     | update_JxW_values;
+
+            // the fe_v object that will be used to provide us with the jacobian values and the shape values
+			FEValues<dim>  fe_v(*mapping,finite_element,quadrature, update_flags);
+
+			// the results returned from the point_gradient function
+			std::vector<Tensor<1,dim,double>> value_gradient(constants.nEqn);
+			std::vector<Vector<double>> value_per_quad(dim,Vector<double>(constants.nEqn));
+
+			// l2 norm of the residual per cell
+			Vector<double> residual_per_cell(active_cells);
+
+			// the residual vector per cell
+			Vector<double> difference_per_quad(constants.nEqn);
+
+			// value of the source terms at the quadrature points
+			std::vector<Vector<double>> source_term_value(total_ngp,Vector<double>(constants.nEqn));
+
+			// value of the jacobians at all the quadrature points
+			std::vector<double> Jacobian(total_ngp);
+			unsigned int counter = 0;
+
+			// vector containing the value of the solution
+			Vector<double> value(constants.nEqn);
+			Vector<double> exact_solution(constants.nEqn);
+
+			residual_per_cell = 0;
+			MatrixOpt::Base_MatrixOpt matrix_opt;
+
+			for (; cell != endc ; cell++)
+			{
+				fe_v.reinit(cell);
+				q_points = fe_v.get_quadrature_points();
+				system_info->source_term(fe_v.get_quadrature_points(),source_term_value);
+				Jacobian = fe_v.get_JxW_values();
+
+
+				// we now compute the l2 norm of the solution per cell
+				for (int q = 0 ;q < total_ngp ; q++)
+				{
+					difference_per_quad = 0;
+
+					// the gradient value has to be multiplied by the system matrices
+					VectorTools::point_gradient	(*dof_handler,
+												 solution,
+												q_points[q],
+												value_gradient);	
+
+					// the point value has to be multiplied by the Production term
+					VectorTools::point_value(*dof_handler,
+											solution,
+											q_points[q],
+											value);
+
+					//base_exactsolution->vector_value(q_points[q],exact_solution);
+
+					// now we take the transpose of values so that we can use the sparse vector product already developed
+					
+		
+					for (unsigned int eq = 0 ; eq < constants.nEqn ; eq++)
+						for (unsigned int space = 0 ; space < dim ; space ++)
+							value_per_quad[space](eq) = value_gradient[eq][space];
+
+					//the residual from the convective term
+					for (unsigned int space = 0 ; space < dim ; space++)
+						difference_per_quad += matrix_opt.Sparse_matrix_dot_Vector(system_info->system_data.A[space].matrix,value_per_quad[space]);
+
+					// the residual from the right hand side of the equation
+					difference_per_quad -= matrix_opt.Sparse_matrix_dot_Vector(system_info->system_data.P.matrix,value);
+										   
+					// computation of the l2 norm of the solution in this cell
+					for (unsigned int eq = 0 ; eq < 1 ; eq++)
+					{
+						// contribution from the source term
+						difference_per_quad(eq) -= source_term_value[q](eq);
+
+						// l2-norm of the solutoin
+						residual_per_cell(counter) += pow(difference_per_quad(eq),2) * Jacobian[q];
+					}						
+
+				}
+
+				residual_per_cell(counter) = sqrt(residual_per_cell(counter));
+				counter ++;
+			}
+
+			return(residual_per_cell.l2_norm());
+
+
 	}
 
 

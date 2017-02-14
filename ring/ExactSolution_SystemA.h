@@ -140,6 +140,7 @@ namespace ExactSolution
 		double phi = atan2(p[1],p[0]);
 		r /= this->constants.tau;
 
+		// we only provide the exact solution for theta, qx and qy
 		value[0] =  thetaP(r,phi);		
 		value[1] = cos(phi) * s_r(r,phi) - sin(phi) * s_phi(r,phi);
 		value[2] = sin(phi) * s_r(r,phi) + cos(phi) * s_phi(r,phi);								

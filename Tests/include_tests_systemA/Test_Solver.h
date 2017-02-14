@@ -188,29 +188,4 @@ namespace Test_Solver
 
 	}
 
-
-	TEST(SolvingSystemAFaster,HandlesSolvingSystemAFaster)
-	{
-		const unsigned int dim = 2;
-		ASSERT_EQ(dim,2) << "3D not implemented" << std::endl;
-
-		std::string folder_name = "../system_matrices/";
-		Constants::Base_Constants constants(input_file);
-		SystemA::SystemA<dim> systemA(constants.constants,folder_name);
-
-		ExactSolution::ExactSolution_SystemA_ring<dim>  exact_solution_systemA(constants.constants,systemA.base_tensorinfo.S_half);
-
-		FEM_Solver::Base_Solver<dim> base_solver("mesh_file_name",
-											 "grid",
-											 constants.constants,
-											 &systemA,
-											 &exact_solution_systemA);
-
-
-		// now we solve the required system
-		// The decision regarding a manuel assembly or an automated assembly is taken inside of run_ring.
-		base_solver.run_ring();
-
-
-	}
 }

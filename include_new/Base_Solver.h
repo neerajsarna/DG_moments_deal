@@ -142,6 +142,10 @@ namespace FEM_Solver
             // Data for post proc
             ConvergenceTable convergence_table;
             std::vector<double> error_per_itr;
+
+            // the following quantity is a measure of how good our FE solution satisfies the strong form of the equations
+            double residual_strong_form;
+            
 	};
 
 	template<int dim>
@@ -156,7 +160,7 @@ namespace FEM_Solver
 	constants(constants),
     base_exactsolution(exact_solution),
 	system_info(equation_info),
-	finite_element(FE_DGQ<dim>(constants.p),constants.nEqn),
+	finite_element(FE_Q<dim>(constants.p),constants.nEqn),
 	dof_handler(this->triangulation),
 	mapping(constants.mapping_order),
 	ngp(constants.p + 1),
@@ -170,6 +174,7 @@ namespace FEM_Solver
     {
         dof_handler.distribute_dofs(finite_element);
 
+        // the vector which stores the residual 
         DynamicSparsityPattern dsp(dof_handler.n_dofs(),dof_handler.n_dofs());
 
 
@@ -222,6 +227,7 @@ namespace FEM_Solver
         system_rhs.reinit (dof_handler.n_dofs());
 
     }
+
 
     #include "Integrate_PerCell.h"
   	#include "AssembleSystem_Meshworker.h"

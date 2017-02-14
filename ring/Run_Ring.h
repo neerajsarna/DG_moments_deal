@@ -96,6 +96,9 @@ Base_Solver<dim>::run_ring()
 										GridTools::maximal_cell_diameter(this->triangulation),convergence_table,
 										residual);
 
+
+		//residual_strong_form = postproc.compute_residual(solution,finite_element,system_info,this->triangulation.n_active_cells()); 
+		std::cout << "********Residual: " << residual_strong_form << std::endl;
 		postproc.print_options(this->triangulation,solution,i,refine_cycles,convergence_table);		
 		timer.leave_subsection();
 

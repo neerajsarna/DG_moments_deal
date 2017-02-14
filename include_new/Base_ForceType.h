@@ -67,6 +67,7 @@ namespace ForceType
 				double norm = sqrt(p[i].square());
 				value[i] = 0;
 				AssertDimension((int)value[i].size(),this->constants.nEqn);
+				// the factor comes from the symmetrizer
 				value[i](var_rho) = factor * (this->constants.A0 + this->constants.A2*norm*norm + this->constants.A1*p[i][0]/norm);	
 			}
 

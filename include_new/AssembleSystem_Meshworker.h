@@ -335,7 +335,7 @@ Base_Solver<dim>
                       CellInfo &info1,
                       CellInfo &info2)
 {
-  
+  /*
 	const FEValuesBase<dim> &fe_v = info1.fe_values();
 	const FEValuesBase<dim> &fe_v_neighbor = info2.fe_values();
 
@@ -384,5 +384,5 @@ Base_Solver<dim>
 
       }
     }
-  }
+  }*/
 }
