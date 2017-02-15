@@ -23,7 +23,7 @@ namespace LinearSolver
     void solve_eigen(Sparse_matrix &global_matrix,Vector<double> &system_rhs,
                     Vector<double> &solution);
 
-    double solve_with_pardiso(Vector<double> &system_rhs,
+    Vector<double> solve_with_pardiso(Vector<double> &system_rhs,
                           Vector<double> &solution);
 		void PardisoSolve(MKL_INT *ia,MKL_INT *ja,double *a,double *b,double *x,MKL_INT n);
 
@@ -78,7 +78,7 @@ namespace LinearSolver
   }
 
 
-  double LinearSolver::solve_with_pardiso(Vector<double> &system_rhs,
+  Vector<double> LinearSolver::solve_with_pardiso(Vector<double> &system_rhs,
                                         Vector<double> &solution)
   {
     Assert(system_rhs.size() == n_rows,ExcNotInitialized());
@@ -96,7 +96,7 @@ namespace LinearSolver
       free(JA);
       free(V);
 
-      return(res.l2_norm());
+      return(res);
   }
 
   // solving routines for a trilinos sparse matrix

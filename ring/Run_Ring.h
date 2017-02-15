@@ -84,20 +84,20 @@ Base_Solver<dim>::run_ring()
 		LinearSolver::LinearSolver linear_solver;
 		std::cout << "Preparing data for pardiso " << std::endl;
 		linear_solver.develop_pardiso_data(global_matrix,sparsity_pattern);
-		double residual = linear_solver.solve_with_pardiso(system_rhs,solution);
+		residual = linear_solver.solve_with_pardiso(system_rhs,solution);
 		timer.leave_subsection();
 
 		timer.enter_subsection("Post Processing");
 		PostProc::Base_PostProc<dim> postproc(constants,base_exactsolution,&dof_handler, &mapping);
 
-		residual_strong_form = postproc.compute_residual(solution,finite_element,system_info,this->triangulation.n_active_cells()); 
-		std::cout << "********Residual*********: " << residual_strong_form << std::endl;
+		const double residual_weak_form = postproc.compute_residual(residual,this->triangulation.n_active_cells());
 
 		// // now we compute the error due to computation
 		postproc.error_evaluation_QGauss(solution,this->triangulation.n_active_cells(),
 										 error_per_itr[i],
 										GridTools::maximal_cell_diameter(this->triangulation),convergence_table,
-										residual_strong_form);
+										residual_weak_form);
+
 
 
 		

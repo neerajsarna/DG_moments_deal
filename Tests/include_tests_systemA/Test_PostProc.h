@@ -43,7 +43,7 @@ namespace TestPostProc
 		Triangulation<dim> triangulation;
 		
 
-		/*SphericalManifold<dim> boundary;
+		SphericalManifold<dim> boundary;
 
 		Point<dim> center;
 		const double inner_radius = 0.5;
@@ -58,35 +58,35 @@ namespace TestPostProc
               						parts);
 
 		triangulation.set_all_manifold_ids_on_boundary(0);
-        triangulation.set_manifold(0,boundary);*/
+        triangulation.set_manifold(0,boundary);
 
 			
-            Point<dim> p1;
-            Point<dim> p2;
-            std::vector<unsigned int > repetitions(dim);
+            // Point<dim> p1;
+            // Point<dim> p2;
+            // std::vector<unsigned int > repetitions(dim);
 
-            p1(0) = 0.5;
-            p1(1) = 0.5;
+            // p1(0) = 0.5;
+            // p1(1) = 0.5;
 
-            p2(0) = 1.0;
-            p2(1) = 1.0;
+            // p2(0) = 1.0;
+            // p2(1) = 1.0;
 
-            repetitions[0] = 10;
-            repetitions[1] = 10;
+            // repetitions[0] = 10;
+            // repetitions[1] = 10;
 
-            //The diagonal of the rectangle is the time joining p1 and p2
-            GridGenerator::subdivided_hyper_rectangle(triangulation,
-                                      	              repetitions,
-                                        	            p1,
-                                            	        p2);
+            // //The diagonal of the rectangle is the time joining p1 and p2
+            // GridGenerator::subdivided_hyper_rectangle(triangulation,
+            //                           	              repetitions,
+            //                             	            p1,
+            //                                 	        p2);
 
 
 			FESystem<dim> finite_element(FE_Q<dim>(1),constants.constants.nEqn);
 			DoFHandler<dim> dof_handler(triangulation);
-			MappingQ<dim,dim> mapping(2);
+			MappingQ<dim,dim> mapping(1);
 
 			// in the following routine we test the l2 norm of the residual
-			for (unsigned int i = 0 ; i < 3 ; i ++)
+			for (unsigned int i = 0 ; i < 5 ; i ++)
 			{
 			dof_handler.distribute_dofs(finite_element);
 			Vector<double> solution(dof_handler.n_dofs());
@@ -110,12 +110,35 @@ namespace TestPostProc
 			PostProc::Base_PostProc<dim> postproc(constants.constants,&exact_solution_systemA,&dof_handler,&mapping);				
 			double residual_strong_form = postproc.compute_residual(solution,finite_element,&systemA,triangulation.n_active_cells());
 			double error_per_itr;
+			ComponentSelectFunction<dim> weight(0,constants.constants.nEqn); 
+			Vector<double> error_per_cell(triangulation.n_active_cells()) ;
 
-			postproc.error_evaluation_QGauss(solution,triangulation.n_active_cells(),
-										 	error_per_itr,
-										GridTools::maximal_cell_diameter(triangulation),convergence_table,
-										residual_strong_form);
+			VectorTools::integrate_difference (mapping,dof_handler,solution,
+          									exact_solution_systemA,
+          									error_per_cell,
+          									QMidpoint<dim>(),
+          									VectorTools::H1_seminorm,
+          									&weight);  
 
+			// FILE *fp;
+			// std::string filename = "error_variation" + std::to_string(dof_handler.n_dofs());
+			// fp = fopen(filename.c_str(),"w+");
+
+
+			// typename DoFHandler<dim>::active_cell_iterator cell = dof_handler.begin_active(), end_c = dof_handler.end();
+			// unsigned int counter = 0;
+
+			// for (; cell != end_c ; cell++)
+			// {
+			// 	fprintf(fp, "%f %f %f\n",cell->center()(0),cell->center()(1),error_per_cell(counter));
+			// 	counter ++;
+			// }
+
+			// fclose(fp);
+
+
+
+			std::cout << "error in H1 norm: " << error_per_cell.l2_norm() << std::endl;
 			std::cout << "residual: " << residual_strong_form << std::endl;
 			triangulation.refine_global(1);	
 

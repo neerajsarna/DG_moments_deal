@@ -55,9 +55,8 @@ CMakeFiles/test.out.dir/main.cc.o: ../../systems/G56.h
 CMakeFiles/test.out.dir/main.cc.o: ../../systems/G71.h
 CMakeFiles/test.out.dir/main.cc.o: ../../systems/G84.h
 CMakeFiles/test.out.dir/main.cc.o: ../../systems/SystemA.h
-CMakeFiles/test.out.dir/main.cc.o: ../Test_Generic/Test_LinearSolver.h
-CMakeFiles/test.out.dir/main.cc.o: ../include_tests_G20/Test_Solver.h
-CMakeFiles/test.out.dir/main.cc.o: ../include_tests_G20/basic_routines.h
+CMakeFiles/test.out.dir/main.cc.o: ../include_tests_systemA/Test_Solver.h
+CMakeFiles/test.out.dir/main.cc.o: ../include_tests_systemA/basic_routines.h
 CMakeFiles/test.out.dir/main.cc.o: /Applications/deal.II.app/Contents/Resources/include/deal.II/algorithms/any_data.h
 CMakeFiles/test.out.dir/main.cc.o: /Applications/deal.II.app/Contents/Resources/include/deal.II/algorithms/named_selection.h
 CMakeFiles/test.out.dir/main.cc.o: /Applications/deal.II.app/Contents/Resources/include/deal.II/base/aligned_vector.h

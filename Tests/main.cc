@@ -41,7 +41,7 @@ std::string input_file;
 
 
 // certain generic tests which have to be performed independent of the system
-#include "Test_LinearSolver.h"
+//#include "Test_LinearSolver.h"
 //#include "Test_FEValues.h"
 //#include "Test_MatrixOpt.h"
 
@@ -68,7 +68,6 @@ std::string input_file;
  //#include "Test_ExactSolution.h"
 //#include "Test_SquareGrid.h"
 #include "Test_Solver.h"
-//#include "Test_PostProc.h"
 //  #include "Test_CrsFormat.h"
  //#include "Test_Production.h"
 // #include "Test_ProjectorData.h"

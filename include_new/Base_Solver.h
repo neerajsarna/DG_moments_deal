@@ -144,7 +144,7 @@ namespace FEM_Solver
             std::vector<double> error_per_itr;
 
             // the following quantity is a measure of how good our FE solution satisfies the strong form of the equations
-            double residual_strong_form;
+            Vector<double> residual;
             
 	};
 
@@ -203,7 +203,7 @@ namespace FEM_Solver
    {
 	solution.reinit(dof_handler.n_dofs());
 	system_rhs.reinit(dof_handler.n_dofs());
-
+    residual.reinit(dof_handler.n_dofs());
    }
 
     //same as above but we now initialize a sparse matrix from eigen
