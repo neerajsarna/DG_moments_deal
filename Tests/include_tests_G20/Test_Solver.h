@@ -203,7 +203,7 @@ namespace Test_Solver
 
 	// }
 
-/*	TEST(SquareCavityG20,SquareCavityG20)
+	TEST(SquareCavityG20,SquareCavityG20)
 	{
 		const unsigned int dim = 2;
 		ASSERT_EQ(dim,2) << "3D not implemented" << std::endl;
@@ -212,82 +212,82 @@ namespace Test_Solver
 		Constants::Base_Constants constants(input_file);
 		G20::G20<dim> G20(constants.constants,folder_name);
 
-		ExactSolution::G20_PoissonHeat<dim>  G20_PoissonHeat(constants.constants,G20.base_tensorinfo.S_half);
+		ExactSolution::ExactSolution_Dummy<dim>  exactsolution_dummy(constants.constants,G20.base_tensorinfo.S_half);
 
 		FEM_Solver::Base_Solver<dim> base_solver("mesh_file_name",
 											 "grid",
 											 constants.constants,
 											 &G20,
-											 &G20_PoissonHeat);
+											 &exactsolution_dummy);
 
 
 		base_solver.run_square();
 
 	}
-*/
+
 
 	// we would like to know the maximum number of cell which can be allocated for various equations
-	TEST(MaxCells,HandlesMaxCells)
-	{
-			const int dim = 2;
-			Assert(dim ==2 ,ExcNotImplemented());
+	// TEST(MaxCells,HandlesMaxCells)
+	// {
+	// 		const int dim = 2;
+	// 		Assert(dim ==2 ,ExcNotImplemented());
 
-			Triangulation<dim> triangulation;
+	// 		Triangulation<dim> triangulation;
 
-			triangulation.clear();
-            Point<dim> p1;
-            Point<dim> p2;
-            std::vector<unsigned int > repetitions(dim);
+	// 		triangulation.clear();
+ //            Point<dim> p1;
+ //            Point<dim> p2;
+ //            std::vector<unsigned int > repetitions(dim);
 
-            p1(0) = -0.5;
-            p1(1) = -0.5;
+ //            p1(0) = -0.5;
+ //            p1(1) = -0.5;
 
-            p2(0) = 0.5;
-            p2(1) = 0.5;
+ //            p2(0) = 0.5;
+ //            p2(1) = 0.5;
 
-            repetitions[0] = 100;
-            repetitions[1] = 100;
+ //            repetitions[0] = 100;
+ //            repetitions[1] = 100;
 
-            //The diagonal of the rectangle is the time joining p1 and p2
-            GridGenerator::subdivided_hyper_rectangle(triangulation,
-                                      	              repetitions,
-                                        	            p1,
-                                            	        p2);
+ //            //The diagonal of the rectangle is the time joining p1 and p2
+ //            GridGenerator::subdivided_hyper_rectangle(triangulation,
+ //                                      	              repetitions,
+ //                                        	            p1,
+ //                                            	        p2);
 
-			FESystem<dim> finite_element(FE_DGQ<dim>(1),50);
-			DoFHandler<dim> dof_handler(triangulation);
+	// 		FESystem<dim> finite_element(FE_DGQ<dim>(1),50);
+	// 		DoFHandler<dim> dof_handler(triangulation);
 
-			TrilinosWrappers::SparsityPattern sparsity_pattern;
+	// 		TrilinosWrappers::SparsityPattern sparsity_pattern;
 			
 			
-			// A matrix in the final Ax = b
-			TrilinosWrappers::SparseMatrix global_matrix;
+	// 		// A matrix in the final Ax = b
+	// 		TrilinosWrappers::SparseMatrix global_matrix;
 
-			std::cout << "distributing dof " << std::endl;
-			dof_handler.distribute_dofs(finite_element);
+	// 		std::cout << "distributing dof " << std::endl;
+	// 		dof_handler.distribute_dofs(finite_element);
 
-			DynamicSparsityPattern dsp(dof_handler.n_dofs(),dof_handler.n_dofs());
+	// 		DynamicSparsityPattern dsp(dof_handler.n_dofs(),dof_handler.n_dofs());
 					
-			std::cout << "making flux sparsity pattern " << std::endl;
-			fflush(stdout);
-			DoFTools::make_flux_sparsity_pattern (dof_handler, dsp);
-			std::cout << "memory consumption by dsp " << dsp.memory_consumption()*1e-9 << std::endl;
-			std::cout << "number of non-zeroes " << dsp.n_nonzero_elements() << std::endl;
-			std::cout << "number of degrees of freedom " << dof_handler.n_dofs() << std::endl;	
+	// 		std::cout << "making flux sparsity pattern " << std::endl;
+	// 		fflush(stdout);
+	// 		DoFTools::make_flux_sparsity_pattern (dof_handler, dsp);
+	// 		std::cout << "memory consumption by dsp " << dsp.memory_consumption()*1e-9 << std::endl;
+	// 		std::cout << "number of non-zeroes " << dsp.n_nonzero_elements() << std::endl;
+	// 		std::cout << "number of degrees of freedom " << dof_handler.n_dofs() << std::endl;	
 		
-			//std::cout << "copying sparsity pattern from dsp" << std::endl;
-			//fflush(stdout);
-			//sparsity_pattern.copy_from(dsp);
-			//	std::cout << "compressing " << std::endl;
-			//fflush(stdout);
-			//sparsity_pattern.compress();
-			//std::cout << "memory consumption by sparsity_pattern " << sparsity_pattern.memory_consumption() << std::endl;
+	// 		//std::cout << "copying sparsity pattern from dsp" << std::endl;
+	// 		//fflush(stdout);
+	// 		//sparsity_pattern.copy_from(dsp);
+	// 		//	std::cout << "compressing " << std::endl;
+	// 		//fflush(stdout);
+	// 		//sparsity_pattern.compress();
+	// 		//std::cout << "memory consumption by sparsity_pattern " << sparsity_pattern.memory_consumption() << std::endl;
 
 
-			std::cout << "initializing the global matrix " << std::endl;
-			fflush(stdout);
-			global_matrix.reinit(dsp);   
-	}
+	// 		std::cout << "initializing the global matrix " << std::endl;
+	// 		fflush(stdout);
+	// 		global_matrix.reinit(dsp);   
+	// }
 
 
 }

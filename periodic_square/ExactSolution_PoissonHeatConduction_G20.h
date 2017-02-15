@@ -15,6 +15,10 @@ namespace ExactSolution
 			virtual double s_r(const double r,const double phi) const;
 			virtual double s_phi(const double r,const double phi) const;
 			virtual double thetaP(const double r,const double phi) const;	
+			virtual double R_rr(const double r,const double phi) const;
+			virtual double R_thetatheta(const double r,const double phi) const;
+			virtual double R_rtheta(const double r,const double phi) const;
+			virtual double R_zz(const double r,const double phi) const;
 	};
 
 	template<int dim>
@@ -99,4 +103,37 @@ namespace ExactSolution
 		return 0;
 
 	}
+
+	template<int dim>
+	double
+	G20_PoissonHeat<dim>::R_rr(const double r,const double phi)const
+	{
+		return 0;
+
+	}
+	
+	template<int dim>
+	double
+	G20_PoissonHeat<dim>::R_thetatheta(const double r,const double phi)const
+	{
+		return 0;
+
+	}
+
+	template<int dim>
+	double
+	G20_PoissonHeat<dim>::R_rtheta(const double r,const double phi)const
+	{
+		return 0;
+
+	}
+
+	template<int dim>
+	double
+	G20_PoissonHeat<dim>::R_zz(const double r,const double phi)const
+	{
+		return 0;
+
+	}
+
 }

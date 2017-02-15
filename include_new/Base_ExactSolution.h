@@ -19,7 +19,13 @@ namespace ExactSolution
 		// the following routines are system dependent
 			virtual double s_r(const double r,const double phi) const = 0;
 			virtual double s_phi(const double r,const double phi) const = 0;
-			virtual double thetaP(const double r,const double phi) const  = 0;			
+			virtual double thetaP(const double r,const double phi) const  = 0;	
+
+			virtual double R_rr(const double r,const double phi) const = 0;
+			virtual double R_thetatheta(const double r,const double phi) const = 0;
+			virtual double R_rtheta(const double r,const double phi) const = 0;
+			virtual double R_zz(const double r,const double phi) const = 0;
+
 			double C0, C1, C2, C3, C4, K1, K2, K3, K4, K7, K8, 
 	     			lambda1, lambda2, lambda3;
 	};

@@ -13,7 +13,12 @@ namespace ExactSolution
 
 			virtual double s_r(const double r,const double phi) const;
 			virtual double s_phi(const double r,const double phi) const;
-			virtual double thetaP(const double r,const double phi) const;			
+			virtual double thetaP(const double r,const double phi) const;	
+
+			virtual double R_rr(const double r,const double phi) const;
+			virtual double R_thetatheta(const double r,const double phi) const;
+			virtual double R_rtheta(const double r,const double phi) const;
+			virtual double R_zz(const double r,const double phi) const;
 	};
 
 	template<int dim>
@@ -128,6 +133,52 @@ namespace ExactSolution
 
 	}
 
+	template<int dim>
+	double
+	ExactSolution_SystemA_ring<dim>::R_rr(const double r,const double phi)const
+	{
+		return(-(this->constants.A0*this->constants.tau)/6. - this->C4*pow(r,-2) + cos(phi)*
+    		(-(this->constants.A1*this->constants.tau)/3. + 2*this->C1*pow(r,-3) + 2*this->K2*this->BI(2,r*pow(2,0.5))*pow(r,-1) + 
+      	2*this->K1*this->BK(2,r*pow(2,0.5))*pow(r,-1)) - (5*this->constants.A2*pow(r,2)*pow(this->constants.tau,3))/12.);
+
+	}
+
+
+	template<int dim>
+	double
+	ExactSolution_SystemA_ring<dim>::R_thetatheta(const double r,const double phi)const
+	{
+		return(-(this->constants.A0*this->constants.tau)/6. + this->C4*pow(r,-2) + cos(phi)*
+    			(-2*this->C1*pow(r,-3) - 2*this->K2*this->BI(2,r*pow(2,0.5))*pow(r,-1) - 
+      		2*this->K1*this->BK(2,r*pow(2,0.5))*pow(r,-1)) + (this->constants.A2*pow(r,2)*pow(this->constants.tau,3))/12.);
+
+	}
+
+		template<int dim>
+	double
+	ExactSolution_SystemA_ring<dim>::R_rtheta(const double r,const double phi)const
+	{
+		return(-(this->K4*this->BI(2,r*pow(2,0.5))*pow(2,-0.5)) + this->K3*this->BK(2,r*pow(2,0.5))*pow(2,-0.5) + 
+   ((this->constants.A1*this->constants.tau)/3. + 2*this->C1*pow(r,-3) + this->K2*
+       (-(this->BI(1,r*pow(2,0.5))*pow(2,0.5)) - 
+         2*this->BI(1,r*pow(2,0.5))*pow(2,0.5)*pow(r,-2) + 
+         2*this->BI(0,r*pow(2,0.5))*pow(r,-1)) + 
+      this->K1*(this->BK(1,r*pow(2,0.5))*pow(2,0.5) + 
+         2*this->BK(1,r*pow(2,0.5))*pow(2,0.5)*pow(r,-2) + 
+         2*this->BK(0,r*pow(2,0.5))*pow(r,-1)))*sin(phi));
+	}
+
+	template<int dim>
+	double
+	ExactSolution_SystemA_ring<dim>::R_zz(const double r,const double phi)const
+	{
+		return((this->constants.A0*this->constants.tau)/3. - cos(phi)*(-2*this->C1*pow(r,-3) - 2*this->K2*this->BI(2,r*pow(2,0.5))*pow(r,-1) - 
+      			2*this->K1*this->BK(2,r*pow(2,0.5))*pow(r,-1)) - 
+   				cos(phi)*(-(this->constants.A1*this->constants.tau)/3. + 2*this->C1*pow(r,-3) + 2*this->K2*this->BI(2,r*pow(2,0.5))*pow(r,-1) + 
+      		2*this->K1*this->BK(2,r*pow(2,0.5))*pow(r,-1)) + (this->constants.A2*pow(r,2)*pow(this->constants.tau,3))/3.);
+	}
+
+
 	template<int dim> 
 	void 
 	ExactSolution_SystemA_ring<dim>::
@@ -140,14 +191,19 @@ namespace ExactSolution
 		double phi = atan2(p[1],p[0]);
 		r /= this->constants.tau;
 
-		// we only provide the exact solution for theta, qx and qy
+		// we provide the exact solution for all the moments involved in the system
 		value[0] =  thetaP(r,phi);		
 		value[1] = cos(phi) * s_r(r,phi) - sin(phi) * s_phi(r,phi);
 		value[2] = sin(phi) * s_r(r,phi) + cos(phi) * s_phi(r,phi);								
 
-		// put all the other values to zero
-		for (int i = 3 ; i < this->constants.nEqn ; i++)
-			value[i] = 0; 
+		// Rxx
+		value[3] = R_rr(r,phi)*pow(cos(phi),2) + R_thetatheta(r,phi)*pow(sin(phi),2) - 2*R_rtheta(r,phi)*cos(phi)*sin(phi);
+
+		// Rxy
+		value[4] = (2*R_rtheta(r,phi)*cos(2 * phi) + (R_rr(r,phi) - R_thetatheta(r,phi))*sin(2 * phi))/2.;
+
+		// Ryy
+		value[5]  = R_thetatheta(r,phi)*pow(cos(phi),2) + R_rr(r,phi)*pow(sin(phi),2) + R_rtheta(r,phi)*sin(2*phi);
 
 
 		// The above values correspond to a unsymmetric system, therefore we now need to accomodate the symmetric system

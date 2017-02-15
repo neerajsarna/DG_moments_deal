@@ -38,7 +38,12 @@ namespace TestPostProc
 
 		ExactSolution::ExactSolution_SystemA_ring<dim>  exact_solution_systemA(constants.constants,systemA.base_tensorinfo.S_half);
 
+		ConvergenceTable convergence_table;
+
 		Triangulation<dim> triangulation;
+		
+
+		/*SphericalManifold<dim> boundary;
 
 		Point<dim> center;
 		const double inner_radius = 0.5;
@@ -52,32 +57,37 @@ namespace TestPostProc
         							center, inner_radius, outer_radius,
               						parts);
 
-		triangulation.refine_global(5);
+		triangulation.set_all_manifold_ids_on_boundary(0);
+        triangulation.set_manifold(0,boundary);*/
 
-			// triangulation.clear();
-   //          Point<dim> p1;
-   //          Point<dim> p2;
-   //          std::vector<unsigned int > repetitions(dim);
+			
+            Point<dim> p1;
+            Point<dim> p2;
+            std::vector<unsigned int > repetitions(dim);
 
-   //          p1(0) = 0.5;
-   //          p1(1) = 0.5;
+            p1(0) = 0.5;
+            p1(1) = 0.5;
 
-   //          p2(0) = 1.0;
-   //          p2(1) = 1.0;
+            p2(0) = 1.0;
+            p2(1) = 1.0;
 
-   //          repetitions[0] = 100;
-   //          repetitions[1] = 100;
+            repetitions[0] = 10;
+            repetitions[1] = 10;
 
-   //          //The diagonal of the rectangle is the time joining p1 and p2
-   //          GridGenerator::subdivided_hyper_rectangle(triangulation,
-   //                                    	              repetitions,
-   //                                      	            p1,
-   //                                          	        p2);
+            //The diagonal of the rectangle is the time joining p1 and p2
+            GridGenerator::subdivided_hyper_rectangle(triangulation,
+                                      	              repetitions,
+                                        	            p1,
+                                            	        p2);
 
 
 			FESystem<dim> finite_element(FE_Q<dim>(1),constants.constants.nEqn);
 			DoFHandler<dim> dof_handler(triangulation);
-			MappingQ<dim,dim> mapping(1);
+			MappingQ<dim,dim> mapping(2);
+
+			// in the following routine we test the l2 norm of the residual
+			for (unsigned int i = 0 ; i < 3 ; i ++)
+			{
 			dof_handler.distribute_dofs(finite_element);
 			Vector<double> solution(dof_handler.n_dofs());
 			ConstraintMatrix constraints;
@@ -87,25 +97,123 @@ namespace TestPostProc
 			std::cout << "number of Dofs " << dof_handler.n_dofs() << std::endl;
 
 			constraints.close();
+
+			// project the solution to our finite element space
 			VectorTools::project(dof_handler,
 								constraints,
 								QGauss<dim>(3),
 								exact_solution_systemA,
 								solution);
 
-			typename DoFHandler<dim>::active_cell_iterator cell = dof_handler.begin_active(),
-															end_c = dof_handler.end();
-
-			const unsigned int dofs_per_cell = finite_element.dofs_per_cell;
-			std::vector<types::global_dof_index> local_dof_indices(dofs_per_cell);
-			Vector<double> value(constants.constants.nEqn);
-			std::vector<Tensor<1,dim,double>> value_gradient(constants.constants.nEqn);
-			
+				
 
 			PostProc::Base_PostProc<dim> postproc(constants.constants,&exact_solution_systemA,&dof_handler,&mapping);				
-			double residual_strong_form = postproc.compute_residual(solution,finite_element,&systemA,triangulation.n_active_cells()); 
-			std::cout << "residual: " << residual_strong_form << std::endl;
+			double residual_strong_form = postproc.compute_residual(solution,finite_element,&systemA,triangulation.n_active_cells());
+			double error_per_itr;
 
-	}
+			postproc.error_evaluation_QGauss(solution,triangulation.n_active_cells(),
+										 	error_per_itr,
+										GridTools::maximal_cell_diameter(triangulation),convergence_table,
+										residual_strong_form);
+
+			std::cout << "residual: " << residual_strong_form << std::endl;
+			triangulation.refine_global(1);	
+
+			}
+
+
+		// in the following routine we compute the residual at a particular point
+		/*for (unsigned int i = 0 ; i < 7 ; i ++)
+		{
+			Point<dim> p;
+			p(0) = 0.6;
+			p(1) = 0.6;
+
+			std::cout << "#Cells " << triangulation.n_active_cells() << std::endl;
+
+			dof_handler.distribute_dofs(finite_element);
+			Vector<double> solution(dof_handler.n_dofs());
+			ConstraintMatrix constraints;
+			constraints.close();
+
+			VectorTools::project(dof_handler,
+								constraints,
+								QGauss<dim>(3),
+								exact_solution_systemA,
+								solution);
+
+			// the results returned from the point_gradient function
+			std::vector<Tensor<1,dim,double>> value_gradient(constants.constants.nEqn);
+			Vector<double> value(constants.constants.nEqn);
+			std::vector<Vector<double>> value_per_quad(dim,Vector<double>(constants.constants.nEqn));	
+			Vector<double> difference_per_quad(constants.constants.nEqn);
+			Vector<double> exact_solution_value(constants.constants.nEqn);
+			difference_per_quad = 0;
+
+			std::vector<Vector<double>> source_term_value(1,Vector<double>(constants.constants.nEqn));
+			MatrixOpt::Base_MatrixOpt matrix_opt;
+
+			// the following value has been taken from mathematica
+			std::vector<double> exact_gradient_value = {0.143286, 0.197513, -0.0895235, 0.1506, -0.193412, -0.289674};
+			exact_solution_systemA.vector_value(p,exact_solution_value);
+			
+
+
+
+			// the gradient value has to be multiplied by the system matrices
+			VectorTools::point_gradient	(dof_handler,
+										solution,
+												p,
+												value_gradient);
+
+			// the point value has to be multiplied by the Production term
+			VectorTools::point_value(dof_handler,
+											solution,
+											p,
+											value);
+
+			std::cout << "error in value " << fabs(exact_solution_value(0)-value(0)) << std::endl;
+
+
+			std::vector<Point<dim>> p_vector(1);
+			p_vector[0](0) = 0.6;
+			p_vector[0](1) = 0.6;
+
+			systemA.source_term(p_vector,source_term_value);
+
+					//base_exactsolution->vector_value(q_points[q],exact_solution);
+
+					// now we take the transpose of values so that we can use the sparse vector product already developed
+					
+		
+					for (unsigned int eq = 0 ; eq < constants.constants.nEqn ; eq++)
+						for (unsigned int space = 0 ; space < dim ; space ++)
+							value_per_quad[space](eq) = value_gradient[eq][space];
+
+					//the residual from the convective term
+					for (unsigned int space = 0 ; space < dim ; space++)
+						difference_per_quad += matrix_opt.Sparse_matrix_dot_Vector(systemA.system_data.A[space].matrix,
+																					value_per_quad[space]);
+
+					// the residual from the right hand side of the equation
+					difference_per_quad += matrix_opt.Sparse_matrix_dot_Vector(systemA.system_data.P.matrix,value);
+										   
+					// computation of the l2 norm of the solution in this cell
+					for (unsigned int eq = 0 ; eq < constants.constants.nEqn ; eq++)
+						// contribution from the source term
+						difference_per_quad(eq) -= source_term_value[0](eq);
+
+
+					std::cout << "Error in all the equations " << difference_per_quad << std::endl;
+
+
+			triangulation.refine_global(1);
+
+
+
+	}*/
+
+ }
 
 }
+

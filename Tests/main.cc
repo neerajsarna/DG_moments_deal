@@ -18,6 +18,7 @@ std::string input_file;
 #include "Base_BCrhs.h"
 #include "BCrhs_systemA.h"
 #include "Base_ExactSolution.h"
+#include "ExactSolution_Dummy.h"
 #include "ExactSolution_PoissonHeatConduction_G26.h"
 #include "ExactSolution_SystemA.h"
 #include "Base_EquationGenerator.h"

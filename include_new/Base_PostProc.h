@@ -219,7 +219,7 @@ namespace PostProc
 			// we dont need much precision with the residual computation so we will simply use the midpoint quadrature rule 
 			// for the following computation
 
-			QGauss<dim> quadrature(constants.p + 2);
+			QGauss<dim> quadrature(constants.p + 1);
 			const int total_ngp = quadrature.size();
 
 			// an array for quadrature points
@@ -296,16 +296,16 @@ namespace PostProc
 					for (unsigned int space = 0 ; space < dim ; space++)
 						difference_per_quad += matrix_opt.Sparse_matrix_dot_Vector(system_info->system_data.A[space].matrix,value_per_quad[space]);
 
-					// the residual from the right hand side of the equation
-					difference_per_quad -= matrix_opt.Sparse_matrix_dot_Vector(system_info->system_data.P.matrix,value);
+					//The production term is on the left hand side of the equation
+					difference_per_quad += matrix_opt.Sparse_matrix_dot_Vector(system_info->system_data.P.matrix,value);
 										   
 					// computation of the l2 norm of the solution in this cell
-					for (unsigned int eq = 0 ; eq < 1 ; eq++)
+					for (unsigned int eq = 0 ; eq < constants.nEqn ; eq++)
 					{
 						// contribution from the source term
 						difference_per_quad(eq) -= source_term_value[q](eq);
 
-						// l2-norm of the solutoin
+						// l2-norm of the solution
 						residual_per_cell(counter) += pow(difference_per_quad(eq),2) * Jacobian[q];
 					}						
 
@@ -354,7 +354,7 @@ namespace PostProc
 											   double &error_value,
 											   const double hMax,
 											   ConvergenceTable &convergence_table,
-						    const double residual)
+						    					const double residual)
 	{
 		used_qgauss = true;
 
@@ -408,7 +408,7 @@ namespace PostProc
         convergence_table.add_value("#degree of freedom",dof_handler->n_dofs());
         convergence_table.add_value("#number of cells",active_cells);
         convergence_table.add_value("#hMax",hMax);
-	convergence_table.add_value("#Residual",residual);
+		convergence_table.add_value("#Residual",residual);
 
         convergence_table.set_scientific(column_name_L2,true);
         convergence_table.set_scientific(column_name_Linfty,true);
@@ -959,4 +959,6 @@ namespace PostProc
    		error = Linf_error;
    		std::cout << "Linf error from unsymmetric system: " << Linf_error << " #Cells: "<< triangulation.n_active_cells() << std::endl;
    	}
+
+
 }

@@ -136,7 +136,7 @@ namespace Test_Solver
 		// The decision regarding a manuel assembly or an automated assembly is taken inside of run_ring.
 		base_solver.run_ring();
 
-		Assert(constants.constants.refine_cycles == 3,ExcMessage("The refine cycles requested for have not been implemented"));
+//		Assert(constants.constants.refine_cycles == 3,ExcMessage("The refine cycles requested for have not been implemented"));
 		Assert(constants.constants.p == 1,ExcNotImplemented());
 		Assert(constants.constants.mapping_order == 2 , ExcNotImplemented());
 		Assert(fabs(constants.constants.tau -10.0) >1e-5,ExcNotImplemented());
