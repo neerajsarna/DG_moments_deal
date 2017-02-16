@@ -253,7 +253,7 @@ for (unsigned int q = 0 ; q < fe_v.n_quadrature_points ; q++)
 
     for (unsigned int j = 0 ; j < boundary_rhs_value.size() ; j++)
      cell_rhs(i) -= shape_value_test 
-                    * Sigma(component[i],component[j]) 
+                    * Sigma(component[i],j) 
                     * boundary_rhs_value[j] 
                     * jacobian_value;
 
