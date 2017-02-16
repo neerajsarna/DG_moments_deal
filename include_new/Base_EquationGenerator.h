@@ -27,6 +27,9 @@ namespace EquationGenerator
 			// The matrix for the boundary
 				system_matrix B;
 
+			// penalty matrix for the odd boundary conditions 
+				system_matrix Sigma; 
+
 			// ID of the odd variables 
 				MatrixUI odd_ID;
 
@@ -150,7 +153,7 @@ namespace EquationGenerator
 	force2(constants),
 	force3(constants)
 	{
-		basefile.resize(dim + 2);
+		basefile.resize(dim + 3);
 
 		unsigned int entry;
 
@@ -164,6 +167,10 @@ namespace EquationGenerator
 		entry = dim + 1;
 		Assert(entry < dim + 3,ExcNotInitialized());
 		basefile[entry] = "odd_ID_";
+
+		entry = dim + 2;
+		Assert(entry < dim +3 ,ExcNotInitialized());
+		basefile[entry] = "Sigma_";
 	}
 
 	template<int dim>
@@ -345,10 +352,11 @@ namespace EquationGenerator
 		for (unsigned int i = 0 ; i < dim ; i ++)
 			system_data.A[i].matrix.resize(nEqn,nEqn);
 
+		// allocate the memory for all the other matrices
 		system_data.Ax.matrix.resize(nEqn,nEqn);
 		system_data.P.matrix.resize(nEqn,nEqn);
 		system_data.B.matrix.resize(nBC,nEqn);
-		system_data.Ax.matrix.resize(nEqn,nEqn);
+		system_data.Sigma.matrix.resize(nEqn,nBC);
 
 		// now we loop over all the names in the basefile vector
 		// by default at the system information is expected to be stored in a folder
@@ -380,9 +388,14 @@ namespace EquationGenerator
 			this->build_triplet(system_data.B.Row_Col_Value,basefile_system[dim]);
 			this->build_matrix_from_triplet(system_data.B.matrix,system_data.B.Row_Col_Value);
 
+
 			// develop the ID of the odd variables
 			this->build_Vector(system_data.odd_ID,basefile_system[dim + 1]);
 
+
+			// develop the Sigma matrix
+			this->build_triplet(system_data.Sigma.Row_Col_Value,basefile_system[dim+2]);
+			this->build_matrix_from_triplet(system_data.Sigma.matrix,system_data.Sigma.Row_Col_Value);
 
 	}
 
@@ -567,6 +580,8 @@ namespace EquationGenerator
 			// picking up the odd variables
 			case odd:
 			{
+				// we don't need to do anything since we have already saved the penalty matrix
+
 				BoundaryHandler::Base_BoundaryHandler_Odd<dim> boundary_handler_odd(system_data.B.matrix,
 																				   system_data.odd_ID);
 

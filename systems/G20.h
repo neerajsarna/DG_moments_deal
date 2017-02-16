@@ -71,6 +71,7 @@ namespace G20
 		//initialize the forcing term for this system
 		this->reinit_force();
 
+		// we now initialize the right hand side of the boundary depending upon the type of boundary implementation
 		this->reinit_BCrhs();
 
 		// initialize the boundary matrices for this system
@@ -110,7 +111,7 @@ namespace G20
 
 					default:
 					{
-						Assert(1 == 0, ExcMessage("Should not have reached here"));
+						AssertThrow(1 == 0, ExcMessage("Should not have reached here"));
 						break;
 					}
 				}

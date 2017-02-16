@@ -160,7 +160,7 @@ namespace FEM_Solver
 	constants(constants),
     base_exactsolution(exact_solution),
 	system_info(equation_info),
-	finite_element(FE_Q<dim>(constants.p),constants.nEqn),
+	finite_element(FE_DGQ<dim>(constants.p),constants.nEqn),
 	dof_handler(this->triangulation),
 	mapping(constants.mapping_order),
 	ngp(constants.p + 1),
@@ -180,21 +180,9 @@ namespace FEM_Solver
 
 	//std::cout << "making flux sparsity pattern " << std::endl;
         DoFTools::make_flux_sparsity_pattern (dof_handler, dsp);
-	//fflush(stdout);
-	//std::cout << "done making flux sparsity pattern " << std::endl;
-
-//        sparsity_pattern.copy_from(dsp);
-
-//	    sparsity_pattern.compress();
-
-	//std::cout << "initializing the matrix " << std::endl;
+	
         global_matrix.reinit(dsp);   
-	//fflush(stdout);
-	//std::cout << "completed matrix initialization" << std::endl;
-
-    //    solution.reinit (dof_handler.n_dofs());
-    //    system_rhs.reinit (dof_handler.n_dofs());
-
+	
     }
 
    template<int dim>

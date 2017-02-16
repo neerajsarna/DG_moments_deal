@@ -144,7 +144,8 @@ namespace SystemA
 					}
 					case odd:
 					{
-						this->base_bcrhs = &this->bcrhs_ring_odd_systemA;
+						// we change the implementation due to new boundary condition implementation
+						this->base_bcrhs = &this->bcrhs_ring_char_systemA;
 						break;
 					}
 				}
@@ -153,26 +154,7 @@ namespace SystemA
 
 			case periodic_square:
 			{
-				switch(this->constants.bc_type)
-				{
-					case characteristic:
-					{
-						this->base_bcrhs = &bcrhs_periodic_char_systemA;
-						break;
-					}
-
-					case odd:
-					{
-						this->base_bcrhs = &bcrhs_periodic_odd_systemA;
-						break;
-					}
-
-					default:
-					{
-						Assert(1 == 0, ExcMessage("Should not have reached here"));
-						break;
-					}
-				}
+				AssertThrow(1 == 0, ExcNotImplemented());
 
 				break;
 			}
