@@ -104,7 +104,7 @@ namespace G120
 
 					case odd:
 					{
-						this->base_bcrhs = &bcrhs_odd;
+						this->base_bcrhs = &bcrhs_char;
 						break;
 					}
 
