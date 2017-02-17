@@ -41,16 +41,16 @@ void Run()
 			break;
 		}
 
-/*		case 13:
+		case 13:
 		{
 
+			G20::G20<dim> G20(constants.constants,folder_name);
 
 			switch(G20.constants.mesh_type)
 			{
 				case periodic_square:
 				{
 
-					G20::G20<dim> G20(constants.constants,folder_name);
 
 					ExactSolution::G20_PoissonHeat<dim>  G20_PoissonHeat(constants.constants,G20.base_tensorinfo.S_half);
 
@@ -68,8 +68,6 @@ void Run()
 				case square_domain:
 				{
 
-					// first we develop all the details of the equations
-					G20::G20<dim> G20(constants.constants,folder_name);
 
 					// then we create a dummy exact solution
 					ExactSolution::ExactSolution_Dummy<dim>  exactsolution_dummy(constants.constants,G20.base_tensorinfo.S_half);
@@ -96,12 +94,13 @@ void Run()
 		case 17:
 		{
 
+			G26::G26<dim> G26(constants.constants,folder_name);
 
 			switch(G26.constants.mesh_type)
 			{
 				case periodic_square:
 				{
-					G26::G26<dim> G26(constants.constants,folder_name);
+					
 
 					ExactSolution::G26_PoissonHeat<dim>  G26_PoissonHeat(constants.constants,G26.base_tensorinfo.S_half);
 
@@ -117,7 +116,7 @@ void Run()
 
 				case square_domain:
 				{
-					G26::G26<dim> G26(constants.constants,folder_name);
+					
 
 					ExactSolution::ExactSolution_Dummy<dim>  exactsolution_dummy(constants.constants,G26.base_tensorinfo.S_half);
 
@@ -144,11 +143,13 @@ void Run()
 		case 22:
 		{
 
+			G35::G35<dim> G35(constants.constants,folder_name);
+
 			switch(G35.constants.mesh_type)
 			{
 				case periodic_square:
 				{
-					G35::G35<dim> G35(constants.constants,folder_name);
+					
 
 					ExactSolution::G35_PoissonHeat<dim>  G35_PoissonHeat(constants.constants,G35.base_tensorinfo.S_half);
 
@@ -163,8 +164,6 @@ void Run()
 
 				case square_domain:
 				{
-					G35::G35<dim> G35(constants.constants,folder_name);
-
 					ExactSolution::ExactSolution_Dummy<dim>  exactsolution_dummy(constants.constants,G35.base_tensorinfo.S_half);
 
 					FEM_Solver::Base_Solver<dim> base_solver("mesh_file_name",
@@ -187,17 +186,17 @@ void Run()
 
 		case 28:
 		{
-
+			G45::G45<dim> G45(constants.constants,folder_name);
 
 			switch(G45.constants.mesh_type)
 			{
 				case periodic_square:
 				{
-								G45::G45<dim> G45(constants.constants,folder_name);
+					
 
-			ExactSolution::G45_PoissonHeat<dim>  G45_PoissonHeat(constants.constants,G45.base_tensorinfo.S_half);
+					ExactSolution::G45_PoissonHeat<dim>  G45_PoissonHeat(constants.constants,G45.base_tensorinfo.S_half);
 
-			FEM_Solver::Base_Solver<dim> base_solver("mesh_file_name",
+					FEM_Solver::Base_Solver<dim> base_solver("mesh_file_name",
 													 "grid",
 													 constants.constants,
 													 &G45,
@@ -208,7 +207,6 @@ void Run()
 
 				case square_domain:
 				{
-					G45::G45<dim> G45(constants.constants,folder_name);
 
 					ExactSolution::ExactSolution_Dummy<dim>  exactsolution_dummy(constants.constants,G45.base_tensorinfo.S_half);
 
@@ -233,16 +231,17 @@ void Run()
 		case 34:
 		{
 
+			G56::G56<dim> G56(constants.constants,folder_name);
 
 			switch(G56.constants.mesh_type)
 			{
 				case periodic_square:
 				{
-								G56::G56<dim> G56(constants.constants,folder_name);
+								
 
-			ExactSolution::G56_PoissonHeat<dim>  G56_PoissonHeat(constants.constants,G56.base_tensorinfo.S_half);
+					ExactSolution::G56_PoissonHeat<dim>  G56_PoissonHeat(constants.constants,G56.base_tensorinfo.S_half);
 
-			FEM_Solver::Base_Solver<dim> base_solver("mesh_file_name",
+					FEM_Solver::Base_Solver<dim> base_solver("mesh_file_name",
 													 "grid",
 													 constants.constants,
 													 &G56,
@@ -253,7 +252,7 @@ void Run()
 
 				case square_domain:
 				{
-					G56::G56<dim> G56(constants.constants,folder_name);
+					
 
 					ExactSolution::ExactSolution_Dummy<dim>  exactsolution_dummy(constants.constants,G56.base_tensorinfo.S_half);
 
@@ -277,12 +276,13 @@ void Run()
 		case 43:
 		{
 
+			G71::G71<dim> G71(constants.constants,folder_name);
 
 			switch(G71.constants.mesh_type)
 			{
 				case periodic_square:
 				{
-					G71::G71<dim> G71(constants.constants,folder_name);
+					
 
 					ExactSolution::G71_PoissonHeat<dim>  G71_PoissonHeat(constants.constants,G71.base_tensorinfo.S_half);
 
@@ -297,7 +297,7 @@ void Run()
 
 				case square_domain:
 				{
-					G71::G71<dim> G71(constants.constants,folder_name);
+				
 
 					ExactSolution::ExactSolution_Dummy<dim>  exactsolution_dummy(constants.constants,G71.base_tensorinfo.S_half);
 
@@ -322,13 +322,13 @@ void Run()
 		case 50:
 		{
 
+			G84::G84<dim> G84(constants.constants,folder_name);
 
 			switch(G84.constants.mesh_type)
 			{
 				case periodic_square:
 				{
-					G84::G84<dim> G84(constants.constants,folder_name);
-
+					
 					ExactSolution::G84_PoissonHeat<dim>  G84_PoissonHeat(constants.constants,G84.base_tensorinfo.S_half);
 
 					FEM_Solver::Base_Solver<dim> base_solver("mesh_file_name",
@@ -343,8 +343,7 @@ void Run()
 
 				case square_domain:
 				{
-					G84::G84<dim> G84(constants.constants,folder_name);
-
+					
 					ExactSolution::ExactSolution_Dummy<dim>  exactsolution_dummy(constants.constants,G84.base_tensorinfo.S_half);
 
 					FEM_Solver::Base_Solver<dim> base_solver("mesh_file_name",
@@ -369,12 +368,13 @@ void Run()
 		{
 
 
+			G105::G105<dim> G105(constants.constants,folder_name);
+
 			switch(G105.constants.mesh_type)
 			{
 				case periodic_square:
 				{
-					G105::G105<dim> G105(constants.constants,folder_name);
-
+					
 					ExactSolution::G105_PoissonHeat<dim>  G105_PoissonHeat(constants.constants,G105.base_tensorinfo.S_half);
 
 					FEM_Solver::Base_Solver<dim> base_solver("mesh_file_name",
@@ -388,7 +388,7 @@ void Run()
 
 				case square_domain:
 				{
-					G105::G105<dim> G105(constants.constants,folder_name);
+					
 
 				ExactSolution::ExactSolution_Dummy<dim>  exactsolution_dummy(constants.constants,G105.base_tensorinfo.S_half);
 
@@ -413,12 +413,13 @@ void Run()
 		case 70:
 		{
 
+			G120::G120<dim> G120(constants.constants,folder_name);
+
 			switch(G120.constants.mesh_type)
 			{
 				case periodic_square:
 				{
-					G120::G120<dim> G120(constants.constants,folder_name);
-
+					
 					ExactSolution::G120_PoissonHeat<dim>  G120_PoissonHeat(constants.constants,G120.base_tensorinfo.S_half);
 
 					FEM_Solver::Base_Solver<dim> base_solver("mesh_file_name",
@@ -432,7 +433,7 @@ void Run()
 
 				case square_domain:
 				{
-					G120::G120<dim> G120(constants.constants,folder_name);
+					
 
 					ExactSolution::ExactSolution_Dummy<dim>  exactsolution_dummy(constants.constants,G120.base_tensorinfo.S_half);
 
@@ -451,7 +452,7 @@ void Run()
 				}
 			}
 			break;
-		}*/
+		}
 
 
 		default:
