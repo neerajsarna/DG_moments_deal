@@ -16,6 +16,7 @@
 
 #include "BCrhs_systemA.h"
 
+#include "ExactSolution_Dummy.h"
 #include "ExactSolution_PoissonHeatConduction_G26.h"
 #include "ExactSolution_SystemA.h"
 #include "ExactSolution_PoissonHeatConduction_G20.h"

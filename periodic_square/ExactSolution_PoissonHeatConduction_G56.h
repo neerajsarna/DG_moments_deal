@@ -16,10 +16,10 @@ namespace ExactSolution
 			virtual double s_phi(const double r,const double phi) const;
 			virtual double thetaP(const double r,const double phi) const;	
 
-			virtual double R_rr(const double r,const double phi) {return 0;};
-			virtual double R_thetatheta(const double r,const double phi) {return 0;};
-			virtual double R_rtheta(const double r,const double phi) {return 0;};
-			virtual double R_zz(const double r,const double phi) {return 0;};
+			virtual double R_rr(const double r,const double phi)const  {return 0;};
+			virtual double R_thetatheta(const double r,const double phi)const {return 0;};
+			virtual double R_rtheta(const double r,const double phi)const {return 0;};
+			virtual double R_zz(const double r,const double phi)const {return 0;};
 	};
 
 	template<int dim>
