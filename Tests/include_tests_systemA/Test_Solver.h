@@ -131,12 +131,15 @@ namespace Test_Solver
 											 &systemA,
 											 &exact_solution_systemA);
 
+		
 
 		// now we solve the required system
 		// The decision regarding a manuel assembly or an automated assembly is taken inside of run_ring.
 		base_solver.run_ring();
 
-		Assert(constants.constants.refine_cycles == 3,ExcMessage("The refine cycles requested for have not been implemented"));
+	
+
+		Assert(constants.constants.refine_cycles == 6,ExcMessage("The refine cycles requested for have not been implemented"));
 		Assert(constants.constants.p == 1,ExcNotImplemented());
 		Assert(constants.constants.mapping_order == 2 , ExcNotImplemented());
 		Assert(fabs(constants.constants.tau -10.0) >1e-5,ExcNotImplemented());
@@ -184,7 +187,6 @@ namespace Test_Solver
 			for (int i = 0 ; i < constants.constants.refine_cycles ; i++)
 				EXPECT_NEAR(base_solver.error_per_itr[i],exact_error(i),1e-5);				
 		}
-
 
 	}
 

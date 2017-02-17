@@ -49,7 +49,9 @@ namespace ExactSolution
 					this->C3 = -23.22459252429678;
 					this->C4 = 6.490985249358112;
 					this->K1 = 9.713664158637732e28;
-					this->K2 = 1.0821414602962837e-127;					
+					this->K2 = 1.0821414602962837e-127;	
+					this->K4 = 0.0;
+									
 					entered = true;
 			}
 
@@ -61,6 +63,8 @@ namespace ExactSolution
 					this->C4 = 0.11342119104343287;
 					this->K1 = 53.97166647969362;
 					this->K2 = 1.26255082813026e-15;
+					this->K3 = 0.0;
+					this->K4 = 0.0;
 					entered = true;
 				}
 
@@ -72,6 +76,8 @@ namespace ExactSolution
 					this->C4 = -0.10358631917431671;
 					this->K1 = 0.18803597175199138;
 					this->K2 = 0.003604064889912796;
+					this->K3 = 0.0;
+					this->K4 = 0.0;
 					entered = true;
 
 				}
@@ -84,6 +90,8 @@ namespace ExactSolution
 					this->C4 = -0.004296145849336291;
 					this->K1 = 0.18900239036185373;
 					this->K2 = -0.6486989954482233;
+					this->K3 = 0.0;
+					this->K4 = 0.0;
 					entered = true;
 				}
 
@@ -158,6 +166,8 @@ namespace ExactSolution
 	double
 	ExactSolution_SystemA_ring<dim>::R_rtheta(const double r,const double phi)const
 	{
+
+	
 		return(-(this->K4*this->BI(2,r*pow(2,0.5))*pow(2,-0.5)) + this->K3*this->BK(2,r*pow(2,0.5))*pow(2,-0.5) + 
    ((this->constants.A1*this->constants.tau)/3. + 2*this->C1*pow(r,-3) + this->K2*
        (-(this->BI(1,r*pow(2,0.5))*pow(2,0.5)) - 
@@ -165,7 +175,7 @@ namespace ExactSolution
          2*this->BI(0,r*pow(2,0.5))*pow(r,-1)) + 
       this->K1*(this->BK(1,r*pow(2,0.5))*pow(2,0.5) + 
          2*this->BK(1,r*pow(2,0.5))*pow(2,0.5)*pow(r,-2) + 
-         2*this->BK(0,r*pow(2,0.5))*pow(r,-1)))*sin(phi));
+         2*this->BK(0,r*pow(2,0.5))*pow(r,-1)))*sin(phi)); 
 	}
 
 	template<int dim>
@@ -197,14 +207,14 @@ namespace ExactSolution
 		value[2] = sin(phi) * s_r(r,phi) + cos(phi) * s_phi(r,phi);								
 
 		// Rxx
-		value[3] = R_rr(r,phi)*pow(cos(phi),2) + R_thetatheta(r,phi)*pow(sin(phi),2) - 2*R_rtheta(r,phi)*cos(phi)*sin(phi);
+		value[3] = R_rr(r,phi)*pow(cos(phi),2) + R_thetatheta(r,phi)*pow(sin(phi),2) 
+			  - 2*R_rtheta(r,phi)*cos(phi)*sin(phi);
 
 		// Rxy
 		value[4] = (2*R_rtheta(r,phi)*cos(2 * phi) + (R_rr(r,phi) - R_thetatheta(r,phi))*sin(2 * phi))/2.;
 
 		// Ryy
 		value[5]  = R_thetatheta(r,phi)*pow(cos(phi),2) + R_rr(r,phi)*pow(sin(phi),2) + R_rtheta(r,phi)*sin(2*phi);
-
 
 		// The above values correspond to a unsymmetric system, therefore we now need to accomodate the symmetric system
 		MatrixOpt::Base_MatrixOpt matrix_opt;
