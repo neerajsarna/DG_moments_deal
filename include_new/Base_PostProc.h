@@ -589,7 +589,7 @@ namespace PostProc
                         fprintf(fp_solution, "%f ",cell->center()[space]);
 
 		// we only print variables uptill theta
-                for (int i = 0 ; i < 4 ; i++)
+                for (int i = 0 ; i < 9 ; i++)
                         fprintf(fp_solution, "%f ",solution_value(i));
 
 		
