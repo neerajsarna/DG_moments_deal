@@ -18,7 +18,7 @@ namespace PostProc
 			const constant_data constants;
 			const DoFHandler<dim> *dof_handler;
 			const MappingQ<dim> *mapping;
-
+			MatrixOpt::Base_MatrixOpt matrix_opt;
 
 			struct output_files
       		{
@@ -79,19 +79,21 @@ namespace PostProc
 			// With the help of the two booleans we decide whether we want to print the 
 			// solution or we want to print the error.
 			void print_solution_to_file(const Triangulation<dim> &triangulation,
-										const Vector<double> &solution);
+										const Vector<double> &solution,
+										const Sparse_matrix &S_half_inv);
 
 			void print_error_to_file(const Triangulation<dim> &triangulation,
 							 		 const Vector<double> &solution);
 
-			void print_exactsolution_to_file(const Triangulation<dim> &triangulation);
+			void print_exactsolution_to_file(const Triangulation<dim> &triangulation,const Sparse_matrix &S_half_inv);
 
 			// print the solution depending upon printing options
 			void print_options(const Triangulation<dim> &triangulation,
 							   const Vector<double> &solution,
 							   const unsigned int present_cycle,
 							   const unsigned int refine_cycle,
-							   ConvergenceTable &convergence_table);
+							   ConvergenceTable &convergence_table,
+							   const Sparse_matrix &S_half_inv);
 
 			// same as above but prints the error to the file manually
 			void print_options(const Triangulation<dim> &triangulation,
@@ -101,7 +103,8 @@ namespace PostProc
 							   const double L2_error,
 							   const double Linfty_error,
 							   const unsigned int active_cells,
-							   const double hMax);
+							   const double hMax,
+							   const Sparse_matrix &S_half_inv);
 
 			// write the values of computational constants to a file
 			void create_stamp();
@@ -566,7 +569,8 @@ namespace PostProc
    	Base_PostProc<dim>::
    	print_solution_to_file(
    					    const Triangulation<dim> &triangulation,
-   					    const Vector<double> &solution)
+   					    const Vector<double> &solution,
+   					    const Sparse_matrix &S_half_inv)
    	{
    	typename Triangulation<dim>::active_cell_iterator cell = triangulation.begin_active(), endc = triangulation.end();
 
@@ -583,7 +587,10 @@ namespace PostProc
 	for (; cell != endc ; cell++)
 	{
 		solution_value = 0;
-		VectorTools::point_value(*dof_handler, solution, cell->center(),solution_value);	
+		VectorTools::point_value(*dof_handler, solution, cell->center(),solution_value);
+
+		// we now convert back to the conventional variables. That is the variables in unsymmetric system	
+		matrix_opt.Sparse_matrix_dot_Vector(S_half_inv,solution);
 
                 for (unsigned int space = 0 ; space < dim ; space ++)
                         fprintf(fp_solution, "%f ",cell->center()[space]);
@@ -650,7 +657,7 @@ namespace PostProc
     template<int dim>
    	void 
    	Base_PostProc<dim>::
-   	print_exactsolution_to_file(const Triangulation<dim> &triangulation)
+   	print_exactsolution_to_file(const Triangulation<dim> &triangulation,const Sparse_matrix &S_half_inv)
    	{
    	typename Triangulation<dim>::active_cell_iterator cell = triangulation.begin_active(), endc = triangulation.end();
 
@@ -669,6 +676,9 @@ namespace PostProc
 		Vector<double> exact_solution_value(constants.nEqn);
 
 		base_exactsolution->vector_value(cell->vertex(vertex),exact_solution_value);
+
+		// we now convert back to the original variables
+		matrix_opt.Sparse_matrix_dot_Vector(S_half_inv,exact_solution_value);
 
 		for (unsigned int space = 0 ; space < dim ; space ++)
 			fprintf(fp_exact, "%f ",cell->vertex(vertex)[space]);
@@ -690,19 +700,20 @@ namespace PostProc
    				  const Vector<double> &solution,
    				  const unsigned int present_cycle,
    				  const unsigned int total_cycles,
-   				  ConvergenceTable &convergence_table)
+   				  ConvergenceTable &convergence_table,
+   				  const Sparse_matrix &S_half_inv)
    	{
 
    		if (constants.print_all)
    		{
    			if (constants.print_solution)
-   				print_solution_to_file(triangulation,solution);
+   				print_solution_to_file(triangulation,solution,S_half_inv);
 
    			if(constants.print_error)
    				print_error_to_file(triangulation,solution);
 
    			if(constants.print_exactsolution)
-   				print_exactsolution_to_file(triangulation);
+   				print_exactsolution_to_file(triangulation,S_half_inv);
 
    		}
 
@@ -712,13 +723,13 @@ namespace PostProc
    			if (present_cycle == total_cycles - 1)
    			{
    				if(constants.print_solution)
-   					print_solution_to_file(triangulation,solution);
+   					print_solution_to_file(triangulation,solution,S_half_inv);
 
    				if(constants.print_error)
    					print_error_to_file(triangulation,solution);
 
    				if(constants.print_exactsolution)
-   					print_exactsolution_to_file(triangulation);
+   					print_exactsolution_to_file(triangulation,S_half_inv);
    			}
    		}
 
@@ -737,20 +748,21 @@ namespace PostProc
    				  const double L2_error,
    				  const double Linfty_error,
    				  const unsigned int active_cells,
-   				  const double hMax)
+   				  const double hMax,
+   				  const Sparse_matrix &S_half_inv)
    	{
 
    		// if we wish to print for all the refinement cycles
    		if (constants.print_all)
    		{
    			if (constants.print_solution)
-   				print_solution_to_file(triangulation,solution);
+   				print_solution_to_file(triangulation,solution,S_half_inv);
 
    			if(constants.print_error)
    				print_error_to_file(triangulation,solution);
 
    			if(constants.print_exactsolution)
-   				print_exactsolution_to_file(triangulation);
+   				print_exactsolution_to_file(triangulation,S_half_inv);
 
    		}
 
@@ -761,13 +773,13 @@ namespace PostProc
    			if (present_cycle == total_cycles - 1)
    			{
    				if(constants.print_solution)
-   					print_solution_to_file(triangulation,solution);
+   					print_solution_to_file(triangulation,solution,S_half_inv);
 
    				if(constants.print_error)
    					print_error_to_file(triangulation,solution);
 
    				if(constants.print_exactsolution)
-   					print_exactsolution_to_file(triangulation);
+   					print_exactsolution_to_file(triangulation,S_half_inv);
    			}
    		}
 
@@ -845,8 +857,7 @@ namespace PostProc
    		Vector<double> error_value(triangulation.n_active_cells());
    		const unsigned int component = constants.variable_map.find(constants.error_variable)->second;
 
-   		MatrixOpt::Base_MatrixOpt matrix_opt;
-
+   	
 
    		for (; cell != endc ; cell++)
    		{

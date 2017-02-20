@@ -59,7 +59,7 @@
                     if (x_cord == constants.xl)
                       cell->face(face)->set_boundary_id(0);
 
-                    // This is the first wall
+                    // this is the bottom wall
                     if (y_cord == constants.yb)
                       cell->face(face)->set_boundary_id(1);
 

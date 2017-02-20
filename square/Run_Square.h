@@ -111,7 +111,8 @@ Base_Solver<dim>::run_square()
 
 		// now we compute the error due to computation
 		const double l2_norm = postproc.compute_L2_norm(solution,this->triangulation.n_active_cells());
-		 postproc.print_options(this->triangulation,solution,i,refine_cycles,convergence_table);		
+		 postproc.print_options(this->triangulation,solution,i,refine_cycles,convergence_table,
+		 						system_info->base_tensorinfo.S_half_inv);		
 		// timer.leave_subsection();
 
 		// Grid refinement should be done in the end.

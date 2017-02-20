@@ -101,7 +101,9 @@ Base_Solver<dim>::run_ring()
 
 
 		
-		postproc.print_options(this->triangulation,solution,i,refine_cycles,convergence_table);		
+		postproc.print_options(this->triangulation,solution,i,refine_cycles,convergence_table,
+								system_info->base_tensorinfo.S_half_inv);		
+		
 		timer.leave_subsection();
 
 		// Grid refinement should be done in the end.

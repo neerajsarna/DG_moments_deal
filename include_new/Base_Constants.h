@@ -220,7 +220,7 @@ namespace Constants
 
 			prm.declare_entry("vt0",
 							  "0",
-							  Patterns::Double(0,100.0),
+							  Patterns::Double(-100.0,100.0),
 							  "tangential velocity");
 
 			prm.declare_entry("theta1",
@@ -235,7 +235,7 @@ namespace Constants
 
 			prm.declare_entry("vt1",
 							  "0",
-							  Patterns::Double(0,100.0),
+							  Patterns::Double(-100.0,100.0),
 							  "tangential velocity");
 
 
@@ -251,7 +251,7 @@ namespace Constants
 
 			prm.declare_entry("vt2",
 							  "0",
-							  Patterns::Double(0,100.0),
+							  Patterns::Double(-100.0,100.0),
 							  "tangential velocity");
 
 			prm.declare_entry("theta3",
@@ -266,7 +266,7 @@ namespace Constants
 
 			prm.declare_entry("vt3",
 							  "0",
-							  Patterns::Double(0,100.0),
+							  Patterns::Double(-100.0,100.0),
 							  "tangential velocity");
 
 		}
