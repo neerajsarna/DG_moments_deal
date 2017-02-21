@@ -32,8 +32,11 @@ namespace MeshGenerator
 			void mesh_internal_ring();
 			void mesh_internal_square(const unsigned int part_x,const unsigned int part_y);
 			void mesh_internal_periodic_square(const unsigned int part_x,const unsigned int part_y);
+			void mesh_internal_square_circular_cavity(const unsigned int part_x,const unsigned int part_y);
+
 			void set_periodic_bid()const;
 			void set_square_bid()const;
+			void set_square_circular_cavity_bid()const;
 
 			// read a ring shaped triangulation generated from gmsh
 			void mesh_gmsh_ring();
@@ -100,6 +103,12 @@ namespace MeshGenerator
 					case Mesh_type::square_domain:
 					{
 						mesh_internal_square(constants.part_x,constants.part_y);
+						break;
+					}
+
+					case Mesh_type::square_circular_cavity:
+					{
+						mesh_internal_square_circular_cavity(constants.part_x,constants.part_y);
 						break;
 					}
 					default:

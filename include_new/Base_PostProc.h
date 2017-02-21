@@ -80,7 +80,8 @@ namespace PostProc
 			// solution or we want to print the error.
 			void print_solution_to_file(const Triangulation<dim> &triangulation,
 										const Vector<double> &solution,
-										const Sparse_matrix &S_half_inv);
+										const Sparse_matrix &S_half_inv,
+										const FESystem<dim> &fe_system);
 
 			void print_error_to_file(const Triangulation<dim> &triangulation,
 							 		 const Vector<double> &solution);
@@ -93,7 +94,8 @@ namespace PostProc
 							   const unsigned int present_cycle,
 							   const unsigned int refine_cycle,
 							   ConvergenceTable &convergence_table,
-							   const Sparse_matrix &S_half_inv);
+							   const Sparse_matrix &S_half_inv,
+							   const FESystem<dim> &fe_system);
 
 			// same as above but prints the error to the file manually
 			void print_options(const Triangulation<dim> &triangulation,
@@ -104,7 +106,8 @@ namespace PostProc
 							   const double Linfty_error,
 							   const unsigned int active_cells,
 							   const double hMax,
-							   const Sparse_matrix &S_half_inv);
+							   const Sparse_matrix &S_half_inv,
+							   const FESystem<dim> &fe_system);
 
 			// write the values of computational constants to a file
 			void create_stamp();
@@ -570,7 +573,8 @@ namespace PostProc
    	print_solution_to_file(
    					    const Triangulation<dim> &triangulation,
    					    const Vector<double> &solution,
-   					    const Sparse_matrix &S_half_inv)
+   					    const Sparse_matrix &S_half_inv,
+   					    const FESystem<dim> &fe_system)
    	{
    	typename Triangulation<dim>::active_cell_iterator cell = triangulation.begin_active(), endc = triangulation.end();
 
@@ -583,24 +587,36 @@ namespace PostProc
 	fprintf(fp_solution, "#%s\n","x y at the midpoint of each cell all the solution components");
 	Vector<double> solution_value(constants.nEqn);
 	
+	const QGauss<dim> quadrature(constants.p + 1);
+	const UpdateFlags update_flags  = update_quadrature_points;
+	
+	FEValues<dim>  fe_v(*mapping,fe_system,quadrature, update_flags);
+	std::vector<Point<dim>> quad_points(quadrature.size());
+
 
 	for (; cell != endc ; cell++)
 	{
 		solution_value = 0;
-		VectorTools::point_value(*dof_handler, solution, cell->center(),solution_value);
+		fe_v.reinit(cell);
 
-		// we now convert back to the conventional variables. That is the variables in unsymmetric system	
-		matrix_opt.Sparse_matrix_dot_Vector(S_half_inv,solution);
+		quad_points = fe_v.get_quadrature_points();
 
-                for (unsigned int space = 0 ; space < dim ; space ++)
-                        fprintf(fp_solution, "%f ",cell->center()[space]);
+		for (unsigned int q = 0 ; q < quad_points.size(); q++)
+		{
+			VectorTools::point_value(*dof_handler, solution, quad_points[q],solution_value);	
+
+			// we now convert back to the conventional variables. That is the variables in unsymmetric system	
+			matrix_opt.Sparse_matrix_dot_Vector(S_half_inv,solution);
+
+             for (unsigned int space = 0 ; space < dim ; space ++)
+                        fprintf(fp_solution, "%f ",quad_points[q][space]);
 
 		// we only print variables uptill theta
                 for (int i = 0 ; i < 9 ; i++)
                         fprintf(fp_solution, "%f ",solution_value(i));
+	
+		}
 
-		
-		fprintf(fp_solution,"\n");
 	}
 
 
@@ -701,13 +717,14 @@ namespace PostProc
    				  const unsigned int present_cycle,
    				  const unsigned int total_cycles,
    				  ConvergenceTable &convergence_table,
-   				  const Sparse_matrix &S_half_inv)
+   				  const Sparse_matrix &S_half_inv,
+   				  const FESystem<dim> &fe_system)
    	{
 
    		if (constants.print_all)
    		{
    			if (constants.print_solution)
-   				print_solution_to_file(triangulation,solution,S_half_inv);
+   				print_solution_to_file(triangulation,solution,S_half_inv,fe_system);
 
    			if(constants.print_error)
    				print_error_to_file(triangulation,solution);
@@ -723,7 +740,7 @@ namespace PostProc
    			if (present_cycle == total_cycles - 1)
    			{
    				if(constants.print_solution)
-   					print_solution_to_file(triangulation,solution,S_half_inv);
+   					print_solution_to_file(triangulation,solution,S_half_inv,fe_system);
 
    				if(constants.print_error)
    					print_error_to_file(triangulation,solution);
@@ -749,14 +766,15 @@ namespace PostProc
    				  const double Linfty_error,
    				  const unsigned int active_cells,
    				  const double hMax,
-   				  const Sparse_matrix &S_half_inv)
+   				  const Sparse_matrix &S_half_inv,
+   				  const FESystem<dim> &fe_system)
    	{
 
    		// if we wish to print for all the refinement cycles
    		if (constants.print_all)
    		{
    			if (constants.print_solution)
-   				print_solution_to_file(triangulation,solution,S_half_inv);
+   				print_solution_to_file(triangulation,solution,S_half_inv,fe_system);
 
    			if(constants.print_error)
    				print_error_to_file(triangulation,solution);
@@ -773,7 +791,7 @@ namespace PostProc
    			if (present_cycle == total_cycles - 1)
    			{
    				if(constants.print_solution)
-   					print_solution_to_file(triangulation,solution,S_half_inv);
+   					print_solution_to_file(triangulation,solution,S_half_inv,fe_system);
 
    				if(constants.print_error)
    					print_error_to_file(triangulation,solution);

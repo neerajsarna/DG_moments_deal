@@ -44,6 +44,8 @@ CMakeFiles/test.out.dir/main.cc.o: ../../ring/MeshGenerator_Ring.h
 CMakeFiles/test.out.dir/main.cc.o: ../../ring/Run_Ring.h
 CMakeFiles/test.out.dir/main.cc.o: ../../square/MeshGenerator_Square.h
 CMakeFiles/test.out.dir/main.cc.o: ../../square/Run_Square.h
+CMakeFiles/test.out.dir/main.cc.o: ../../square_circular_cavity/MeshGenerator_Square_CircularCavity.h
+CMakeFiles/test.out.dir/main.cc.o: ../../square_circular_cavity/Run_Square_Circular_Cavity.h
 CMakeFiles/test.out.dir/main.cc.o: ../../systems/BCrhs_systemA.h
 CMakeFiles/test.out.dir/main.cc.o: ../../systems/G105.h
 CMakeFiles/test.out.dir/main.cc.o: ../../systems/G120.h
@@ -55,6 +57,7 @@ CMakeFiles/test.out.dir/main.cc.o: ../../systems/G56.h
 CMakeFiles/test.out.dir/main.cc.o: ../../systems/G71.h
 CMakeFiles/test.out.dir/main.cc.o: ../../systems/G84.h
 CMakeFiles/test.out.dir/main.cc.o: ../../systems/SystemA.h
+CMakeFiles/test.out.dir/main.cc.o: ../Test_Generic/Test_MeshGenerator.h
 CMakeFiles/test.out.dir/main.cc.o: ../include_tests_G20/Test_Solver.h
 CMakeFiles/test.out.dir/main.cc.o: ../include_tests_G20/basic_routines.h
 CMakeFiles/test.out.dir/main.cc.o: /Applications/deal.II.app/Contents/Resources/include/deal.II/algorithms/any_data.h

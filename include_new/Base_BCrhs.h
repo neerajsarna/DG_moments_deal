@@ -32,13 +32,16 @@ namespace BCrhs
 	::assign_wall_properties(double &thetaW,double &vn,double &vt,const unsigned int b_id)
 	{
 
-		Assert(b_id <= 3,ExcNotImplemented());
+		bool assigned_properties = false;
+
+		Assert(b_id <= 4,ExcNotImplemented());
 
 		if (b_id == 0)
 		{
 			thetaW = constants.theta0;
 			vn = constants.vn0;
 			vt = constants.vt0;	
+			assigned_properties = true;
 		}
 
 
@@ -47,6 +50,7 @@ namespace BCrhs
 			thetaW = constants.theta1;
 			vn = constants.vn1;
 			vt = constants.vt1;	
+			assigned_properties = true;
 		}
 
 		if (b_id == 2)
@@ -54,6 +58,7 @@ namespace BCrhs
 			thetaW = constants.theta2;
 			vn = constants.vn2;
 			vt = constants.vt2;	
+			assigned_properties = true;
 		}
 
 		if (b_id == 3)
@@ -61,7 +66,18 @@ namespace BCrhs
 			thetaW = constants.theta3;
 			vn = constants.vn3;
 			vt = constants.vt3;	
+			assigned_properties = true;
 		}
+
+		if (b_id == 4)
+		{
+			thetaW = constants.theta4;
+			vn = constants.vn4;
+			vt = constants.vt4;	
+			assigned_properties = true;
+		}
+
+		Assert(assigned_properties==true,ExcMessage("Wall properties not assigned, check the implementation"));
 
 	}
 
@@ -120,6 +136,8 @@ namespace BCrhs
 
 		
 
+		// the original boundary conditions are of the form B.U = g. In the present function, we are prescribing
+		// the vector g. The vector g can be defined with the help of the coefficients of B.
 		for (unsigned int m = 0 ; m < B.outerSize() ; m++)
 			for (Sparse_matrix::InnerIterator n(B,m); n ; ++n)
 			{

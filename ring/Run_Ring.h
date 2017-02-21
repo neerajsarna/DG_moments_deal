@@ -102,7 +102,7 @@ Base_Solver<dim>::run_ring()
 
 		
 		postproc.print_options(this->triangulation,solution,i,refine_cycles,convergence_table,
-								system_info->base_tensorinfo.S_half_inv);		
+								system_info->base_tensorinfo.S_half_inv,this->finite_element);		
 		
 		timer.leave_subsection();
 

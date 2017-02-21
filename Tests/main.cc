@@ -28,6 +28,8 @@ std::string input_file;
 #include "Base_PostProc.h"
 #include "Base_NumericalIntegration.h"
 #include "Base_Solver.h"
+#include "MeshGenerator_Square_CircularCavity.h"
+
 
 
 #include "ExactSolution_PoissonHeatConduction_G20.h"
@@ -44,6 +46,7 @@ std::string input_file;
 //#include "Test_LinearSolver.h"
 //#include "Test_FEValues.h"
 //#include "Test_MatrixOpt.h"
+#include "Test_MeshGenerator.h"
 
 #include "SystemA.h"
 #include "G26.h"

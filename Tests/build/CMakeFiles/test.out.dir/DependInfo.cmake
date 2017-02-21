@@ -27,6 +27,7 @@ set(CMAKE_CXX_TARGET_INCLUDE_PATH
   "../../Symmetrizer_Data"
   "../../ring"
   "../../square"
+  "../../square_circular_cavity"
   "/opt/intel/compilers_and_libraries_2016.3.170/mac/mkl/include"
   "/usr/local/include"
   "/Applications/deal.II.app/Contents/Resources/include"

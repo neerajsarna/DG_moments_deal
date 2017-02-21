@@ -122,7 +122,8 @@ Base_Solver<dim>::run_periodic()
 										convergence_table,residual_weak_form);
 
 		postproc.print_options(this->triangulation,solution,i,constants.refine_cycles,convergence_table,
-								system_info->base_tensorinfo.S_half_inv);	
+								system_info->base_tensorinfo.S_half_inv,
+								this->finite_element);	
 
 		timer.leave_subsection();
 

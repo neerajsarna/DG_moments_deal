@@ -51,12 +51,13 @@ namespace FEM_Solver
 
         	// running routines for a ring
         	void distribute_dof_allocate_matrix();
-		void allocate_vectors(); 
-           void distribute_dof_allocate_matrix_eigen();
+		    void allocate_vectors(); 
+            void distribute_dof_allocate_matrix_eigen();
         	void run_ring();
             void run_ring_eigen();
 
             void run_square();
+            void run_square_circular_cavity();
 
         	MappingQ<dim,dim> mapping;
         	const unsigned int ngp;
@@ -224,5 +225,6 @@ namespace FEM_Solver
   	#include "Run_Ring.h"
     #include "Run_Periodic.h"
     #include "Run_Square.h"
+    #include "Run_Square_Circular_Cavity.h"
 
 }

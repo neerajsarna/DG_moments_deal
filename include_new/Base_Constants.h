@@ -269,6 +269,21 @@ namespace Constants
 							  Patterns::Double(-100.0,100.0),
 							  "tangential velocity");
 
+
+			prm.declare_entry("theta4",
+							  "0",
+							  Patterns::Double(0,100.0),
+							  "temperature");								  		
+
+			prm.declare_entry("vn4",
+							  "0",
+							  Patterns::Double(0,100.0),
+							  "normal velocity");
+
+			prm.declare_entry("vt4",
+							  "0",
+							  Patterns::Double(-100.0,100.0),
+							  "tangential velocity");
 		}
 		prm.leave_subsection();
 
@@ -326,10 +341,13 @@ namespace Constants
 				Patterns::DirectoryName(),
 				"name of mesh file");
 
-				/*0 for ring and 1 for periodic square*/
+				/*0 for ring, 1 for periodic square,
+				  2 for the square domain and 
+				  3 for square with a circle*/
+
 			prm.declare_entry("mesh type",
 				"0",
-				Patterns::Integer(0,2),
+				Patterns::Integer(0,3),
 				"type of mesh");
 
 				/*0 to read from gmsh
@@ -454,17 +472,20 @@ namespace Constants
 		 	constants.theta1  = prm.get_double("theta1");
 		 	constants.theta2  = prm.get_double("theta2");
 		 	constants.theta3  = prm.get_double("theta3");
+		 	constants.theta4 = prm.get_double("theta4");
 
 		 	constants.vn0 =  prm.get_double("vn0");
 		 	constants.vn1  = prm.get_double("vn1");
 		 	constants.vn2  = prm.get_double("vn2");
 		 	constants.vn3  = prm.get_double("vn3");
+		 	constants.vn4 = prm.get_double("vn4");
 
 
 		 	constants.vt0 =  prm.get_double("vt0");
 		 	constants.vt1  = prm.get_double("vt1");
 		 	constants.vt2  = prm.get_double("vt2");
 		 	constants.vt3  = prm.get_double("vt3");
+		 	constants.vt4  = prm.get_double("vt4");
 		}
 		prm.leave_subsection();
 

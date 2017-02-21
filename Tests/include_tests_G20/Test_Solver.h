@@ -203,7 +203,29 @@ namespace Test_Solver
 
 	// }
 
-	TEST(SquareCavityG20,SquareCavityG20)
+	// TEST(SquareCavityG20,SquareCavityG20)
+	// {
+	// 	const unsigned int dim = 2;
+	// 	ASSERT_EQ(dim,2) << "3D not implemented" << std::endl;
+
+	// 	std::string folder_name = "../system_matrices/";
+	// 	Constants::Base_Constants constants(input_file);
+	// 	G20::G20<dim> G20(constants.constants,folder_name);
+
+	// 	ExactSolution::ExactSolution_Dummy<dim>  exactsolution_dummy(constants.constants,G20.base_tensorinfo.S_half);
+
+	// 	FEM_Solver::Base_Solver<dim> base_solver("mesh_file_name",
+	// 										 "grid",
+	// 										 constants.constants,
+	// 										 &G20,
+	// 										 &exactsolution_dummy);
+
+
+	// 	base_solver.run_square();
+
+	// }
+
+	TEST(SquareCircularCavityG20,SquareCircularCavityG20)
 	{
 		const unsigned int dim = 2;
 		ASSERT_EQ(dim,2) << "3D not implemented" << std::endl;
@@ -221,10 +243,9 @@ namespace Test_Solver
 											 &exactsolution_dummy);
 
 
-		base_solver.run_square();
+		base_solver.run_square_circular_cavity();
 
 	}
-
 
 	// we would like to know the maximum number of cell which can be allocated for various equations
 	// TEST(MaxCells,HandlesMaxCells)
