@@ -39,3 +39,4 @@
 #include "G105.h"
 #include "G120.h"
 #include "Run.h"
+#include "MeshGenerator_Square_CircularCavity.h"

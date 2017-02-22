@@ -48,6 +48,7 @@ namespace G71
 			// a member of the base class.
 			BCrhs::BCrhs_char<dim> bcrhs_char;
 			BCrhs::BCrhs_odd<dim> bcrhs_odd;
+			BCrhs::BCrhs_inflow<dim> bcrhs_inflow;
 
 
 			virtual void reinit_BCrhs();
@@ -62,7 +63,8 @@ namespace G71
 	Base_G71<dim>(constants,folder_name),
 	// CAUTION sending B without relaxational normal velocity
 	bcrhs_char(constants,this->system_data.B.matrix),
-	bcrhs_odd(constants,this->system_data.B.matrix,this->system_data.odd_ID)
+	bcrhs_odd(constants,this->system_data.B.matrix,this->system_data.odd_ID),
+	bcrhs_inflow(constants,this->system_data.Binflow.matrix),
 	{
 
 		// we reinitialize all the data for base_tensorinfo for this particular system
@@ -93,26 +95,6 @@ namespace G71
 	{
 
 		Assert(this->constants.mesh_type != ring,ExcNotImplemented());
-
-		switch(this->constants.bc_type)
-				{
-					case characteristic:
-					{
-						this->base_bcrhs = &bcrhs_char;
-						break;
-					}
-
-					case odd:
-					{
-						this->base_bcrhs = &bcrhs_char;
-						break;
-					}
-
-					default:
-					{
-						Assert(1 == 0, ExcMessage("Should not have reached here"));
-						break;
-					}
-				}
+		this->base_bcrhs = &bcrhs_char;
 	}
 }

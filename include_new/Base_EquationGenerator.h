@@ -33,6 +33,9 @@ namespace EquationGenerator
 			// ID of the odd variables 
 				MatrixUI odd_ID;
 
+			// matrix which models the inflow
+				system_matrix Binflow;
+
 			};
 
 			// a data structure to store all the system data
@@ -153,6 +156,10 @@ namespace EquationGenerator
 	force2(constants),
 	force3(constants)
 	{
+		// the maximum number of matrices in the system
+		const int max_matrices = dim + 4;
+
+		// the base file names, to be updated with the equation number later on
 		basefile.resize(dim + 3);
 
 		unsigned int entry;
@@ -161,16 +168,20 @@ namespace EquationGenerator
 			basefile[i] = "A" + std::to_string(i + 1) + "_";
 
 		entry = dim;
-		Assert(entry < dim + 3,ExcNotInitialized());
+		Assert(entry < max_matrices,ExcNotInitialized());
 		basefile[entry] = "B_";
 
 		entry = dim + 1;
-		Assert(entry < dim + 3,ExcNotInitialized());
+		Assert(entry < max_matrices,ExcNotInitialized());
 		basefile[entry] = "odd_ID_";
 
 		entry = dim + 2;
-		Assert(entry < dim +3 ,ExcNotInitialized());
+		Assert(entry < max_matrices,ExcNotInitialized());
 		basefile[entry] = "Sigma_";
+
+		entry = dim + 3;
+		Assert(entry < max_matrices,ExcNotInitialized());
+		basefile[entry] = "Binflow_";
 	}
 
 	template<int dim>
@@ -397,6 +408,8 @@ namespace EquationGenerator
 			this->build_triplet(system_data.Sigma.Row_Col_Value,basefile_system[dim+2]);
 			this->build_matrix_from_triplet(system_data.Sigma.matrix,system_data.Sigma.Row_Col_Value);
 
+			this->build_triplet(system_data.Binflow.Row_Col_Value,basefile_system[dim+3]);
+			this->build_matrix_from_triplet(system_data.Binflow.matrix,system_data.Binflow.Row_Col_Value);
 	}
 
 	// builds the Projector matrix to be used during computation

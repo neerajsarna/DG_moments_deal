@@ -16,7 +16,11 @@ namespace BCrhs
 						   Vector<double> &bc_rhs,
 						   const unsigned int b_id) = 0;
 
+		// prescribe the attributes of the wall
 		void assign_wall_properties(double &thetaW,double &vn,double &vt,const unsigned int b_id);
+
+		// prescribe the attributes of the inflow
+		void assign_inflow_properties(double &thetaW,double &vn,double &vt,,double &rho,const unsigned int b_id);
 	};
 
 	template<int dim>
@@ -77,11 +81,47 @@ namespace BCrhs
 			assigned_properties = true;
 		}
 
+
 		Assert(assigned_properties==true,ExcMessage("Wall properties not assigned, check the implementation"));
 
 	}
 
-		// BCrhs for a ring with characteristic variables
+	template<int dim>
+	void
+	Base_BCrhs<dim>
+	::assign_inflow_properties(double &thetaW,double &vn,double &vt,double &rho,const unsigned int b_id)
+	{
+
+		bool assigned_properties = false;
+
+		Assert(b_id=>101 && b_id <= 102 ,ExcNotImplemented());
+
+		// the wall ids start from 101, 102
+		if (b_id == 101)
+		{
+			thetaW = constants.theta101;
+			vn = constants.vn101;
+			vt = constants.vt101;	
+			rho = constants.rho101;
+			assigned_properties = true;
+		}
+
+
+		if (b_id == 102)
+		{
+			thetaW = constants.theta102;
+			vn = constants.vn102;
+			vt = constants.vt102;	
+			rho = constants.rho102;
+			assigned_properties = true;
+		}
+
+		Assert(assigned_properties==true,ExcMessage("Inflow properties not assigned, check the implementation"));
+
+	}
+
+
+	// BCrhs using characteristic variables
 	template<int dim>
 	class
 	BCrhs_char:public Base_BCrhs<dim>
@@ -236,4 +276,94 @@ namespace BCrhs
 			bc_rhs(ID_vx) += vn;
 
 			}
+
+
+	// handling of inflow boundary conditions
+	template<int dim>
+	class
+	BCrhs_inflow:public Base_BCrhs<dim>
+	{
+	public:
+		BCrhs_inflow(const constant_data &constants,
+			const Sparse_matrix &Binflow);
+
+		Sparse_matrix Binflow;
+
+		virtual void BCrhs(const Tensor<1,dim,double> p,
+			const Tensor<1,dim,double> normal_vector,
+			Vector<double> &bc_rhs,
+			const unsigned int b_id);
+	};
+
+	template<int dim>
+	BCrhs_inflow<dim>::BCrhs_inflow(const constant_data &constants,
+									const Sparse_matrix &Binflow)
+	:
+	Base_BCrhs<dim>(constants),
+	Binflow(Binflow)
+	{;}
+
+	template<int dim>
+	void
+	BCrhs_inflow<dim>::BCrhs(const Tensor<1,dim,double> p,
+						  const Tensor<1,dim,double> normal_vector,
+						  Vector<double> &bc_rhs,
+						  const unsigned int b_id)
+	{
+		AssertDimension((int)bc_rhs.size(),this->constants.nBC);
+		Assert(dim > 1,ExcNotImplemented());
+
+		//temprature of the incoming distribution function
+		double thetaW;
+
+		// normal velocity of the incoming distribution function
+		double vn;
+
+		// tangential velocity of the incoming distribution function
+		double vt;
+
+		// density of the wall
+		double rho;
+
+		this->assign_inflow_properties(thetaW,vn,vt,rho,b_id);
+
+		const unsigned int ID_rho = this->constants.variable_map.find("rho")->second;
+		const unsigned int ID_theta = this->constants.variable_map.find("theta")->second;
+		const unsigned int ID_vx = this->constants.variable_map.find("vx")->second;
+		const unsigned int ID_vy = this->constants.variable_map.find("vy")->second;
+	
+
+		bc_rhs = 0;
+
+		
+
+		// the original boundary conditions are of the form B.U = g. In the present function, we are prescribing
+		// the vector g. The vector g can be defined with the help of the coefficients of B.
+		for (unsigned int m = 0 ; m < Binflow.outerSize() ; m++)
+			for (Sparse_matrix::InnerIterator n(Binflow,m); n ; ++n)
+			{
+ 			   	// first prescribe the temperature. In the inflow case, we do not have the epsilon in the first 
+ 			   	// equation and therefore do not to take into account the value of the coefficients in the first equation also.
+				if (n.col() == ID_theta)
+					bc_rhs(n.row()) += -sqrt(3.0/2.0) * thetaW * n.value();
+
+				// now prescribe the tangential velocity
+				if(n.col() == ID_vy)
+				{
+					Assert(n.row() != 0,ExcMessage("incorrect boundary matrix. The coefficient for the tangential velocity should not 
+													be present in the first equation"));
+					bc_rhs(n.row()) += vt * n.value();
+				}
+
+				// prescribe the density of the fluid 
+				if (n.col() == ID_rho)
+					bc_rhs(n.row()) += rho * n.value();
+
+				// we now prescribe the normal velocity
+				if (n.row() == 0 && n.col() == ID_vx)
+					bc_rhs(n.rows()) += vn * n.value();
+				
+			}
+
 		}
+}
