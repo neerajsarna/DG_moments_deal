@@ -107,7 +107,7 @@ namespace EquationGenerator
 			// base class for the boundary routines. The decision regarding which boundary system to load
 			// has to be done inside specific systems
 			BCrhs::Base_BCrhs<dim> *base_bcrhs;
-
+			BCrhs::Base_BCrhs<dim> *base_bcrhs_inflow;
 
 			// The following function already knows the Aminus_1D game
 			Full_matrix build_Aminus(const Tensor<1,dim,double> normal_vector);
@@ -116,6 +116,11 @@ namespace EquationGenerator
 			Full_matrix Aminus_1D;
 
 			void build_BCrhs(const Tensor<1,dim,double> p,
+									const Tensor<1,dim,double> normal_vector,
+									Vector<double> &bc_rhs,
+									const unsigned int b_id);
+
+			void build_BCrhs_inflow(const Tensor<1,dim,double> p,
 									const Tensor<1,dim,double> normal_vector,
 									Vector<double> &bc_rhs,
 									const unsigned int b_id);
@@ -160,7 +165,9 @@ namespace EquationGenerator
 		const int max_matrices = dim + 4;
 
 		// the base file names, to be updated with the equation number later on
-		basefile.resize(dim + 3);
+		basefile.resize(max_matrices);
+
+		Assert(basefile.size() == max_matrices,ExcMessage("incorrect vector size"));
 
 		unsigned int entry;
 
@@ -368,6 +375,7 @@ namespace EquationGenerator
 		system_data.P.matrix.resize(nEqn,nEqn);
 		system_data.B.matrix.resize(nBC,nEqn);
 		system_data.Sigma.matrix.resize(nEqn,nBC);
+		system_data.Binflow.matrix.resize(nBC,nEqn);
 
 		// now we loop over all the names in the basefile vector
 		// by default at the system information is expected to be stored in a folder
@@ -635,6 +643,19 @@ namespace EquationGenerator
 
 		base_bcrhs->BCrhs(p,normal_vector,bc_rhs,b_id);
 	}
+
+	template<int dim>
+	void
+	Base_EquationGenerator<dim>
+	::build_BCrhs_inflow(const Tensor<1,dim,double> p,
+				const Tensor<1,dim,double> normal_vector,
+				Vector<double> &bc_rhs,
+				const unsigned int b_id)
+	{
+
+		base_bcrhs_inflow->BCrhs(p,normal_vector,bc_rhs,b_id);
+	}
+
 
 	template<>
 	void

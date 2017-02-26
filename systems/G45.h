@@ -96,5 +96,6 @@ namespace G45
 
 		Assert(this->constants.mesh_type != ring,ExcNotImplemented());
 		this->base_bcrhs = &bcrhs_char;
+		this->base_bcrhs_inflow = &bcrhs_inflow;
 	}
 }

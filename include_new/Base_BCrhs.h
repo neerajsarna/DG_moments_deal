@@ -20,7 +20,7 @@ namespace BCrhs
 		void assign_wall_properties(double &thetaW,double &vn,double &vt,const unsigned int b_id);
 
 		// prescribe the attributes of the inflow
-		void assign_inflow_properties(double &thetaW,double &vn,double &vt,,double &rho,const unsigned int b_id);
+		void assign_inflow_properties(double &thetaW,double &vn,double &vt,double &rho,const unsigned int b_id);
 	};
 
 	template<int dim>
@@ -94,7 +94,7 @@ namespace BCrhs
 
 		bool assigned_properties = false;
 
-		Assert(b_id=>101 && b_id <= 102 ,ExcNotImplemented());
+		Assert(b_id==101 || b_id == 102 ,ExcNotImplemented());
 
 		// the wall ids start from 101, 102
 		if (b_id == 101)
@@ -350,8 +350,7 @@ namespace BCrhs
 				// now prescribe the tangential velocity
 				if(n.col() == ID_vy)
 				{
-					Assert(n.row() != 0,ExcMessage("incorrect boundary matrix. The coefficient for the tangential velocity should not 
-													be present in the first equation"));
+					Assert(n.row() != 0,ExcMessage("incorrect boundary matrix"));
 					bc_rhs(n.row()) += vt * n.value();
 				}
 
@@ -361,7 +360,10 @@ namespace BCrhs
 
 				// we now prescribe the normal velocity
 				if (n.row() == 0 && n.col() == ID_vx)
-					bc_rhs(n.rows()) += vn * n.value();
+				{
+					Assert(n.value() == 1,ExcMessage("incorrect boundary matrix"));
+					bc_rhs(n.row()) += vn * n.value();
+				}
 				
 			}
 

@@ -216,14 +216,31 @@ Base_Solver<dim>
 
 Assert(system_info->system_data.B.matrix.rows() == system_info->system_data.Sigma.matrix.cols() ,ExcMessage("Incorrect dimension"));
 
+// we use a temporary matrix to determine whether inflow or outflow
+Sparse_matrix B_temp;
+ 
+  if(face_itr->boundary_id() == 101 || face_itr->boundary_id() == 102)
+  {
+      integrate_inflow++;
+      B_temp = system_info->system_data.Binflow.matrix;
+  }
+  else
+    B_temp = system_info->system_data.B.matrix;
+
 for (unsigned int q = 0 ; q < fe_v.n_quadrature_points ; q++)
 {
   const double jacobian_value = Jacobian_face[q];
 
   boundary_rhs_value = 0;                 
 
+  // check for inflow or outflow
+  // Incase of inflow provide the inflow rhs
+  if(face_itr->boundary_id() == 101 || face_itr->boundary_id() == 102)
+    system_info->build_BCrhs_inflow(fe_v.quadrature_point(q),fe_v.normal_vector(q),
+                          boundary_rhs_value,face_itr->boundary_id());
 
-  system_info->build_BCrhs(fe_v.quadrature_point(q),fe_v.normal_vector(q),
+  else
+    system_info->build_BCrhs(fe_v.quadrature_point(q),fe_v.normal_vector(q),
                           boundary_rhs_value,face_itr->boundary_id());
 
 
@@ -235,7 +252,7 @@ for (unsigned int q = 0 ; q < fe_v.n_quadrature_points ; q++)
   // Sigma in the PDF = Projector.transpose * Sigma(In the code)
   Full_matrix Sigma_B_P =       Projector.transpose()
                                * system_info->system_data.Sigma.matrix 
-                               * system_info->system_data.B.matrix 
+                               * B_temp
                                * Projector;
 
   Full_matrix Sigma = Projector.transpose()
@@ -269,6 +286,7 @@ Base_Solver<dim>
 ::integrate_boundary_term_char(DoFInfo &dinfo,
                           CellInfo &info)
 {
+  Assert(1 == 0,ExcMessage("Present function has not been developed further, please dont use"));
  const FEValuesBase<dim> &fe_v = info.fe_values();
  typename Triangulation<dim>::face_iterator face_itr = dinfo.face;
  FullMatrix<double> &cell_matrix = dinfo.matrix(0).matrix;

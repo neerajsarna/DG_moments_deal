@@ -567,6 +567,64 @@ namespace PostProc
         }
 
      // compute the solution at all the vertices and print it to a file
+ //    template<int dim>
+ //   	void 
+ //   	Base_PostProc<dim>::
+ //   	print_solution_to_file(
+ //   					    const Triangulation<dim> &triangulation,
+ //   					    const Vector<double> &solution,
+ //   					    const Sparse_matrix &S_half_inv,
+ //   					    const FESystem<dim> &fe_system)
+ //   	{
+ //   	typename Triangulation<dim>::active_cell_iterator cell = triangulation.begin_active(), endc = triangulation.end();
+
+	// FILE *fp_solution;
+
+	// fp_solution = fopen(output_file_names.file_for_num_solution.c_str(),"w+");
+
+	// AssertThrow(fp_solution != NULL,ExcMessage("file not open"));
+
+	// fprintf(fp_solution, "#%s\n","x y at the midpoint of each cell all the solution components");
+	// Vector<double> solution_value(constants.nEqn);
+	
+	// const QGauss<dim> quadrature(constants.p + 1);
+	// const UpdateFlags update_flags  = update_quadrature_points;
+	
+	// FEValues<dim>  fe_v(*mapping,fe_system,quadrature, update_flags);
+	// std::vector<Point<dim>> quad_points(quadrature.size());
+
+
+	// for (; cell != endc ; cell++)
+	// {
+	// 	solution_value = 0;
+	// 	fe_v.reinit(cell);
+
+	// 	quad_points = fe_v.get_quadrature_points();
+
+	// 	for (unsigned int q = 0 ; q < quad_points.size(); q++)
+	// 	{
+	// 		VectorTools::point_value(*dof_handler, solution, quad_points[q],solution_value);	
+
+	// 		// we now convert back to the conventional variables. That is the variables in unsymmetric system	
+	// 		matrix_opt.Sparse_matrix_dot_Vector(S_half_inv,solution);
+
+ //             for (unsigned int space = 0 ; space < dim ; space ++)
+ //                        fprintf(fp_solution, "%f ",quad_points[q][space]);
+
+	// 	// we only print variables uptill heat flux
+ //                for (int i = 0 ; i < 9 ; i++)
+ //                        fprintf(fp_solution, "%f ",solution_value(i));
+
+ //                fprintf(fp_solution, "\n");
+	
+	// 	}
+
+	// }
+
+
+	// fclose(fp_solution);
+ //   	}
+
     template<int dim>
    	void 
    	Base_PostProc<dim>::
@@ -592,36 +650,33 @@ namespace PostProc
 	
 	FEValues<dim>  fe_v(*mapping,fe_system,quadrature, update_flags);
 	std::vector<Point<dim>> quad_points(quadrature.size());
-
+	
 
 	for (; cell != endc ; cell++)
 	{
-		solution_value = 0;
-		fe_v.reinit(cell);
-
-		quad_points = fe_v.get_quadrature_points();
-
-		for (unsigned int q = 0 ; q < quad_points.size(); q++)
+		for (unsigned int vertex = 0 ; vertex < GeometryInfo<dim>::vertices_per_cell ; vertex++)
 		{
-			VectorTools::point_value(*dof_handler, solution, quad_points[q],solution_value);	
+			solution_value = 0;
+			VectorTools::point_value(*dof_handler, solution, cell->vertex(vertex),solution_value);	
 
 			// we now convert back to the conventional variables. That is the variables in unsymmetric system	
 			matrix_opt.Sparse_matrix_dot_Vector(S_half_inv,solution);
 
              for (unsigned int space = 0 ; space < dim ; space ++)
-                        fprintf(fp_solution, "%f ",quad_points[q][space]);
+                        fprintf(fp_solution, "%f ",cell->vertex(vertex)(space));
 
-		// we only print variables uptill theta
+		// we only print variables uptill heat flux
                 for (int i = 0 ; i < 9 ; i++)
                         fprintf(fp_solution, "%f ",solution_value(i));
-	
-		}
 
+                fprintf(fp_solution, "\n");
+		}
 	}
 
 
 	fclose(fp_solution);
    	}
+
 
    	// we compute the error at all the vertices and then print it to a file
     template<int dim>

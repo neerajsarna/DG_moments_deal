@@ -58,10 +58,14 @@ namespace FEM_Solver
 
             void run_square();
             void run_square_circular_cavity();
+            void run_square_circular_cavity_channel();
+            void run_NACA5012();
+            void run_cylinder_free_flow();
 
         	MappingQ<dim,dim> mapping;
         	const unsigned int ngp;
         	const unsigned int ngp_face;
+            unsigned int integrate_inflow = 0;
 
         	// running routines for a periodic box
             void distribute_dof_allocate_matrix_periodic_box();
@@ -222,9 +226,12 @@ namespace FEM_Solver
   	#include "AssembleSystem_Meshworker.h"
     #include "AssembleSystem_Manuel.h"
     #include "AssembleSystem_Manuel_Eigen.h"
-  	#include "Run_Ring.h"
-    #include "Run_Periodic.h"
-    #include "Run_Square.h"
-    #include "Run_Square_Circular_Cavity.h"
+  	#include "Run_Ring.h"    // head conduction in a ring for systemA
+    #include "Run_Periodic.h" // A periodic square box
+    #include "Run_Square.h"     // a simple heated square
+    #include "Run_Square_Circular_Cavity.h" // a square with a rotating circular cavity
+    #include "Run_Square_Circular_Cavity_Channel.h" // flow over a cylinder in a narrow channel
+    #include "Run_NACA5012.h"       // flow over NACA5012 over a channel
+    #include "Run_cylinder.h"       // free flow over a cylinder
 
 }

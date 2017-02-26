@@ -48,7 +48,7 @@ namespace G105
 			// a member of the base class.
 			BCrhs::BCrhs_char<dim> bcrhs_char;
 			BCrhs::BCrhs_odd<dim> bcrhs_odd;
-			BCrhs::bcrhs_inflow<dim> bcrhs_inflow;
+			BCrhs::BCrhs_inflow<dim> bcrhs_inflow;
 
 
 
@@ -97,5 +97,6 @@ namespace G105
 
 		Assert(this->constants.mesh_type != ring,ExcNotImplemented());
 		this->base_bcrhs = &bcrhs_char;
+		this->base_bcrhs_inflow = &bcrhs_inflow;
 	}
 }

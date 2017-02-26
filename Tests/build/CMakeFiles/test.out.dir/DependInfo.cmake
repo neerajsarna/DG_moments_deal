@@ -8,13 +8,6 @@ set(CMAKE_DEPENDS_CHECK_CXX
   )
 set(CMAKE_CXX_COMPILER_ID "Clang")
 
-# Preprocessor definitions for this target.
-set(CMAKE_TARGET_DEFINITIONS_CXX
-  "DEBUG"
-  "TBB_DO_ASSERT=1"
-  "TBB_USE_DEBUG"
-  )
-
 # The include file search paths:
 set(CMAKE_CXX_TARGET_INCLUDE_PATH
   "../../include_new"
@@ -28,6 +21,9 @@ set(CMAKE_CXX_TARGET_INCLUDE_PATH
   "../../ring"
   "../../square"
   "../../square_circular_cavity"
+  "../../square_circular_cavity_channel"
+  "../../NACA"
+  "../../cylinder_free_flow"
   "/opt/intel/compilers_and_libraries_2016.3.170/mac/mkl/include"
   "/usr/local/include"
   "/Applications/deal.II.app/Contents/Resources/include"

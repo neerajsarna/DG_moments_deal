@@ -29,6 +29,9 @@ std::string input_file;
 #include "Base_NumericalIntegration.h"
 #include "Base_Solver.h"
 #include "MeshGenerator_Square_CircularCavity.h"
+#include "MeshGenerator_Square_CircularCavity_Channel.h"
+#include "MeshGenerator_NACA.h"
+#include "MeshGenerator_cylinder.h"
 
 
 
@@ -46,7 +49,8 @@ std::string input_file;
 //#include "Test_LinearSolver.h"
 //#include "Test_FEValues.h"
 //#include "Test_MatrixOpt.h"
-#include "Test_MeshGenerator.h"
+//#include "Test_MeshGenerator.h"
+//#include "Test_VertexDof.h"
 
 #include "SystemA.h"
 #include "G26.h"

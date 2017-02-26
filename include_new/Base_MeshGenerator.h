@@ -33,10 +33,14 @@ namespace MeshGenerator
 			void mesh_internal_square(const unsigned int part_x,const unsigned int part_y);
 			void mesh_internal_periodic_square(const unsigned int part_x,const unsigned int part_y);
 			void mesh_internal_square_circular_cavity(const unsigned int part_x,const unsigned int part_y);
+			void mesh_internal_square_circular_cavity_channel(const unsigned int part_x,const unsigned int part_y);
+			void mesh_gmsh_NACA_channel();
+			void mesh_gmsh_cylinder_free_flow();
 
 			void set_periodic_bid()const;
 			void set_square_bid()const;
 			void set_square_circular_cavity_bid()const;
+			void set_square_circular_cavity_channel_bid()const;
 
 			// read a ring shaped triangulation generated from gmsh
 			void mesh_gmsh_ring();
@@ -61,26 +65,7 @@ namespace MeshGenerator
 			case read_msh:
 			{
 
-				switch(constants.mesh_type)
-				{
-					case ring:
-					{
-						mesh_gmsh_ring();
-						break;
-					}
-					case periodic_square:
-					{
-						mesh_gmsh_periodic_square();
-						break;
-					}
-
-					default:
-					{
-						AssertThrow(1 == 0,ExcMessage("should not have reached here"));
-						break;
-					}
-				}
-				
+				AssertThrow(1 == 0, ExcMessage("Should not have reached here"));
 				break;
 				
 			}
@@ -111,6 +96,25 @@ namespace MeshGenerator
 						mesh_internal_square_circular_cavity(constants.part_x,constants.part_y);
 						break;
 					}
+
+					case Mesh_type::square_circular_cavity_channel:
+					{
+						mesh_internal_square_circular_cavity_channel(constants.part_x,constants.part_y);
+						break;	
+					}
+
+					case Mesh_type::NACA5012:
+					{
+						mesh_gmsh_NACA_channel();
+						break;
+					}
+
+					case Mesh_type::cylinder:
+					{
+						mesh_gmsh_cylinder_free_flow();
+						break;
+					}
+					
 					default:
 					{
 						AssertThrow(1 == 0,ExcMessage("Should not have reached here"));

@@ -88,6 +88,7 @@ namespace G20
    		this->force_factor = this->forcing_factor();
 	}
 
+	// we initialize the right hand side routine with the help of the following function
 	template<int dim>
 	void
 	G20<dim>
@@ -96,5 +97,6 @@ namespace G20
 
 		Assert(this->constants.mesh_type != ring,ExcNotImplemented());
 		this->base_bcrhs = &bcrhs_char;
+		this->base_bcrhs_inflow = &bcrhs_inflow;
 	}
 }

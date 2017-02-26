@@ -18,7 +18,7 @@ enum BC_Type
 // ring domain for systemA and systemB
 // periodic_square for head conduction and Couette flow problem
 enum Mesh_type
-{ring,periodic_square,square_domain,square_circular_cavity};
+{ring,periodic_square,square_domain,square_circular_cavity,square_circular_cavity_channel,NACA5012,cylinder};
 
 // how to generate using dealii or generate using gmsh
 enum Meshing_Options 
@@ -154,6 +154,18 @@ struct constant_data
 	double theta4;
 	double vn4;
 	double vt4;
+
+	// first inflow boundary
+	double rho101;
+	double theta101;
+	double vn101;
+	double vt101;
+
+	// second inflow boundary
+	double rho102;
+	double theta102;
+	double vn102;
+	double vt102;
 
 	Collision_Operator coll_op;
 };

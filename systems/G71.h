@@ -64,7 +64,7 @@ namespace G71
 	// CAUTION sending B without relaxational normal velocity
 	bcrhs_char(constants,this->system_data.B.matrix),
 	bcrhs_odd(constants,this->system_data.B.matrix,this->system_data.odd_ID),
-	bcrhs_inflow(constants,this->system_data.Binflow.matrix),
+	bcrhs_inflow(constants,this->system_data.Binflow.matrix)
 	{
 
 		// we reinitialize all the data for base_tensorinfo for this particular system
@@ -96,5 +96,6 @@ namespace G71
 
 		Assert(this->constants.mesh_type != ring,ExcNotImplemented());
 		this->base_bcrhs = &bcrhs_char;
+		this->base_bcrhs_inflow = &bcrhs_inflow;
 	}
 }

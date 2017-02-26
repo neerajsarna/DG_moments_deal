@@ -64,5 +64,5 @@ endif()
 
 
 set(CMAKE_CXX_IMPLICIT_LINK_LIBRARIES "mpi_cxx;mpi;c++;/Library/Developer/CommandLineTools/usr/lib/clang/7.0.2/lib/darwin/libclang_rt.osx.a")
-set(CMAKE_CXX_IMPLICIT_LINK_DIRECTORIES "/Applications/deal.II.app/Contents/Resources/opt/openmpi-1.10.2/lib;/usr/lib;/usr/local/lib")
+set(CMAKE_CXX_IMPLICIT_LINK_DIRECTORIES "/Applications/deal.II.app/Contents/Resources/opt/openmpi-1.10.2/lib;/opt/intel/compilers_and_libraries_2016.3.170/mac/tbb/lib;/opt/intel/compilers_and_libraries_2016.3.170/mac/compiler/lib;/opt/intel/compilers_and_libraries_2016.3.170/mac/mkl/lib;/usr/lib;/usr/local/lib")
 set(CMAKE_CXX_IMPLICIT_LINK_FRAMEWORK_DIRECTORIES "/Library/Frameworks;/System/Library/Frameworks")

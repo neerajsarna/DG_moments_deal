@@ -284,6 +284,47 @@ namespace Constants
 							  "0",
 							  Patterns::Double(-100.0,100.0),
 							  "tangential velocity");
+
+			prm.declare_entry("rho101",
+							  "0",
+							  Patterns::Double(0,10.0),
+							  "temperature");								  		
+
+			prm.declare_entry("theta101",
+							  "0",
+							  Patterns::Double(0,100.0),
+							  "temperature");								  		
+
+			prm.declare_entry("vn101",
+							  "0",
+							  Patterns::Double(-100,100.0),
+							  "normal velocity");
+
+			prm.declare_entry("vt101",
+							  "0",
+							  Patterns::Double(-100.0,100.0),
+							  "tangential velocity");
+
+
+			prm.declare_entry("rho102",
+							  "0",
+							  Patterns::Double(0,10.0),
+							  "temperature");								  		
+
+			prm.declare_entry("theta102",
+							  "0",
+							  Patterns::Double(0,100.0),
+							  "temperature");								  		
+
+			prm.declare_entry("vn102",
+							  "0",
+							  Patterns::Double(-100,100.0),
+							  "normal velocity");
+
+			prm.declare_entry("vt102",
+							  "0",
+							  Patterns::Double(-100.0,100.0),
+							  "tangential velocity");
 		}
 		prm.leave_subsection();
 
@@ -343,11 +384,15 @@ namespace Constants
 
 				/*0 for ring, 1 for periodic square,
 				  2 for the square domain and 
-				  3 for square with a circle*/
+				  3 for square with a circle
+				  4 for square with circle in a channle flow
+				  5 for NACA5012 in a channel 
+				  6 for a free flow over a cylinder
+				*/
 
 			prm.declare_entry("mesh type",
 				"0",
-				Patterns::Integer(0,3),
+				Patterns::Integer(0,6),
 				"type of mesh");
 
 				/*0 to read from gmsh
@@ -468,11 +513,19 @@ namespace Constants
 			constants.force_variable = prm.get("force_variable");
 			constants.alpha = prm.get_double("alpha");
 
+			// densities of the incoming distributions
+			constants.rho101 = prm.get_double("rho101");
+			constants.rho102 = prm.get_double("rho102");
+
 			constants.theta0 =  prm.get_double("theta0");
 		 	constants.theta1  = prm.get_double("theta1");
 		 	constants.theta2  = prm.get_double("theta2");
 		 	constants.theta3  = prm.get_double("theta3");
 		 	constants.theta4 = prm.get_double("theta4");
+
+		 	// temperature of the incoming distributions
+		 	constants.theta101 = prm.get_double("theta101");
+		 	constants.theta102 = prm.get_double("theta102");
 
 		 	constants.vn0 =  prm.get_double("vn0");
 		 	constants.vn1  = prm.get_double("vn1");
@@ -480,12 +533,20 @@ namespace Constants
 		 	constants.vn3  = prm.get_double("vn3");
 		 	constants.vn4 = prm.get_double("vn4");
 
+		 	// normal velocity of the incoming distributions
+		 	constants.vn101 = prm.get_double("vn101");
+		 	constants.vn102 = prm.get_double("vn102");
+
 
 		 	constants.vt0 =  prm.get_double("vt0");
 		 	constants.vt1  = prm.get_double("vt1");
 		 	constants.vt2  = prm.get_double("vt2");
 		 	constants.vt3  = prm.get_double("vt3");
 		 	constants.vt4  = prm.get_double("vt4");
+
+		 	// tangential velocity of the incoming distribution
+		 	constants.vt101 = prm.get_double("vt101");
+		 	constants.vt102 = prm.get_double("vt102");
 		}
 		prm.leave_subsection();
 
