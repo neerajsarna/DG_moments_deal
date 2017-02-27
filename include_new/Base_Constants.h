@@ -334,6 +334,7 @@ namespace Constants
 				"outputs",
 				Patterns::DirectoryName(),
 				"Directory name for writting results");
+
 		}
 		prm.leave_subsection();
 
@@ -377,22 +378,31 @@ namespace Constants
 
 		prm.enter_subsection("Mesh Info");
 		{
-			prm.declare_entry("filename",
-				"mesh/mesh_file",
+			// filename for the mesh
+			prm.declare_entry("mesh_filename",
+							"mesh/mesh_file",
 				Patterns::DirectoryName(),
 				"name of mesh file");
 
-				/*0 for ring, 1 for periodic square,
-				  2 for the square domain and 
-				  3 for square with a circle
-				  4 for square with circle in a channle flow
-				  5 for NACA5012 in a channel 
-				  6 for a free flow over a cylinder
+				/*0 for ring, 
+				  1 square,
+				  2 square with a circle
+				  3 for NACA5012 in a channel 
 				*/
 
 			prm.declare_entry("mesh type",
 				"0",
-				Patterns::Integer(0,6),
+				Patterns::Integer(0,3),
+				"type of mesh");
+
+			/*0 heat_conduction,
+			  1 inflow_outflow,
+			  2 periodic,
+			  3 lid_driven_cavity*/
+
+			prm.declare_entry("problem type",
+				"0",
+				Patterns::Integer(0,4),
 				"type of mesh");
 
 				/*0 to read from gmsh
@@ -432,6 +442,21 @@ namespace Constants
 				"2",
 				Patterns::Integer(1,1000),
 				"parts in y");
+
+			prm.declare_entry("initial_refinement",
+				"1",
+				Patterns::Integer(1,4),
+				"initial level of refinement");
+
+			prm.declare_entry("inner_radius",
+							 "0.25",
+							 Patterns::Double(0.1,5.0),
+							 "inner radius for the ring");
+
+			prm.declare_entry("outer_radius",
+							  "2.0",
+							  Patterns::Double(0.1,10.0),
+							  "outer radius of the ring");
 
 		}
 		prm.leave_subsection();
@@ -562,8 +587,9 @@ namespace Constants
 		prm.enter_subsection("Mesh Info");
 		{
 			entered = true;
-			constants.mesh_filename = prm.get("filename");
+			constants.mesh_filename = prm.get("mesh_filename");
 			constants.mesh_type = (Mesh_type)prm.get_integer("mesh type");
+			constants.problem_type = (Problem_type)prm.get_integer("problem type");
 			constants.mesh_options = (Meshing_Options)prm.get_integer("mesh options");
 			constants.xl = prm.get_double("left boundary");
 			constants.xr = prm.get_double("right boundary");

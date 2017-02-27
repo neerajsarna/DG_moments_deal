@@ -8,15 +8,13 @@ namespace MeshGenerator
 	Base_MeshGenerator
 	{
 		public:
-			Base_MeshGenerator(const std::string &mesh_file_name,
+			Base_MeshGenerator(
 							   const std::string &output_file_name,
 							   const constant_data &constants);
         
         	SphericalManifold<dim> boundary;
         	Triangulation<dim> triangulation;
         	GridIn<dim> gridin;
-
-			const std::string mesh_file_name;
 
 			const constant_data constants;
 
@@ -28,23 +26,20 @@ namespace MeshGenerator
 			// The index is just used to manipulate the name of the file
 			void print_grid(const unsigned int index) const;
 
+			// routine for developing the mesh
+			void develop_mesh();
+
+			// read mesh from .msh file
+			void read_gmsh();
+
 			// generate ring shaped triangulation internally
 			void mesh_internal_ring();
-			void mesh_internal_square(const unsigned int part_x,const unsigned int part_y);
-			void mesh_internal_periodic_square(const unsigned int part_x,const unsigned int part_y);
-			void mesh_internal_square_circular_cavity(const unsigned int part_x,const unsigned int part_y);
-			void mesh_internal_square_circular_cavity_channel(const unsigned int part_x,const unsigned int part_y);
-			void mesh_gmsh_NACA_channel();
-			void mesh_gmsh_cylinder_free_flow();
-
+			void mesh_internal_square(const unsigned int parts_x,const unsigned int parts_y);
+			void mesh_internal_square_circular_cavity();
+			
 			void set_periodic_bid()const;
 			void set_square_bid()const;
 			void set_square_circular_cavity_bid()const;
-			void set_square_circular_cavity_channel_bid()const;
-
-			// read a ring shaped triangulation generated from gmsh
-			void mesh_gmsh_ring();
-			void mesh_gmsh_periodic_square();
 
 			// the following routine handles the refinement of the grid
 			void refinement_handling(const unsigned int present_cycle,
@@ -52,85 +47,16 @@ namespace MeshGenerator
 	};
 
 	template<int dim>
-	Base_MeshGenerator<dim>::Base_MeshGenerator(const std::string &mesh_file_name,
+	Base_MeshGenerator<dim>::Base_MeshGenerator(
 											    const std::string &output_file_name,
 											    const constant_data &constants)
 	:
-	mesh_file_name(mesh_file_name),
 	constants(constants),
 	output_file_name(output_file_name)
 	{
-		switch(constants.mesh_options)
-		{
-			case read_msh:
-			{
-
-				AssertThrow(1 == 0, ExcMessage("Should not have reached here"));
-				break;
-				
-			}
-			case generate_internal:
-			{
-
-				switch(constants.mesh_type)
-				{
-					case ring:
-					{
-						mesh_internal_ring();
-						break;
-					}
-					case periodic_square:
-					{
-						mesh_internal_periodic_square(constants.part_x,constants.part_y);
-						break;
-					}
-
-					case Mesh_type::square_domain:
-					{
-						mesh_internal_square(constants.part_x,constants.part_y);
-						break;
-					}
-
-					case Mesh_type::square_circular_cavity:
-					{
-						mesh_internal_square_circular_cavity(constants.part_x,constants.part_y);
-						break;
-					}
-
-					case Mesh_type::square_circular_cavity_channel:
-					{
-						mesh_internal_square_circular_cavity_channel(constants.part_x,constants.part_y);
-						break;	
-					}
-
-					case Mesh_type::NACA5012:
-					{
-						mesh_gmsh_NACA_channel();
-						break;
-					}
-
-					case Mesh_type::cylinder:
-					{
-						mesh_gmsh_cylinder_free_flow();
-						break;
-					}
-					
-					default:
-					{
-						AssertThrow(1 == 0,ExcMessage("Should not have reached here"));
-						break;
-					}
-				}
-				break;
-			}
-
-			default:
-			{
-				Assert(1 == 0,ExcMessage("Should not have reached here "));
-				break;
-			}
-		}
-
+		// first we develop the mesh
+		develop_mesh();
+		
 	}
 
 	// the following routine prints the mesh info on the screen
@@ -190,12 +116,170 @@ namespace MeshGenerator
 	Base_MeshGenerator<dim>::refinement_handling(const unsigned int present_cycle,
 												 const unsigned int total_cycles)
 	{
-		// if its not the last cycle then we refine
-		if (present_cycle != total_cycles - 1)
-			triangulation.refine_global(1);
+		switch (constants.mesh_type)
+		{
+			case ring:
+			{
+				switch(constants.problem_type)
+				{
+					// heat conduction between the outer and the inner ring
+					case heat_conduction:
+					{
+						// since we have set the manifolds therefore we can perform the refinement
+						if (present_cycle != total_cycles - 1)
+							triangulation.refine_global(1);
+
+						break;
+					}
+
+					// in case of inflow and outflow the boundary ids will be prescribed by gmsh
+					case inflow_outflow:
+					{
+						AssertThrow(total_cycles == 1,ExcMessage("Could not perform grid refinement"));
+						break;
+					}
+
+					case periodic:
+					case lid_driven_cavity:
+					default:
+					{
+						AssertThrow(1 == 0,ExcNotImplemented());
+						break;
+					}		
+
+				}
+
+				break;
+			}
+
+			case square_domain:
+			{
+
+				switch(constants.problem_type)
+				{
+					case periodic:
+					{
+                	// Since for this case the boundary ids have to be prescribed again therefore we need
+                	// to generate the triangulation again.
+						mesh_internal_square(constants.part_x,constants.part_y + 100 * (present_cycle + 1));
+						break;
+					}
+
+					case heat_conduction:
+					case lid_driven_cavity:
+					case inflow_outflow:
+					{
+                	// The boundary indicators stay intact even after the refinement
+						triangulation.refine_global(1);
+						break;
+					}
+
+					default:
+					{
+						AssertThrow(1 == 0, ExcMessage("Should not have reached here"));
+						break;
+					}
+
+				}
+				break;
+			}
+
+			case square_circular_cavity:
+			{
+				switch(constants.problem_type)
+			    {
+				    case heat_conduction:
+                    {
+                    	// since we have provided the manifolds therefore grid refinement can be conducted.
+                        triangulation.refine_global(1);
+                        break;
+                    }
+
+                    case inflow_outflow:
+                    {
+                    	AssertThrow(total_cycles == 1,ExcMessage("Could not perform grid refinement"));
+                        break;
+                    }
+
+                    case lid_driven_cavity:
+                    case periodic:
+                    default:
+                    {
+                        AssertThrow(1 == 0 ,ExcNotImplemented());
+                        break;
+                    } 
+                }
+					
+				break;
+			}
+
+			case NACA5012:
+			{
+				AssertThrow(total_cycles == 1,ExcMessage("Could not perform grid refinement"));
+				break;
+			}
+		}
+
 	}
 
+	template<int dim>
+	void 
+	Base_MeshGenerator<dim>::develop_mesh()
+	{
+		bool loaded_mesh = false;
+
+		// if a problem involves inflow and outflow, we will simply use gmsh for meshing
+		if (constants.problem_type == inflow_outflow)
+		{
+			loaded_mesh = true;
+			read_gmsh();
+		}
+
+		else 
+		{
+			if (constants.mesh_type == ring)
+			{
+				loaded_mesh = true;
+				mesh_internal_ring();
+			}
+
+			if (constants.mesh_type == square_domain)
+			{
+				loaded_mesh = true;
+				mesh_internal_square(constants.part_x,constants.part_y);
+			}
+
+			if (constants.mesh_type == square_circular_cavity)
+			{
+				loaded_mesh = true;
+				mesh_internal_square_circular_cavity();
+			}
+
+		}
+
+		AssertThrow(loaded_mesh,ExcMessage("Mesh not loaded"));
+
+	}
+
+	template<int dim>
+	void 
+	Base_MeshGenerator<dim>::read_gmsh()
+	{
+		    triangulation.clear();
+  			gridin.attach_triangulation(triangulation);
+  			std::ifstream f(constants.mesh_filename);
+  			gridin.read_msh(f);
+	}
+
+	// mesh generator for a ring shaped geometry
 	#include "MeshGenerator_Ring.h"
-	#include "MeshGenerator_PeriodicSquare.h"
+
+	// mesh generator for a square
 	#include "MeshGenerator_Square.h"
+
+	// mesh generator for a square with a ring
+	#include "MeshGenerator_Square_CircularCavity.h"
+
+	// mesh generator periodic square
+	#include "MeshGenerator_PeriodicSquare.h"
 }

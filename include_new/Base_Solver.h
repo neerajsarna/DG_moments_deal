@@ -13,7 +13,7 @@ namespace FEM_Solver
 		typedef MeshWorker::IntegrationInfo<dim> CellInfo;
 
 		public:
-			Base_Solver(const std::string &mesh_file_name,
+			Base_Solver(
 						const std::string &output_file_name,
 						const constant_data &constants,
 						EquationGenerator::Base_EquationGenerator<dim> *equation_info,
@@ -52,30 +52,16 @@ namespace FEM_Solver
         	// running routines for a ring
         	void distribute_dof_allocate_matrix();
 		    void allocate_vectors(); 
-            void distribute_dof_allocate_matrix_eigen();
-        	void run_ring();
-            void run_ring_eigen();
-
-            void run_square();
-            void run_square_circular_cavity();
-            void run_square_circular_cavity_channel();
-            void run_NACA5012();
-            void run_cylinder_free_flow();
+            void run();
 
         	MappingQ<dim,dim> mapping;
         	const unsigned int ngp;
         	const unsigned int ngp_face;
             unsigned int integrate_inflow = 0;
 
-        	// running routines for a periodic box
+        	// routines for a periodic box
             void distribute_dof_allocate_matrix_periodic_box();
-        	void distribute_dof_allocate_matrix_periodic_box_eigen();
         	void run_periodic();
-            void run_periodic_eigen();
-
-            // same as above but just compute the error from the unsymmetric system
-            void run_periodic_unsymmetric();
-            void run_periodic_unsymmetric_eigen();
 
         	// assembling routines for meshworker
     		// variables and functions for meshworker
@@ -105,13 +91,7 @@ namespace FEM_Solver
             void assemble_system_periodic_odd();
 
 
-            // same as above but for a system matrix based upon eigen
-            void assemble_system_char_eigen();
-            void assemble_system_odd_eigen();
-            void assemble_system_periodic_char_eigen();
-            void assemble_system_periodic_odd_eigen();
-
-
+            // integration for every different element
         	void integrate_cell_manuel(Sparse_matrix &cell_matrix, Vector<double> &cell_rhs,
         								FEValuesBase<dim> &fe_v,  std::vector<double> &J,
         								std::vector<Vector<double>> &source_term_value, const typename DoFHandler<dim>::active_cell_iterator &cell);
@@ -154,13 +134,13 @@ namespace FEM_Solver
 	};
 
 	template<int dim>
-	Base_Solver<dim>::Base_Solver(const std::string &mesh_file_name,
+	Base_Solver<dim>::Base_Solver(
 								  const std::string &output_file_name,
 								  const constant_data &constants,
 								  EquationGenerator::Base_EquationGenerator<dim> *equation_info,
                                   ExactSolution::Base_ExactSolution<dim> *exact_solution)
 	:
-	MeshGenerator::Base_MeshGenerator<dim>(mesh_file_name,output_file_name,constants),
+	MeshGenerator::Base_MeshGenerator<dim>(output_file_name,constants),
 	PeriodicityHandler::Base_PeriodicityHandler<dim>(constants.xl,constants.xr),
 	constants(constants),
     base_exactsolution(exact_solution),
@@ -199,39 +179,15 @@ namespace FEM_Solver
     residual.reinit(dof_handler.n_dofs());
    }
 
-    //same as above but we now initialize a sparse matrix from eigen
-    template<int dim>
-    void
-    Base_Solver<dim>::distribute_dof_allocate_matrix_eigen()
-    {
-        dof_handler.distribute_dofs(finite_element);
-
-        DynamicSparsityPattern dsp(dof_handler.n_dofs(),dof_handler.n_dofs());
-
-
-        DoFTools::make_flux_sparsity_pattern (dof_handler, dsp);
-
-
-        global_matrix_eigen.resize(dof_handler.n_dofs(),dof_handler.n_dofs());
-        global_matrix_eigen.reserve(dsp.n_nonzero_elements());   
-        global_matrix_eigen.setZero();
-
-        solution.reinit (dof_handler.n_dofs());
-        system_rhs.reinit (dof_handler.n_dofs());
-
-    }
+  
 
 
     #include "Integrate_PerCell.h"
   	#include "AssembleSystem_Meshworker.h"
     #include "AssembleSystem_Manuel.h"
     #include "AssembleSystem_Manuel_Eigen.h"
-  	#include "Run_Ring.h"    // head conduction in a ring for systemA
-    #include "Run_Periodic.h" // A periodic square box
-    #include "Run_Square.h"     // a simple heated square
-    #include "Run_Square_Circular_Cavity.h" // a square with a rotating circular cavity
-    #include "Run_Square_Circular_Cavity_Channel.h" // flow over a cylinder in a narrow channel
-    #include "Run_NACA5012.h"       // flow over NACA5012 over a channel
-    #include "Run_cylinder.h"       // free flow over a cylinder
+    #include "Run_System.h"     // run a particular test case(Not involving periodic boundaries)
+    #include "Run_Periodic.h"   // A periodic square box
+    
 
 }

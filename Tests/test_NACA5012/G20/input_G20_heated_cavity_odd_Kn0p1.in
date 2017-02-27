@@ -89,13 +89,23 @@ subsection System Properties
 end
 
 subsection Mesh Info
-	set filename = mesh
+	set mesh_filename = ../../NACA/NACA5012.msh
 
-	# 0 for ring and 1 for periodic square, 2 for square cavity
-	# 3 for a square with a circle in the center
-	# 4 channel flow over a cylinder
-	# 5 NACA 5012 channel flow
-	set mesh type = 5
+	#0 for ring
+	#1 square
+	#2 square with a circle
+	#3 NACA5012
+				
+	set mesh type = 3
+
+	#0 heat_conduction,
+	#1 inflow_outflow
+	#2 periodic,
+	#3 heated_cavity,
+	#4 lid_driven_cavity,
+	#5 heated_circle
+
+	set problem type = 1
 
 	# 0 for reading gmsh and 1 for internal generation
 	set mesh options = 1
@@ -106,6 +116,9 @@ subsection Mesh Info
 	set bottom boundary = -0.5
 	set part_x = 50
 	set part_y = 50
+	set inner_radius = 0.25
+	set outer_radius = 2.0
+	set initial_refinement = 1
 end
 
 subsection Printing Options
@@ -117,5 +130,5 @@ subsection Printing Options
 end
 
 subsection Output Directory Name
-	set Main Output Directory = output_G20_odd_Kn1p0
+	set Main Output Directory = output_G20_odd_Kn0p1
 end

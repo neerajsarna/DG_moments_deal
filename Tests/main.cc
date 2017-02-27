@@ -28,11 +28,6 @@ std::string input_file;
 #include "Base_PostProc.h"
 #include "Base_NumericalIntegration.h"
 #include "Base_Solver.h"
-#include "MeshGenerator_Square_CircularCavity.h"
-#include "MeshGenerator_Square_CircularCavity_Channel.h"
-#include "MeshGenerator_NACA.h"
-#include "MeshGenerator_cylinder.h"
-
 
 
 #include "ExactSolution_PoissonHeatConduction_G20.h"

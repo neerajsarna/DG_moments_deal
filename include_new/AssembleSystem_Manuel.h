@@ -472,7 +472,7 @@ template<int dim>
 void 
 Base_Solver<dim>::assemble_system_periodic_char()
   {
-      Assert(constants.mesh_type == periodic_square,ExcMessage("Present routine only for periodic squares"));
+      Assert(constants.problem_type == periodic,ExcMessage("Present routine only for periodic squares"));
 
       // counters 
       unsigned int boundary_wall = 0;
@@ -740,7 +740,7 @@ template<int dim>
 void 
 Base_Solver<dim>::assemble_system_periodic_odd()
   {
-      Assert(constants.mesh_type == periodic_square,ExcMessage("Present routine only for periodic squares"));
+      Assert(constants.problem_type == periodic,ExcMessage("Present routine only for periodic squares"));
 
       // counters 
       unsigned int boundary_wall = 0;

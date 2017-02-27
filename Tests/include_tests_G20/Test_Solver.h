@@ -180,96 +180,7 @@ namespace Test_Solver
 	// }
 
 
-
-	// TEST(PoissonHeatG20,HandlesPoissonHeatG20)
-	// {
-	// 	const unsigned int dim = 2;
-	// 	ASSERT_EQ(dim,2) << "3D not implemented" << std::endl;
-
-	// 	std::string folder_name = "../system_matrices/";
-	// 	Constants::Base_Constants constants(input_file);
-	// 	G20::G20<dim> G20(constants.constants,folder_name);
-
-	// 	ExactSolution::G20_PoissonHeat<dim>  G20_PoissonHeat(constants.constants,G20.base_tensorinfo.S_half);
-
-	// 	FEM_Solver::Base_Solver<dim> base_solver("mesh_file_name",
-	// 										 "grid",
-	// 										 constants.constants,
-	// 										 &G20,
-	// 										 &G20_PoissonHeat);
-
-
-	// 	base_solver.run_periodic();
-
-	// }
-
-	// TEST(SquareCavityG20,SquareCavityG20)
-	// {
-	// 	const unsigned int dim = 2;
-	// 	ASSERT_EQ(dim,2) << "3D not implemented" << std::endl;
-
-	// 	std::string folder_name = "../system_matrices/";
-	// 	Constants::Base_Constants constants(input_file);
-	// 	G20::G20<dim> G20(constants.constants,folder_name);
-
-	// 	ExactSolution::ExactSolution_Dummy<dim>  exactsolution_dummy(constants.constants,G20.base_tensorinfo.S_half);
-
-	// 	FEM_Solver::Base_Solver<dim> base_solver("mesh_file_name",
-	// 										 "grid",
-	// 										 constants.constants,
-	// 										 &G20,
-	// 										 &exactsolution_dummy);
-
-
-	// 	base_solver.run_square();
-
-	// }
-
-	// TEST(SquareCircularCavityG20,SquareCircularCavityG20)
-	// {
-	// 	const unsigned int dim = 2;
-	// 	ASSERT_EQ(dim,2) << "3D not implemented" << std::endl;
-
-	// 	std::string folder_name = "../system_matrices/";
-	// 	Constants::Base_Constants constants(input_file);
-	// 	G20::G20<dim> G20(constants.constants,folder_name);
-
-	// 	ExactSolution::ExactSolution_Dummy<dim>  exactsolution_dummy(constants.constants,G20.base_tensorinfo.S_half);
-
-	// 	FEM_Solver::Base_Solver<dim> base_solver("mesh_file_name",
-	// 										 "grid",
-	// 										 constants.constants,
-	// 										 &G20,
-	// 										 &exactsolution_dummy);
-
-
-	// 	base_solver.run_square_circular_cavity();
-
-	// }
-
-	// TEST(ChannelFlowG20,ChannelFlowG20)
-	// {
-	// 	const unsigned int dim = 2;
-	// 	ASSERT_EQ(dim,2) << "3D not implemented" << std::endl;
-
-	// 	std::string folder_name = "../system_matrices/";
-	// 	Constants::Base_Constants constants(input_file);
-	// 	G20::G20<dim> G20(constants.constants,folder_name);
-
-	// 	ExactSolution::ExactSolution_Dummy<dim>  exactsolution_dummy(constants.constants,G20.base_tensorinfo.S_half);
-
-	// 	FEM_Solver::Base_Solver<dim> base_solver("mesh_file_name",
-	// 										 "grid",
-	// 										 constants.constants,
-	// 										 &G20,
-	// 										 &exactsolution_dummy);
-
-
-	// 	base_solver.run_square_circular_cavity_channel();
-
-	// }
-
-	TEST(FreeFlowG20,FreeFlowG20)
+	TEST(SolverG20,HandlesSolverG20)
 	{
 		const unsigned int dim = 2;
 		ASSERT_EQ(dim,2) << "3D not implemented" << std::endl;
@@ -278,40 +189,29 @@ namespace Test_Solver
 		Constants::Base_Constants constants(input_file);
 		G20::G20<dim> G20(constants.constants,folder_name);
 
-		ExactSolution::ExactSolution_Dummy<dim>  exactsolution_dummy(constants.constants,G20.base_tensorinfo.S_half);
-
-		FEM_Solver::Base_Solver<dim> base_solver("mesh_file_name",
-											 "grid",
-											 constants.constants,
-											 &G20,
-											 &exactsolution_dummy);
 
 
-		switch(constants.constants.mesh_type)
+
+		if(constants.constants.problem_type != periodic)
 		{
-					case Mesh_type::NACA5012:
-					{
-						base_solver.run_NACA5012();
-						break;
-					}
+			ExactSolution::ExactSolution_Dummy<dim>  exactsolution_dummy(constants.constants,G20.base_tensorinfo.S_half);
 
-					case Mesh_type::cylinder:
-					{
-						base_solver.run_cylinder_free_flow();
-						break;
-					}
+			FEM_Solver::Base_Solver<dim> base_solver("grid",
+											 	 constants.constants,
+											 	 &G20,
+											 	 &exactsolution_dummy);
+			base_solver.run();
+		}
 
-					case Mesh_type::square_circular_cavity_channel:
-					{
-						base_solver.run_square_circular_cavity_channel();
-						break;
-					}
+		else
+		{
+			ExactSolution::G20_PoissonHeat<dim>  G20_PoissonHeat(constants.constants,G20.base_tensorinfo.S_half);
 
-					default:
-					{
-						AssertThrow(1 == 0,ExcMessage("Should not have reached here"));
-						break;
-					}
+			FEM_Solver::Base_Solver<dim> base_solver("grid",
+													 constants.constants,
+													 &G20,
+													 &G20_PoissonHeat);
+			base_solver.run_periodic();
 		}
 		
 

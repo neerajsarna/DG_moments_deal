@@ -39,9 +39,6 @@
 #include "G105.h"
 #include "G120.h"
 #include "Run.h"
-#include "MeshGenerator_Square_CircularCavity.h"
-#include "MeshGenerator_Square_CircularCavity_Channel.h"
-#include "MeshGenerator_NACA.h"
-#include "MeshGenerator_cylinder.h"
+
 
 

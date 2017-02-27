@@ -1,4 +1,3 @@
-
 // meshworker works on distributed memory type
 enum Assembly_Type
 {meshworker, manuel};
@@ -15,10 +14,13 @@ enum Refinement
 enum BC_Type
 {characteristic,odd};
 
-// ring domain for systemA and systemB
-// periodic_square for head conduction and Couette flow problem
+// types of mesh which will be generated 
 enum Mesh_type
-{ring,periodic_square,square_domain,square_circular_cavity,square_circular_cavity_channel,NACA5012,cylinder};
+{ring,square_domain,square_circular_cavity,NACA5012};
+
+// types of test cases
+enum Problem_type
+{heat_conduction,inflow_outflow,periodic,lid_driven_cavity};
 
 // how to generate using dealii or generate using gmsh
 enum Meshing_Options 
@@ -82,6 +84,9 @@ struct constant_data
 		// the type of mesh to be used
 	Mesh_type mesh_type;
 
+	// type of test case 
+	Problem_type problem_type;
+
 		// different options for meshing
 	Meshing_Options mesh_options;
 	std::string mesh_filename;
@@ -103,6 +108,13 @@ struct constant_data
 	unsigned int part_x;
 
 	unsigned int part_y;
+
+	// inner and outer radius for the ring geometry
+	unsigned int outer_radius;
+	unsigned int inner_radius;
+
+	// initial refinement level
+	unsigned int initial_refinement;
 
 	// we create a map between the id of the variable and it's name
 	std::map<std::string,unsigned int> variable_map;

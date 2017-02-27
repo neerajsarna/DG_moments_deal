@@ -130,42 +130,10 @@ namespace SystemA
 	SystemA<dim>
 	::reinit_BCrhs()
 	{
-					//the following implementation is mesh dependent
-		switch(this->constants.mesh_type)
-		{
-			case ring:
-			{
-				switch (this->constants.bc_type)
-				{
-					case characteristic:
-					{
-						this->base_bcrhs = &bcrhs_ring_char_systemA;
-						break;
-					}
-					case odd:
-					{
-						// we change the implementation due to new boundary condition implementation
-						this->base_bcrhs = &this->bcrhs_ring_char_systemA;
-						break;
-					}
-				}
-				break;
-			}
-
-			case periodic_square:
-			{
-				AssertThrow(1 == 0, ExcNotImplemented());
-
-				break;
-			}
-			default:
-			{
-				Assert(1 ==0,ExcNotImplemented());
-				break;
-			}
-		}
-		
+		//the following implementation is mesh dependent
+		this->base_bcrhs = &bcrhs_ring_char_systemA;
 	}
+	
 }
 
 

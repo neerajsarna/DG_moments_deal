@@ -70,9 +70,10 @@ subsection System Properties
 end
 
 subsection Mesh Info
-	set filename = mesh
+	set mesh_filename = mesh
 
-	# 0 for ring and 1 for periodic square
+	# 0 for ring and
+	# 1 for periodic square
 	set mesh type = 1
 
 	# 0 for reading gmsh and 1 for internal generation
@@ -84,6 +85,8 @@ subsection Mesh Info
 	set bottom boundary = -0.5
 	set part_x = 1
 	set part_y = 100
+
+	set problem type = periodic
 end
 
 subsection Printing Options

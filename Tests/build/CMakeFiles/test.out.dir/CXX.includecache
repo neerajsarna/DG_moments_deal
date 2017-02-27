@@ -6,10 +6,6 @@
 
 #IncludeRegexTransform: 
 
-../../NACA/MeshGenerator_NACA.h
-
-../../NACA/Run_NACA5012.h
-
 ../../Projector_Data/Tensorial_InvProjector.h
 
 ../../Projector_Data/Tensorial_Projector.h
@@ -17,10 +13,6 @@
 ../../Symmetrizer_Data/Tensorial_InvSymmetrizer.h
 
 ../../Symmetrizer_Data/Tensorial_Symmetrizer.h
-
-../../cylinder_free_flow/MeshGenerator_cylinder.h
-
-../../cylinder_free_flow/Run_cylinder.h
 
 ../../include_new/AssembleSystem_Manuel.h
 
@@ -45,10 +37,12 @@
 ../../include_new/Base_MeshGenerator.h
 MeshGenerator_Ring.h
 ../../include_new/MeshGenerator_Ring.h
-MeshGenerator_PeriodicSquare.h
-../../include_new/MeshGenerator_PeriodicSquare.h
 MeshGenerator_Square.h
 ../../include_new/MeshGenerator_Square.h
+MeshGenerator_Square_CircularCavity.h
+../../include_new/MeshGenerator_Square_CircularCavity.h
+MeshGenerator_PeriodicSquare.h
+../../include_new/MeshGenerator_PeriodicSquare.h
 
 ../../include_new/Base_NumericalIntegration.h
 
@@ -63,20 +57,10 @@ AssembleSystem_Manuel.h
 ../../include_new/AssembleSystem_Manuel.h
 AssembleSystem_Manuel_Eigen.h
 ../../include_new/AssembleSystem_Manuel_Eigen.h
-Run_Ring.h
-../../include_new/Run_Ring.h
+Run_System.h
+../../include_new/Run_System.h
 Run_Periodic.h
 ../../include_new/Run_Periodic.h
-Run_Square.h
-../../include_new/Run_Square.h
-Run_Square_Circular_Cavity.h
-../../include_new/Run_Square_Circular_Cavity.h
-Run_Square_Circular_Cavity_Channel.h
-../../include_new/Run_Square_Circular_Cavity_Channel.h
-Run_NACA5012.h
-../../include_new/Run_NACA5012.h
-Run_cylinder.h
-../../include_new/Run_cylinder.h
 
 ../../include_new/Base_TensorInfo.h
 Tensorial_Projector.h
@@ -99,6 +83,14 @@ Eigen/SparseCore
 ../../include_new/Integrate_PerCell.h
 
 ../../include_new/LinearSolver.h
+
+../../include_new/MeshGenerator_Ring.h
+
+../../include_new/MeshGenerator_Square.h
+
+../../include_new/MeshGenerator_Square_CircularCavity.h
+
+../../include_new/Run_System.h
 
 ../../include_new/basic_data_structures.h
 
@@ -257,22 +249,6 @@ algorithm
 ../../periodic_square/Run_Periodic.h
 
 ../../ring/ExactSolution_SystemA.h
-
-../../ring/MeshGenerator_Ring.h
-
-../../ring/Run_Ring.h
-
-../../square/MeshGenerator_Square.h
-
-../../square/Run_Square.h
-
-../../square_circular_cavity/MeshGenerator_Square_CircularCavity.h
-
-../../square_circular_cavity/Run_Square_Circular_Cavity.h
-
-../../square_circular_cavity_channel/MeshGenerator_Square_CircularCavity_Channel.h
-
-../../square_circular_cavity_channel/Run_Square_Circular_Cavity_Channel.h
 
 ../../systems/BCrhs_systemA.h
 
@@ -4669,14 +4645,6 @@ Base_NumericalIntegration.h
 /Users/neerajsarna/sciebo/DG_moments_deal/Tests/Base_NumericalIntegration.h
 Base_Solver.h
 /Users/neerajsarna/sciebo/DG_moments_deal/Tests/Base_Solver.h
-MeshGenerator_Square_CircularCavity.h
-/Users/neerajsarna/sciebo/DG_moments_deal/Tests/MeshGenerator_Square_CircularCavity.h
-MeshGenerator_Square_CircularCavity_Channel.h
-/Users/neerajsarna/sciebo/DG_moments_deal/Tests/MeshGenerator_Square_CircularCavity_Channel.h
-MeshGenerator_NACA.h
-/Users/neerajsarna/sciebo/DG_moments_deal/Tests/MeshGenerator_NACA.h
-MeshGenerator_cylinder.h
-/Users/neerajsarna/sciebo/DG_moments_deal/Tests/MeshGenerator_cylinder.h
 ExactSolution_PoissonHeatConduction_G20.h
 /Users/neerajsarna/sciebo/DG_moments_deal/Tests/ExactSolution_PoissonHeatConduction_G20.h
 ExactSolution_PoissonHeatConduction_G35.h
