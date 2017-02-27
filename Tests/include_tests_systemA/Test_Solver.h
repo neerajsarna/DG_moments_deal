@@ -125,24 +125,28 @@ namespace Test_Solver
 
 		ExactSolution::ExactSolution_SystemA_ring<dim>  exact_solution_systemA(constants.constants,systemA.base_tensorinfo.S_half);
 
-		FEM_Solver::Base_Solver<dim> base_solver("mesh_file_name",
-											 "grid",
+
+		FEM_Solver::Base_Solver<dim> base_solver(
+											 "grid_ring",
 											 constants.constants,
 											 &systemA,
 											 &exact_solution_systemA);
 
 		
 
-		// now we solve the required system
-		// The decision regarding a manuel assembly or an automated assembly is taken inside of run_ring.
-		base_solver.run_ring();
+		// // now we solve the required system
+		// // The decision regarding a manuel assembly or an automated assembly is taken inside of run_ring.
+		Assert(constants.constants.problem_type == heat_conduction,ExcNotImplemented());
+		
+		base_solver.run();
 
 	
 
-		Assert(constants.constants.refine_cycles == 6,ExcMessage("The refine cycles requested for have not been implemented"));
-		Assert(constants.constants.p == 1,ExcNotImplemented());
-		Assert(constants.constants.mapping_order == 2 , ExcNotImplemented());
-		Assert(fabs(constants.constants.tau -10.0) >1e-5,ExcNotImplemented());
+		AssertThrow(constants.constants.refine_cycles == 3,ExcMessage("The refine cycles requested for have not been implemented"));
+		AssertThrow(constants.constants.p == 1,ExcNotImplemented());
+		AssertThrow(constants.constants.mapping_order == 2 , ExcNotImplemented());
+		AssertThrow(fabs(constants.constants.tau -10.0) >1e-5,ExcNotImplemented());
+		AssertThrow(fabs(constants.constants.initial_refinement - 2) < 1e-5,ExcNotImplemented());
 
 		Vector<double> exact_error(constants.constants.refine_cycles);
 
@@ -157,9 +161,9 @@ namespace Test_Solver
 
 			if (constants.constants.bc_type == odd)
 			{
-				exact_error(0) = 8.5794e-01;
-				exact_error(1) = 2.0796e-01;
-				exact_error(2) = 4.5868e-02;
+				exact_error(0) = 5.0369e-02;
+				exact_error(1) = 9.0682e-03;
+				exact_error(2) = 1.6589e-03;
 			}
 
 

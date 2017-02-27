@@ -68,9 +68,9 @@ namespace TestMeshGenerator
 		std::string folder_name = "../system_matrices/";
 		Constants::Base_Constants constants(input_file);
 		std::string mesh_file = "mesh_file";
-		std::string output_file = "Square_Cavity";
+		std::string output_file = "grid_Ring";
 
-		MeshGenerator::Base_MeshGenerator<dim> mesh_gen(mesh_file,output_file,constants.constants);
+		MeshGenerator::Base_MeshGenerator<dim> mesh_gen(output_file,constants.constants);
 		std::cout << "#Cells " << mesh_gen.triangulation.n_active_cells();
 		mesh_gen.print_grid(0);
 

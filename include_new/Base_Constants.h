@@ -449,8 +449,8 @@ namespace Constants
 				"initial level of refinement");
 
 			prm.declare_entry("inner_radius",
-							 "0.25",
-							 Patterns::Double(0.1,5.0),
+							 "0.5",
+							 Patterns::Double(0.5,5.0),
 							 "inner radius for the ring");
 
 			prm.declare_entry("outer_radius",
@@ -590,6 +590,7 @@ namespace Constants
 			constants.mesh_filename = prm.get("mesh_filename");
 			constants.mesh_type = (Mesh_type)prm.get_integer("mesh type");
 			constants.problem_type = (Problem_type)prm.get_integer("problem type");
+			constants.initial_refinement = prm.get_integer("initial_refinement");
 			constants.mesh_options = (Meshing_Options)prm.get_integer("mesh options");
 			constants.xl = prm.get_double("left boundary");
 			constants.xr = prm.get_double("right boundary");
@@ -597,6 +598,8 @@ namespace Constants
 			constants.yb = prm.get_double("bottom boundary");
 			constants.part_x = prm.get_integer("part_x");
 			constants.part_y = prm.get_integer("part_y");
+			constants.inner_radius = prm.get_double("inner_radius");
+			constants.outer_radius = prm.get_double("outer_radius");
 		}
 		prm.leave_subsection();
 

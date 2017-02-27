@@ -2,7 +2,7 @@
 subsection Numerical Constants
 	set polynomial degree = 1
 	set mapping order = 2
-	set total h refinement cycles = 5
+	set total h refinement cycles = 3
 
 	# global = 0
 	# adaptive = 1
@@ -51,9 +51,9 @@ subsection System Properties
 end
 
 subsection Mesh Info
-	set filename = mesh
+	set mesh_filename = mesh
 
-	# 0 for ring and 1 for periodic square
+	# 0 for ring and 1 for square_domain
 	set mesh type = 0
 
 	# 0 for reading gmsh and 1 for internal generation
@@ -65,6 +65,16 @@ subsection Mesh Info
 	set top boundary = 1.0
 	set part_x = 2
 	set part_y = 2
+
+	# heat_conduction
+	# inflow_outflow
+	# periodic
+	# lid_driven_cavity
+	
+	set problem type = 0
+	set inner_radius = 0.5
+	set outer_radius = 2.0
+	set initial_refinement = 2
 end
 
 subsection Printing Options

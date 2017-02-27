@@ -110,8 +110,8 @@ struct constant_data
 	unsigned int part_y;
 
 	// inner and outer radius for the ring geometry
-	unsigned int outer_radius;
-	unsigned int inner_radius;
+	double outer_radius;
+	double inner_radius;
 
 	// initial refinement level
 	unsigned int initial_refinement;

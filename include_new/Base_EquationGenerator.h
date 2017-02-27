@@ -11,6 +11,9 @@ namespace EquationGenerator
 		public:
 			Base_EquationGenerator(const constant_data &constants);
 			
+			DeclException1 (ExcFileNotOpen, std::string,
+                        << "Could not open " << arg1 );
+
 			const constant_data constants;
 			struct equation_data
 			{
@@ -209,7 +212,7 @@ namespace EquationGenerator
 		std::string line;
 
 		// check whether we can open the file or not
-		AssertThrow(in.is_open(),ExcMessage("Triplet cant be read, file could not be opened"));
+		AssertThrow(in.is_open(),ExcFileNotOpen(filename));
 
 		// get the first line in "in"
 		std::getline(in,line);
