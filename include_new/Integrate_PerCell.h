@@ -167,44 +167,53 @@ Base_Solver<dim>
 
     Vector<double> boundary_rhs_value;
 
-    boundary_rhs_value.reinit(this->constants.nEqn);
+    boundary_rhs_value.reinit(this->constants.nBC);
 
- for (unsigned int q = 0 ; q < fe_v.n_quadrature_points ; q++)
- {
+for (unsigned int q = 0 ; q < fe_v.n_quadrature_points ; q++)
+{
   const double jacobian_value = J[q];
 
   boundary_rhs_value = 0;                 
-  system_info->build_BCrhs(fe_v.quadrature_point(q),fe_v.normal_vector(q),
+
+
+    system_info->build_BCrhs(fe_v.quadrature_point(q),fe_v.normal_vector(q),
                           boundary_rhs_value,b_id);
 
-        // build the matrices needed
-  Full_matrix Am = system_info->build_Aminus(fe_v.normal_vector(q));
-  Sparse_matrix Projector = system_info->build_Projector(fe_v.normal_vector(q));
-  Sparse_matrix Inv_Projector = system_info->build_InvProjector(fe_v.normal_vector(q));
 
-  Full_matrix Am_invP_BC_P = Am * Inv_Projector 
-                               * system_info->BC
+  Sparse_matrix Projector = system_info->build_Projector(fe_v.normal_vector(q));
+  
+
+
+  // Simga(as given in PDF) * B * Projector
+  // Sigma in the PDF = Projector.transpose * Sigma(In the code)
+  Full_matrix Sigma_B_P =       Projector.transpose()
+                               * system_info->system_data.Sigma.matrix 
+                               * system_info->system_data.B.matrix
                                * Projector;
 
-  Full_matrix Am_invP = Am * Inv_Projector;
+  Full_matrix Sigma = Projector.transpose()
+                      * system_info->system_data.Sigma.matrix ;
 
   for (unsigned int i = 0 ; i < dofs_per_cell ; i ++)
   {
     const double shape_value_test = fe_v.shape_value(i,q);
-
     for (unsigned int j = 0 ; j < dofs_per_cell ; j ++)
-      cell_matrix(i,j) += 0.5 * shape_value_test
-                          * (Am(component[i],component[j])-Am_invP_BC_P(component[i],component[j]))
-                          * fe_v.shape_value(j,q) * jacobian_value;                                    
+      cell_matrix(i,j) -= shape_value_test
+                          * Sigma_B_P(component[i],component[j])
+                          * fe_v.shape_value(j,q) 
+                          * jacobian_value;                                    
 
 
-    for (unsigned int j = 0 ; j < Am_invP.cols() ; j++)
-     cell_rhs(i) += 0.5 * shape_value_test 
-                    * Am_invP(component[i],j) * boundary_rhs_value[j] * jacobian_value;
+    for (unsigned int j = 0 ; j < boundary_rhs_value.size() ; j++)
+     cell_rhs(i) -= shape_value_test 
+                    * Sigma(component[i],j) 
+                    * boundary_rhs_value[j] 
+                    * jacobian_value;
 
  }
 
- }
+
+}
 }
 
 

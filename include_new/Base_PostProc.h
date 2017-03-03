@@ -206,7 +206,9 @@ namespace PostProc
 								 "nEqn " + std::to_string(constants.nEqn) + "\n" +
 								 "nBC" + std::to_string(constants.nBC) + "\n" +
 								 "bc_type" + std::to_string(constants.bc_type)+ "\n" +
-								 "force_type " + std::to_string(constants.force_type);
+								 "force_type " + std::to_string(constants.force_type) + 
+								 "#Dofs " + std::to_string(dof_handler->n_dofs()) +
+								 "#Cells " + std::to_string(dof_handler->get_triangulation().n_active_cells());
 
 		fprintf(fp, "%s\n",parameters.c_str());
 		fclose(fp);

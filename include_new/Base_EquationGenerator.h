@@ -27,8 +27,11 @@ namespace EquationGenerator
 			// The Jacobian in the x-direction
 				system_matrix Ax;
 
-			// The matrix for the boundary
+			// The matrix for the boundary, full accomodation
 				system_matrix B;
+
+			// The matrix for the boundary conditions, specular reflection
+				system_matrix B_specular;
 
 			// penalty matrix for the odd boundary conditions 
 				system_matrix Sigma; 
@@ -89,6 +92,10 @@ namespace EquationGenerator
 			void source_term(const std::vector<Point<dim>> &p,
 									 std::vector<Vector<double>> &value);
 
+			// develops the accommodation coefficients 
+			double accommodation_coeff(const double x);
+			Sparse_matrix develop_B(const double x);
+
 			
 			// matrices for the boundary conditions
 			Full_matrix B_tilde_inv;
@@ -147,6 +154,8 @@ namespace EquationGenerator
 			void reinit_force();
 
 			void reinit_BoundaryMatrices();
+
+			void reinit_Bspecular();
 
 			virtual void reinit_BCrhs() = 0;
 
@@ -606,10 +615,10 @@ namespace EquationGenerator
 			{
 				// we don't need to do anything since we have already saved the penalty matrix
 
-				BoundaryHandler::Base_BoundaryHandler_Odd<dim> boundary_handler_odd(system_data.B.matrix,
-																				   system_data.odd_ID);
+				// BoundaryHandler::Base_BoundaryHandler_Odd<dim> boundary_handler_odd(system_data.B.matrix,
+				// 																   system_data.odd_ID);
 
-				 BC = boundary_handler_odd.develop_BC();
+				//  BC = boundary_handler_odd.develop_BC();
 				break;
 			}
 
@@ -738,7 +747,113 @@ namespace EquationGenerator
 						Assert(fabs(system_data.B.matrix.coeffRef(0,i)) < 1e-3,ExcMessage("relaxational normal velocity not accommodated in B"));
 		}
 
+		// now we can initialize the boundary matrix for specular reflection
+		reinit_Bspecular();
+
 		// we need to compres B again
 		system_data.B.matrix.makeCompressed();
 	}
+
+	template<int dim>
+	void
+	Base_EquationGenerator<dim>
+	::reinit_Bspecular()
+	{
+		system_data.B_specular.matrix.resize(constants.nBC,constants.nEqn);
+		system_data.B_specular.matrix = system_data.B.matrix;
+
+		bool odd_variable = false;
+
+		// we do not change the coefficients of the first row since we need them for stability reasons
+		for (int i = 1 ; i < constants.nBC ; i++)
+		{
+
+			for (int j = 0 ; j < constants.nEqn ; j++)
+			{
+				odd_variable = false;
+
+				for (int k = 0 ; k < system_data.odd_ID.rows() ; k++)
+					if (j == system_data.odd_ID(k,0))
+					{
+						odd_variable = true;
+						break;
+					}
+
+				// put all the even variables to zero
+				if (!odd_variable)
+					system_data.B_specular.matrix.coeffRef(i,j) = 0;
+						
+			}
+
+		}
+
+		
+		system_data.B_specular.matrix.makeCompressed();
+
+	}
+	// accommodation coefficient for a rectangular geometry
+	template<int dim>
+	double
+	Base_EquationGenerator<dim>
+	::accommodation_coeff(const double x)
+	{
+		double chi;
+		Assert(x >= -2.0 && x <= 1.0,ExcMessage("coordinate beyond limits"));
+
+		// if x is less than -0.5
+		// gradually increasing in the initial segment
+		if (x <= -0.5)
+			//chi = 2* (x + 1);
+			chi = 0;
+
+		// full accommodation
+		if (x > -0.5 )
+			chi = 1;
+
+		// // gradually decaying in the last segment
+		// if (x >=0.5)
+		// 	chi = 2 *(x - 1);
+
+		return(chi);
+
+	}
+
+	// develop B matrix in case of  a varying accommodation coefficient
+	template<int dim>
+	Sparse_matrix
+	Base_EquationGenerator<dim>
+	::develop_B(const double x)
+	{
+		const double chi = accommodation_coeff(x);
+
+		bool odd_variable = false;
+		// we would not like to change the initial B matrix
+		Sparse_matrix B_temp = system_data.B.matrix;
+
+		// we do not change the coefficients of the first row since we need them for stability reasons
+		for (int i = 1 ; i < constants.nBC ; i++)
+		{
+
+			for (int j = 0 ; j < constants.nEqn ; j++)
+			{
+				odd_variable = false;
+
+				for (int k = 0 ; k < system_data.odd_ID.rows() ; k++)
+					if (j == system_data.odd_ID(k,0))
+					{
+						odd_variable = true;
+						break;
+					}
+
+				// multiply the even variables with a chi
+				if (!odd_variable)
+					B_temp.coeffRef(i,j) *= chi/(2-chi);
+						
+			}
+
+		}
+
+		return(B_temp);
+	}
+
 }

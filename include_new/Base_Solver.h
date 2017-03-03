@@ -26,7 +26,7 @@ namespace FEM_Solver
                         << "Cell Center = " << arg1 << "Neighbor Center = " << arg2 << "Mesh not lexiographical ");
 
             DeclException2 (ExcNoElementInSparsity, size_t, size_t,
-                        << "Dof 1 " << arg1 << "Dof 2 " << arg2 << "Element does not exist in sparsity pattern");
+                        << "Dof-1 " << arg1 << " Dof-2 " << arg2 << " Entry does not exist in sparsity pattern");
 
 			const constant_data constants;
             ExactSolution::Base_ExactSolution<dim> *base_exactsolution;

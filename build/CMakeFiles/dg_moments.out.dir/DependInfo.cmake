@@ -19,13 +19,11 @@ set(CMAKE_TARGET_DEFINITIONS_CXX
 set(CMAKE_CXX_TARGET_INCLUDE_PATH
   "../include_new"
   "../periodic_square"
-  "../square"
   "../systems"
   "/usr/local/include/eigen"
   "../Projector_Data"
   "../Symmetrizer_Data"
   "../ring"
-  "../square_circular_cavity"
   "/opt/intel/compilers_and_libraries_2016.3.170/mac/mkl/include"
   "/Applications/deal.II.app/Contents/Resources/include"
   "/Applications/deal.II.app/Contents/Resources/include/deal.II/bundled"

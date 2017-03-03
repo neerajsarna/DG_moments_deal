@@ -64,7 +64,6 @@ std::string input_file;
 //#include "Test_BaseConstants.h"
  //#include "Test_ForceType.h" 
  //#include "Test_EquationGenerator.h"
-//#include "Test_BoundaryHandler_Char.h"
  //#include "Test_TensorInfo.h"
 //#include "Test_BoundaryHandler_Odd.h"
  //#include "Test_ExactSolution.h"

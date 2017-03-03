@@ -213,12 +213,12 @@ namespace Constants
 							  Patterns::Double(0,100.0),
 							  "temperature");								  		
 
-			prm.declare_entry("vn0",
+			prm.declare_entry("vx0",
 							  "0",
 							  Patterns::Double(0,100.0),
 							  "normal velocity");
 
-			prm.declare_entry("vt0",
+			prm.declare_entry("vy0",
 							  "0",
 							  Patterns::Double(-100.0,100.0),
 							  "tangential velocity");
@@ -228,12 +228,12 @@ namespace Constants
 							  Patterns::Double(0,100.0),
 							  "temperature of the second wall");								  		
 
-			prm.declare_entry("vn1",
+			prm.declare_entry("vx1",
 							  "0",
 							  Patterns::Double(0,100.0),
 							  "normal velocity");
 
-			prm.declare_entry("vt1",
+			prm.declare_entry("vy1",
 							  "0",
 							  Patterns::Double(-100.0,100.0),
 							  "tangential velocity");
@@ -244,12 +244,12 @@ namespace Constants
 							  Patterns::Double(0,100.0),
 							  "temperature");								  		
 
-			prm.declare_entry("vn2",
+			prm.declare_entry("vx2",
 							  "0",
 							  Patterns::Double(0,100.0),
 							  "normal velocity");
 
-			prm.declare_entry("vt2",
+			prm.declare_entry("vy2",
 							  "0",
 							  Patterns::Double(-100.0,100.0),
 							  "tangential velocity");
@@ -259,12 +259,12 @@ namespace Constants
 							  Patterns::Double(0,100.0),
 							  "temperature");								  		
 
-			prm.declare_entry("vn3",
+			prm.declare_entry("vx3",
 							  "0",
 							  Patterns::Double(0,100.0),
 							  "normal velocity");
 
-			prm.declare_entry("vt3",
+			prm.declare_entry("vy3",
 							  "0",
 							  Patterns::Double(-100.0,100.0),
 							  "tangential velocity");
@@ -275,12 +275,12 @@ namespace Constants
 							  Patterns::Double(0,100.0),
 							  "temperature");								  		
 
-			prm.declare_entry("vn4",
+			prm.declare_entry("vx4",
 							  "0",
 							  Patterns::Double(0,100.0),
 							  "normal velocity");
 
-			prm.declare_entry("vt4",
+			prm.declare_entry("vy4",
 							  "0",
 							  Patterns::Double(-100.0,100.0),
 							  "tangential velocity");
@@ -295,12 +295,12 @@ namespace Constants
 							  Patterns::Double(0,100.0),
 							  "temperature");								  		
 
-			prm.declare_entry("vn101",
+			prm.declare_entry("vx101",
 							  "0",
 							  Patterns::Double(-100,100.0),
 							  "normal velocity");
 
-			prm.declare_entry("vt101",
+			prm.declare_entry("vy101",
 							  "0",
 							  Patterns::Double(-100.0,100.0),
 							  "tangential velocity");
@@ -316,12 +316,12 @@ namespace Constants
 							  Patterns::Double(0,100.0),
 							  "temperature");								  		
 
-			prm.declare_entry("vn102",
+			prm.declare_entry("vx102",
 							  "0",
 							  Patterns::Double(-100,100.0),
 							  "normal velocity");
 
-			prm.declare_entry("vt102",
+			prm.declare_entry("vy102",
 							  "0",
 							  Patterns::Double(-100.0,100.0),
 							  "tangential velocity");
@@ -552,26 +552,26 @@ namespace Constants
 		 	constants.theta101 = prm.get_double("theta101");
 		 	constants.theta102 = prm.get_double("theta102");
 
-		 	constants.vn0 =  prm.get_double("vn0");
-		 	constants.vn1  = prm.get_double("vn1");
-		 	constants.vn2  = prm.get_double("vn2");
-		 	constants.vn3  = prm.get_double("vn3");
-		 	constants.vn4 = prm.get_double("vn4");
+		 	constants.vx0 =  prm.get_double("vx0");
+		 	constants.vx1  = prm.get_double("vx1");
+		 	constants.vx2  = prm.get_double("vx2");
+		 	constants.vx3  = prm.get_double("vx3");
+		 	constants.vx4 = prm.get_double("vx4");
 
 		 	// normal velocity of the incoming distributions
-		 	constants.vn101 = prm.get_double("vn101");
-		 	constants.vn102 = prm.get_double("vn102");
+		 	constants.vx101 = prm.get_double("vx101");
+		 	constants.vx102 = prm.get_double("vx102");
 
 
-		 	constants.vt0 =  prm.get_double("vt0");
-		 	constants.vt1  = prm.get_double("vt1");
-		 	constants.vt2  = prm.get_double("vt2");
-		 	constants.vt3  = prm.get_double("vt3");
-		 	constants.vt4  = prm.get_double("vt4");
+		 	constants.vy0 =  prm.get_double("vy0");
+		 	constants.vy1  = prm.get_double("vy1");
+		 	constants.vy2  = prm.get_double("vy2");
+		 	constants.vy3  = prm.get_double("vy3");
+		 	constants.vy4  = prm.get_double("vy4");
 
 		 	// tangential velocity of the incoming distribution
-		 	constants.vt101 = prm.get_double("vt101");
-		 	constants.vt102 = prm.get_double("vt102");
+		 	constants.vy101 = prm.get_double("vy101");
+		 	constants.vy102 = prm.get_double("vy102");
 		}
 		prm.leave_subsection();
 

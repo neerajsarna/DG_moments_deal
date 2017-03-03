@@ -143,41 +143,41 @@ struct constant_data
 	// data for the boundary
 	// first wall
 	double theta0;
-	double vn0;
-	double vt0;
+	double vx0;
+	double vy0;
 
 
 	// data for the second wall
 	double theta1;
-	double vn1;
-	double vt1;
+	double vx1;
+	double vy1;
 
 	// data for the third wall
 	double theta2;
-	double vn2;
-	double vt2;
+	double vx2;
+	double vy2;
 
 	// data for the fourth wall
 	double theta3;
-	double vn3;
-	double vt3;
+	double vx3;
+	double vy3;
 
 	// data for the fourth wall
 	double theta4;
-	double vn4;
-	double vt4;
+	double vx4;
+	double vy4;
 
 	// first inflow boundary
 	double rho101;
 	double theta101;
-	double vn101;
-	double vt101;
+	double vx101;
+	double vy101;
 
 	// second inflow boundary
 	double rho102;
 	double theta102;
-	double vn102;
-	double vt102;
+	double vx102;
+	double vy102;
 
 	Collision_Operator coll_op;
 };

@@ -3,10 +3,6 @@ template<int dim>
 void 
 Base_Solver<dim>::assemble_system_char()
   {
-      // counters 
-      unsigned int boundary_wall = 0;
-      unsigned int boundary_periodic = 0;
-      bool integrated_boundary = false;
 
       const QGauss<dim> quadrature(ngp);
       const QGauss<dim-1> face_quadrature(ngp_face);
@@ -60,7 +56,7 @@ Base_Solver<dim>::assemble_system_char()
       // end of std::vector to
       // make computation faster
      
-      this->Compute_Shape_Value(mapping,constants.p,ngp,cell);
+      this->Compute_Shape_Value(mapping,ngp,cell);
       
 
   for (; cell != endc ; cell++) 
@@ -238,11 +234,6 @@ template<int dim>
 void 
 Base_Solver<dim>::assemble_system_odd()
   {
-      // counters 
-      unsigned int boundary_wall = 0;
-      unsigned int boundary_periodic = 0;
-      bool integrated_boundary = false;
-
       const QGauss<dim> quadrature(ngp);
       const QGauss<dim-1> face_quadrature(ngp_face);
 
@@ -295,7 +286,7 @@ Base_Solver<dim>::assemble_system_odd()
       // end of std::vector to
       // make computation faster
      
-      this->Compute_Shape_Value(mapping,constants.p,ngp,cell);
+      this->Compute_Shape_Value(mapping,ngp,cell);
       
 
   for (; cell != endc ; cell++) 
@@ -527,7 +518,7 @@ Base_Solver<dim>::assemble_system_periodic_char()
       for (unsigned int i = 0 ; i < dofs_per_cell ; i++)
         component(i) = finite_element.system_to_component_index(i).first;
       
-      this->Compute_Shape_Value(mapping,constants.p,ngp,cell);
+      this->Compute_Shape_Value(mapping,ngp,cell);
 
       for (; cell != endc ; cell++) 
       {
@@ -795,7 +786,7 @@ Base_Solver<dim>::assemble_system_periodic_odd()
       for (unsigned int i = 0 ; i < dofs_per_cell ; i++)
         component(i) = finite_element.system_to_component_index(i).first;
       
-      this->Compute_Shape_Value(mapping,constants.p,ngp,cell);
+      this->Compute_Shape_Value(mapping,ngp,cell);
 
       for (; cell != endc ; cell++) 
       {

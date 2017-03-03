@@ -33,6 +33,9 @@ namespace ExactSolution
 	void
 	ExactSolution_Dummy<dim>::vector_value(const Point<dim> &p,Vector<double> &value) const
 	{
+		Assert(value.size() == this->constants.nEqn,ExcMessage("Incorrect dimension of the input array "));
+		Assert(p.norm() >=0 ,ExcMessage("Incorrect point"));
+
 		// we just return zero value 
 		value = 0;
 	}
@@ -42,6 +45,9 @@ namespace ExactSolution
 	double
 	ExactSolution_Dummy<dim>::s_r(const double r,const double phi)const
 	{
+		Assert(r >= 0,ExcMessage("Incorrect radial distance"));
+		Assert(fabs(phi) >= 0,ExcMessage("Incorrect angle"));
+
 		return 0;
 
 	}
@@ -50,6 +56,8 @@ namespace ExactSolution
 	double
 	ExactSolution_Dummy<dim>::s_phi(const double r,const double phi)const
 	{
+		Assert(r >= 0,ExcMessage("Incorrect radial distance"));
+		Assert(fabs(phi) >= 0,ExcMessage("Incorrect angle"));
 
 		return 0;
 
@@ -59,6 +67,9 @@ namespace ExactSolution
 	double
 	ExactSolution_Dummy<dim>::thetaP(const double r,const double phi)const
 	{
+		Assert(r >= 0,ExcMessage("Incorrect radial distance"));
+		Assert(fabs(phi) >= 0,ExcMessage("Incorrect angle"));
+
 		return 0;
 
 	}
@@ -67,6 +78,9 @@ namespace ExactSolution
 	double
 	ExactSolution_Dummy<dim>::R_rr(const double r,const double phi)const
 	{
+		Assert(r >= 0,ExcMessage("Incorrect radial distance"));
+		Assert(fabs(phi) >= 0,ExcMessage("Incorrect angle"));
+
 		return 0;
 
 	}
@@ -75,6 +89,9 @@ namespace ExactSolution
 	double
 	ExactSolution_Dummy<dim>::R_thetatheta(const double r,const double phi)const
 	{
+		Assert(r >= 0,ExcMessage("Incorrect radial distance"));
+		Assert(fabs(phi) >= 0,ExcMessage("Incorrect angle"));
+
 		return 0;
 
 	}
@@ -83,6 +100,9 @@ namespace ExactSolution
 	double
 	ExactSolution_Dummy<dim>::R_rtheta(const double r,const double phi)const
 	{
+		Assert(r >= 0,ExcMessage("Incorrect radial distance"));
+		Assert(fabs(phi) >= 0,ExcMessage("Incorrect angle"));
+
 		return 0;
 
 	}
@@ -91,6 +111,9 @@ namespace ExactSolution
 	double
 	ExactSolution_Dummy<dim>::R_zz(const double r,const double phi)const
 	{
+		Assert(r >= 0,ExcMessage("Incorrect radial distance"));
+		Assert(fabs(phi) >= 0,ExcMessage("Incorrect angle"));
+		
 		return 0;
 
 	}

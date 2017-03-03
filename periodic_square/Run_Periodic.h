@@ -11,9 +11,9 @@ Base_Solver<dim>::distribute_dof_allocate_matrix_periodic_box()
   
     this->add_periodic_sparsity(dsp);
 
+    sparsity_pattern.copy_from(dsp);
     global_matrix.reinit(dsp);   
  
-
 }
 
 template<int dim>
@@ -34,6 +34,7 @@ Base_Solver<dim>::run_periodic()
 		AssertDimension((int)error_per_itr.size(),constants.refine_cycles);
 
 		timer.enter_subsection("Develop Periodicity");
+		fflush(stdout);
 		// first we develop the periodic faces using internal functions of dealii
 		this->develop_periodic_faces(dof_handler);
 
@@ -45,11 +46,14 @@ Base_Solver<dim>::run_periodic()
 		//now we distribute the dofs and allocate the memory for the global matrix. We have 
 		// already created the mesh so we can directly distribute the degrees of freedom now.
 		timer.enter_subsection("Distribute Dof");
+		fflush(stdout);
 		distribute_dof_allocate_matrix_periodic_box();
 		allocate_vectors();
 		timer.leave_subsection();
 
-
+		std::cout << "#Cells " << this->triangulation.n_active_cells() << std::endl;
+		std::cout << "#Dofs " << dof_handler.n_dofs() << std::endl;
+		fflush(stdout);
 
 		// cannot use meshworker for the present problem
 		timer.enter_subsection("Assemble");

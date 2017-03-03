@@ -213,19 +213,28 @@ Base_Solver<dim>
 
  Vector<double> boundary_rhs_value;
   boundary_rhs_value.reinit(constants.nBC);
+  const unsigned int b_id = face_itr->boundary_id();
 
 Assert(system_info->system_data.B.matrix.rows() == system_info->system_data.Sigma.matrix.cols() ,ExcMessage("Incorrect dimension"));
 
 // we use a temporary matrix to determine whether inflow or outflow
 Sparse_matrix B_temp;
  
-  if(face_itr->boundary_id() == 101 || face_itr->boundary_id() == 102)
+  if(b_id == 101 || b_id == 102)
   {
       integrate_inflow++;
       B_temp = system_info->system_data.Binflow.matrix;
   }
   else
-    B_temp = system_info->system_data.B.matrix;
+  {
+    // B matrix for specular reflection
+    if (b_id == 50)
+      B_temp = system_info->system_data.B_specular.matrix;
+
+    // B matrix for full accmmodation
+    else
+      B_temp = system_info->system_data.B.matrix;
+  }
 
 for (unsigned int q = 0 ; q < fe_v.n_quadrature_points ; q++)
 {

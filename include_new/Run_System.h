@@ -7,6 +7,7 @@ Base_Solver<dim>::run()
 
 	for (unsigned int i = 0 ; i < refine_cycles ; i ++)
 	{
+		this->print_mesh_info();
 
         	TimerOutput timer (std::cout, TimerOutput::summary,
                 	   TimerOutput::wall_times);

@@ -12,7 +12,6 @@ namespace NumericalIntegration
 
 				// gauss points are the number of gauss points in a particular direction
 				void Compute_Shape_Value(const MappingQ<dim> &mapping,
-										 const unsigned int p,
 										 const unsigned int gauss_points,
 										 typename DoFHandler<dim>::active_cell_iterator &cell);
 
@@ -51,7 +50,6 @@ namespace NumericalIntegration
 	void
 	Base_NumericalIntegration<dim>::
 	Compute_Shape_Value(const MappingQ<dim> &mapping,
-						const unsigned int p,
 						const unsigned int gauss_points,
 						typename DoFHandler<dim>::active_cell_iterator &cell)
 	{

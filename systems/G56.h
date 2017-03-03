@@ -46,8 +46,7 @@ namespace G56
 			// The following boundary routines are system dependent, that is 
 			// they depend upon the boundary matrix B. Therefore they cannot be
 			// a member of the base class.
-			BCrhs::BCrhs_char<dim> bcrhs_char;
-			BCrhs::BCrhs_odd<dim> bcrhs_odd;
+			BCrhs::BCrhs_wall<dim> bcrhs_wall;
 			BCrhs::BCrhs_inflow<dim> bcrhs_inflow;
 
 			virtual void reinit_BCrhs();
@@ -61,8 +60,7 @@ namespace G56
 	:
 	Base_G56<dim>(constants,folder_name),
 	// CAUTION sending B without relaxational normal velocity
-	bcrhs_char(constants,this->system_data.B.matrix),
-	bcrhs_odd(constants,this->system_data.B.matrix,this->system_data.odd_ID),
+	bcrhs_wall(constants,this->system_data.B.matrix),
 	bcrhs_inflow(constants,this->system_data.Binflow.matrix)
 	{
 
@@ -93,8 +91,8 @@ namespace G56
 	::reinit_BCrhs()
 	{
 
-		Assert(this->constants.mesh_type != ring,ExcNotImplemented());
-		this->base_bcrhs = &bcrhs_char;
+
+		this->base_bcrhs = &bcrhs_wall;
 		this->base_bcrhs_inflow = &bcrhs_inflow;
 	}
 }

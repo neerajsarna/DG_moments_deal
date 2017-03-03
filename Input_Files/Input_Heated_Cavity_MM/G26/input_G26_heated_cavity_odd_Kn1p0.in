@@ -43,18 +43,35 @@ subsection Physical Constants
 	set theta1 = 1.0
 	set theta2 = 2.0
 	set theta3 = 2.0
+	set theta4 = 0.0
 
- # normal velocity of different walls
-	set vn0 = 0.0
-	set vn1 = 0.0
-	set vn2 = 0.0
-	set vn3 = 0.0
+ # vx for different walls
+	set vx0 = 0.0
+	set vx1 = 0.0
+	set vx2 = 0.0
+	set vx3 = 0.0
+	set vx4 = 0.0
 
- # tangential velocity of different walls
-	set vt0 = 0.0
-	set vt1 = 0.0
-	set vt2 = 0.0
-	set vt3 = 0.0
+ # vy for different walls
+	set vy0 = 0.0
+	set vy1 = 0.0
+	set vy2 = 0.0
+	set vy3 = 0.0
+	set vy4 = 0.0
+
+ # conditions for inflow
+ 	set rho101 = 2.0
+ 	set theta101 = 1.0
+ 	set vx101 = 1
+ 	set vy101 = 0
+
+ # conditions for the outflow
+ 	set rho102 = 1.0
+ 	set theta102 = 1.0
+ 	set vx102 = 1
+ 	set vy102 = 0
+
+
 end
 
 subsection System Properties
@@ -74,10 +91,14 @@ subsection System Properties
 end
 
 subsection Mesh Info
-	set filename = mesh
+	set mesh_filename = none
 
-	# 0 for ring and 1 for periodic square, 2 for square cavity
-	set mesh type = 2
+	# ring
+	# square_domain 
+	# square_circular_cavity
+	# NACA5012
+
+	set mesh type = 1
 
 	# 0 for reading gmsh and 1 for internal generation
 	set mesh options = 1
@@ -88,6 +109,16 @@ subsection Mesh Info
 	set bottom boundary = -0.5
 	set part_x = 150
 	set part_y = 150
+
+	# heat_conduction
+	# inflow_outflow
+	# periodic
+	# lid_driven_cavity
+
+ 	set problem type = 0
+	set inner_radius = 0.5
+	set outer_radius = 2.0
+	set initial_refinement = 2
 end
 
 subsection Printing Options
@@ -99,5 +130,5 @@ subsection Printing Options
 end
 
 subsection Output Directory Name
-	set Main Output Directory = output_G26_odd_Kn1p0
+	set Main Output Directory = output_G26_odd_heated_cavity_Kn1p0
 end

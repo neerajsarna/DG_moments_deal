@@ -200,6 +200,8 @@ namespace Test_Solver
 											 	 constants.constants,
 											 	 &G20,
 											 	 &exactsolution_dummy);
+
+			base_solver.print_mesh_info();
 			base_solver.run();
 		}
 
@@ -211,7 +213,36 @@ namespace Test_Solver
 													 constants.constants,
 													 &G20,
 													 &G20_PoissonHeat);
+
+			base_solver.print_mesh_info();
 			base_solver.run_periodic();
+
+			Assert(constants.constants.refine_cycles = 3,ExcNotImplemented());
+			Assert(fabs(constants.constants.tau - 0.1) < 1e-5,ExcNotImplemented());
+			Assert(constants.constants.part_y == 100,ExcNotImplemented());
+
+			Vector<double> exact_error(3);
+
+			if (constants.constants.bc_type == odd)
+			{
+				exact_error(0) = 2.108024e-06;
+				exact_error(1) = 5.096096e-07;
+				exact_error(2) =  2.236106e-07;				
+			}
+			else
+			{
+				exact_error(0) = 1.923850e-06;
+				exact_error(1) = 4.848456e-07;
+				exact_error(2) = 2.160810e-07;
+			}
+
+
+
+			for (int i = 0 ; i < constants.constants.refine_cycles ; i++)
+			{
+				std::cout << "Error difference " << fabs(base_solver.error_per_itr[i] - exact_error(i)) << std::endl;
+				EXPECT_NEAR(base_solver.error_per_itr[i],exact_error(i),1e-10);		
+			}
 		}
 		
 

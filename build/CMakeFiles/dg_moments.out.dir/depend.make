@@ -24,7 +24,11 @@ CMakeFiles/dg_moments.out.dir/main.cc.o: ../include_new/EigenSetup.h
 CMakeFiles/dg_moments.out.dir/main.cc.o: ../include_new/ExactSolution_Dummy.h
 CMakeFiles/dg_moments.out.dir/main.cc.o: ../include_new/Integrate_PerCell.h
 CMakeFiles/dg_moments.out.dir/main.cc.o: ../include_new/LinearSolver.h
+CMakeFiles/dg_moments.out.dir/main.cc.o: ../include_new/MeshGenerator_Ring.h
+CMakeFiles/dg_moments.out.dir/main.cc.o: ../include_new/MeshGenerator_Square.h
+CMakeFiles/dg_moments.out.dir/main.cc.o: ../include_new/MeshGenerator_Square_CircularCavity.h
 CMakeFiles/dg_moments.out.dir/main.cc.o: ../include_new/Run.h
+CMakeFiles/dg_moments.out.dir/main.cc.o: ../include_new/Run_System.h
 CMakeFiles/dg_moments.out.dir/main.cc.o: ../include_new/basic_data_structures.h
 CMakeFiles/dg_moments.out.dir/main.cc.o: ../include_new/include_deal.h
 CMakeFiles/dg_moments.out.dir/main.cc.o: ../include_new/include_files.h
@@ -42,11 +46,6 @@ CMakeFiles/dg_moments.out.dir/main.cc.o: ../periodic_square/ExactSolution_Poisso
 CMakeFiles/dg_moments.out.dir/main.cc.o: ../periodic_square/MeshGenerator_PeriodicSquare.h
 CMakeFiles/dg_moments.out.dir/main.cc.o: ../periodic_square/Run_Periodic.h
 CMakeFiles/dg_moments.out.dir/main.cc.o: ../ring/ExactSolution_SystemA.h
-CMakeFiles/dg_moments.out.dir/main.cc.o: ../ring/MeshGenerator_Ring.h
-CMakeFiles/dg_moments.out.dir/main.cc.o: ../ring/Run_Ring.h
-CMakeFiles/dg_moments.out.dir/main.cc.o: ../square/MeshGenerator_Square.h
-CMakeFiles/dg_moments.out.dir/main.cc.o: ../square/Run_Square.h
-CMakeFiles/dg_moments.out.dir/main.cc.o: ../square_circular_cavity/Run_Square_Circular_Cavity.h
 CMakeFiles/dg_moments.out.dir/main.cc.o: ../systems/BCrhs_systemA.h
 CMakeFiles/dg_moments.out.dir/main.cc.o: ../systems/G105.h
 CMakeFiles/dg_moments.out.dir/main.cc.o: ../systems/G120.h
