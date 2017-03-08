@@ -49,6 +49,8 @@ namespace ForceType
 	Base_ForceType<dim>(constants)
 	{;}
 
+	// since the forcing only depends upon the x-coordinate so we do not need to specialize the following
+	// force type.
 	template<int dim>
 	void 
 	ForceType1<dim>
@@ -64,11 +66,15 @@ namespace ForceType
 
 		for (unsigned int i = 0 ; i < value.size() ; i++)
 			{
-				double norm = sqrt(p[i].square());
+				const double norm = sqrt(p[i].square());
+				const double x_coord = p[i][0];
+
 				value[i] = 0;
 				AssertDimension((int)value[i].size(),this->constants.nEqn);
+
 				// the factor comes from the symmetrizer
-				value[i](var_rho) = factor * (this->constants.A0 + this->constants.A2*norm*norm + this->constants.A1*p[i][0]/norm);	
+				value[i](var_rho) = factor * (this->constants.A0 + this->constants.A2*norm*norm 
+									+ this->constants.A1*x_coord/norm);	
 			}
 
 	}
@@ -96,6 +102,9 @@ namespace ForceType
 	Base_ForceType<dim>(constants)
 	{;}
 
+	// since we only have the x-coordinate in the force definition therefore 
+	// we do not need to specialize the template parameter. The same force 
+	// can be used for 1D, 2D or 3D case. 
 	template<int dim>
 	void 
 	ForceType2<dim>
@@ -110,16 +119,18 @@ namespace ForceType
 
 		for (unsigned int i = 0 ; i < value.size() ; i++)
 			{
-				double norm = sqrt(p[i].square());
+				const double norm = sqrt(p[i].square());
+				const double x_coord = p[i][0];
+
 				value[i] = 0;
 				AssertDimension((int)value[i].size(),this->constants.nEqn);
 				value[i](var_rho) = factor * (this->constants.A0 + this->constants.A2 * norm * norm + 
-							this->constants.A1*(1.0-5.0/18*norm*norm/(this->constants.tau*this->constants.tau))*p[i][0] / norm);
+							this->constants.A1*(1.0-5.0/18*norm*norm/(this->constants.tau*this->constants.tau))*x_coord / norm);
 			}
 
 	}
 
-	// force corresponding to couette flow
+	//forcing for poisson heat conduction
 	template<int dim>
 	class 
 	ForceType3:public Base_ForceType<dim>
@@ -142,20 +153,22 @@ namespace ForceType
 	Base_ForceType<dim>(constants)
 	{;}
 
-	template<int dim>
+	// specialization for 2D
+	template<>
 	void 
-	ForceType3<dim>
-	::source_term(const std::vector<Point<dim>> &p,
+	ForceType3<2>
+	::source_term(const std::vector<Point<2>> &p,
 				 std::vector<Vector<double>> &value,
 				 const double factor)
 	{
 		Assert(p.size()!=0,ExcNotInitialized());
 		Assert(value.size()!=0,ExcNotInitialized());
 		AssertDimension(p.size(),value.size());
-		var_theta = this->constants.variable_map.find(this->constants.force_variable)->second;
+		var_theta = 3;
+		
 
 		// now we need to check whether we captured the correct variable or not for the poisson heat conduction problem
-		Assert(var_theta == dim + 1,ExcMessage("Forcing not being applied to the energy equation"));
+		Assert(var_theta == 3,ExcMessage("Forcing not being applied to the energy equation; check var_theta."));
 
 		for (unsigned int i = 0 ; i < value.size() ; i++)
 			{
@@ -166,6 +179,36 @@ namespace ForceType
 
 				// the source term for the energy equation. The factor appears from the symmetrizer
 				value[i](var_theta) = -factor * this->constants.alpha * pow(y_cord,2);
+			}
+
+	}
+
+	// specialization for 1D
+	template<>
+	void 
+	ForceType3<1>
+	::source_term(const std::vector<Point<1>> &p,
+				 std::vector<Vector<double>> &value,
+				 const double factor)
+	{
+		Assert(p.size()!=0,ExcNotInitialized());
+		Assert(value.size()!=0,ExcNotInitialized());
+		AssertDimension(p.size(),value.size());
+		var_theta = 2;
+		
+
+		// now we need to check whether we captured the correct variable or not for the poisson heat conduction problem
+		Assert(var_theta == 2,ExcMessage("Forcing not being applied to the energy equation"));
+
+		for (unsigned int i = 0 ; i < value.size() ; i++)
+			{
+				const double x_cord = p[i][0];
+				// initialize the variable
+				value[i] = 0;
+				AssertDimension((int)value[i].size(),this->constants.nEqn);
+
+				// the source term for the energy equation. The factor appears from the symmetrizer
+				value[i](var_theta) = -factor * this->constants.alpha * pow(x_cord,2);
 			}
 
 	}

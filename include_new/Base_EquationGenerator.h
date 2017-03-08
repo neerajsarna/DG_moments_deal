@@ -91,11 +91,6 @@ namespace EquationGenerator
 
 			void source_term(const std::vector<Point<dim>> &p,
 									 std::vector<Vector<double>> &value);
-
-			// develops the accommodation coefficients 
-			double accommodation_coeff(const double x);
-			Sparse_matrix develop_B(const double x);
-
 			
 			// matrices for the boundary conditions
 			Full_matrix B_tilde_inv;
@@ -164,15 +159,77 @@ namespace EquationGenerator
 
 	};
 
-	template<int dim>
-	Base_EquationGenerator<dim>
+	// specialization for the 1D case 
+	template<>
+	Base_EquationGenerator<1>
 	::Base_EquationGenerator(const constant_data &constants)
 	:
 	constants(constants),
 	force1(constants),
 	force2(constants),
-	force3(constants)
+	force3(constants),
+	base_tensorinfo(constants)
 	{
+		const unsigned int dim = 1;
+
+		// the maximum number of matrices in the system
+		const int max_matrices = dim + 4;
+
+		// the base file names, to be updated with the equation number later on
+		basefile.resize(max_matrices);
+
+		Assert(basefile.size() == max_matrices,ExcMessage("incorrect vector size"));
+
+		unsigned int entry;
+
+	
+		basefile[0] = "A1_1D_";
+
+		entry = dim;
+		Assert(entry < max_matrices,ExcNotInitialized());
+		basefile[entry] = "B_1D_";
+
+		entry = dim + 1;
+		Assert(entry < max_matrices,ExcNotInitialized());
+		basefile[entry] = "odd_ID_1D_";
+
+		entry = dim + 2;
+		Assert(entry < max_matrices,ExcNotInitialized());
+		basefile[entry] = "Sigma_1D_";
+
+		entry = dim + 3;
+		Assert(entry < max_matrices,ExcNotInitialized());
+		basefile[entry] = "Binflow_1D_";
+
+		std::cout << "equations " << constants.nEqn << std::endl;
+		std::cout << "boundary conditions " << constants.nBC << std::endl;
+		fflush(stdout);
+
+		// now we check the number of boundary conditions 
+		// if we have even number of variables in the system
+		if (constants.nEqn %2 == 0)
+			Assert(constants.nBC == (constants.nEqn / 2),ExcMessage("Incorrect number of boundary conditions"));
+
+		// if we have odd number of variables in the system
+		if (constants.nEqn %2 != 0)
+			Assert(constants.nBC == (constants.nEqn - 1)  / 2,ExcMessage("Incorrect number of boundary conditions"));			
+
+	}
+
+
+	// specialization for the 2d case 
+	template<>
+	Base_EquationGenerator<2>
+	::Base_EquationGenerator(const constant_data &constants)
+	:
+	constants(constants),
+	force1(constants),
+	force2(constants),
+	force3(constants),
+	base_tensorinfo(constants)
+	{
+		const unsigned int dim = 2;
+
 		// the maximum number of matrices in the system
 		const int max_matrices = dim + 4;
 
@@ -202,6 +259,8 @@ namespace EquationGenerator
 		Assert(entry < max_matrices,ExcNotInitialized());
 		basefile[entry] = "Binflow_";
 	}
+
+
 
 	template<int dim>
 	void Base_EquationGenerator<dim>
@@ -316,6 +375,7 @@ namespace EquationGenerator
 
 	}
 
+	// In the following function we build a sparse matrix from a given triplet which has been read from a file.
 	template<int dim>
 	void Base_EquationGenerator<dim>
 	::build_matrix_from_triplet(Sparse_matrix &matrix,std::vector<triplet> &Row_Col_Value)
@@ -358,8 +418,9 @@ namespace EquationGenerator
 		fclose(fp);
 	}
 
-	// In the following function, we devlop the Jacobians of the flux, the square root of the 
+	// In the following function, we develop the Jacobians of the flux, the square root of the 
 	// Symmetrizer, the inverse of the square root of the symmetrizer and the boundary matrix.
+	// No specialization needed for different dimensions.
 	template<int dim>
 	void Base_EquationGenerator<dim>
 	::generate_matrices(equation_data &system_data,
@@ -432,11 +493,11 @@ namespace EquationGenerator
 			this->build_matrix_from_triplet(system_data.Binflow.matrix,system_data.Binflow.Row_Col_Value);
 	}
 
-	// builds the Projector matrix to be used during computation
-	template<int dim>
+	// builds the Projector matrix to be used during computation. Specialization for the 2D case
+	template<>
 	Sparse_matrix
-	Base_EquationGenerator<dim>
-	::build_Projector(const Tensor<1,dim> &normal_vector)
+	Base_EquationGenerator<2>
+	::build_Projector(const Tensor<1,2> &normal_vector)
 	{
 
 		const double nx = normal_vector[0];
@@ -445,14 +506,27 @@ namespace EquationGenerator
 		Assert(base_tensorinfo.varIdx.rows() != 0 || base_tensorinfo.varIdx.cols() !=0 ,
 				ExcMessage("Base tensor info not initialized"));
 
-		return(base_tensorinfo.reinit_global(nx,ny));
+		return(base_tensorinfo.reinit_global_2D(nx,ny));
+	}
+
+	// specialization for the 1D case
+	template<>
+	Sparse_matrix
+	Base_EquationGenerator<1>
+	::build_Projector(const Tensor<1,1> &normal_vector)
+	{
+
+		const double nx = normal_vector[0];
+
+		return(base_tensorinfo.reinit_global_1D(nx));
 	}
 
 
-	template<int dim>
+	// specialization for the 2D case
+	template<>
 	Sparse_matrix
-	Base_EquationGenerator<dim>
-	::build_InvProjector(const Tensor<1,dim> &normal_vector)
+	Base_EquationGenerator<2>
+	::build_InvProjector(const Tensor<1,2> &normal_vector)
 	{
 
 		const double nx = normal_vector[0];
@@ -461,13 +535,27 @@ namespace EquationGenerator
 		Assert(base_tensorinfo.varIdx.rows() != 0 || base_tensorinfo.varIdx.cols() !=0 ,
 				ExcMessage("Base tensor info not initialized"));
 
-		return(base_tensorinfo.reinit_Invglobal(nx,ny));
+		return(base_tensorinfo.reinit_Invglobal_2D(nx,ny));
 	}
 
-	template<int dim>
+	// specialization for the 1D case
+	template<>
+	Sparse_matrix
+	Base_EquationGenerator<1>
+	::build_InvProjector(const Tensor<1,1> &normal_vector)
+	{
+
+		const double nx = normal_vector[0];
+		return(base_tensorinfo.reinit_Invglobal_1D(nx));
+	}
+
+
+	
+	// specialization for the 2D case
+	template<>
 	Full_matrix 
-	Base_EquationGenerator<dim>::
-	build_Aminus(const Tensor<1,dim,double> normal_vector)
+	Base_EquationGenerator<2>::
+	build_Aminus(const Tensor<1,2,double> normal_vector)
 	{
 		Full_matrix Aminus;
 		Aminus.resize(this->constants.nEqn,this->constants.nEqn);
@@ -481,12 +569,35 @@ namespace EquationGenerator
 		Assert(base_tensorinfo.varIdx.rows() != 0 || base_tensorinfo.varIdx.cols() !=0 ,
 				ExcMessage("Base tensor info not initialized"));
 
-		return(base_tensorinfo.reinit_Invglobal(nx,ny) 
+		return(base_tensorinfo.reinit_Invglobal_2D(nx,ny) 
 			   * this->Aminus_1D 
-			   * base_tensorinfo.reinit_global(nx,ny));
+			   * base_tensorinfo.reinit_global_2D(nx,ny));
 	}
 
-	// convert a matrix to a symmetric matrix
+	// specialization for the 1D case
+	template<>
+	Full_matrix 
+	Base_EquationGenerator<1>::
+	build_Aminus(const Tensor<1,1,double> normal_vector)
+	{
+		Full_matrix Aminus;
+		const double nx = normal_vector[0];
+		Aminus.resize(this->constants.nEqn,this->constants.nEqn);
+
+		Assert(this->Aminus_1D.rows() != 0 || this->Aminus_1D.cols() != 0,
+			  ExcMessage("Aminus_1D has not been built yet"));
+
+		// the numerical flux matrix is computed with the help of the matrix 
+		// of the original system. The symmetrizer has been multiplied to the projector itself therefore 
+		// we do not see an explicit multiplication by the symmetrizer. 
+		return(base_tensorinfo.reinit_Invglobal_1D(nx) 
+			   * this->Aminus_1D 
+			   * base_tensorinfo.reinit_global_1D(nx));
+	}
+
+
+	// Convert a matrix to a symmetric matrix. The following function returns 
+	// S_half * matrix * S_half_inv. So it symmetrizes the system under a similarity transform
 	template<int dim>
 	void 
 	Base_EquationGenerator<dim>::
@@ -595,7 +706,9 @@ namespace EquationGenerator
 			case characteristic:
 			{
 
-				BoundaryHandler::Base_BoundaryHandler_Char<dim> boundary_handler_char(system_data.Ax.matrix,
+
+				AssertThrow(dim > 1,ExcNotImplemented());
+				BoundaryHandler::Base_BoundaryHandler_Char boundary_handler_char(system_data.Ax.matrix,
 																				system_data.B.matrix,
 																				constants.nBC);
 
@@ -613,12 +726,6 @@ namespace EquationGenerator
 			// picking up the odd variables
 			case odd:
 			{
-				// we don't need to do anything since we have already saved the penalty matrix
-
-				// BoundaryHandler::Base_BoundaryHandler_Odd<dim> boundary_handler_odd(system_data.B.matrix,
-				// 																   system_data.odd_ID);
-
-				//  BC = boundary_handler_odd.develop_BC();
 				break;
 			}
 
@@ -669,6 +776,7 @@ namespace EquationGenerator
 	}
 
 
+	// specialization for the 2D case
 	template<>
 	void
 	Base_EquationGenerator<2>
@@ -721,9 +829,50 @@ namespace EquationGenerator
 		system_data.P.matrix.makeCompressed();
 	}
 
-	template<int dim>
+	// specialization for the 1D case
+	template<>
+	void
+	Base_EquationGenerator<1>
+	::reinit_P(const std::string &folder_name)
+	{
+		AssertDimension(system_data.P.matrix.rows(),constants.nEqn);
+		AssertDimension(system_data.P.matrix.cols(),constants.nEqn);
+
+		// the conserved variables are rho, vx and theta
+		const unsigned int num_conserved = 3;
+
+			switch(constants.coll_op)
+			{
+				case BGK:
+				{
+					for (int i =  num_conserved; i < constants.nEqn ; i++)
+						system_data.P.matrix.coeffRef(i,i) = 1/constants.tau;					
+
+					break;
+				}
+				case Boltzmann_MM:
+				{
+					AssertThrow(1 ==0 ,ExcNotImplemented());
+					break;
+				}
+				default:
+				{
+					AssertThrow(1 == 0,ExcMessage("Should not have reached here"));
+					break;
+				}
+			}
+		
+
+		system_data.P.matrix.makeCompressed();
+	}
+
+
+
+	// initialize the system_data corresponding to a particular moment system
+	// Specialization for the 2D case
+	template<>
 	void 
-	Base_EquationGenerator<dim>
+	Base_EquationGenerator<2>
 	::reinit_system(const std::string &folder_name)
 	{
 		this->generate_matrices(this->system_data,this->constants.nEqn,this->constants.nBC,folder_name);
@@ -738,11 +887,12 @@ namespace EquationGenerator
 				const bool fix_B = true;
 				const bool check_B = true;
 
-				BoundaryHandler::Base_BoundaryHandler_Char<dim>::fix_B_vx(constants.epsilon,fix_B,system_data.B.matrix);
+				BoundaryHandler::Base_BoundaryHandler_Char::fix_B_vx(constants.epsilon,fix_B,system_data.B.matrix);
 
 				// check whether B has been fixed or not
 				if(check_B)
 					for (unsigned int i = 0 ; i < system_data.B.matrix.cols() ; i++)
+					// in both the cases, 1D or 2D the ID of vx does not change
 					 if(i != constants.variable_map.find("vx")->second)			
 						Assert(fabs(system_data.B.matrix.coeffRef(0,i)) < 1e-3,ExcMessage("relaxational normal velocity not accommodated in B"));
 		}
@@ -754,12 +904,46 @@ namespace EquationGenerator
 		system_data.B.matrix.makeCompressed();
 	}
 
+	// specialization of the above routine for the 1D case
+	template<>
+	void 
+	Base_EquationGenerator<1>
+	::reinit_system(const std::string &folder_name)
+	{
+		this->generate_matrices(this->system_data,this->constants.nEqn,this->constants.nBC,folder_name);
+
+		// we now develop the P matrix
+		reinit_P(folder_name);	
+		
+		const bool fix_B = true;
+		const bool check_B = true;
+
+		BoundaryHandler::Base_BoundaryHandler_Char::fix_B_vx(constants.epsilon,fix_B,system_data.B.matrix);
+
+				// check whether B has been fixed or not
+		if(check_B)
+			for (unsigned int i = 0 ; i < system_data.B.matrix.cols() ; i++)
+					// in both the cases, 1D or 2D the ID of vx does not change
+				if(i != constants.variable_map.find("vx")->second)			
+					Assert(fabs(system_data.B.matrix.coeffRef(0,i)) < 1e-3,ExcMessage("relaxational normal velocity not accommodated in B"));
+
+
+		// now we can initialize the boundary matrix for specular reflection
+				reinit_Bspecular();
+
+		// we need to compres B again
+		system_data.B.matrix.makeCompressed();
+	}
+
+
 	template<int dim>
 	void
 	Base_EquationGenerator<dim>
 	::reinit_Bspecular()
 	{
 		system_data.B_specular.matrix.resize(constants.nBC,constants.nEqn);
+
+		// we initialize the specular matrix with the same matrix as full accommodation
 		system_data.B_specular.matrix = system_data.B.matrix;
 
 		bool odd_variable = false;
@@ -768,10 +952,12 @@ namespace EquationGenerator
 		for (int i = 1 ; i < constants.nBC ; i++)
 		{
 
-			for (int j = 0 ; j < constants.nEqn ; j++)
+			for (unsigned int j = 0 ; j < (unsigned int)constants.nEqn ; j++)
 			{
 				odd_variable = false;
 
+				// if the coefficient we have captured corresponds to an odd variable then do not do anything, else we 
+				// put the coefficient in the boundary matrix to zero.
 				for (int k = 0 ; k < system_data.odd_ID.rows() ; k++)
 					if (j == system_data.odd_ID(k,0))
 					{
@@ -791,69 +977,6 @@ namespace EquationGenerator
 		system_data.B_specular.matrix.makeCompressed();
 
 	}
-	// accommodation coefficient for a rectangular geometry
-	template<int dim>
-	double
-	Base_EquationGenerator<dim>
-	::accommodation_coeff(const double x)
-	{
-		double chi;
-		Assert(x >= -2.0 && x <= 1.0,ExcMessage("coordinate beyond limits"));
-
-		// if x is less than -0.5
-		// gradually increasing in the initial segment
-		if (x <= -0.5)
-			//chi = 2* (x + 1);
-			chi = 0;
-
-		// full accommodation
-		if (x > -0.5 )
-			chi = 1;
-
-		// // gradually decaying in the last segment
-		// if (x >=0.5)
-		// 	chi = 2 *(x - 1);
-
-		return(chi);
-
-	}
-
-	// develop B matrix in case of  a varying accommodation coefficient
-	template<int dim>
-	Sparse_matrix
-	Base_EquationGenerator<dim>
-	::develop_B(const double x)
-	{
-		const double chi = accommodation_coeff(x);
-
-		bool odd_variable = false;
-		// we would not like to change the initial B matrix
-		Sparse_matrix B_temp = system_data.B.matrix;
-
-		// we do not change the coefficients of the first row since we need them for stability reasons
-		for (int i = 1 ; i < constants.nBC ; i++)
-		{
-
-			for (int j = 0 ; j < constants.nEqn ; j++)
-			{
-				odd_variable = false;
-
-				for (int k = 0 ; k < system_data.odd_ID.rows() ; k++)
-					if (j == system_data.odd_ID(k,0))
-					{
-						odd_variable = true;
-						break;
-					}
-
-				// multiply the even variables with a chi
-				if (!odd_variable)
-					B_temp.coeffRef(i,j) *= chi/(2-chi);
-						
-			}
-
-		}
-
-		return(B_temp);
-	}
+	
 
 }

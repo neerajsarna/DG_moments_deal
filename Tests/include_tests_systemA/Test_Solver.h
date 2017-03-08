@@ -123,6 +123,7 @@ namespace Test_Solver
 		Constants::Base_Constants constants(input_file);
 		SystemA::SystemA<dim> systemA(constants.constants,folder_name);
 
+		AssertDimension(constants.constants.nEqn,6);
 		ExactSolution::ExactSolution_SystemA_ring<dim>  exact_solution_systemA(constants.constants,systemA.base_tensorinfo.S_half);
 
 

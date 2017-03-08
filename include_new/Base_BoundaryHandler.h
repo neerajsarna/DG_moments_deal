@@ -5,7 +5,6 @@ namespace BoundaryHandler
 	using namespace dealii;
 
 	// develops the boundary matrices needed for characteristic boundary conditions
-	template<int dim>
 	class
 	Base_BoundaryHandler_Char:public MatrixOpt::Base_MatrixOpt
 	{
@@ -40,8 +39,7 @@ namespace BoundaryHandler
 	};
 
 	// the constructor simply stores the matrices which will be needed in the future
-	template<int dim>
-	Base_BoundaryHandler_Char<dim>
+	Base_BoundaryHandler_Char
 	::
 	Base_BoundaryHandler_Char(const Sparse_matrix Ax,Sparse_matrix &B,const unsigned int nBC)
 	:
@@ -52,9 +50,8 @@ namespace BoundaryHandler
 		X_minus = compute_Xminus(Ax,nBC);
 	;}
 
-	template<int dim>
 	void 
-	Base_BoundaryHandler_Char<dim>
+	Base_BoundaryHandler_Char
 	::fix_B_vx(const double epsilon,const bool action,Sparse_matrix &B)
 	{
 		Assert(B.cols()!= 0 && B.rows()!= 0,ExcMessage("Matrix not initialized") );
@@ -62,17 +59,18 @@ namespace BoundaryHandler
 
 		// we first compute the number of equations in the system
 		const unsigned int neqn_local = B.cols();
+		const unsigned int ID_vx = 1;
 
 		// every coefficient apart from the normal velocity itself should be changed 
 		if (action)
 			for (unsigned int i = 0 ; i < neqn_local ; i++)
-				if (i != 1)				// do nothing if the coefficient corresponds to the normal velocity						
+				if (i != ID_vx)				// do nothing if the coefficient corresponds to the normal velocity						
 					B.coeffRef(0,i) *= epsilon;
 	}
 
-	template<int dim>
+	
 	Full_matrix
-	Base_BoundaryHandler_Char<dim>
+	Base_BoundaryHandler_Char
 	::build_B_tilde_inv() const
 	{
 		
@@ -90,9 +88,8 @@ namespace BoundaryHandler
 		return(((*B) * X_minus).inverse());
 	}
 
-	template<int dim>
 	Full_matrix
-	Base_BoundaryHandler_Char<dim>
+	Base_BoundaryHandler_Char
 	::build_B_hat(const Full_matrix &B_tilde_inv) const
 	{
 		Assert(B->rows() !=0 && B->cols() !=0,ExcNotInitialized());
@@ -111,7 +108,6 @@ namespace BoundaryHandler
 	}
 
 	// we would now like to look into the development of odd Boundary Conditions
-	template<int dim>
 	class
 	Base_BoundaryHandler_Odd
 	{
@@ -125,8 +121,8 @@ namespace BoundaryHandler
 			Sparse_matrix develop_BC();
 	};
 
-	template<int dim>
-	Base_BoundaryHandler_Odd<dim>::Base_BoundaryHandler_Odd(Sparse_matrix &B,const MatrixUI &odd_ID)
+	
+	Base_BoundaryHandler_Odd::Base_BoundaryHandler_Odd(Sparse_matrix &B,const MatrixUI &odd_ID)
 	:
 	B(B),
 	odd_ID(odd_ID)
@@ -136,9 +132,8 @@ namespace BoundaryHandler
 	}
 
 	// we now try to develop the BC matrix for the implementation of the odd boundary conditions
-	template<int dim>
 	Sparse_matrix
-	Base_BoundaryHandler_Odd<dim>::develop_BC()
+	Base_BoundaryHandler_Odd::develop_BC()
 	{
 		const unsigned int nEqn = B.cols();
 		unsigned int num_odd = 1;

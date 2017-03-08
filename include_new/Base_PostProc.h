@@ -239,7 +239,18 @@ namespace PostProc
 	double
 	Base_PostProc<dim>::compute_L2_norm(const Vector<double> &solution,const unsigned int active_cells)
 	{
-		unsigned int component = constants.variable_map.find(constants.error_variable)->second;
+				// error variable comes from Basics. The following is the component in which
+		// we wish to find the error.
+		Assert(constants.variable_map.size() != 0,ExcMessage("Variable map not initialized"));
+		Assert(constants.variable_map_1D.size() != 0,ExcMessage("Variable map not initialized"));
+
+		unsigned int component;
+		
+		if (dim == 1)
+        	 component = constants.variable_map_1D.find(constants.error_variable)->second;
+
+    	if (dim == 2)
+    		component = constants.variable_map.find(constants.error_variable)->second;
 		Vector<double> norm_per_cell(active_cells); 
 		const unsigned int ngp = constants.p + 1;
 
@@ -274,7 +285,18 @@ namespace PostProc
 
 		// error variable comes from Basics. The following is the component in which
 		// we wish to find the error.
-        unsigned int component = constants.variable_map.find(constants.error_variable)->second;
+        		// error variable comes from Basics. The following is the component in which
+		// we wish to find the error.
+		Assert(constants.variable_map.size() != 0,ExcMessage("Variable map not initialized"));
+		Assert(constants.variable_map_1D.size() != 0,ExcMessage("Variable map not initialized"));
+
+		unsigned int component;
+		
+		if (dim == 1)
+        	 component = constants.variable_map_1D.find(constants.error_variable)->second;
+
+    	if (dim == 2)
+    		component = constants.variable_map.find(constants.error_variable)->second;
 
         const unsigned int ngp = constants.p + 1;
         // error per cell of the domain
@@ -314,7 +336,7 @@ namespace PostProc
         column_name_Linfty = "#Linfty in u(Using QGauss)" + std::to_string(component);
 
         std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<Error Details>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"  << std::endl;
-       	printf("L2_error: %e, Linf_error: %e, #DOF: %llu, #Cells %llu, #Residual %e \n",L2_error,Linfty_error,dof_handler->n_dofs(),active_cells,residual);
+       	printf("L2_error: %e, Linf_error: %e, #DOF: %u, #Cells %u, #Residual %e \n",L2_error,Linfty_error,dof_handler->n_dofs(),active_cells,residual);
        	std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<Error Details>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
 
         convergence_table.add_value(column_name_L2,L2_error);
@@ -368,7 +390,17 @@ namespace PostProc
 	{
 		// error variable comes from Basics. The following is the component in which
 		// we wish to find the error.
-        unsigned int component = constants.variable_map.find(constants.error_variable)->second;
+		Assert(constants.variable_map.size() != 0,ExcMessage("Variable map not initialized"));
+		Assert(constants.variable_map_1D.size() != 0,ExcMessage("Variable map not initialized"));
+
+		unsigned int component;
+		
+		if (dim == 1)
+        	 component = constants.variable_map_1D.find(constants.error_variable)->second;
+
+    	if (dim == 2)
+    		component = constants.variable_map.find(constants.error_variable)->second;
+
 
         const unsigned int ngp = constants.p + 1;
         // error per cell of the domain
@@ -403,9 +435,18 @@ namespace PostProc
 
 		used_midpoint = false;
 
-		// error variable comes from Basics. The following is the component in which
+				// error variable comes from Basics. The following is the component in which
 		// we wish to find the error.
-        unsigned int component = constants.variable_map.find(constants.error_variable)->second;
+		Assert(constants.variable_map.size() != 0,ExcMessage("Variable map not initialized"));
+		Assert(constants.variable_map_1D.size() != 0,ExcMessage("Variable map not initialized"));
+
+		unsigned int component;
+		
+		if (dim == 1)
+        	 component = constants.variable_map_1D.find(constants.error_variable)->second;
+
+    	if (dim == 2)
+    		component = constants.variable_map.find(constants.error_variable)->second;
 
         // error per cell of the domain
         Vector<double> error_per_cell(active_cells);      
@@ -469,7 +510,18 @@ namespace PostProc
 	{
 		// error variable comes from Basics. The following is the component in which
 		// we wish to find the error.
-        unsigned int component = constants.variable_map.find(constants.error_variable)->second;
+        		// error variable comes from Basics. The following is the component in which
+		// we wish to find the error.
+		Assert(constants.variable_map.size() != 0,ExcMessage("Variable map not initialized"));
+		Assert(constants.variable_map_1D.size() != 0,ExcMessage("Variable map not initialized"));
+
+		unsigned int component;
+		
+		if (dim == 1)
+        	 component = constants.variable_map_1D.find(constants.error_variable)->second;
+
+    	if (dim == 2)
+    		component = constants.variable_map.find(constants.error_variable)->second;
 
         const unsigned int ngp = constants.p + 1;
         // error per cell of the domain
@@ -498,7 +550,18 @@ namespace PostProc
 	{
 		// error variable comes from Basics. The following is the component in which
 		// we wish to find the error.
-        unsigned int component = constants.variable_map.find(constants.error_variable)->second;
+        		// error variable comes from Basics. The following is the component in which
+		// we wish to find the error.
+		Assert(constants.variable_map.size() != 0,ExcMessage("Variable map not initialized"));
+		Assert(constants.variable_map_1D.size() != 0,ExcMessage("Variable map not initialized"));
+
+		unsigned int component;
+		
+		if (dim == 1)
+        	 component = constants.variable_map_1D.find(constants.error_variable)->second;
+
+    	if (dim == 2)
+    		component = constants.variable_map.find(constants.error_variable)->second;
 
         const unsigned int ngp = constants.p + 1;
         // error per cell of the domain
@@ -526,7 +589,19 @@ namespace PostProc
 	void 
 	Base_PostProc<dim>::print_convergence_table_to_file(ConvergenceTable &convergence_table)
         {
-           unsigned int component = constants.variable_map.find(constants.error_variable)->second;
+           		// error variable comes from Basics. The following is the component in which
+		// we wish to find the error.
+		Assert(constants.variable_map.size() != 0,ExcMessage("Variable map not initialized"));
+		Assert(constants.variable_map_1D.size() != 0,ExcMessage("Variable map not initialized"));
+
+		unsigned int component;
+		
+		if (dim == 1)
+        	 component = constants.variable_map_1D.find(constants.error_variable)->second;
+
+    	if (dim == 2)
+    		component = constants.variable_map.find(constants.error_variable)->second;
+    	
             std::string column_name_L2;
         	std::string column_name_Linfty;
 
@@ -555,7 +630,18 @@ namespace PostProc
 	Base_PostProc<dim>::print_convergence_table_to_file(const double L2_error,const double Linfty_error,
 														const double hMax,const unsigned int active_cells)
         {
-           unsigned int component = constants.variable_map.find(constants.error_variable)->second;
+           		// error variable comes from Basics. The following is the component in which
+		// we wish to find the error.
+		Assert(constants.variable_map.size() != 0,ExcMessage("Variable map not initialized"));
+		Assert(constants.variable_map_1D.size() != 0,ExcMessage("Variable map not initialized"));
+
+		unsigned int component;
+		
+		if (dim == 1)
+        	 component = constants.variable_map_1D.find(constants.error_variable)->second;
+
+    	if (dim == 2)
+    		component = constants.variable_map.find(constants.error_variable)->second;
            
            FILE *fp;
            fp = fopen(output_file_names.file_for_convergence_tables.c_str(),"a+");
@@ -653,6 +739,13 @@ namespace PostProc
 	FEValues<dim>  fe_v(*mapping,fe_system,quadrature, update_flags);
 	std::vector<Point<dim>> quad_points(quadrature.size());
 	
+	int variables_to_print;
+
+	if (dim == 2)
+		variables_to_print = 9;	// we print all the moments till the heat flux
+
+	if (dim == 1)
+		variables_to_print = 5; // we print all the moments till the heat flux
 
 	for (; cell != endc ; cell++)
 	{
@@ -668,7 +761,7 @@ namespace PostProc
                         fprintf(fp_solution, "%f ",cell->vertex(vertex)(space));
 
 		// we only print variables uptill heat flux
-                for (int i = 0 ; i < 9 ; i++)
+                for (int i = 0 ; i < variables_to_print ; i++)
                         fprintf(fp_solution, "%f ",solution_value(i));
 
                 fprintf(fp_solution, "\n");
@@ -871,7 +964,18 @@ namespace PostProc
    	{
  		// error variable comes from Basics. The following is the component in which
 		// we wish to find the error.
-        unsigned int component = constants.variable_map.find(constants.error_variable)->second;
+        		// error variable comes from Basics. The following is the component in which
+		// we wish to find the error.
+		Assert(constants.variable_map.size() != 0,ExcMessage("Variable map not initialized"));
+		Assert(constants.variable_map_1D.size() != 0,ExcMessage("Variable map not initialized"));
+
+		unsigned int component;
+		
+		if (dim == 1)
+        	 component = constants.variable_map_1D.find(constants.error_variable)->second;
+
+    	if (dim == 2)
+    		component = constants.variable_map.find(constants.error_variable)->second;
 
         // error per cell of the domain
         Vector<double> error_per_cell(active_cells);      
@@ -930,7 +1034,18 @@ namespace PostProc
    		Vector<double> exact_solution_value(constants.nEqn);
    		Vector<double> solution_value(constants.nEqn);
    		Vector<double> error_value(triangulation.n_active_cells());
-   		const unsigned int component = constants.variable_map.find(constants.error_variable)->second;
+   				// error variable comes from Basics. The following is the component in which
+		// we wish to find the error.
+		Assert(constants.variable_map.size() != 0,ExcMessage("Variable map not initialized"));
+		Assert(constants.variable_map_1D.size() != 0,ExcMessage("Variable map not initialized"));
+
+		unsigned int component;
+		
+		if (dim == 1)
+        	 component = constants.variable_map_1D.find(constants.error_variable)->second;
+
+    	if (dim == 2)
+    		component = constants.variable_map.find(constants.error_variable)->second;
 
    	
 

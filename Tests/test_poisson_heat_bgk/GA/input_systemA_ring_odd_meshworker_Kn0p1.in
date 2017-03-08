@@ -21,8 +21,6 @@ subsection Physical Constants
 	set	tau = 0.1
 	set	zeta = 1.0				
 	set	chi = 1.0
-	set	theta0 = 2.0
-	set  theta1 = 1.0
 
  #CAUTION CAUTION CAUTION: uW = 1 * tau
 	set	uW = 0.1
@@ -36,6 +34,38 @@ subsection Physical Constants
  # there is no rho in system A, so rho corrresponds to theta
 	set force_variable = rho
 	set alpha = 1.0
+
+	# temperatures of different walls
+	set theta0 = 2.0
+	set theta1 = 1.0
+	set theta2 = 2.0
+	set theta3 = 2.0
+
+ 	# vx for different walls
+	set vx0 = 0.0
+	set vx1 = 0.0
+	set vx2 = 0.0
+	set vx3 = 0.0
+	set vx4 = 0.0
+
+	# vy for different walls
+	set vy0 = 0.0
+	set vy1 = 0.0
+	set vy2 = 0.0
+	set vy3 = 0.0
+	set vy4 = 0.0
+
+	# conditions for the inflow
+	set rho101 = 2.0
+	set theta101 = 1.0
+	set vx101 = -1
+	set vy101 = 0
+
+	# conditions for the outflow
+	set rho102 = 1.0
+	set theta102 = 1.0
+	set vx102 = 1
+	set vy102 = 0
 end
 
 subsection System Properties

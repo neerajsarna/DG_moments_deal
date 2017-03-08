@@ -19,7 +19,6 @@ std::string input_file;
 #include "BCrhs_systemA.h"
 #include "Base_ExactSolution.h"
 #include "ExactSolution_Dummy.h"
-#include "ExactSolution_PoissonHeatConduction_G26.h"
 #include "ExactSolution_SystemA.h"
 #include "Base_EquationGenerator.h"
 #include "LinearSolver.h"
@@ -28,17 +27,10 @@ std::string input_file;
 #include "Base_PostProc.h"
 #include "Base_NumericalIntegration.h"
 #include "Base_Solver.h"
+#include "Develop_System.h"
 
 
-#include "ExactSolution_PoissonHeatConduction_G20.h"
-#include "ExactSolution_PoissonHeatConduction_G35.h"
-#include "ExactSolution_PoissonHeatConduction_G45.h"
-#include "ExactSolution_PoissonHeatConduction_G56.h"
-#include "ExactSolution_PoissonHeatConduction_G71.h"
-#include "ExactSolution_PoissonHeatConduction_G84.h"
-#include "ExactSolution_PoissonHeatConduction_G105.h"
-#include "ExactSolution_PoissonHeatConduction_G120.h"
-
+#include "ExactSolution_PoissonHeat.h"
 
 // certain generic tests which have to be performed independent of the system
 //#include "Test_LinearSolver.h"
@@ -46,17 +38,9 @@ std::string input_file;
 //#include "Test_MatrixOpt.h"
 //#include "Test_MeshGenerator.h"
 //#include "Test_VertexDof.h"
+#include "Test_Solver_Generic.h"
 
 #include "SystemA.h"
-#include "G26.h"
-#include "G20.h"
-#include "G35.h"
-#include "G45.h"
-#include "G56.h"
-#include "G71.h"
-#include "G84.h"
-#include "G105.h"
-#include "G120.h"
 
 //tests
 
@@ -68,7 +52,7 @@ std::string input_file;
 //#include "Test_BoundaryHandler_Odd.h"
  //#include "Test_ExactSolution.h"
 //#include "Test_SquareGrid.h"
-#include "Test_Solver.h"
+//#include "Test_Solver.h"
 //  #include "Test_CrsFormat.h"
  //#include "Test_Production.h"
 // #include "Test_ProjectorData.h"

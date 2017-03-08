@@ -22,6 +22,7 @@ int main(int argc,char **argv)
 	commmand_line_parser.read_input_filename(input_file);
 
 	//Run the simulations 	
+	
 	Run();
 
 	return 0;

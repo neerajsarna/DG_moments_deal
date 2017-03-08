@@ -2,7 +2,7 @@
 	template<>
 	void 
 	Base_TensorInfo<2>
-	::reinit_Invlocal(const double nx,const double ny,
+	::reinit_Invlocal_2D(const double nx,const double ny,
 				   std::vector<projector_data> &tensor_project)
 	{
 		// first we allocate the required memory

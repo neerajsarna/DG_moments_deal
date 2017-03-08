@@ -39,6 +39,7 @@ namespace Constants
 		private:
 			void declare_parameters();
 			void allocate_variable_map();
+			void allocate_variable_map_1D();
 			void allocate_subdirector_names();
 	};
 
@@ -73,6 +74,8 @@ namespace Constants
 		// we create a map between the id of the variable and it's name,
 		// proves to be helpful during error computation
 		allocate_variable_map();
+
+		allocate_variable_map_1D();
 
 		allocate_subdirector_names();
 	}
@@ -210,7 +213,7 @@ namespace Constants
 
 			prm.declare_entry("theta0",
 							  "0",
-							  Patterns::Double(0,100.0),
+							  Patterns::Double(-100.0,100.0),
 							  "temperature");								  		
 
 			prm.declare_entry("vx0",
@@ -225,7 +228,7 @@ namespace Constants
 
 			prm.declare_entry("theta1",
 							  "0",
-							  Patterns::Double(0,100.0),
+							  Patterns::Double(-100.0,100.0),
 							  "temperature of the second wall");								  		
 
 			prm.declare_entry("vx1",
@@ -341,6 +344,10 @@ namespace Constants
 		prm.enter_subsection("System Properties");
 		{
 
+			prm.declare_entry("Ntensors",
+				"2",
+				Patterns::Integer(2,100),
+				"number of tensors");
 
 			prm.declare_entry("system_id",
 				"6",
@@ -348,8 +355,8 @@ namespace Constants
 				"system ID(distinguish between regularized and normal theories)");
 
 			prm.declare_entry("equations in the system",
-				"6",
-				Patterns::Integer(6,100),
+				"3",
+				Patterns::Integer(3,100),
 				"total number of equations in system");
 
 			prm.declare_entry("nBC",
@@ -388,11 +395,12 @@ namespace Constants
 				  1 square,
 				  2 square with a circle
 				  3 for NACA5012 in a channel 
+				  4 for a line in 1D
 				*/
 
 			prm.declare_entry("mesh type",
 				"0",
-				Patterns::Integer(0,3),
+				Patterns::Integer(0,4),
 				"type of mesh");
 
 			/*0 heat_conduction,
@@ -502,6 +510,7 @@ namespace Constants
 			entered = true;
 
 			constants.nEqn = prm.get_integer("equations in the system");
+			constants.Ntensors = prm.get_integer("Ntensors");
 			constants.nBC = prm.get_integer("nBC");
 			constants.system_id = prm.get_integer("system_id");
 
@@ -634,6 +643,18 @@ namespace Constants
 
 	  	for (unsigned int i = 0 ; i < var_names.size() ; i++)
 	  		constants.variable_map[var_names[i]] = i;
+	  
+	}
+
+	void Base_Constants
+	::allocate_variable_map_1D()
+	{
+
+	  	
+	  	std::vector<std::string> var_names = {"rho","vx","theta","qx","mxxx","Delta","Rxx"};
+
+	  	for (unsigned int i = 0 ; i < var_names.size() ; i++)
+	  		constants.variable_map_1D[var_names[i]] = i;
 	  
 	}
 

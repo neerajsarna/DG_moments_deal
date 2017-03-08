@@ -30,6 +30,9 @@ namespace BCrhs_systemA
 							   			const unsigned int b_id)
 	{
 			AssertDimension((int)bc_rhs.size(),this->constants.nBC);
+
+			// the implementation is only for a 2D setting
+			AssertDimension(dim,2);
 			Assert(dim > 1,ExcNotImplemented());
 
 			double x_cord = p[0];

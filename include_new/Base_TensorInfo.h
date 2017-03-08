@@ -17,9 +17,11 @@ namespace TensorInfo
 				Full_matrix P;
 			};	
 
+			const constant_data constants;
+
 			// In all the normal grad's theories, we know the number of tensors we will be using
-			Base_TensorInfo();
-			void reinit(const unsigned int n_tensors);
+			Base_TensorInfo(const constant_data &constants);
+			void reinit();
 
 			// For certain systems, for ex the A system we do not have a direct correlation between the various
 			// Ntensors and varIdx. For such system we directly provide varIdx
@@ -62,17 +64,20 @@ namespace TensorInfo
 			// idx is the diagonal position at which P has to be placed at Sp
 			void SpBlock(const unsigned int idx,const Full_matrix &P,Sparse_matrix &Sp);
 
-			void reinit_local(const double nx,const double ny,
+			void reinit_local_2D(const double nx,const double ny,
 							  std::vector<projector_data> &tensor_project);
 
 			// same as above but for inverse projector
-			void reinit_Invlocal(const double nx,const double ny,
+			void reinit_Invlocal_2D(const double nx,const double ny,
 				   				std::vector<projector_data> &tensor_project);
 
-			Sparse_matrix reinit_global(const double nx,const double ny);
+			// development of projector matrix for the 2D case
+			Sparse_matrix reinit_global_2D(const double nx,const double ny);
+			Sparse_matrix reinit_global_1D(const double nx);
 
 			// inverse of the projector matrix
-			Sparse_matrix reinit_Invglobal(const double nx,const double ny);
+			Sparse_matrix reinit_Invglobal_2D(const double nx,const double ny);
+			Sparse_matrix reinit_Invglobal_1D(const double nx);
 
 			// develops the mirror of a normal vector
 			Tensor<1,dim> mirror(const Tensor<1,dim,double> normal_vector) const;
@@ -82,13 +87,19 @@ namespace TensorInfo
 
 			Sparse_matrix S_half_inv;
 
-			// create symmetrizer for the system
-			void create_Symmetrizer();
-			void reinit_symmetrizer(std::vector<projector_data> &tensor_Invsymmetrizer);
+			// create symmetrizer for the system in the 2D setting
+			void create_Symmetrizer_2D();
+			void reinit_symmetrizer_2D(std::vector<projector_data> &tensor_Invsymmetrizer);
 
-			// create inverse symmetrizer for the system
-			void create_InvSymmetrizer();
-			void reinit_Invsymmetrizer(std::vector<projector_data> &tensor_Invsymmetrizer);
+			// create inverse symmetrizer for the system in the 2D setting
+			void create_InvSymmetrizer_2D();
+			void reinit_Invsymmetrizer_2D(std::vector<projector_data> &tensor_Invsymmetrizer);
+			
+			// create symmetrizer for the system in the 2D setting
+			void create_Symmetrizer_1D();
+		
+			// create inverse symmetrizer for the system in the 2D setting
+			void create_InvSymmetrizer_1D();
 			
 
 			// compute the number of equations with the help of Ntensors
@@ -105,22 +116,30 @@ namespace TensorInfo
 	};
 
 	template<int dim>
-	Base_TensorInfo<dim>::Base_TensorInfo()
-	{;}
+	Base_TensorInfo<dim>::Base_TensorInfo(const constant_data &constants)
+	:
+	constants(constants),
+	Ntensors(constants.Ntensors),
+	nEqn(constants.nEqn)
+	{
+
+		// in the 1D case, number of tensors = number of equations
+		if (dim == 1)
+			AssertDimension(Ntensors,nEqn);
+
+	}
 
 	// initialize the class depending upon the system
-	template<int dim>
+	// specialization for the 2D case.
+	template<>
 	void
-	Base_TensorInfo<dim>::reinit(const unsigned int n_tensors)
+	Base_TensorInfo<2>::reinit()
 	{
-		Ntensors = n_tensors;
-
+	
+		// this variable is similar to the mathematica file
 		varIdx.resize(Ntensors,2);
 		free_indices.resize(Ntensors,1);
 		Assert(max_tensorial_degree == 11,ExcNotImplemented());
-		
-		// dim == 1 has not been implemented
-		Assert(dim > 1,ExcNotImplemented());
 
 		// generate the varIdx, similar to the Mathematica file
 		varIdx = generate_varIdx();
@@ -133,14 +152,26 @@ namespace TensorInfo
 		free_indices_cumilative = generate_cumilative_index(free_indices);
 		// id_odd_global = generate_ID_odd();
 
-		// compute the total number of equations in the system
-		nEqn = compute_nEqn(free_indices);
 
-		create_Symmetrizer();
-		create_InvSymmetrizer();
+		create_Symmetrizer_2D();
+		create_InvSymmetrizer_2D();
 	}
 
-	// same as above but with different parameters
+	// specialization for the 1D case
+	template<>
+	void
+	Base_TensorInfo<1>::reinit()
+	{
+		// we now create the symmetrizers for the 1D system which are simply identity matrices since the 
+		// system in by default symmetric
+		create_Symmetrizer_1D();
+
+		// creation of the inverse of the symmetrizer matrix
+		create_InvSymmetrizer_1D();
+	}
+
+
+	// same as above but with different parameters. To be used for systems in which var_idx cannot be computed for eg the GA system
 	template<int dim>
 	void 
 	Base_TensorInfo<dim>::reinit(const MatrixUI &var_idx,const unsigned int n_tensors)
@@ -171,10 +202,10 @@ namespace TensorInfo
 		nEqn = compute_nEqn(free_indices);
 
 		// create the symmetrizer for this particular ssytem
-		create_Symmetrizer();
+		create_Symmetrizer_2D();
 
 		// create the symmetrizer for this particular system
-		create_InvSymmetrizer();
+		create_InvSymmetrizer_2D();
 	}
 
 	template<int dim>
@@ -253,6 +284,7 @@ namespace TensorInfo
 	Base_TensorInfo<dim>
 	::compute_nEqn(MatrixUI &free_indices)
 	{
+		Assert(dim > 1,ExcMessage("Incorrect dimension"));
 		return(free_indices.sum());
 	}
 	// template<int dim>
@@ -453,10 +485,11 @@ namespace TensorInfo
 	#include "Tensorial_InvSymmetrizer.h"
 
 
-	template<>
+	// development of the Projector matrix for the 2D case
+	template<int dim>
 	Sparse_matrix
-	Base_TensorInfo<2>
-	::reinit_global(const double nx,const double ny)
+	Base_TensorInfo<dim>
+	::reinit_global_2D(const double nx,const double ny)
 	{
 
 		// the block matrices to be used in the global projector
@@ -466,8 +499,8 @@ namespace TensorInfo
 		Sparse_matrix global_Projector;
 		global_Projector.resize(nEqn,nEqn);
 
-		// so we first initialize the tensorial projectors
-		reinit_local(nx,ny,tensor_project);
+		// initialize the projector for individual tensors
+		reinit_local_2D(nx,ny,tensor_project);
 
 		Assert(global_Projector.rows() != 0,ExcNotInitialized());
 		Assert(global_Projector.cols() != 0,ExcNotInitialized());
@@ -484,11 +517,42 @@ namespace TensorInfo
 		return(global_Projector);
 	}
 
-	// same as above but for the inverse of projector
-	template<>
+	// development of the Projector matrix for the 1D case
+	template<int dim>
 	Sparse_matrix
-	Base_TensorInfo<2>
-	::reinit_Invglobal(const double nx,const double ny)
+	Base_TensorInfo<dim>
+	::reinit_global_1D(const double nx)
+	{
+
+		//the global projector for the equations
+		Sparse_matrix global_Projector;
+		global_Projector.resize(nEqn,nEqn);
+
+		// in the 1D case, the normal vector can either be plus or minus one
+		Assert(fabs(nx - 1.0) < 1e-10 || fabs(nx + 1.0) < 1e-10,ExcMessage("Incorrect normal vector"));
+
+
+		for (unsigned int i = 0 ; i < Ntensors ; i++)
+		{
+			// if the moment is even then it is unaffected by the rotation of the axis
+			if (i % 2 == 0)
+				global_Projector.coeffRef(i,i) = pow(nx,2);
+
+			// if the moment is odd then it simply changes sign 
+			else
+				global_Projector.coeffRef(i,i) = nx;
+		}
+
+
+		return(global_Projector);
+	}
+
+
+	// same as above but for the inverse of projector, specialization for the 2D case
+	template<int dim>
+	Sparse_matrix
+	Base_TensorInfo<dim>
+	::reinit_Invglobal_2D(const double nx,const double ny)
 	{
 
 		// the block matrices to be used in the global projector
@@ -499,7 +563,7 @@ namespace TensorInfo
 		global_Projector.resize(nEqn,nEqn);
 
 		// so we first initialize the tensorial projectors
-		reinit_Invlocal(nx,ny,tensor_Invproject);
+		reinit_Invlocal_2D(nx,ny,tensor_Invproject);
 
 		Assert(global_Projector.rows() != 0,ExcNotInitialized());
 		Assert(global_Projector.cols() != 0,ExcNotInitialized());
@@ -516,11 +580,21 @@ namespace TensorInfo
 		return(global_Projector);
 	}
 
+	// specialization for the 1D case. Develops the inverse of the Projector
+	template<int dim>
+	Sparse_matrix
+	Base_TensorInfo<dim>
+	::reinit_Invglobal_1D(const double nx)
+	{
 
-	template<>
+		// in the 1D case, the Projector and the Inv projector are the same i.e. they are both diagonal matrices
+		return(reinit_global_1D(nx));
+	}
+
+	template<int dim>
 	void 
-	Base_TensorInfo<2>
-	::create_Symmetrizer()
+	Base_TensorInfo<dim>
+	::create_Symmetrizer_2D()
 	{
 		S_half.resize(nEqn,nEqn);
 
@@ -532,7 +606,7 @@ namespace TensorInfo
 		AssertDimension(tensor_symmetrizer.size(),max_tensorial_degree + 1);
 		allocate_tensor_memory(tensor_symmetrizer);
 
-		reinit_symmetrizer(tensor_symmetrizer);
+		reinit_symmetrizer_2D(tensor_symmetrizer);
 
 		// then using the tensorial projectors we initialize the global projector
 		for (unsigned int i = 0 ; i < Ntensors ; i++)
@@ -544,10 +618,10 @@ namespace TensorInfo
 		S_half.makeCompressed();
 	}
 
-	template<>
+	template<int dim>
 	void
-	Base_TensorInfo<2>
-	::create_InvSymmetrizer()
+	Base_TensorInfo<dim>
+	::create_InvSymmetrizer_2D()
 	{
 		S_half_inv.resize(nEqn,nEqn);
 
@@ -559,12 +633,44 @@ namespace TensorInfo
 		AssertDimension(tensor_Invsymmetrizer.size(),max_tensorial_degree + 1);
 		allocate_tensor_memory(tensor_Invsymmetrizer);
 
-		reinit_Invsymmetrizer(tensor_Invsymmetrizer);
+		reinit_Invsymmetrizer_2D(tensor_Invsymmetrizer);
 
 		// then using the tensorial projectors we initialize the global projector
 		for (unsigned int i = 0 ; i < Ntensors ; i++)
 			SpBlock(free_indices_cumilative(i),tensor_Invsymmetrizer[varIdx(i,1)].P,S_half_inv);
 		
+
+		S_half_inv.makeCompressed();
+
+	}
+
+
+	template<int dim>
+	void 
+	Base_TensorInfo<dim>
+	::create_Symmetrizer_1D()
+	{
+		S_half.resize(nEqn,nEqn);
+
+		// the number of equations are equal to the number of tensors.
+		// The 1d moment system is already symmetric and therefore we just need to initialize the matrix with an identity matrix
+		for (unsigned int i = 0 ; i < nEqn ; i++)
+			S_half.coeffRef(i,i) = 1;
+
+		
+		S_half.makeCompressed();
+	}
+
+	template<int dim>
+	void
+	Base_TensorInfo<dim>
+	::create_InvSymmetrizer_1D()
+	{
+		S_half_inv.resize(nEqn,nEqn);
+
+		// inverse of an identity matrix
+		for (unsigned int i = 0 ; i < nEqn ; i++)
+			S_half_inv.coeffRef(i,i) = 1;
 
 		S_half_inv.makeCompressed();
 

@@ -62,19 +62,18 @@ namespace TestMeshGenerator
 
 	TEST(MeshGenerator,HandlesMeshGeneration)
 	{
-		const unsigned int dim = 2;
-		ASSERT_EQ(dim,2) << "3D not implemented" << std::endl;
+		const unsigned int dim = 1;
+		AssertThrow(dim < 3 ,ExcMessage("3D not implemented"));
 
 		std::string folder_name = "../system_matrices/";
 		Constants::Base_Constants constants(input_file);
-		std::string output_file = "grid_square";
+		std::string output_file = "grid_line";
 
 		fflush(stdout);
 		std::cout << "Mesh file name " << constants.constants.mesh_filename << std::endl;
 
 		MeshGenerator::Base_MeshGenerator<dim> mesh_gen(output_file,constants.constants);
 		std::cout << "#Cells " << mesh_gen.triangulation.n_active_cells();
-		mesh_gen.print_grid(0);
 		mesh_gen.print_mesh_info();
 
 		// for (; cell != end_c ; cell++)

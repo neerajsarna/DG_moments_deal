@@ -22,21 +22,30 @@ namespace ExactSolution
 			virtual double R_zz(const double r,const double phi)const {return 0;};
 	};
 
-	template<int dim>
-	G26_PoissonHeat<dim>::G26_PoissonHeat(const constant_data &constants,const Sparse_matrix &S_half)
+	template<>
+	G26_PoissonHeat<2>::G26_PoissonHeat(const constant_data &constants,const Sparse_matrix &S_half)
 	:
-	Base_ExactSolution<dim>(constants,S_half)
+	Base_ExactSolution<2>(constants,S_half)
 	{
 		Assert(constants.nEqn == 17,ExcMessage("Only a solution for G26"));
 	}
 
-	template<int dim>
+	template<>
+	G26_PoissonHeat<1>::G26_PoissonHeat(const constant_data &constants,const Sparse_matrix &S_half)
+	:
+	Base_ExactSolution<1>(constants,S_half)
+	{
+		Assert(constants.nEqn == 8,ExcMessage("Only a solution for G26"));
+	}
+
+
+	template<>
 	void
-	G26_PoissonHeat<dim>::vector_value(const Point<dim> &p,Vector<double> &value) const
+	G26_PoissonHeat<2>::vector_value(const Point<2> &p,Vector<double> &value) const
 	{
 		// first we check the size of the value vector
 		Assert((int)value.size() == this->constants.nEqn,ExcNotInitialized());
-		Assert(fabs(this->constants.alpha - 0.816496580927726) < 1e-5,ExcMessage("Exact Solution does not correspond to the given value of alpha"));
+		Assert(fabs(this->constants.alpha - 0.816496580927726) < 1e-5,ExcMessage("Incorrect alpha value"));
 
 		// variables for which we need the 
 		const unsigned int ID_theta = this->constants.variable_map.find("theta")->second;
@@ -46,7 +55,7 @@ namespace ExactSolution
 
 		value = 0;
 
-		Assert(ID_theta == dim+1,ExcMessage("Wrong ID for theta"));
+		Assert(ID_theta == 3,ExcMessage("Wrong ID for theta"));
 
 		if(fabs(this->constants.alpha-0.816496580927726) < 1e-5)
 		{
@@ -93,15 +102,45 @@ namespace ExactSolution
 		value = matrix_opt.Sparse_matrix_dot_Vector(this->S_half,value);
 	}
 
+	template<>
+	void
+	G26_PoissonHeat<1>::vector_value(const Point<1> &p,Vector<double> &value) const
+	{
+		// first we check the size of the value vector
+		Assert((int)value.size() == this->constants.nEqn,ExcNotInitialized());
+		Assert(fabs(this->constants.alpha) < 1e-5,ExcMessage("Exact Solution does not correspond to the given value of alpha"));
+		Assert(fabs(this->constants.theta0+1) < 1e-5,ExcMessage("Incorrect temperature value"));
+		Assert(fabs(this->constants.theta1-1) < 1e-5,ExcMessage("Incorrect temperature value"));
+		Assert(fabs(this->constants.tau-0.1) < 1e-5,ExcMessage("Incorrect tau value"));
+
+		// variables for which we need the exact solution
+		const unsigned int ID_theta = this->constants.variable_map_1D.find("theta")->second;
+	
+		AssertDimension(ID_theta,2);
+		const double x = p(0);
+
+		value = 0;
+
+		if(fabs(this->constants.alpha) < 1e-5)
+			if (fabs(this->constants.tau - 0.1) < 1e-5 )
+				value[ID_theta] = 0.9918095457622201*x + 0.004077339347408366*sinh(2.517180972479634*x) + 
+   								  0.0031858247584759585*sinh(6.71508535912671*x);
+			
+		
+
+		// The above values correspond to a unsymmetric system, therefore we now need to accomodate the symmetric system
+		MatrixOpt::Base_MatrixOpt matrix_opt;
+		value = matrix_opt.Sparse_matrix_dot_Vector(this->S_half,value);
+	}
+
+
 	// need to fix the following routines
 	template<int dim>
 	double
 	G26_PoissonHeat<dim>::s_r(const double r,const double phi)const
 	{
-		return (this->constants.A0 * r * this->constants.tau)/2. - this->C4*pow(r,-1) + cos(phi) * 
-				(-this->C2 + (2 * this->constants.A1 * r * this->constants.tau)/3. + this->C1*pow(r,-2) - 
-			this->K2*this->BI(1,r*this->lambda1)*pow(2,0.5)*pow(r,-1) + this->K1*this->BK(1,r*this->lambda1)*pow(2,0.5)*pow(r,-1))
-		+ (this->constants.A2 * pow(r,3) * pow(this->constants.tau,3))/4.;
+		Assert(1 == 0, ExcMessage("Should not have reached here"));
+		return 0;
 
 	}
 
@@ -109,12 +148,8 @@ namespace ExactSolution
 	double
 	G26_PoissonHeat<dim>::s_phi(const double r,const double phi)const
 	{
-
-				return (this->C2 - (this->constants.A1 * r * this->constants.tau)/3. + this->C1*pow(r,-2) + 
-					this->K2*(this->BI(0,this->lambda1 * r) * pow(this->constants.zeta,0.5) + 
-						this->BI(2,this->lambda1 * r) * pow(this->constants.zeta,0.5)) + 
-					this->K1*(this->BK(0,this->lambda1 * r) * pow(this->constants.zeta,0.5) 
-						+ this->BK(2,this->lambda1 * r) * pow(this->constants.zeta,0.5)))*sin(phi);
+		Assert(1 == 0, ExcMessage("Should not have reached here"));
+		return 0;
 
 	}
 
@@ -122,12 +157,8 @@ namespace ExactSolution
 	double
 	G26_PoissonHeat<dim>::thetaP(const double r,const double phi)const
 	{
-		return (this->C3 + this->C4 * this->constants.zeta * log(r) 
-			- (this->constants.A0 * this->constants.tau * this->constants.zeta * pow(r,2))/4. + 
-		cos(phi)*(this->C2 * r * this->constants.zeta + 
-			this->C1 * this->constants.zeta * pow(r,-1) - (this->constants.A1 * this->constants.tau * (-2 + this->constants.zeta * pow(r,2)))/3.) + 
-		(2 * this->constants.A2 * pow(r,2) * pow(this->constants.tau,3))/3.
-		 - (this->constants.A2 * this->constants.zeta * pow(r,4) * pow(this->constants.tau,3))/16.);
+		Assert(1 == 0, ExcMessage("Should not have reached here"));
+		return 0;
 
 	}
 }

@@ -1,4 +1,4 @@
-// exact solution for poisson heat conduction
+//Exact solution which returns zero value as the output
 namespace ExactSolution
 {
 	using namespace dealii;
@@ -26,14 +26,13 @@ namespace ExactSolution
 	:
 	Base_ExactSolution<dim>(constants,S_half)
 	{
-		Assert(constants.nEqn == 13,ExcMessage("Only a solution for G20"));
 	}
 
 	template<int dim>
 	void
 	ExactSolution_Dummy<dim>::vector_value(const Point<dim> &p,Vector<double> &value) const
 	{
-		Assert(value.size() == this->constants.nEqn,ExcMessage("Incorrect dimension of the input array "));
+		Assert(value.size() == (unsigned int)this->constants.nEqn,ExcMessage("Incorrect dimension of the input array "));
 		Assert(p.norm() >=0 ,ExcMessage("Incorrect point"));
 
 		// we just return zero value 

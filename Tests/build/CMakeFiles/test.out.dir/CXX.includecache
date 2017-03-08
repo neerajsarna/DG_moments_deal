@@ -43,6 +43,8 @@ MeshGenerator_Square_CircularCavity.h
 ../../include_new/MeshGenerator_Square_CircularCavity.h
 MeshGenerator_PeriodicSquare.h
 ../../include_new/MeshGenerator_PeriodicSquare.h
+MeshGenerator_Line.h
+../../include_new/MeshGenerator_Line.h
 
 ../../include_new/Base_NumericalIntegration.h
 
@@ -72,6 +74,8 @@ Tensorial_Symmetrizer.h
 Tensorial_InvSymmetrizer.h
 ../../include_new/Tensorial_InvSymmetrizer.h
 
+../../include_new/Develop_System.h
+
 ../../include_new/EigenSetup.h
 Eigen/Dense
 -
@@ -83,6 +87,8 @@ Eigen/SparseCore
 ../../include_new/Integrate_PerCell.h
 
 ../../include_new/LinearSolver.h
+
+../../include_new/MeshGenerator_Line.h
 
 ../../include_new/MeshGenerator_Ring.h
 
@@ -226,23 +232,7 @@ algorithm
 
 ../../periodic_square/Base_PeriodicityHandler.h
 
-../../periodic_square/ExactSolution_PoissonHeatConduction_G105.h
-
-../../periodic_square/ExactSolution_PoissonHeatConduction_G120.h
-
-../../periodic_square/ExactSolution_PoissonHeatConduction_G20.h
-
-../../periodic_square/ExactSolution_PoissonHeatConduction_G26.h
-
-../../periodic_square/ExactSolution_PoissonHeatConduction_G35.h
-
-../../periodic_square/ExactSolution_PoissonHeatConduction_G45.h
-
-../../periodic_square/ExactSolution_PoissonHeatConduction_G56.h
-
-../../periodic_square/ExactSolution_PoissonHeatConduction_G71.h
-
-../../periodic_square/ExactSolution_PoissonHeatConduction_G84.h
+../../periodic_square/ExactSolution_PoissonHeat.h
 
 ../../periodic_square/MeshGenerator_PeriodicSquare.h
 
@@ -252,29 +242,11 @@ algorithm
 
 ../../systems/BCrhs_systemA.h
 
-../../systems/G105.h
-
-../../systems/G120.h
-
-../../systems/G20.h
-
-../../systems/G26.h
-
-../../systems/G35.h
-
-../../systems/G45.h
-
-../../systems/G56.h
-
-../../systems/G71.h
-
-../../systems/G84.h
-
 ../../systems/SystemA.h
 
-../include_tests_G20/Test_Solver.h
+../Test_Generic/Test_Solver_Generic.h
 
-../include_tests_G20/basic_routines.h
+../include_tests_G26/basic_routines.h
 
 /Applications/deal.II.app/Contents/Resources/include/deal.II/algorithms/any_data.h
 deal.II/base/config.h
@@ -4627,8 +4599,6 @@ Base_ExactSolution.h
 /Users/neerajsarna/sciebo/DG_moments_deal/Tests/Base_ExactSolution.h
 ExactSolution_Dummy.h
 /Users/neerajsarna/sciebo/DG_moments_deal/Tests/ExactSolution_Dummy.h
-ExactSolution_PoissonHeatConduction_G26.h
-/Users/neerajsarna/sciebo/DG_moments_deal/Tests/ExactSolution_PoissonHeatConduction_G26.h
 ExactSolution_SystemA.h
 /Users/neerajsarna/sciebo/DG_moments_deal/Tests/ExactSolution_SystemA.h
 Base_EquationGenerator.h
@@ -4645,44 +4615,14 @@ Base_NumericalIntegration.h
 /Users/neerajsarna/sciebo/DG_moments_deal/Tests/Base_NumericalIntegration.h
 Base_Solver.h
 /Users/neerajsarna/sciebo/DG_moments_deal/Tests/Base_Solver.h
-ExactSolution_PoissonHeatConduction_G20.h
-/Users/neerajsarna/sciebo/DG_moments_deal/Tests/ExactSolution_PoissonHeatConduction_G20.h
-ExactSolution_PoissonHeatConduction_G35.h
-/Users/neerajsarna/sciebo/DG_moments_deal/Tests/ExactSolution_PoissonHeatConduction_G35.h
-ExactSolution_PoissonHeatConduction_G45.h
-/Users/neerajsarna/sciebo/DG_moments_deal/Tests/ExactSolution_PoissonHeatConduction_G45.h
-ExactSolution_PoissonHeatConduction_G56.h
-/Users/neerajsarna/sciebo/DG_moments_deal/Tests/ExactSolution_PoissonHeatConduction_G56.h
-ExactSolution_PoissonHeatConduction_G71.h
-/Users/neerajsarna/sciebo/DG_moments_deal/Tests/ExactSolution_PoissonHeatConduction_G71.h
-ExactSolution_PoissonHeatConduction_G84.h
-/Users/neerajsarna/sciebo/DG_moments_deal/Tests/ExactSolution_PoissonHeatConduction_G84.h
-ExactSolution_PoissonHeatConduction_G105.h
-/Users/neerajsarna/sciebo/DG_moments_deal/Tests/ExactSolution_PoissonHeatConduction_G105.h
-ExactSolution_PoissonHeatConduction_G120.h
-/Users/neerajsarna/sciebo/DG_moments_deal/Tests/ExactSolution_PoissonHeatConduction_G120.h
+Develop_System.h
+/Users/neerajsarna/sciebo/DG_moments_deal/Tests/Develop_System.h
+ExactSolution_PoissonHeat.h
+/Users/neerajsarna/sciebo/DG_moments_deal/Tests/ExactSolution_PoissonHeat.h
+Test_Solver_Generic.h
+/Users/neerajsarna/sciebo/DG_moments_deal/Tests/Test_Solver_Generic.h
 SystemA.h
 /Users/neerajsarna/sciebo/DG_moments_deal/Tests/SystemA.h
-G26.h
-/Users/neerajsarna/sciebo/DG_moments_deal/Tests/G26.h
-G20.h
-/Users/neerajsarna/sciebo/DG_moments_deal/Tests/G20.h
-G35.h
-/Users/neerajsarna/sciebo/DG_moments_deal/Tests/G35.h
-G45.h
-/Users/neerajsarna/sciebo/DG_moments_deal/Tests/G45.h
-G56.h
-/Users/neerajsarna/sciebo/DG_moments_deal/Tests/G56.h
-G71.h
-/Users/neerajsarna/sciebo/DG_moments_deal/Tests/G71.h
-G84.h
-/Users/neerajsarna/sciebo/DG_moments_deal/Tests/G84.h
-G105.h
-/Users/neerajsarna/sciebo/DG_moments_deal/Tests/G105.h
-G120.h
-/Users/neerajsarna/sciebo/DG_moments_deal/Tests/G120.h
-Test_Solver.h
-/Users/neerajsarna/sciebo/DG_moments_deal/Tests/Test_Solver.h
 
 /opt/intel/compilers_and_libraries_2016.3.170/mac/mkl/include/mkl.h
 mkl_version.h

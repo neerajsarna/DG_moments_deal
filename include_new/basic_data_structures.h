@@ -16,7 +16,7 @@ enum BC_Type
 
 // types of mesh which will be generated 
 enum Mesh_type
-{ring,square_domain,square_circular_cavity,NACA5012};
+{ring,square_domain,square_circular_cavity,NACA5012,line};
 
 // types of test cases
 enum Problem_type
@@ -118,6 +118,7 @@ struct constant_data
 
 	// we create a map between the id of the variable and it's name
 	std::map<std::string,unsigned int> variable_map;
+	std::map<std::string,unsigned int> variable_map_1D;
 
 	// names of the sub directories
 	std::vector<std::string> sub_directory_names;
@@ -180,5 +181,7 @@ struct constant_data
 	double vy102;
 
 	Collision_Operator coll_op;
+
+	int Ntensors;
 };
 

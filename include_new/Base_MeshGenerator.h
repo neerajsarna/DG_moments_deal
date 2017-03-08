@@ -36,10 +36,13 @@ namespace MeshGenerator
 			void mesh_internal_ring();
 			void mesh_internal_square(const unsigned int parts_x,const unsigned int parts_y);
 			void mesh_internal_square_circular_cavity();
+			void mesh_internal_line();
 			
 			void set_periodic_bid()const;
 			void set_square_bid()const;
 			void set_square_circular_cavity_bid()const;
+			void set_bid_line_inflow_outflow();
+			void set_bid_line_heat_conduction();
 
 			// the following routine handles the refinement of the grid
 			void refinement_handling(const unsigned int present_cycle,
@@ -218,13 +221,20 @@ namespace MeshGenerator
 				AssertThrow(total_cycles == 1,ExcMessage("Could not perform grid refinement"));
 				break;
 			}
+
+			case line:
+			{
+				triangulation.refine_global(1);
+				break;
+			}
 		}
 
 	}
 
-	template<int dim>
+	// specialization for the 2D case
+	template<>
 	void 
-	Base_MeshGenerator<dim>::develop_mesh()
+	Base_MeshGenerator<2>::develop_mesh()
 	{
 		bool loaded_mesh = false;
 
@@ -263,6 +273,14 @@ namespace MeshGenerator
 
 	}
 
+		// specialization for the 2D case
+	template<>
+	void 
+	Base_MeshGenerator<1>::develop_mesh()
+	{
+		mesh_internal_line();
+	}
+
 	template<int dim>
 	void 
 	Base_MeshGenerator<dim>::read_gmsh()
@@ -284,4 +302,8 @@ namespace MeshGenerator
 
 	// mesh generator periodic square
 	#include "MeshGenerator_PeriodicSquare.h"
+
+	// mesh generator line
+	#include "MeshGenerator_Line.h"
+
 }

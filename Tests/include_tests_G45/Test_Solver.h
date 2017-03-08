@@ -38,15 +38,15 @@ namespace Test_Solver
 
 	// 	std::string folder_name = "../system_matrices/";
 	// 	Constants::Base_Constants constants(input_file);
-	// 	G26::G26<dim> G26(constants.constants,folder_name);
+	// 	G45::G45<dim> G45(constants.constants,folder_name);
 
-	// 	ExactSolution::G26_PoissonHeat<dim>  G26_PoissonHeat(constants.constants,G26.base_tensorinfo.S_half);
+	// 	ExactSolution::G45_PoissonHeat<dim>  G45_PoissonHeat(constants.constants,G45.base_tensorinfo.S_half);
 
 	// 	FEM_Solver::Base_Solver<dim> base_solver("mesh_file_name",
 	// 										 "grid",
 	// 										 constants.constants,
-	// 										 &G26,
-	// 										 &G26_PoissonHeat);
+	// 										 &G45,
+	// 										 &G45_PoissonHeat);
 
 
 	// 	// first we check the boundary IDs of the periodic mesh
@@ -246,25 +246,27 @@ namespace Test_Solver
 
 	// }
 
-	TEST(SquareCavityG45,SquareCavityG45)
-	{
-		const unsigned int dim = 2;
-		ASSERT_EQ(dim,2) << "3D not implemented" << std::endl;
+	// TEST(SquareCavityG45,SquareCavityG45)
+	// {
+	// 	const unsigned int dim = 2;
+	// 	ASSERT_EQ(dim,2) << "3D not implemented" << std::endl;
 
-		std::string folder_name = "../system_matrices/";
-		Constants::Base_Constants constants(input_file);
-		G45::G45<dim> G45(constants.constants,folder_name);
+	// 	std::string folder_name = "../system_matrices/";
+	// 	Constants::Base_Constants constants(input_file);
+	// 	G45::G45<dim> G45(constants.constants,folder_name);
 
-		ExactSolution::G45_PoissonHeat<dim>  G45_PoissonHeat(constants.constants,G45.base_tensorinfo.S_half);
+	// 	ExactSolution::G45_PoissonHeat<dim>  G45_PoissonHeat(constants.constants,G45.base_tensorinfo.S_half);
 
-		FEM_Solver::Base_Solver<dim> base_solver("mesh_file_name",
-											 "grid",
-											 constants.constants,
-											 &G45,
-											 &G45_PoissonHeat);
+	// 	FEM_Solver::Base_Solver<dim> base_solver("mesh_file_name",
+	// 										 "grid",
+	// 										 constants.constants,
+	// 										 &G45,
+	// 										 &G45_PoissonHeat);
 
 
-		base_solver.run_square();
+	// 	base_solver.run_square();
 
-	}
+	// }
+
+
 }

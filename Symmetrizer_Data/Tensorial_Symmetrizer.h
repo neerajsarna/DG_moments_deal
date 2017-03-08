@@ -1,7 +1,7 @@
 	template<>
 	void 
 	Base_TensorInfo<2>
-	::reinit_symmetrizer(std::vector<projector_data> &tensor_symmetrizer)
+	::reinit_symmetrizer_2D(std::vector<projector_data> &tensor_symmetrizer)
 	{
 		AssertDimension(tensor_symmetrizer.size(),max_tensorial_degree + 1);
 

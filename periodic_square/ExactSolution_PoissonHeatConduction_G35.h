@@ -22,17 +22,26 @@ namespace ExactSolution
 			virtual double R_zz(const double r,const double phi) const  {return 0;};
 	};
 
-	template<int dim>
-	G35_PoissonHeat<dim>::G35_PoissonHeat(const constant_data &constants,const Sparse_matrix &S_half)
+	template<>
+	G35_PoissonHeat<2>::G35_PoissonHeat(const constant_data &constants,const Sparse_matrix &S_half)
 	:
-	Base_ExactSolution<dim>(constants,S_half)
+	Base_ExactSolution<2>(constants,S_half)
 	{
 		Assert(constants.nEqn == 22,ExcMessage("Only a solution for G35"));
 	}
 
-	template<int dim>
+	template<>
+	G35_PoissonHeat<1>::G35_PoissonHeat(const constant_data &constants,const Sparse_matrix &S_half)
+	:
+	Base_ExactSolution<1>(constants,S_half)
+	{
+		Assert(constants.nEqn == 9,ExcMessage("Only a solution for G35"));
+	}
+
+
+	template<>
 	void
-	G35_PoissonHeat<dim>::vector_value(const Point<dim> &p,Vector<double> &value) const
+	G35_PoissonHeat<2>::vector_value(const Point<2> &p,Vector<double> &value) const
 	{
 		// first we check the size of the value vector
 		Assert((int)value.size() == this->constants.nEqn,ExcNotInitialized());
@@ -46,7 +55,7 @@ namespace ExactSolution
 
 		value = 0;
 
-		Assert(ID_theta == dim+1,ExcMessage("Wrong ID for theta"));
+		Assert(ID_theta == 3,ExcMessage("Wrong ID for theta"));
 
 		if(fabs(this->constants.alpha-0.816496580927726) < 1e-5)
 		{
@@ -74,6 +83,37 @@ namespace ExactSolution
 				
 			}		
 		}
+
+		// The above values correspond to a unsymmetric system, therefore we now need to accomodate the symmetric system
+		MatrixOpt::Base_MatrixOpt matrix_opt;
+		value = matrix_opt.Sparse_matrix_dot_Vector(this->S_half,value);
+	}
+
+	template<>
+	void
+	G35_PoissonHeat<1>::vector_value(const Point<1> &p,Vector<double> &value) const
+	{
+		// first we check the size of the value vector
+		Assert((int)value.size() == this->constants.nEqn,ExcNotInitialized());
+		Assert(fabs(this->constants.alpha) < 1e-5,ExcMessage("Exact Solution does not correspond to the given value of alpha"));
+		Assert(fabs(this->constants.theta0+1) < 1e-5,ExcMessage("Incorrect temperature value"));
+		Assert(fabs(this->constants.theta1-1) < 1e-5,ExcMessage("Incorrect temperature value"));
+		Assert(fabs(this->constants.tau-0.1) < 1e-5,ExcMessage("Incorrect tau value"));
+
+		// variables for which we need the exact solution
+		const unsigned int ID_theta = this->constants.variable_map_1D.find("theta")->second;
+	
+		AssertDimension(ID_theta,2);
+		const double x = p(0);
+
+		value = 0;
+
+		if(fabs(this->constants.alpha) < 1e-5)
+			if (fabs(this->constants.tau - 0.1) < 1e-5 )
+				value[ID_theta] = 0.9861871317460368*x + 0.0009740846199919195*sinh(2.2483363346888074*x) + 
+   									0.008298820931674668*sinh(4.010385905150765*x);
+			
+		
 
 		// The above values correspond to a unsymmetric system, therefore we now need to accomodate the symmetric system
 		MatrixOpt::Base_MatrixOpt matrix_opt;

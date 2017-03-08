@@ -17,7 +17,7 @@
             repetitions[0] = parts_x;
             repetitions[1] = parts_y;
 
-            //The diagonal of the rectangle is the time joining p1 and p2
+            //The diagonal of the rectangle is the line joining p1 and p2
             GridGenerator::subdivided_hyper_rectangle(triangulation,
                                                       repetitions,
                                                        p1,p2);
