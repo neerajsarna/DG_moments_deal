@@ -9,12 +9,19 @@ namespace EquationGenerator
 	class Base_EquationGenerator
 	{
 		public:
-			Base_EquationGenerator(const constant_data &constants);
+			Base_EquationGenerator(const constant_numerics &constants,
+								   const int nEqn,
+								   const int nBC,
+								   const int Ntensors);
 			
 			DeclException1 (ExcFileNotOpen, std::string,
                         << "Could not open " << arg1 );
 
-			const constant_data constants;
+			const constant_numerics constants;
+			const int nEqn;
+			const int nBC;
+			const int Ntensors;
+
 			struct equation_data
 			{
 
@@ -46,6 +53,9 @@ namespace EquationGenerator
 
 			// a data structure to store all the system data
 			equation_data system_data;
+
+			BCrhs::Base_BCrhs<dim> *base_bcrhs;
+
 
 			// the base filenames for the system matrices
 			std::vector<std::string> basefile;
@@ -109,27 +119,12 @@ namespace EquationGenerator
 			Sparse_matrix build_Projector(const Tensor<1,dim> &normal_vector);
 			Sparse_matrix build_InvProjector(const Tensor<1,dim> &normal_vector);
 
-			// base class for the boundary routines. The decision regarding which boundary system to load
-			// has to be done inside specific systems
-			BCrhs::Base_BCrhs<dim> *base_bcrhs;
-			BCrhs::Base_BCrhs<dim> *base_bcrhs_inflow;
 
 			// The following function already knows the Aminus_1D game
 			Full_matrix build_Aminus(const Tensor<1,dim,double> normal_vector);
 
 			// Matrices for the flux
 			Full_matrix Aminus_1D;
-
-			void build_BCrhs(const Tensor<1,dim,double> p,
-									const Tensor<1,dim,double> normal_vector,
-									Vector<double> &bc_rhs,
-									const unsigned int b_id);
-
-			void build_BCrhs_inflow(const Tensor<1,dim,double> p,
-									const Tensor<1,dim,double> normal_vector,
-									Vector<double> &bc_rhs,
-									const unsigned int b_id);
-
 
 			//convert a matrix to a symmetric matrix
 			void create_symmetric_matrix(Sparse_matrix &matrix,Sparse_matrix &S_half,
@@ -152,8 +147,6 @@ namespace EquationGenerator
 
 			void reinit_Bspecular();
 
-			virtual void reinit_BCrhs() = 0;
-
 			double force_factor;
 			void reinit_P(const std::string &folder_name);
 
@@ -162,13 +155,19 @@ namespace EquationGenerator
 	// specialization for the 1D case 
 	template<>
 	Base_EquationGenerator<1>
-	::Base_EquationGenerator(const constant_data &constants)
+	::Base_EquationGenerator(const constant_numerics &constants,
+							 const int nEqn,
+							 const int nBC,
+							 const int Ntensors)
 	:
 	constants(constants),
-	force1(constants),
-	force2(constants),
-	force3(constants),
-	base_tensorinfo(constants)
+	nEqn(nEqn),
+	nBC(nBC),
+	Ntensors(Ntensors),
+	force1(constants,nEqn),
+	force2(constants,nEqn),
+	force3(constants,nEqn),
+	base_tensorinfo(nEqn,Ntensors)
 	{
 		const unsigned int dim = 1;
 
@@ -201,18 +200,15 @@ namespace EquationGenerator
 		Assert(entry < max_matrices,ExcNotInitialized());
 		basefile[entry] = "Binflow_1D_";
 
-		std::cout << "equations " << constants.nEqn << std::endl;
-		std::cout << "boundary conditions " << constants.nBC << std::endl;
-		fflush(stdout);
 
 		// now we check the number of boundary conditions 
 		// if we have even number of variables in the system
-		if (constants.nEqn %2 == 0)
-			Assert(constants.nBC == (constants.nEqn / 2),ExcMessage("Incorrect number of boundary conditions"));
+		if (nEqn %2 == 0)
+			Assert(nBC == (nEqn / 2),ExcMessage("Incorrect number of boundary conditions"));
 
 		// if we have odd number of variables in the system
-		if (constants.nEqn %2 != 0)
-			Assert(constants.nBC == (constants.nEqn - 1)  / 2,ExcMessage("Incorrect number of boundary conditions"));			
+		if (nEqn %2 != 0)
+			Assert(nBC == (nEqn - 1)  / 2,ExcMessage("Incorrect number of boundary conditions"));			
 
 	}
 
@@ -220,13 +216,19 @@ namespace EquationGenerator
 	// specialization for the 2d case 
 	template<>
 	Base_EquationGenerator<2>
-	::Base_EquationGenerator(const constant_data &constants)
+	::Base_EquationGenerator(const constant_numerics &constants,
+				 			 const int nEqn,
+							 const int nBC,
+							 const int Ntensors)
 	:
 	constants(constants),
-	force1(constants),
-	force2(constants),
-	force3(constants),
-	base_tensorinfo(constants)
+	nEqn(nEqn),
+	nBC(nBC),
+	Ntensors(Ntensors),
+	force1(constants,nEqn),
+	force2(constants,nEqn),
+	force3(constants,nEqn),
+	base_tensorinfo(nEqn,Ntensors)
 	{
 		const unsigned int dim = 2;
 
@@ -558,7 +560,7 @@ namespace EquationGenerator
 	build_Aminus(const Tensor<1,2,double> normal_vector)
 	{
 		Full_matrix Aminus;
-		Aminus.resize(this->constants.nEqn,this->constants.nEqn);
+		Aminus.resize(this->nEqn,this->nEqn);
 
 		const double nx = normal_vector[0];
 		const double ny = normal_vector[1];
@@ -582,7 +584,7 @@ namespace EquationGenerator
 	{
 		Full_matrix Aminus;
 		const double nx = normal_vector[0];
-		Aminus.resize(this->constants.nEqn,this->constants.nEqn);
+		Aminus.resize(this->nEqn,this->nEqn);
 
 		Assert(this->Aminus_1D.rows() != 0 || this->Aminus_1D.cols() != 0,
 			  ExcMessage("Aminus_1D has not been built yet"));
@@ -626,7 +628,7 @@ namespace EquationGenerator
 	Base_EquationGenerator<dim>
 	::reinit_Xminus()
 	{
-		X_minus = matrixopt.compute_Xminus(system_data.Ax.matrix,constants.nBC);
+		X_minus = matrixopt.compute_Xminus(system_data.Ax.matrix,nBC);
 	}
 
 	template<int dim>
@@ -706,16 +708,14 @@ namespace EquationGenerator
 			case characteristic:
 			{
 
-
-				AssertThrow(dim > 1,ExcNotImplemented());
 				BoundaryHandler::Base_BoundaryHandler_Char boundary_handler_char(system_data.Ax.matrix,
 																				system_data.B.matrix,
-																				constants.nBC);
+																				nBC);
 
 
 
-				B_tilde_inv.resize(constants.nBC,constants.nBC);
-				B_hat.resize(constants.nEqn,this->constants.nEqn);
+				B_tilde_inv.resize(nBC,nBC);
+				B_hat.resize(nEqn,this->nEqn);
 
 				B_tilde_inv = boundary_handler_char.build_B_tilde_inv();
 				B_hat = boundary_handler_char.build_B_hat(this->B_tilde_inv);
@@ -751,43 +751,18 @@ namespace EquationGenerator
 		force->source_term(p,value,force_factor);
 	}
 
-	template<int dim>
-	void
-	Base_EquationGenerator<dim>
-	::build_BCrhs(const Tensor<1,dim,double> p,
-				const Tensor<1,dim,double> normal_vector,
-				Vector<double> &bc_rhs,
-				const unsigned int b_id)
-	{
-
-		base_bcrhs->BCrhs(p,normal_vector,bc_rhs,b_id);
-	}
-
-	template<int dim>
-	void
-	Base_EquationGenerator<dim>
-	::build_BCrhs_inflow(const Tensor<1,dim,double> p,
-				const Tensor<1,dim,double> normal_vector,
-				Vector<double> &bc_rhs,
-				const unsigned int b_id)
-	{
-
-		base_bcrhs_inflow->BCrhs(p,normal_vector,bc_rhs,b_id);
-	}
-
-
 	// specialization for the 2D case
 	template<>
 	void
 	Base_EquationGenerator<2>
 	::reinit_P(const std::string &folder_name)
 	{
-		AssertDimension(system_data.P.matrix.rows(),constants.nEqn);
-		AssertDimension(system_data.P.matrix.cols(),constants.nEqn);
+		AssertDimension(system_data.P.matrix.rows(),nEqn);
+		AssertDimension(system_data.P.matrix.cols(),nEqn);
 
-		if (constants.nEqn == 6)
+		if (nEqn == 6)
 		{
-			for (int i = 1 ; i < constants.nEqn ; i ++)
+			for (int i = 1 ; i < nEqn ; i ++)
 				system_data.P.matrix.coeffRef(i,i) = 1/constants.tau;
 
 			
@@ -800,14 +775,14 @@ namespace EquationGenerator
 			{
 				case BGK:
 				{
-					for (int i =  num_conserved; i < constants.nEqn ; i++)
+					for (int i =  num_conserved; i < nEqn ; i++)
 						system_data.P.matrix.coeffRef(i,i) = 1/constants.tau;					
 
 					break;
 				}
 				case Boltzmann_MM:
 				{
-					std::string file_for_P = folder_name + "MM_P_"+std::to_string(constants.nEqn)+".txt";
+					std::string file_for_P = folder_name + "MM_P_"+std::to_string(nEqn)+".txt";
 					this->build_triplet(system_data.P.Row_Col_Value,file_for_P);
 
 					// develop the matrix 
@@ -835,8 +810,8 @@ namespace EquationGenerator
 	Base_EquationGenerator<1>
 	::reinit_P(const std::string &folder_name)
 	{
-		AssertDimension(system_data.P.matrix.rows(),constants.nEqn);
-		AssertDimension(system_data.P.matrix.cols(),constants.nEqn);
+		AssertDimension(system_data.P.matrix.rows(),nEqn);
+		AssertDimension(system_data.P.matrix.cols(),nEqn);
 
 		// the conserved variables are rho, vx and theta
 		const unsigned int num_conserved = 3;
@@ -845,7 +820,7 @@ namespace EquationGenerator
 			{
 				case BGK:
 				{
-					for (int i =  num_conserved; i < constants.nEqn ; i++)
+					for (int i =  num_conserved; i < nEqn ; i++)
 						system_data.P.matrix.coeffRef(i,i) = 1/constants.tau;					
 
 					break;
@@ -875,14 +850,14 @@ namespace EquationGenerator
 	Base_EquationGenerator<2>
 	::reinit_system(const std::string &folder_name)
 	{
-		this->generate_matrices(this->system_data,this->constants.nEqn,this->constants.nBC,folder_name);
+		this->generate_matrices(this->system_data,this->nEqn,this->nBC,folder_name);
 
 		// we now develop the P matrix
 		reinit_P(folder_name);	
 
 
 		// if the number of equations are not equal to 6 then we fix the normal relaxation velocity
-		if (constants.nEqn != 6)
+		if (nEqn != 6)
 		{
 				const bool fix_B = true;
 				const bool check_B = true;
@@ -910,7 +885,7 @@ namespace EquationGenerator
 	Base_EquationGenerator<1>
 	::reinit_system(const std::string &folder_name)
 	{
-		this->generate_matrices(this->system_data,this->constants.nEqn,this->constants.nBC,folder_name);
+		this->generate_matrices(this->system_data,this->nEqn,this->nBC,folder_name);
 
 		// we now develop the P matrix
 		reinit_P(folder_name);	
@@ -941,7 +916,7 @@ namespace EquationGenerator
 	Base_EquationGenerator<dim>
 	::reinit_Bspecular()
 	{
-		system_data.B_specular.matrix.resize(constants.nBC,constants.nEqn);
+		system_data.B_specular.matrix.resize(nBC,nEqn);
 
 		// we initialize the specular matrix with the same matrix as full accommodation
 		system_data.B_specular.matrix = system_data.B.matrix;
@@ -949,10 +924,10 @@ namespace EquationGenerator
 		bool odd_variable = false;
 
 		// we do not change the coefficients of the first row since we need them for stability reasons
-		for (int i = 1 ; i < constants.nBC ; i++)
+		for (int i = 1 ; i < nBC ; i++)
 		{
 
-			for (unsigned int j = 0 ; j < (unsigned int)constants.nEqn ; j++)
+			for (unsigned int j = 0 ; j < (unsigned int)nEqn ; j++)
 			{
 				odd_variable = false;
 

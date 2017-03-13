@@ -8,9 +8,9 @@ namespace BCrhs
 	Base_BCrhs
 	{
 	public:
-		Base_BCrhs(const constant_data &constants);
+		Base_BCrhs(const constant_numerics &constants);
 
-		const constant_data constants;
+		const constant_numerics constants;
 		virtual void BCrhs(const Tensor<1,dim,double> p,
 						   const Tensor<1,dim,double> normal_vector,
 						   Vector<double> &bc_rhs,
@@ -43,7 +43,7 @@ namespace BCrhs
 
 	template<int dim>
 	Base_BCrhs<dim>
-	::Base_BCrhs(const constant_data &constants)
+	::Base_BCrhs(const constant_numerics &constants)
 	:
 	constants(constants)
 	{;}
@@ -302,10 +302,12 @@ namespace BCrhs
 	BCrhs_wall:public Base_BCrhs<dim>
 	{
 	public:
-		BCrhs_wall(const constant_data &constants,
-			const Sparse_matrix &B);
+		BCrhs_wall(const constant_numerics &constants,
+				   const int nBC,
+				   const Sparse_matrix &B);
 
 		Sparse_matrix B;
+		const int nBC;
 
 		virtual void BCrhs(const Tensor<1,dim,double> p,
 			const Tensor<1,dim,double> normal_vector,
@@ -314,11 +316,13 @@ namespace BCrhs
 	};
 
 	template<int dim>
-	BCrhs_wall<dim>::BCrhs_wall(const constant_data &constants,
+	BCrhs_wall<dim>::BCrhs_wall(const constant_numerics &constants,
+								const int nBC,
 								const Sparse_matrix &B)
 	:
 	Base_BCrhs<dim>(constants),
-	B(B)
+	B(B),
+	nBC(nBC)
 	{;}
 
 	// specialization for the 2D case
@@ -352,7 +356,7 @@ namespace BCrhs
 		proj_vector(1,0) = -ny;
 		proj_vector(1,1) = nx;
 
-		AssertDimension((int)bc_rhs.size(),this->constants.nBC);
+		AssertDimension((int)bc_rhs.size(),nBC);
 
 		// temperature of the wall
 		double thetaW;
@@ -421,7 +425,7 @@ namespace BCrhs
 		proj_vector.reinit(1,1);
 		proj_vector(0,0) = nx;
 
-		AssertDimension((int)bc_rhs.size(),this->constants.nBC);
+		AssertDimension((int)bc_rhs.size(),nBC);
 
 		// temperature of the wall
 		double thetaW;
@@ -459,10 +463,12 @@ namespace BCrhs
 	BCrhs_inflow:public Base_BCrhs<dim>
 	{
 	public:
-		BCrhs_inflow(const constant_data &constants,
-			const Sparse_matrix &Binflow);
+		BCrhs_inflow(const constant_numerics &constants,
+					const int nBC,
+					 const Sparse_matrix &Binflow);
 
 		Sparse_matrix Binflow;
+		const int nBC;
 
 		virtual void BCrhs(const Tensor<1,dim,double> p,
 			const Tensor<1,dim,double> normal_vector,
@@ -471,11 +477,13 @@ namespace BCrhs
 	};
 
 	template<int dim>
-	BCrhs_inflow<dim>::BCrhs_inflow(const constant_data &constants,
+	BCrhs_inflow<dim>::BCrhs_inflow(const constant_numerics &constants,
+									const int nBC,
 									const Sparse_matrix &Binflow)
 	:
 	Base_BCrhs<dim>(constants),
-	Binflow(Binflow)
+	Binflow(Binflow),
+	nBC(nBC)
 	{;}
 
 	// specialization for the 2D case
@@ -502,7 +510,7 @@ namespace BCrhs
 		proj_vector(1,0) = -ny;
 		proj_vector(1,1) = nx;
 
-		AssertDimension((int)bc_rhs.size(),this->constants.nBC);
+		AssertDimension((int)bc_rhs.size(),nBC);
 
 		//temprature of the incoming distribution function
 		double thetaW;
@@ -585,7 +593,7 @@ namespace BCrhs
 		proj_vector.reinit(1,1);
 		proj_vector(0,0) = nx;
 
-		AssertDimension((int)bc_rhs.size(),this->constants.nBC);
+		AssertDimension((int)bc_rhs.size(),nBC);
 		
 
 		//temprature of the incoming distribution function

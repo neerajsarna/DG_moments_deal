@@ -58,7 +58,6 @@ Base_Solver<dim>::run_periodic()
 		// cannot use meshworker for the present problem
 		timer.enter_subsection("Assemble");
 		Assert(constants.assembly_type == meshworker,ExcNotImplemented());
-		Assert(constants.matrix_type == Trilinos_Mat,ExcMessage("Routine only for Trilinos matrix"));
 		switch(constants.bc_type)
 		{
 			case characteristic:
@@ -88,7 +87,7 @@ Base_Solver<dim>::run_periodic()
 		timer.leave_subsection();
 
 		timer.enter_subsection("Post Proc");
-		PostProc::Base_PostProc<dim> postproc(constants,base_exactsolution,&dof_handler, &mapping);
+		PostProc::Base_PostProc<dim> postproc(constants,base_exactsolution,&dof_handler, &mapping,nEqn,nBC);
 
 		
 		const double residual_weak_form = postproc.compute_residual(residual,this->triangulation.n_active_cells());
@@ -100,7 +99,7 @@ Base_Solver<dim>::run_periodic()
 										convergence_table,residual_weak_form);
 
 		postproc.print_options(this->triangulation,solution,i,constants.refine_cycles,convergence_table,
-								system_info->base_tensorinfo.S_half_inv,
+								system_info[0].base_tensorinfo.S_half_inv,
 								this->finite_element);	
 
 		timer.leave_subsection();

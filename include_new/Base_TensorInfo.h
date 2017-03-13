@@ -17,10 +17,8 @@ namespace TensorInfo
 				Full_matrix P;
 			};	
 
-			const constant_data constants;
-
 			// In all the normal grad's theories, we know the number of tensors we will be using
-			Base_TensorInfo(const constant_data &constants);
+			Base_TensorInfo(const int nEqn,const int Ntensors);
 			void reinit();
 
 			// For certain systems, for ex the A system we do not have a direct correlation between the various
@@ -116,11 +114,10 @@ namespace TensorInfo
 	};
 
 	template<int dim>
-	Base_TensorInfo<dim>::Base_TensorInfo(const constant_data &constants)
+	Base_TensorInfo<dim>::Base_TensorInfo(const int nEqn,const int Ntensors)
 	:
-	constants(constants),
-	Ntensors(constants.Ntensors),
-	nEqn(constants.nEqn)
+	Ntensors(Ntensors),
+	nEqn(nEqn)
 	{
 
 		// in the 1D case, number of tensors = number of equations

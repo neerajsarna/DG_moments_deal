@@ -14,7 +14,6 @@ Base_Solver<dim>::run()
 	
 		AssertDimension((int)error_per_itr.size(),constants.refine_cycles);
 
-		Assert(constants.matrix_type == Trilinos_Mat, ExcMessage("Algorithm only for an Trilinos matrix"));
 		//now we distribute the dofs and allocate the memory for the global matrix. We have 
 		// already created the mesh so we can directly distribute the degrees of freedom now.
 
@@ -41,28 +40,29 @@ Base_Solver<dim>::run()
 			}
 			case manuel:
 			{
-				switch(constants.bc_type)
-				{
-					case characteristic:
-					{
-						std::cout << "Using characteristic boundary " << std::endl;
-						assemble_system_char();
-						break;
-					}
+				AssertThrow(1 == 0,ExcMessage("Should not have reached here"));
+				// switch(constants.bc_type)
+				// {
+				// 	case characteristic:
+				// 	{
+				// 		std::cout << "Using characteristic boundary " << std::endl;
+				// 		assemble_system_char();
+				// 		break;
+				// 	}
 
-					case odd:
-					{
-						std::cout << "Using odd boundary "<< std::endl;
-						assemble_system_odd();
-						break;
-					}
+				// 	case odd:
+				// 	{
+				// 		std::cout << "Using odd boundary "<< std::endl;
+				// 		assemble_system_odd();
+				// 		break;
+				// 	}
 					
-					default:
-					{
-						AssertThrow(1 == 0, ExcMessage("Should not have reached here"));
-						break;
-					}
-				}
+				// 	default:
+				// 	{
+				// 		AssertThrow(1 == 0, ExcMessage("Should not have reached here"));
+				// 		break;
+				// 	}
+				// }
 				break;
 			}
 
@@ -78,7 +78,7 @@ Base_Solver<dim>::run()
 		// we initialize the object which will solve our system
 		// We do int the following way so as to keep the solver independent of all the other implementations.
 		// This makes the code highly reusable. So one can directly copy the following class and use it somewhere
-		// else is one wants to.
+		// else if one wants to.
 
 		timer.enter_subsection("Linear Solver");
 		LinearSolver::LinearSolver linear_solver;
@@ -88,7 +88,7 @@ Base_Solver<dim>::run()
 		timer.leave_subsection();
 
 		timer.enter_subsection("Post Processing");
-		PostProc::Base_PostProc<dim> postproc(constants,base_exactsolution,&dof_handler, &mapping);
+		PostProc::Base_PostProc<dim> postproc(constants,base_exactsolution,&dof_handler, &mapping,nEqn,nBC);
 
 		const double residual_weak_form = postproc.compute_residual(residual,this->triangulation.n_active_cells());
 
@@ -102,7 +102,7 @@ Base_Solver<dim>::run()
 
 		
 		postproc.print_options(this->triangulation,solution,i,refine_cycles,convergence_table,
-								system_info->base_tensorinfo.S_half_inv,this->finite_element);		
+								system_info[0].base_tensorinfo.S_half_inv,this->finite_element);		
 		
 		timer.leave_subsection();
 

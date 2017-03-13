@@ -10,7 +10,10 @@ namespace SystemA
 	Base_SystemA:public EquationGenerator::Base_EquationGenerator<dim>
 	{
 		public:
-			Base_SystemA(const constant_data &constants,
+			Base_SystemA(const constant_numerics &constants,
+					     const int nEqn,
+						 const int nBC,
+						 const int Ntensors,
 						std::string &folder_name);
 		
 
@@ -26,11 +29,14 @@ namespace SystemA
 	// folder name is the name of the folder in which the system_matrices have been kept
 	template<int dim>
 	Base_SystemA<dim>
-	::Base_SystemA(const constant_data &constants,
+	::Base_SystemA(const constant_numerics &constants,
+					const int nEqn,
+					const int nBC,
+					const int Ntensors,
 				   std::string &folder_name)
 	:
 	// we need to first initialize the constant structure
-	EquationGenerator::Base_EquationGenerator<dim>(constants)
+	EquationGenerator::Base_EquationGenerator<dim>(constants,nEqn,nBC,Ntensors)
 	{
 
 		// initialize the system
@@ -75,32 +81,30 @@ namespace SystemA
 	{
 		public:
 			// we need the input parameters to initialize the base class
-			SystemA(const constant_data &constants,
+			SystemA(const constant_numerics &constants,
+								const int nEqn,
+								const int nBC,
+								const int Ntensors,
 					std::string &folder_name);
-
-			virtual void reinit_BCrhs();
-
-
 
 			// boundary routines for system A
 			BCrhs_systemA::BCrhs_ring_char_systemA<dim> bcrhs_ring_char_systemA;
 			BCrhs_systemA::BCrhs_ring_odd_systemA<dim> bcrhs_ring_odd_systemA;
-			
-			BCrhs_systemA::BCrhs_periodic_char_systemA<dim> bcrhs_periodic_char_systemA;
-			BCrhs_systemA::BCrhs_periodic_odd_systemA<dim> bcrhs_periodic_odd_systemA;
+
 
 	};
 
 	template<int dim>
 	SystemA<dim>
-	::SystemA(const constant_data &constants,
+	::SystemA(const constant_numerics &constants,
+										const int nEqn,
+								const int nBC,
+								const int Ntensors,
 			  std::string &folder_name)
 	:
-	Base_SystemA<dim>(constants,folder_name),
-	bcrhs_ring_char_systemA(constants),
-	bcrhs_ring_odd_systemA(constants),
-	bcrhs_periodic_char_systemA(constants),
-	bcrhs_periodic_odd_systemA(constants)
+	Base_SystemA<dim>(constants,nEqn,nBC,Ntensors,folder_name),
+	bcrhs_ring_char_systemA(constants,nBC),
+	bcrhs_ring_odd_systemA(constants,nBC)
 	{
 
 		// we reinitialize all the data for base_tensorinfo for this particular system
@@ -112,8 +116,6 @@ namespace SystemA
 		// initialize the boundary matrices for this system
 		this->reinit_BoundaryMatrices();
 
-		reinit_BCrhs();
-
 		// we will always send Ax independent of symmetric or unsymmetric system
 		this->reinit_Aminus1D();
 
@@ -124,15 +126,6 @@ namespace SystemA
    		this->force_factor = this->forcing_factor();
 	}
 	
-
-	template<int dim>
-	void
-	SystemA<dim>
-	::reinit_BCrhs()
-	{
-		//the following implementation is mesh dependent
-		this->base_bcrhs = &bcrhs_ring_char_systemA;
-	}
 	
 }
 

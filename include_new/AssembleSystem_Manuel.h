@@ -48,7 +48,7 @@ Base_Solver<dim>::assemble_system_char()
 
       // component corresponding to every dof
       Vector<double> component(dofs_per_cell);
-      std::vector<Vector<double>> source_term_value(total_ngp,Vector<double>(constants.nEqn));
+      std::vector<Vector<double>> source_term_value(total_ngp,Vector<double>(nEqn[0]));
 
       for (unsigned int i = 0 ; i < dofs_per_cell ; i++)
         component(i) = finite_element.system_to_component_index(i).first;
@@ -70,7 +70,7 @@ Base_Solver<dim>::assemble_system_char()
         
 
         Jacobians_interior = fe_v.get_JxW_values();
-        system_info->source_term(fe_v.get_quadrature_points(),source_term_value);
+        system_info[0].source_term(fe_v.get_quadrature_points(),source_term_value);
 
         
         integrate_cell_manuel(cell_matrix,cell_rhs,
@@ -278,7 +278,7 @@ Base_Solver<dim>::assemble_system_odd()
 
       // component corresponding to every dof
       Vector<double> component(dofs_per_cell);
-      std::vector<Vector<double>> source_term_value(total_ngp,Vector<double>(constants.nEqn));
+      std::vector<Vector<double>> source_term_value(total_ngp,Vector<double>(nEqn[0]));
 
       for (unsigned int i = 0 ; i < dofs_per_cell ; i++)
         component(i) = finite_element.system_to_component_index(i).first;
@@ -300,7 +300,7 @@ Base_Solver<dim>::assemble_system_odd()
         
 
         Jacobians_interior = fe_v.get_JxW_values();
-        system_info->source_term(fe_v.get_quadrature_points(),source_term_value);
+        system_info[0].source_term(fe_v.get_quadrature_points(),source_term_value);
 
         
         integrate_cell_manuel(cell_matrix,cell_rhs,
@@ -513,7 +513,7 @@ Base_Solver<dim>::assemble_system_periodic_char()
 
       // component corresponding to every dof
       Vector<double> component(dofs_per_cell);
-      std::vector<Vector<double>> source_term_value(total_ngp,Vector<double>(constants.nEqn));
+      std::vector<Vector<double>> source_term_value(total_ngp,Vector<double>(nEqn[0]));
 
       for (unsigned int i = 0 ; i < dofs_per_cell ; i++)
         component(i) = finite_element.system_to_component_index(i).first;
@@ -527,7 +527,7 @@ Base_Solver<dim>::assemble_system_periodic_char()
 
         fe_v.reinit(cell);
         Jacobians_interior = fe_v.get_JxW_values();
-        system_info->source_term(fe_v.get_quadrature_points(),source_term_value);
+        system_info[0].source_term(fe_v.get_quadrature_points(),source_term_value);
 
         integrate_cell_manuel(cell_matrix,cell_rhs,
                               fe_v,Jacobians_interior,
@@ -781,7 +781,7 @@ Base_Solver<dim>::assemble_system_periodic_odd()
 
       // component corresponding to every dof
       Vector<double> component(dofs_per_cell);
-      std::vector<Vector<double>> source_term_value(total_ngp,Vector<double>(constants.nEqn));
+      std::vector<Vector<double>> source_term_value(total_ngp,Vector<double>(nEqn[0]));
 
       for (unsigned int i = 0 ; i < dofs_per_cell ; i++)
         component(i) = finite_element.system_to_component_index(i).first;
@@ -795,7 +795,7 @@ Base_Solver<dim>::assemble_system_periodic_odd()
 
         fe_v.reinit(cell);
         Jacobians_interior = fe_v.get_JxW_values();
-        system_info->source_term(fe_v.get_quadrature_points(),source_term_value);
+        system_info[0].source_term(fe_v.get_quadrature_points(),source_term_value);
 
         integrate_cell_manuel(cell_matrix,cell_rhs,
                               fe_v,Jacobians_interior,

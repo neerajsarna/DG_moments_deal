@@ -8,19 +8,25 @@ namespace Develop_System
 	Base_DevelopSystem:public EquationGenerator::Base_EquationGenerator<dim>
 	{
 		public:
-			Base_DevelopSystem(const constant_data &constants,
-						std::string &folder_name);
+			Base_DevelopSystem(const constant_numerics &constants,
+								const int nEqn,
+								const int nBC,
+								const int Ntensors,
+								std::string &folder_name);
 		
 	};
 
 	// folder name is the name of the folder in which the system_matrices have been kept
 	template<int dim>
 	Base_DevelopSystem<dim>
-	::Base_DevelopSystem(const constant_data &constants,
-				   std::string &folder_name)
+	::Base_DevelopSystem(const constant_numerics &constants,
+								const int nEqn,
+								const int nBC,
+								const int Ntensors,
+								std::string &folder_name)
 	:
 	// we first initialize the base class 
-	EquationGenerator::Base_EquationGenerator<dim>(constants)
+	EquationGenerator::Base_EquationGenerator<dim>(constants,nEqn,nBC,Ntensors)
 	{
 		// initialize the system
 		this->reinit_system(folder_name);
@@ -35,8 +41,11 @@ namespace Develop_System
 	{
 		public:
 			// we need the input parameters to initialize the base class
-			System(const constant_data &constants,
-					std::string &folder_name);
+			System(const constant_numerics &constants,
+								const int nEqn,
+								const int nBC,
+								const int Ntensors,
+								std::string &folder_name);
 
 
 			// The following boundary routines are system dependent, that is 
@@ -45,19 +54,23 @@ namespace Develop_System
 			BCrhs::BCrhs_wall<dim> bcrhs_wall;
 			BCrhs::BCrhs_inflow<dim> bcrhs_inflow;
 
-			virtual void reinit_BCrhs();
+			void reinit_BCrhs();
+
 
 	};
 
 	template<int dim>
 	System<dim>
-	::System(const constant_data &constants,
-			  std::string &folder_name)
+	::System(const constant_numerics &constants,
+								const int nEqn,
+								const int nBC,
+								const int Ntensors,
+								std::string &folder_name)
 	:
-	Base_DevelopSystem<dim>(constants,folder_name),
+	Base_DevelopSystem<dim>(constants,nEqn,nBC,Ntensors,folder_name),
 	// CAUTION sending B without relaxational normal velocity
-	bcrhs_wall(constants,this->system_data.B.matrix),
-	bcrhs_inflow(constants,this->system_data.Binflow.matrix)
+	bcrhs_wall(constants,nBC,this->system_data.B.matrix),
+	bcrhs_inflow(constants,nBC,this->system_data.Binflow.matrix)
 	{
 
 		// we reinitialize all the data for base_tensorinfo for this particular system
@@ -65,9 +78,6 @@ namespace Develop_System
 
 		//initialize the forcing term for this system
 		this->reinit_force();
-
-		// we now initialize the right hand side of the boundary depending upon the type of boundary implementation
-		this->reinit_BCrhs();
 
 		// initialize the boundary matrices for this system
 		this->reinit_BoundaryMatrices();
@@ -80,18 +90,15 @@ namespace Develop_System
    		this->symmetrize_system();
 
    		this->force_factor = this->forcing_factor();
+
 	}
 
-	// we initialize the right hand side routine with the help of the following function
 	template<int dim>
-	void
-	System<dim>
-	::reinit_BCrhs()
+	void 
+	System<dim>::reinit_BCrhs()
 	{
-
-		
 		this->base_bcrhs = &bcrhs_wall;
-		this->base_bcrhs_inflow = &bcrhs_inflow;
 	}
+
 
 }

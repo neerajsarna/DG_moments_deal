@@ -7,7 +7,8 @@ namespace ExactSolution
 	ExactSolution_SystemA_ring: public Base_ExactSolution<dim>
 	{
 		public:
-			ExactSolution_SystemA_ring(const constant_data &constants,const Sparse_matrix &S_half);
+			ExactSolution_SystemA_ring(const constant_numerics &constants,const Sparse_matrix &S_half,
+									   const int nEqn,const int Ntensors);
 
 			virtual void vector_value(const Point<dim> &p,Vector<double> &value) const ;
 
@@ -22,11 +23,12 @@ namespace ExactSolution
 	};
 
 	template<int dim>
-	ExactSolution_SystemA_ring<dim>::ExactSolution_SystemA_ring(const constant_data &constants,const Sparse_matrix &S_half)
+	ExactSolution_SystemA_ring<dim>::ExactSolution_SystemA_ring(const constant_numerics &constants,const Sparse_matrix &S_half,
+																const int nEqn,const int Ntensors)
 	:
-	Base_ExactSolution<dim>(constants,S_half)
+	Base_ExactSolution<dim>(constants,S_half,nEqn,Ntensors)
 	{
-		Assert(this->constants.nEqn == 6,ExcMessage("incorrect equation number"));
+		Assert(this->nEqn == 6,ExcMessage("incorrect equation number"));
 
 		bool entered = false;
 
@@ -195,7 +197,7 @@ namespace ExactSolution
 	vector_value(const Point<dim> &p,Vector<double> &value) const
 	{
 		// check whether value has been initialized or not
-		Assert((int)value.size() == this->constants.nEqn,ExcNotInitialized());
+		Assert((int)value.size() == this->nEqn,ExcNotInitialized());
 
 		double r = sqrt(p.square());
 		double phi = atan2(p[1],p[0]);

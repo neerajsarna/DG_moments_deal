@@ -32,7 +32,7 @@
 			}
 		}
 
-		triangulation.refine_global(3);
+		triangulation.refine_global(constants.initial_refinement);
 	}
 
 	template<int dim>

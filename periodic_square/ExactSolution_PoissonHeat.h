@@ -8,7 +8,7 @@ namespace ExactSolution
 	PoissonHeat:public Base_ExactSolution<dim>
 	{
 	public:
-		PoissonHeat(const constant_data &constants,const Sparse_matrix &S_half);
+		PoissonHeat(const constant_numerics &constants,const Sparse_matrix &S_half,const int nEqn,const int Ntensors);
 
 		virtual void vector_value(const Point<dim> &p,Vector<double> &value) const ;
 
@@ -22,9 +22,10 @@ namespace ExactSolution
 	};
 
 	template<int dim>
-	PoissonHeat<dim>::PoissonHeat(const constant_data &constants,const Sparse_matrix &S_half)
+	PoissonHeat<dim>::PoissonHeat(const constant_numerics &constants,const Sparse_matrix &S_half,const int nEqn,
+								const int Ntensors)
 	:
-	Base_ExactSolution<dim>(constants,S_half)
+	Base_ExactSolution<dim>(constants,S_half,nEqn,Ntensors)
 	{
 
 	}
@@ -35,7 +36,7 @@ namespace ExactSolution
 	PoissonHeat<2>::vector_value(const Point<2> &p,Vector<double> &value) const
 	{
 		// first we check the size of the value vector
-		Assert((int)value.size() == this->constants.nEqn,ExcNotInitialized());
+		Assert((int)value.size() == this->nEqn,ExcNotInitialized());
 		Assert(fabs(this->constants.alpha - 0.816496580927726) < 1e-5,ExcMessage("Exact Solution does not correspond to the given value of alpha"));
 
 		// variables for which we need the 
@@ -43,18 +44,20 @@ namespace ExactSolution
 		const unsigned int ID_heat = this->constants.variable_map.find("qy")->second;
 		const unsigned int ID_stress = this->constants.variable_map.find("sigmayy")->second;
 		const double y = p(1);
+		bool developed_exact_solution = false;
 
 		value = 0;
 
 		Assert(ID_theta == 3,ExcMessage("Wrong ID for theta"));
 
 		// G20
-		if (constants.Ntensors == 6)
+		if (this->Ntensors == 6)
 		{
 			if(fabs(this->constants.alpha-0.816496580927726) < 1e-5)
 			{
 				if (fabs(this->constants.tau - 0.1) < 1e-5 )
 				{
+					developed_exact_solution = true;
 
 					value[ID_theta] = -1.2829983743239428 + 0.0003362282005094463*cosh(7.453559924999298*y) - 
 					0.026127890589687234*pow(y,2) + 0.408248290463863*pow(y,4);
@@ -68,6 +71,8 @@ namespace ExactSolution
 
 				if (fabs(this->constants.tau - 0.3) < 1e-5)
 				{
+					developed_exact_solution = true;
+
 					value[ID_theta] = -1.2898753498434943 + 0.02291602260455048*cosh(2.484519974999766*y) - 
 					0.0783836717690617*pow(y,2) + 0.13608276348795437*pow(y,4);
 
@@ -79,12 +84,14 @@ namespace ExactSolution
 		}
 
 		// G26
-		if (constants.Ntensors == 8)
+		if (this->Ntensors == 8)
 		{
 			if(fabs(this->constants.alpha-0.816496580927726) < 1e-5)
 			{
 				if (fabs(this->constants.tau - 0.1) < 1e-5 )
 				{
+
+					developed_exact_solution = true;
 
 					value[ID_theta] = -1.2852476333586613 - 0.18289523412781067*pow(y,2) + 0.408248290463863*pow(y,4) + 
 					0.0015643311536178803*cosh(6.573421981221795 * y) - 
@@ -99,6 +106,8 @@ namespace ExactSolution
 
 				if (fabs(this->constants.tau - 0.3) < 1e-5)
 				{
+					developed_exact_solution = true;
+
 					value[ID_theta] = -1.3650564316627332 - 0.548685702383432*pow(y,2) + 0.13608276348795437*pow(y,4) + 
 					0.09338201417693054*cosh(2.191140660407265*y);
 
@@ -110,6 +119,8 @@ namespace ExactSolution
 
 				if (fabs(this->constants.tau - 0.5) < 1e-5)
 				{
+					developed_exact_solution = true;
+
 					value[ID_theta] = -1.7298151776227189 - 0.9144761706390533*pow(y,2) + 0.08164965809277261*pow(y,4) + 
 					0.45942750968124524*cosh(1.314684396244359*y) - 
 					2.7755575615628914e-17*sinh(1.314684396244359*y);
@@ -123,12 +134,13 @@ namespace ExactSolution
 		}
 
 		// G35
-		if (constants.Ntensors == 9)
+		if (this->Ntensors == 9)
 		{
 			if(fabs(this->constants.alpha-0.816496580927726) < 1e-5)
 			{
 				if (fabs(this->constants.tau - 0.1) < 1e-5 )
 				{
+					developed_exact_solution = true;
 
 					value[ID_theta] = -1.2857735434320117 + 0.002601070885430934*cosh(4.662524041201569*y) - 
 					0.18289523412781067*pow(y,2) + 0.408248290463863*pow(y,4) + 
@@ -142,6 +154,8 @@ namespace ExactSolution
 
 				if (fabs(this->constants.tau - 0.3) < 1e-5)
 				{
+					developed_exact_solution = true;
+
 					value[ID_theta] = -1.3660400339849652 + 0.09916339949943631*cosh(1.554174680400523*y) - 
 					0.548685702383432*pow(y,2) + 0.13608276348795437*pow(y,4) + 
 					6.938893903907228e-18*sinh(1.554174680400523*y);
@@ -154,12 +168,13 @@ namespace ExactSolution
 		}
 
 		// G45
-		if (constants.Ntensors == 11)
+		if (this->Ntensors == 11)
 		{
 			if(fabs(this->constants.alpha-0.816496580927726) < 1e-5)
 			{
 				if (fabs(this->constants.tau - 0.1) < 1e-5 )
 				{
+					developed_exact_solution = true;
 
 					value[ID_theta] = -1.2995436998701937 + 0.012092296117067552*cosh(3.849386397950811*y) + 
 					0.0015393861867350283*cosh(5.674996469312898*y) + 
@@ -182,6 +197,8 @@ namespace ExactSolution
 
 				if (fabs(this->constants.tau - 0.3) < 1e-5)
 				{
+					developed_exact_solution = true;
+
 					value[ID_theta] = -1.7443580752405021 + 0.39756135791713554*cosh(1.283128799316937*y) + 
 					0.07237762337695752*cosh(1.8916654897709662*y) + 
 					0.003071248679976172*cosh(3.3870730781784593*y) - 0.548685702383432*pow(y,2) + 
@@ -202,12 +219,13 @@ namespace ExactSolution
 		}
 
 		// G56
-		if (constants.Ntensors == 12)
+		if (this->Ntensors == 12)
 		{
 			if(fabs(this->constants.alpha-0.816496580927726) < 1e-5)
 			{
 				if (fabs(this->constants.tau - 0.1) < 1e-5 )
 				{
+					developed_exact_solution = true;
 
 					value[ID_theta] = -1.2991542242917795 + 0.008670378733644997*cosh(3.536982581771994*y) + 
 					0.004430725803158755*cosh(5.204696760361044*y) + 
@@ -227,6 +245,8 @@ namespace ExactSolution
 
 				if (fabs(this->constants.tau - 0.3) < 1e-5)
 				{
+					developed_exact_solution = true;
+
 					value[ID_theta] = -1.7435149236809255 + 0.27723853580237484*cosh(1.178994193923998*y) + 
 					0.18476156620816786*cosh(1.734898920120348*y) + 
 					0.008511751878547334*cosh(3.4847249969261536*y) - 0.548685702383432*pow(y,2) + 
@@ -244,12 +264,13 @@ namespace ExactSolution
 		}
 
 		// G71
-		if (constants.Ntensors == 15)
+		if (this->Ntensors == 15)
 		{
 			if(fabs(this->constants.alpha-0.816496580927726) < 1e-5)
 			{
 				if (fabs(this->constants.tau - 0.1) < 1e-5 )
 				{
+					developed_exact_solution = true;
 
 					value[ID_theta] = -1.3012568770728508 + 0.014368644008044136*cosh(2.9184816217908978*y) + 
 					0.000847741867453309*cosh(3.885676724821849*y) + 
@@ -273,6 +294,8 @@ namespace ExactSolution
 
 				if (fabs(this->constants.tau - 0.3) < 1e-5)
 				{
+					developed_exact_solution = true;
+
 					value[ID_theta] = -1.747245655093501 + 0.41369103486028996*cosh(0.9728272072636326*y) + 
 					0.02470452567666627*cosh(1.2952255749406163*y) + 
 					0.021023428196056175*cosh(1.9653747069227854*y) + 
@@ -296,12 +319,13 @@ namespace ExactSolution
 		}
 
 		// G84
-		if (constants.Ntensors == 16)
+		if (this->Ntensors == 16)
 		{
 			if(fabs(this->constants.alpha-0.816496580927726) < 1e-5)
 			{
 				if (fabs(this->constants.tau - 0.1) < 1e-5 )
 				{
+					developed_exact_solution = true;
 
 					value[ID_theta] = -1.3016616131237297 + 0.012498585238508764*cosh(2.867124849692578*y) + 
 					0.0026996208249191254*cosh(3.6131625584441966*y) + 
@@ -323,6 +347,8 @@ namespace ExactSolution
 
 				if (fabs(this->constants.tau - 0.3) < 1e-5)
 				{
+					developed_exact_solution = true;
+
 					value[ID_theta] = -1.7479896311184409 + 0.36064751628260816*cosh(0.9557082832308594*y) + 
 					0.07833003503050456*cosh(1.2043875194813989*y) + 
 					0.04090384023127845*cosh(2.000923012270622*y) - 0.548685702383432*pow(y,2) + 
@@ -344,12 +370,14 @@ namespace ExactSolution
 		}
 
 		// G105
-		if (constants.Ntensors == 19)
+		if (this->Ntensors == 19)
 		{
 			if(fabs(this->constants.alpha-0.816496580927726) < 1e-5)
 			{
 				if (fabs(this->constants.tau - 0.1) < 1e-5 )
 				{
+
+					developed_exact_solution = true;
 
 					value[ID_theta] = -1.2997563950037463 + 0.009276947895287067*cosh(2.492986999351348*y) + 
 					0.00034793324875276896*cosh(3.170853933340145*y) + 
@@ -374,6 +402,8 @@ namespace ExactSolution
 
 				if (fabs(this->constants.tau - 0.3) < 1e-5)
 				{
+					developed_exact_solution = true;
+
 					value[ID_theta] = -1.7441170080467425 + 0.2660463749885166*cosh(0.8309956664504494*y) + 
 					0.00981560623079519*cosh(1.0569513111133817*y) + 
 					0.07058859198806446*cosh(1.462900054036467*y) + 
@@ -398,12 +428,14 @@ namespace ExactSolution
 		}
 
 		// G120
-		if (constants.Ntensors == 20)
+		if (this->Ntensors == 20)
 		{
 			if(fabs(this->constants.alpha-0.816496580927726) < 1e-5)
 			{
 				if (fabs(this->constants.tau - 0.1) < 1e-5 )
 				{
+
+					developed_exact_solution = true;
 
 					value[ID_theta] = -1.2995390567873166 + 0.008828936885305286*cosh(2.480359051432615*y) + 
 					0.0008633188573549727*cosh(3.028788951922567*y) + 
@@ -424,6 +456,8 @@ namespace ExactSolution
 
 				if (fabs(this->constants.tau - 0.3) < 1e-5)
 				{
+					developed_exact_solution = true;
+
 					value[ID_theta] = -1.7436949415826675 + 0.2523069701617391*cosh(0.8267863504775383*y) + 
 					0.02533033765112578*cosh(1.0095963173075224*y) + 
 					0.11056926376618245*cosh(1.4782662260578097*y) + 
@@ -444,7 +478,7 @@ namespace ExactSolution
 		}
 
 
-
+		Assert(developed_exact_solution,ExcMessage("Exact solution not initialized"));
 
 		// The above values correspond to a unsymmetric system, therefore we now need to accomodate the symmetric system
 		MatrixOpt::Base_MatrixOpt matrix_opt;
@@ -456,11 +490,12 @@ namespace ExactSolution
 	PoissonHeat<1>::vector_value(const Point<1> &p,Vector<double> &value) const
 	{
 		// first we check the size of the value vector
-		Assert((int)value.size() == this->constants.nEqn,ExcNotInitialized());
+		Assert((int)value.size() == this->nEqn,ExcNotInitialized());
 		Assert(fabs(this->constants.alpha) < 1e-5,ExcMessage("Exact Solution does not correspond to the given value of alpha"));
 		Assert(fabs(this->constants.theta0+1) < 1e-5,ExcMessage("Incorrect temperature value"));
 		Assert(fabs(this->constants.theta1-1) < 1e-5,ExcMessage("Incorrect temperature value"));
 		Assert(fabs(this->constants.tau-0.1) < 1e-5,ExcMessage("Incorrect tau value"));
+		bool developed_exact_solution = false;
 
 		// variables for which we need the exact solution
 		const unsigned int ID_theta = this->constants.variable_map_1D.find("theta")->second;
@@ -473,34 +508,59 @@ namespace ExactSolution
 		if(fabs(this->constants.alpha) < 1e-5)
 			if (fabs(this->constants.tau - 0.1) < 1e-5 )
 			{
-				if (constants.Ntensors == 6)
-						value[ID_theta] = 0.9950211932019228*x + 0.00974532392134874*sinh(4.47213595499958*x);
+				if (this->Ntensors == 6)
+				{
+					developed_exact_solution = true;
+					value[ID_theta] = 0.9950211932019228*x + 0.00974532392134874*sinh(4.47213595499958*x);
+				}
+						
 
-				if (constants.Ntensors == 8)
-						value[ID_theta] = 0.9918095457622201*x + 0.004077339347408366*sinh(2.517180972479634*x) + 
-   								  0.0031858247584759585*sinh(6.71508535912671*x);				
+				if (this->Ntensors == 8)
+				{
+					developed_exact_solution = true;
 
-				if (constants.Ntensors == 9)
-						value[ID_theta] = 0.9861871317460368*x + 0.0009740846199919195*sinh(2.2483363346888074*x) + 
-   									0.008298820931674668*sinh(4.010385905150765*x);
+					value[ID_theta] = 0.9918095457622201*x + 0.004077339347408366*sinh(2.517180972479634*x) + 
+   								  0.0031858247584759585*sinh(6.71508535912671*x);	
+				}
+			
 
-				if (constants.Ntensors == 11)
-						value[ID_theta] = 0.9857643470749898*x + 0.0004959003321893117*sinh(1.9303025585770384*x) + 
+				if (this->Ntensors == 9)
+				{
+					developed_exact_solution = true;
+					
+					value[ID_theta] = 0.9861871317460368*x + 0.0009740846199919195*sinh(2.2483363346888074*x) + 
+   									0.008298820931674668*sinh(4.010385905150765*x);					
+				}
+
+
+				if (this->Ntensors == 11)
+				{
+
+					developed_exact_solution = true;
+
+					value[ID_theta] = 0.9857643470749898*x + 0.0004959003321893117*sinh(1.9303025585770384*x) + 
    								  0.002543347245910525*sinh(2.6658847234287704*x) 
    								  + 0.005290233872198295*sinh(4.9438923511630914*x);
 
-				if (constants.Ntensors == 12 || 
-					constants.Ntensors == 15 ||
-					constants.Ntensors == 16 ||
-				    constants.Ntensors == 19 ||
-					constants.Ntensors == 20)
+				}
+
+
+				if (this->Ntensors == 12 || 
+					this->Ntensors == 15 ||
+					this->Ntensors == 16 ||
+				    this->Ntensors == 19 ||
+					this->Ntensors == 20)
+				{
+					developed_exact_solution  = true;
 					AssertThrow(1 == 0,ExcMessage("Should not have reached here"));
+				}
 
 			}
 
 			
 			
 
+			Assert(developed_exact_solution,ExcMessage("exact solution not created"));
 
 		// The above values correspond to a unsymmetric system, therefore we now need to accomodate the symmetric system
 			MatrixOpt::Base_MatrixOpt matrix_opt;

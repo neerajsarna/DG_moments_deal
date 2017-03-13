@@ -3,6 +3,7 @@ void
 Base_Solver<dim>::assemble_rhs()
 {
 
+
 	const QGauss<dim> quadrature(ngp);
 	const UpdateFlags update_flags  = update_values | update_JxW_values | update_quadrature_points;
 
@@ -15,7 +16,7 @@ Base_Solver<dim>::assemble_rhs()
   std::vector<types::global_dof_index> local_dof_indices(dofs_per_cell);
 	 Vector<double> cell_rhs(dofs_per_cell);
 	 std::vector<double> Jacobians_interior(total_ngp);
-	 std::vector<Vector<double>> source_term_value(total_ngp,Vector<double>(constants.nEqn));
+	 std::vector<Vector<double>> source_term_value(total_ngp,Vector<double>(nEqn[0]));
     Vector<double> component(dofs_per_cell);
 
     for (unsigned int i = 0 ; i < dofs_per_cell ; i++)
@@ -26,7 +27,7 @@ Base_Solver<dim>::assemble_rhs()
       	cell_rhs = 0;
       	fe_v.reinit(cell);
         Jacobians_interior = fe_v.get_JxW_values();      	
-        system_info->source_term(fe_v.get_quadrature_points(),source_term_value);
+        system_info[0].source_term(fe_v.get_quadrature_points(),source_term_value);
 
       	for (unsigned int q = 0 ; q < total_ngp ; q++)
       		for (unsigned int i = 0 ; i < dofs_per_cell ; i ++)
@@ -130,8 +131,6 @@ template<int dim>
  Base_Solver<dim>::integrate_cell_term (DoFInfo &dinfo,
                                    			CellInfo &info)
 {
-	//if (count_meshworker > 0)
-	//	Assert(1 == 0, ExcMessage("debugging integrate cell term")); 
  
 	const FEValuesBase<dim> &fe_v = info.fe_values();
 	FullMatrix<double> &cell_matrix = dinfo.matrix(0).matrix;
@@ -156,12 +155,12 @@ template<int dim>
 		  for (unsigned int index_sol = 0 ; index_sol < indices_per_cell ; index_sol++ )
 		  {
 			for (unsigned int space = 0 ; space < dim ; space++)
-		   		for (unsigned int m = 0 ; m < system_info->system_data.A[space].matrix.outerSize(); m++)
+		   		for (unsigned int m = 0 ; m < system_info[0].system_data.A[space].matrix.outerSize(); m++)
 				{
 					const int dof_test = component_to_system[m][index_test];
 					const double shape_value_test = fe_v.shape_value(dof_test,q);
 
-					for (Sparse_matrix::InnerIterator n(system_info->system_data.A[space].matrix,m); n ; ++n)
+					for (Sparse_matrix::InnerIterator n(system_info[0].system_data.A[space].matrix,m); n ; ++n)
 	
 					{
 						int dof_sol = component_to_system[n.col()][index_sol];
@@ -171,12 +170,12 @@ template<int dim>
 								* grad_value_sol * jacobian_value;	
 					}
 				}
-			for (unsigned int m = 0 ; m < system_info->system_data.P.matrix.outerSize(); m++)
+			for (unsigned int m = 0 ; m < system_info[0].system_data.P.matrix.outerSize(); m++)
 			{
 				const int dof_test = component_to_system[m][index_test];
 				const double shape_value_test = fe_v.shape_value(dof_test,q);
 
-				for (Sparse_matrix::InnerIterator n(system_info->system_data.P.matrix,m); n ; ++n)
+				for (Sparse_matrix::InnerIterator n(system_info[0].system_data.P.matrix,m); n ; ++n)
 					{
 						const int dof_sol = component_to_system[n.col()][index_sol];
 						const double shape_value_sol = fe_v.shape_value(dof_sol,q);
@@ -197,6 +196,7 @@ Base_Solver<dim>
 ::integrate_boundary_term_odd(DoFInfo &dinfo,
                               CellInfo &info)
 {
+
  const FEValuesBase<dim> &fe_v = info.fe_values();
  typename Triangulation<dim>::face_iterator face_itr= dinfo.face;
  FullMatrix<double> &cell_matrix = dinfo.matrix(0).matrix;
@@ -212,10 +212,10 @@ Base_Solver<dim>
   component[i] = fe_in_cell.system_to_component_index(i).first;
 
  Vector<double> boundary_rhs_value;
-  boundary_rhs_value.reinit(constants.nBC);
+  boundary_rhs_value.reinit(nBC[0]);
   const unsigned int b_id = face_itr->boundary_id();
 
-Assert(system_info->system_data.B.matrix.rows() == system_info->system_data.Sigma.matrix.cols() ,ExcMessage("Incorrect dimension"));
+Assert(system_info[0].system_data.B.matrix.rows() == system_info[0].system_data.Sigma.matrix.cols() ,ExcMessage("Incorrect dimension"));
 
 // we use a temporary matrix to determine whether inflow or outflow
 Sparse_matrix B_temp;
@@ -223,17 +223,17 @@ Sparse_matrix B_temp;
   if(b_id == 101 || b_id == 102)
   {
       integrate_inflow++;
-      B_temp = system_info->system_data.Binflow.matrix;
+      B_temp = system_info[0].system_data.Binflow.matrix;
   }
   else
   {
     // B matrix for specular reflection
     if (b_id == 50)
-      B_temp = system_info->system_data.B_specular.matrix;
+      B_temp = system_info[0].system_data.B_specular.matrix;
 
     // B matrix for full accmmodation
     else
-      B_temp = system_info->system_data.B.matrix;
+      B_temp = system_info[0].system_data.B.matrix;
   }
 
 for (unsigned int q = 0 ; q < fe_v.n_quadrature_points ; q++)
@@ -245,27 +245,27 @@ for (unsigned int q = 0 ; q < fe_v.n_quadrature_points ; q++)
   // check for inflow or outflow
   // Incase of inflow provide the inflow rhs
   if(face_itr->boundary_id() == 101 || face_itr->boundary_id() == 102)
-    system_info->build_BCrhs_inflow(fe_v.quadrature_point(q),fe_v.normal_vector(q),
+    system_info[0].bcrhs_inflow.BCrhs(fe_v.quadrature_point(q),fe_v.normal_vector(q),
                           boundary_rhs_value,face_itr->boundary_id());
 
   else
-    system_info->build_BCrhs(fe_v.quadrature_point(q),fe_v.normal_vector(q),
+    system_info[0].bcrhs_wall.BCrhs(fe_v.quadrature_point(q),fe_v.normal_vector(q),
                           boundary_rhs_value,face_itr->boundary_id());
 
 
-  Sparse_matrix Projector = system_info->build_Projector(fe_v.normal_vector(q));
+  Sparse_matrix Projector = system_info[0].build_Projector(fe_v.normal_vector(q));
   
 
 
   // Simga(as given in PDF) * B * Projector
   // Sigma in the PDF = Projector.transpose * Sigma(In the code)
   Full_matrix Sigma_B_P =       Projector.transpose()
-                               * system_info->system_data.Sigma.matrix 
+                               * system_info[0].system_data.Sigma.matrix 
                                * B_temp
                                * Projector;
 
   Full_matrix Sigma = Projector.transpose()
-                      * system_info->system_data.Sigma.matrix ;
+                      * system_info[0].system_data.Sigma.matrix ;
 
   for (unsigned int i = 0 ; i < dofs_per_cell ; i ++)
   {
@@ -312,7 +312,7 @@ Base_Solver<dim>
 
  Vector<double> boundary_rhs_value;
 
-  boundary_rhs_value.reinit(constants.nBC);
+  boundary_rhs_value.reinit(nBC[0]);
 
 for (unsigned int q = 0 ; q < fe_v.n_quadrature_points ; q++)
 {
@@ -320,21 +320,21 @@ for (unsigned int q = 0 ; q < fe_v.n_quadrature_points ; q++)
 
   boundary_rhs_value = 0;                 
 
-  system_info->build_BCrhs(fe_v.quadrature_point(q),fe_v.normal_vector(q),boundary_rhs_value,face_itr->boundary_id());
+  system_info[0].bcrhs_wall.BCrhs(fe_v.quadrature_point(q),fe_v.normal_vector(q),boundary_rhs_value,face_itr->boundary_id());
 
         // build the matrices needed
-  Eigen::MatrixXd Am = system_info->build_Aminus(fe_v.normal_vector(q));
-  Sparse_matrix Projector = system_info->build_Projector(fe_v.normal_vector(q));
-  Sparse_matrix Inv_Projector = system_info->build_InvProjector(fe_v.normal_vector(q));
+  Eigen::MatrixXd Am = system_info[0].build_Aminus(fe_v.normal_vector(q));
+  Sparse_matrix Projector = system_info[0].build_Projector(fe_v.normal_vector(q));
+  Sparse_matrix Inv_Projector = system_info[0].build_InvProjector(fe_v.normal_vector(q));
 
   Eigen::MatrixXd Am_invP_B_hat_P = Am * Inv_Projector 
-                                   * system_info->B_hat 
+                                   * system_info[0].B_hat 
                                     * Projector;
 
   Eigen::MatrixXd Am_invP_X_min_B_tild_inv = Am
                                             * Inv_Projector 
-                                            * system_info->X_minus
-                                            * system_info->B_tilde_inv;
+                                            * system_info[0].X_minus
+                                            * system_info[0].B_tilde_inv;
 
 
   for (unsigned int i = 0 ; i < dofs_per_cell ; i ++)
@@ -391,8 +391,8 @@ Base_Solver<dim>
   for (unsigned int q = 0 ; q < fe_v.n_quadrature_points ; q++)
   {
                   // build the matrices needed
-    Eigen::MatrixXd Am = system_info->build_Aminus(fe_v.normal_vector(q));
-    Eigen::MatrixXd Am_neighbor = system_info->build_Aminus(-fe_v.normal_vector(q));
+    Eigen::MatrixXd Am = system_info[0].build_Aminus(fe_v.normal_vector(q));
+    Eigen::MatrixXd Am_neighbor = system_info[0].build_Aminus(-fe_v.normal_vector(q));
     double jacobian_value = Jacobian_face[q];
 
     for (unsigned int i = 0 ; i < dofs_per_cell ; i ++)

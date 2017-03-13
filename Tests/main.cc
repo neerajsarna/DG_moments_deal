@@ -6,29 +6,32 @@
 #include "parse_command_line.h"
 #include "mkl.h"
 
-
-std::string input_file;
+std::vector<std::string> input_file;
 
 // core routines
 #include "Base_Constants.h"
 #include "Base_TensorInfo.h"
 #include "Base_ForceType.h"
 #include "Base_MatrixOpt.h"
-#include "Base_BoundaryHandler.h"
+
 #include "Base_BCrhs.h"
 #include "BCrhs_systemA.h"
+
+#include "Base_BoundaryHandler.h"
+#include "Base_EquationGenerator.h"
+#include "Develop_System.h"
+
+
 #include "Base_ExactSolution.h"
 #include "ExactSolution_Dummy.h"
 #include "ExactSolution_SystemA.h"
-#include "Base_EquationGenerator.h"
+
 #include "LinearSolver.h"
 #include "Base_MeshGenerator.h"
 #include "Base_PeriodicityHandler.h"
 #include "Base_PostProc.h"
 #include "Base_NumericalIntegration.h"
 #include "Base_Solver.h"
-#include "Develop_System.h"
-
 
 #include "ExactSolution_PoissonHeat.h"
 
@@ -61,6 +64,8 @@ std::string input_file;
 int main(int argc,char **argv)
 {
 	const unsigned int num_threads = atoi(argv[1]);
+	input_file.resize(2);
+
 	dealii::Utilities::MPI::MPI_InitFinalize mpi_initialization(argc,argv, num_threads);
 
 	parse_command_line commmand_line_parser(argc,argv);

@@ -35,9 +35,9 @@ Base_Solver<dim>
   Mass_y = this->Compute_Mass_shape_grad_y(fe_v, indices_per_cell, J);
   Mass = this->Compute_Mass_shape_value(fe_v, indices_per_cell, J);
 
-  cell_matrix = matrix_opt.compute_A_outer_B(system_info->system_data.A[0].matrix,Mass_x) 
-                    +  matrix_opt.compute_A_outer_B(system_info->system_data.A[1].matrix,Mass_y)
-                    +  matrix_opt.compute_A_outer_B(system_info->system_data.P.matrix,Mass);
+  cell_matrix = matrix_opt.compute_A_outer_B(system_info[0].system_data.A[0].matrix,Mass_x) 
+                    +  matrix_opt.compute_A_outer_B(system_info[0].system_data.A[1].matrix,Mass_y)
+                    +  matrix_opt.compute_A_outer_B(system_info[0].system_data.P.matrix,Mass);
 
   std::vector<std::vector<double>> component_to_system(components_per_cell,std::vector<double> (indices_per_cell));
 
@@ -94,7 +94,7 @@ Base_Solver<dim>
 
      Vector<double> boundary_rhs_value;
 
-      boundary_rhs_value.reinit(this->constants.nBC);
+      boundary_rhs_value.reinit(nBC[0]);
 
  for (unsigned int q = 0 ; q < fe_v.n_quadrature_points ; q++)
  {
@@ -105,22 +105,22 @@ Base_Solver<dim>
          // the outward normal to the boundary
   Tensor<1,dim> outward_normal = fe_v.normal_vector(q);
 
-  system_info->build_BCrhs(fe_v.quadrature_point(q),outward_normal,
+  system_info[0].bcrhs_wall.BCrhs(fe_v.quadrature_point(q),outward_normal,
                                     boundary_rhs_value,b_id);
 
         // build the matrices needed
-  Full_matrix Am = system_info->build_Aminus(outward_normal);
-  Sparse_matrix Projector = system_info->build_Projector(outward_normal);
-  Sparse_matrix Inv_Projector = system_info->build_InvProjector(outward_normal);
+  Full_matrix Am = system_info[0].build_Aminus(outward_normal);
+  Sparse_matrix Projector = system_info[0].build_Projector(outward_normal);
+  Sparse_matrix Inv_Projector = system_info[0].build_InvProjector(outward_normal);
 
   Eigen::MatrixXd Am_invP_B_hat_P = Am * Inv_Projector 
-                                    * system_info->B_hat 
+                                    * system_info[0].B_hat 
                                     * Projector;
 
   Eigen::MatrixXd Am_invP_X_min_B_tild_inv = Am
                                             * Inv_Projector 
-                                            * system_info->X_minus
-                                            * system_info->B_tilde_inv;
+                                            * system_info[0].X_minus
+                                            * system_info[0].B_tilde_inv;
 
 
   for (unsigned int i = 0 ; i < dofs_per_cell ; i ++)
@@ -167,7 +167,7 @@ Base_Solver<dim>
 
     Vector<double> boundary_rhs_value;
 
-    boundary_rhs_value.reinit(this->constants.nBC);
+    boundary_rhs_value.reinit(nBC[0]);
 
 for (unsigned int q = 0 ; q < fe_v.n_quadrature_points ; q++)
 {
@@ -176,23 +176,23 @@ for (unsigned int q = 0 ; q < fe_v.n_quadrature_points ; q++)
   boundary_rhs_value = 0;                 
 
 
-    system_info->build_BCrhs(fe_v.quadrature_point(q),fe_v.normal_vector(q),
+    system_info[0].bcrhs_wall.BCrhs(fe_v.quadrature_point(q),fe_v.normal_vector(q),
                           boundary_rhs_value,b_id);
 
 
-  Sparse_matrix Projector = system_info->build_Projector(fe_v.normal_vector(q));
+  Sparse_matrix Projector = system_info[0].build_Projector(fe_v.normal_vector(q));
   
 
 
   // Simga(as given in PDF) * B * Projector
   // Sigma in the PDF = Projector.transpose * Sigma(In the code)
   Full_matrix Sigma_B_P =       Projector.transpose()
-                               * system_info->system_data.Sigma.matrix 
-                               * system_info->system_data.B.matrix
+                               * system_info[0].system_data.Sigma.matrix 
+                               * system_info[0].system_data.B.matrix
                                * Projector;
 
   Full_matrix Sigma = Projector.transpose()
-                      * system_info->system_data.Sigma.matrix ;
+                      * system_info[0].system_data.Sigma.matrix ;
 
   for (unsigned int i = 0 ; i < dofs_per_cell ; i ++)
   {
@@ -251,8 +251,8 @@ Base_Solver<dim>
 
     //CAUTION: ASSUMPTION OF STRAIGHT EDGES IN THE INTERIOR
     Tensor<1,dim> outward_normal = fe_v.normal_vector(0);
-    Eigen::MatrixXd Am = system_info->build_Aminus(outward_normal);
-    Eigen::MatrixXd Am_neighbor = system_info->build_Aminus(-outward_normal);
+    Eigen::MatrixXd Am = system_info[0].build_Aminus(outward_normal);
+    Eigen::MatrixXd Am_neighbor = system_info[0].build_Aminus(-outward_normal);
 
 
     Full_matrix Mass_u1_v1(dofs_per_component1,dofs_per_component1);

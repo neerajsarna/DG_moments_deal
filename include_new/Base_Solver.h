@@ -15,10 +15,11 @@ namespace FEM_Solver
 		public:
 			Base_Solver(
 						const std::string &output_file_name,
-						const constant_data &constants,
-						EquationGenerator::Base_EquationGenerator<dim> *equation_info,
-                        ExactSolution::Base_ExactSolution<dim> *exact_solution
-                        );
+						const constant_numerics &constants,
+						std::vector<Develop_System::System<dim>> &equation_info,
+                        ExactSolution::Base_ExactSolution<dim> *exact_solution,
+                        const std::vector<int> &nEqn,
+                        const std::vector<int> &nBC);
 
 
 
@@ -28,9 +29,12 @@ namespace FEM_Solver
             DeclException2 (ExcNoElementInSparsity, size_t, size_t,
                         << "Dof-1 " << arg1 << " Dof-2 " << arg2 << " Entry does not exist in sparsity pattern");
 
-			const constant_data constants;
+			const constant_numerics constants;
+            const std::vector<int> nEqn;
+            const std::vector<int> nBC;
+
             ExactSolution::Base_ExactSolution<dim> *base_exactsolution;
-			EquationGenerator::Base_EquationGenerator<dim> *system_info;
+			std::vector<Develop_System::System<dim>> system_info;
             MatrixOpt::Base_MatrixOpt matrix_opt;
 
 			// the following order is important or else we run into trouble
@@ -41,7 +45,7 @@ namespace FEM_Solver
 			
 			// A matrix in the final Ax = b
 			TrilinosWrappers::SparseMatrix global_matrix;
-            Sparse_matrix global_matrix_eigen;
+      
 
 			// x in final Ax = b
 			Vector<double> solution;
@@ -136,21 +140,28 @@ namespace FEM_Solver
 	template<int dim>
 	Base_Solver<dim>::Base_Solver(
 								  const std::string &output_file_name,
-								  const constant_data &constants,
-								  EquationGenerator::Base_EquationGenerator<dim> *equation_info,
-                                  ExactSolution::Base_ExactSolution<dim> *exact_solution)
+								  const constant_numerics &constants,
+								  std::vector<Develop_System::System<dim>> &equation_info,
+                                  ExactSolution::Base_ExactSolution<dim> *exact_solution,
+                                  const std::vector<int> &nEqn,
+                                  const std::vector<int> &nBC)
 	:
 	MeshGenerator::Base_MeshGenerator<dim>(output_file_name,constants),
 	PeriodicityHandler::Base_PeriodicityHandler<dim>(constants.xl,constants.xr),
 	constants(constants),
+    nEqn(nEqn),
+    nBC(nBC),
     base_exactsolution(exact_solution),
 	system_info(equation_info),
-	finite_element(FE_DGQ<dim>(constants.p),constants.nEqn),
+	finite_element(FE_DGQ<dim>(constants.p),nEqn[0]),
 	dof_handler(this->triangulation),
 	mapping(constants.mapping_order),
 	ngp(constants.p + 1),
 	ngp_face(constants.p + 1)
-	{;}
+	{
+        // we have not implemented any other system till now
+        AssertDimension(nEqn.size(),1);
+    }
 
     //can be used for all the applications apart from periodic box
     template<int dim>
@@ -185,7 +196,6 @@ namespace FEM_Solver
     #include "Integrate_PerCell.h"
   	#include "AssembleSystem_Meshworker.h"
     #include "AssembleSystem_Manuel.h"
-    #include "AssembleSystem_Manuel_Eigen.h"
     #include "Run_System.h"     // run a particular test case(Not involving periodic boundaries)
     #include "Run_Periodic.h"   // A periodic square box
     

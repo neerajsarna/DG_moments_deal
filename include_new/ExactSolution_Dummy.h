@@ -8,7 +8,7 @@ namespace ExactSolution
 	ExactSolution_Dummy:public Base_ExactSolution<dim>
 	{
 		public:
-			ExactSolution_Dummy(const constant_data &constants,const Sparse_matrix &S_half);
+			ExactSolution_Dummy(const constant_numerics &constants,const Sparse_matrix &S_half,const int nEqn,const int nBC);
 
 			virtual void vector_value(const Point<dim> &p,Vector<double> &value) const ;
 
@@ -22,9 +22,10 @@ namespace ExactSolution
 	};
 
 	template<int dim>
-	ExactSolution_Dummy<dim>::ExactSolution_Dummy(const constant_data &constants,const Sparse_matrix &S_half)
+	ExactSolution_Dummy<dim>::ExactSolution_Dummy(const constant_numerics &constants,const Sparse_matrix &S_half,
+												const int nEqn,const int nBC)
 	:
-	Base_ExactSolution<dim>(constants,S_half)
+	Base_ExactSolution<dim>(constants,S_half,nEqn,nBC)
 	{
 	}
 
@@ -32,7 +33,7 @@ namespace ExactSolution
 	void
 	ExactSolution_Dummy<dim>::vector_value(const Point<dim> &p,Vector<double> &value) const
 	{
-		Assert(value.size() == (unsigned int)this->constants.nEqn,ExcMessage("Incorrect dimension of the input array "));
+		Assert(value.size() == (unsigned int)this->nEqn,ExcMessage("Incorrect dimension of the input array "));
 		Assert(p.norm() >=0 ,ExcMessage("Incorrect point"));
 
 		// we just return zero value 

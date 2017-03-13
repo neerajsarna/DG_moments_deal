@@ -2,41 +2,116 @@ using namespace dealii;
 	TEST(Solver,HandlesSolver)
 	{
 		const unsigned int dim = 2;
-		
 
 		std::string folder_name = "../system_matrices/";
 		Constants::Base_Constants constants(input_file);
-		Develop_System::System<dim> System(constants.constants,folder_name);
 
-		if(constants.constants.problem_type != periodic)
+	// 	// we construct a vector of all the system data being considered 
+		std::vector<Develop_System::System<dim>> System;
+
+		// initialize the vector containing all the systems
+		// initialize the vector containing all the systems
+		for(int i = 0 ; i < constants.constants_sys.total_systems ; i++)
+		{
+			 System.push_back(Develop_System::System<dim>(constants.constants_num,constants.constants_sys.nEqn[i],
+			 											constants.constants_sys.nBC[i],constants.constants_sys.Ntensors[i],folder_name));
+
+			 System[i].reinit_BCrhs();
+			 System[i].reinit_force();
+		}
+
+		if(constants.constants_num.problem_type != periodic)
 		{
 			if (dim == 2)
 			{
 
-				ExactSolution::ExactSolution_Dummy<dim>  exactsolution_dummy(constants.constants,System.base_tensorinfo.S_half);
+				// the exact solution can only be created for one of the systems
+				ExactSolution::ExactSolution_Dummy<dim>  exactsolution_dummy(constants.constants_num,System[0].base_tensorinfo.S_half,
+																			 constants.constants_sys.nEqn[0],constants.constants_sys.Ntensors[0]);
 
 				FEM_Solver::Base_Solver<dim> base_solver("grid",
-											 	 constants.constants,
-											 	 &System,
-											 	 &exactsolution_dummy);
+											 	 constants.constants_num,
+											 	 System,
+											 	 &exactsolution_dummy,
+											 	 constants.constants_sys.nEqn,
+											 	 constants.constants_sys.nBC);
 
 			
 				base_solver.run();
+
+
+				Assert(constants.constants_num.problem_type == heat_conduction || constants.constants_num.problem_type == inflow_outflow,ExcNotImplemented());
+				Assert(constants.constants_num.mesh_type == square_domain || constants.constants_num.mesh_type == NACA5012,ExcNotImplemented());
+				AssertDimension(constants.constants_sys.Ntensors[0],6);
+				AssertDimension(constants.constants_num.part_x,50);
+				AssertDimension(constants.constants_num.part_y,50);
+				AssertDimension(constants.constants_num.refine_cycles,1);
+				AssertDimension(constants.constants_num.initial_refinement,1);
+
+				// for the heat conduction problem, this is the l2 norm of the temperature
+				double error_manuel;
+
+				if (constants.constants_num.mesh_type == square_domain)
+					error_manuel =  1.8584504140524076;
+
+				if (constants.constants_num.mesh_type == NACA5012)
+					error_manuel =  1.1620708876602619;
+
+
+				EXPECT_NEAR(base_solver.error_per_itr[0],error_manuel,1e-10);		
+
 			}
 
 			// incase of the 1D problem we have the exact solution since we solve the poisson heat conduction problem
 			if (dim == 1)
 			{
 
-				ExactSolution::PoissonHeat<dim>  PoissonHeat(constants.constants,System.base_tensorinfo.S_half);
+				ExactSolution::PoissonHeat<dim>  PoissonHeat(constants.constants_num,System[0].base_tensorinfo.S_half,
+													constants.constants_sys.nEqn[0],constants.constants_sys.Ntensors[0]);
 
 				FEM_Solver::Base_Solver<dim> base_solver("grid",
-											 	 constants.constants,
-											 	 &System,
-											 	 &PoissonHeat);
+											 	 constants.constants_num,
+											 	 System,
+											 	 &PoissonHeat,
+											 	 constants.constants_sys.nEqn,
+											 	 constants.constants_sys.nBC);
 
 			
 				base_solver.run();
+
+				AssertDimension(constants.constants_num.refine_cycles,3);
+				AssertDimension(constants.constants_num.initial_refinement,1);
+				AssertDimension(constants.constants_sys.total_systems,1);
+				std::vector<double> error_manuel(constants.constants_num.refine_cycles);
+
+				if(constants.constants_sys.Ntensors[0] == 6)
+				{
+					error_manuel[0] = 4.5432e-03;
+					error_manuel[1]	= 1.1759e-03; 
+					error_manuel[2] = 2.4787e-04;
+				}
+
+				if (constants.constants_sys.Ntensors[0] == 8)
+				{
+					error_manuel[0] = 7.2349e-03;
+					error_manuel[1]	= 2.1590e-03; 
+					error_manuel[2] = 5.0865e-04;		
+				}
+
+				if (constants.constants_sys.Ntensors[0] == 9)
+				{
+					error_manuel[0] = 2.8423e-03;
+					error_manuel[1]	= 6.8201e-04 ; 
+					error_manuel[2] = 1.4148e-04 ;		
+				}
+
+
+				if (constants.constants_sys.Ntensors[0] == 11)
+				{
+					error_manuel[0] = 4.0009e-03;
+					error_manuel[1]	= 1.0194e-03; 
+					error_manuel[2] = 2.1659e-04;		
+				}
 			}
 
 
@@ -45,32 +120,33 @@ using namespace dealii;
 
 		else
 		{
-			Assert(dim == 2,ExcNotImplemented());
+			AssertDimension(dim,2);
 
-			ExactSolution::PoissonHeat<dim>  PoissonHeat(constants.constants,System.base_tensorinfo.S_half);
+			ExactSolution::PoissonHeat<dim>  PoissonHeat(constants.constants_num,System[0].base_tensorinfo.S_half,
+														constants.constants_sys.nEqn[0],constants.constants_sys.Ntensors[0]);
 
 
 
 			FEM_Solver::Base_Solver<dim> base_solver("grid",
-													 constants.constants,
-													 &System,
-													 &PoissonHeat);
-
-			base_solver.print_mesh_info();
-			fflush(stdout);
+													 constants.constants_num,
+													 System,
+													 &PoissonHeat,
+											 	 	 constants.constants_sys.nEqn,
+											 	 	 constants.constants_sys.nBC);
 
 			base_solver.run_periodic();
 
 
-			Assert(constants.constants.refine_cycles = 3,ExcNotImplemented());
-			Assert(fabs(constants.constants.tau - 0.1) < 1e-5,ExcNotImplemented());
-			Assert(constants.constants.part_y == 100,ExcNotImplemented());
+			AssertDimension(constants.constants_num.refine_cycles,3);
+			Assert(fabs(constants.constants_num.tau - 0.1) < 1e-5,ExcNotImplemented());
+			AssertDimension(constants.constants_num.part_y,100);
+			AssertDimension(constants.constants_sys.total_systems,1)
 
 			Vector<double> exact_error(3);
 
-			if (constants.constants.Ntensors == 6)
+			if (constants.constants_sys.Ntensors[0] == 6)
 			{
-				if (constants.constants.bc_type == odd)
+				if (constants.constants_num.bc_type == odd)
 				{
 					exact_error(0) = 2.108024e-06;
 					exact_error(1) = 5.096096e-07;
@@ -83,9 +159,7 @@ using namespace dealii;
 					exact_error(2) = 2.160810e-07;
 				}
 
-
-
-				for (int i = 0 ; i < constants.constants.refine_cycles ; i++)
+				for (int i = 0 ; i < constants.constants_num.refine_cycles ; i++)
 				{
 					std::cout << "Error difference " << fabs(base_solver.error_per_itr[i] - exact_error(i)) << std::endl;
 					EXPECT_NEAR(base_solver.error_per_itr[i],exact_error(i),1e-10);		

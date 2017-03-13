@@ -5,7 +5,8 @@
 #include "mkl.h"
 
 // The input file containing the computational parameters
-std::string input_file;
+// One file for the computational parameters and the other for the details regarding the system
+sdt::vector<std::string> input_file[2];
 
 #include "include_files.h"
 

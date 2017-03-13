@@ -8,9 +8,11 @@ namespace ForceType
 	Base_ForceType
 	{
 		public:
-			Base_ForceType(const constant_data &constants);
+			Base_ForceType(const constant_numerics &constants,const int nEqn);
 
-			const constant_data constants;
+			const constant_numerics constants;
+			const int nEqn;
+
 		public:
 		// The source term
 		// The term factor appears due to symmetrization
@@ -21,9 +23,10 @@ namespace ForceType
 
 	template<int dim>
 	Base_ForceType<dim>::
-	Base_ForceType(const constant_data &constants)
+	Base_ForceType(const constant_numerics &constants,const int nEqn)
 	:
-	constants(constants)
+	constants(constants),
+	nEqn(nEqn)
 	{;}
 
 	template<int dim>
@@ -31,7 +34,7 @@ namespace ForceType
 	ForceType1:public Base_ForceType<dim>
 	{
 		public:
-			ForceType1(const constant_data &constants);
+			ForceType1(const constant_numerics &constants,const int nEqn);
 
 			// the force will be acting on the first equation
 			const unsigned int var_rho = 0;
@@ -44,9 +47,9 @@ namespace ForceType
 
 	template<int dim>
 	ForceType1<dim>
-	::ForceType1(const constant_data &constants)
+	::ForceType1(const constant_numerics &constants,const int nEqn)
 	:
-	Base_ForceType<dim>(constants)
+	Base_ForceType<dim>(constants,nEqn)
 	{;}
 
 	// since the forcing only depends upon the x-coordinate so we do not need to specialize the following
@@ -70,7 +73,7 @@ namespace ForceType
 				const double x_coord = p[i][0];
 
 				value[i] = 0;
-				AssertDimension((int)value[i].size(),this->constants.nEqn);
+				AssertDimension((int)value[i].size(),this->nEqn);
 
 				// the factor comes from the symmetrizer
 				value[i](var_rho) = factor * (this->constants.A0 + this->constants.A2*norm*norm 
@@ -86,7 +89,7 @@ namespace ForceType
 	ForceType2:public Base_ForceType<dim>
 	{
 		public:
-			ForceType2(const constant_data &constants);
+			ForceType2(const constant_numerics &constants,const int nEqn);
 
 			const unsigned int var_rho = 0;
 		// The source term
@@ -97,9 +100,9 @@ namespace ForceType
 
 	template<int dim>
 	ForceType2<dim>
-	::ForceType2(const constant_data &constants)
+	::ForceType2(const constant_numerics &constants,const int nEqn)
 	:
-	Base_ForceType<dim>(constants)
+	Base_ForceType<dim>(constants,nEqn)
 	{;}
 
 	// since we only have the x-coordinate in the force definition therefore 
@@ -123,7 +126,7 @@ namespace ForceType
 				const double x_coord = p[i][0];
 
 				value[i] = 0;
-				AssertDimension((int)value[i].size(),this->constants.nEqn);
+				AssertDimension((int)value[i].size(),this->nEqn);
 				value[i](var_rho) = factor * (this->constants.A0 + this->constants.A2 * norm * norm + 
 							this->constants.A1*(1.0-5.0/18*norm*norm/(this->constants.tau*this->constants.tau))*x_coord / norm);
 			}
@@ -136,7 +139,7 @@ namespace ForceType
 	ForceType3:public Base_ForceType<dim>
 	{
 		public:
-			ForceType3(const constant_data &constants);
+			ForceType3(const constant_numerics &constants,const int nEqn);
 
 			unsigned int var_theta;
 
@@ -148,9 +151,9 @@ namespace ForceType
 
 	template<int dim>
 	ForceType3<dim>
-	::ForceType3(const constant_data &constants)
+	::ForceType3(const constant_numerics &constants,const int nEqn)
 	:
-	Base_ForceType<dim>(constants)
+	Base_ForceType<dim>(constants,nEqn)
 	{;}
 
 	// specialization for 2D
@@ -175,7 +178,7 @@ namespace ForceType
 				const double y_cord = p[i][1];
 				// initialize the variable
 				value[i] = 0;
-				AssertDimension((int)value[i].size(),this->constants.nEqn);
+				AssertDimension((int)value[i].size(),this->nEqn);
 
 				// the source term for the energy equation. The factor appears from the symmetrizer
 				value[i](var_theta) = -factor * this->constants.alpha * pow(y_cord,2);
@@ -205,7 +208,7 @@ namespace ForceType
 				const double x_cord = p[i][0];
 				// initialize the variable
 				value[i] = 0;
-				AssertDimension((int)value[i].size(),this->constants.nEqn);
+				AssertDimension((int)value[i].size(),this->nEqn);
 
 				// the source term for the energy equation. The factor appears from the symmetrizer
 				value[i](var_theta) = -factor * this->constants.alpha * pow(x_cord,2);

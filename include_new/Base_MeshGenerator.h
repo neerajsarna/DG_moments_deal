@@ -10,13 +10,13 @@ namespace MeshGenerator
 		public:
 			Base_MeshGenerator(
 							   const std::string &output_file_name,
-							   const constant_data &constants);
+							   const constant_numerics &constants);
         
         	SphericalManifold<dim> boundary;
         	Triangulation<dim> triangulation;
         	GridIn<dim> gridin;
 
-			const constant_data constants;
+			const constant_numerics constants;
 
 			const std::string output_file_name;
 			// print the info contained in the input triangulation
@@ -52,7 +52,7 @@ namespace MeshGenerator
 	template<int dim>
 	Base_MeshGenerator<dim>::Base_MeshGenerator(
 											    const std::string &output_file_name,
-											    const constant_data &constants)
+											    const constant_numerics &constants)
 	:
 	constants(constants),
 	output_file_name(output_file_name)

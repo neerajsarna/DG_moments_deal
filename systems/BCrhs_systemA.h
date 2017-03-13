@@ -8,18 +8,21 @@ namespace BCrhs_systemA
 	BCrhs_ring_char_systemA:public BCrhs::Base_BCrhs<dim>
 	{
 		public:
-			BCrhs_ring_char_systemA(const constant_data &constants);
+			BCrhs_ring_char_systemA(const constant_numerics &constants,const int nBC);
 
 			virtual void BCrhs(const Tensor<1,dim,double> p,
 							  const Tensor<1,dim,double> normal_vector,
 							   Vector<double> &bc_rhs,
 							   const unsigned int b_id);
+
+			const int nBC;
 	};
 
 	template<int dim>
-	BCrhs_ring_char_systemA<dim>::BCrhs_ring_char_systemA(const constant_data &constants)
+	BCrhs_ring_char_systemA<dim>::BCrhs_ring_char_systemA(const constant_numerics &constants,const int nBC)
 	:
-	BCrhs::Base_BCrhs<dim>(constants)
+	BCrhs::Base_BCrhs<dim>(constants),
+	nBC(nBC)
 	{;}
 
 	template<int dim>
@@ -63,18 +66,21 @@ namespace BCrhs_systemA
 	BCrhs_ring_odd_systemA:public BCrhs::Base_BCrhs<dim>
 	{
 		public:
-			BCrhs_ring_odd_systemA(const constant_data &constants);
+			BCrhs_ring_odd_systemA(const constant_numerics &constants,const int nBC);
 
 			virtual void BCrhs(const Tensor<1,dim,double> p,
 							  const Tensor<1,dim,double> normal_vector,
 							   Vector<double> &bc_rhs,
 							   const unsigned int b_id);
+
+			const int nBC;
 	};
 
 	template<int dim>
-	BCrhs_ring_odd_systemA<dim>::BCrhs_ring_odd_systemA(const constant_data &constants)
+	BCrhs_ring_odd_systemA<dim>::BCrhs_ring_odd_systemA(const constant_numerics &constants,const int nBC)
 	:
-	BCrhs::Base_BCrhs<dim>(constants)
+	BCrhs::Base_BCrhs<dim>(constants),
+	nBC(nBC)
 	{;}
 
 	template<int dim>
@@ -104,97 +110,4 @@ namespace BCrhs_systemA
 
 	}
 
-	template<int dim>
-	class
-	BCrhs_periodic_char_systemA: public BCrhs::Base_BCrhs<dim>
-	{
-		public:
-			BCrhs_periodic_char_systemA(const constant_data &constants);
-
-			virtual void BCrhs(const Tensor<1,dim,double> p,
-								  const Tensor<1,dim,double> normal_vector,
-								   Vector<double> &bc_rhs,
-								   const unsigned int b_id);		
-	};
-
-	template<int dim>
-	BCrhs_periodic_char_systemA<dim>::BCrhs_periodic_char_systemA(const constant_data &constants)
-	:
-	BCrhs::Base_BCrhs<dim>(constants)
-	{;}
-
-	template<int dim>
-	void 
-	BCrhs_periodic_char_systemA<dim>::BCrhs(const Tensor<1,dim,double> p,
-								  			const Tensor<1,dim,double> normal_vector,
-								   			Vector<double> &bc_rhs,
-								   			const unsigned int b_id)
-	{
-			AssertDimension((int)bc_rhs.size(),this->constants.nBC);
-			Assert(dim > 1,ExcNotImplemented());
-
-			double y_cord = p[1];
-			double thetaW;
-
- 			// upper edge
-			if (fabs(y_cord - this->constants.yt) < 1e-10 ) 
-				thetaW = this->constants.theta0;
-
-
-
- 			// lower edge
-			if ( fabs(y_cord - this->constants.yb) < 1e-10 )
-				thetaW = this->constants.theta1;
-
-
-			bc_rhs(0) = -this->constants.chi * thetaW;
-
-	}
-
-	template<int dim>
-	class
-	BCrhs_periodic_odd_systemA: public BCrhs::Base_BCrhs<dim>
-	{
-		public:
-			BCrhs_periodic_odd_systemA(const constant_data &constants);
-
-			virtual void BCrhs(const Tensor<1,dim,double> p,
-								  const Tensor<1,dim,double> normal_vector,
-								   Vector<double> &bc_rhs,
-								   const unsigned int b_id);		
-	};
-
-	template<int dim>
-	BCrhs_periodic_odd_systemA<dim>::BCrhs_periodic_odd_systemA(const constant_data &constants)
-	:
-	BCrhs::Base_BCrhs<dim>(constants)
-	{;}
-
-	template<int dim>
-	void 
-	BCrhs_periodic_odd_systemA<dim>::BCrhs(const Tensor<1,dim,double> p,
-								  			const Tensor<1,dim,double> normal_vector,
-								   			Vector<double> &bc_rhs,
-								   			const unsigned int b_id)
-	{
-			AssertDimension((int)bc_rhs.size(),this->constants.nEqn);
-			Assert(dim > 1,ExcNotImplemented());
-
-			double y_cord = p[1];
-			double thetaW;
-
- 			// upper edge
-			if (fabs(y_cord - this->constants.yt) < 1e-10 ) 
-				thetaW = this->constants.theta0;
-
-
-
- 			// lower edge
-			if ( fabs(y_cord - this->constants.yb) < 1e-10 )
-				thetaW = this->constants.theta1;
-
-
-			bc_rhs(1) = -this->constants.chi * thetaW;
-
-	}
 }
