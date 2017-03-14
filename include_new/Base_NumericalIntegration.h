@@ -15,30 +15,23 @@ namespace NumericalIntegration
 										 const unsigned int gauss_points,
 										 typename DoFHandler<dim>::active_cell_iterator &cell);
 
-				// gauss points are the number of gauss points in one particular direction
-				// compute the mass matrix M such that M_{ij} = \int \phi_i \pd_x\phi_i dx
-				Full_matrix Compute_Mass_shape_grad_x(const FEValuesBase<dim> &fe_v,
-							 							const unsigned int dofs_per_component,
-							  							const std::vector<double> &J);
 
-				Full_matrix Compute_Mass_shape_grad_y(const FEValuesBase<dim> &fe_v,
+				FullMatrix<double>  Compute_Mass_shape_value(const FEValuesBase<dim> &fe_v,
 														const unsigned int dofs_per_component,
 														const std::vector<double> &J);
 
-				Full_matrix Compute_Mass_shape_grad_z(const FEValuesBase<dim> &fe_v,
-														const unsigned int dofs_per_component,
-														const std::vector<double> &J);
-
-				Full_matrix Compute_Mass_shape_value(const FEValuesBase<dim> &fe_v,
+				std::vector<FullMatrix<double>> Compute_Mass_shape_grad(const FEValuesBase<dim> &fe_v,
 														const unsigned int dofs_per_component,
 														const std::vector<double> &J);
 
 				// compute the mass matrix for the edge share between the cell and the neighbor
-				Full_matrix Compute_Mass_cell_neighbor(const FEValuesBase<dim> &fe_v1,
+				FullMatrix<double> Compute_Mass_cell_neighbor(const FEValuesBase<dim> &fe_v1,
 													   const FEValuesBase<dim> &fe_v2,
 													   const unsigned int dofs_per_component1,
 													   const unsigned int dofs_per_component2,
 													   const std::vector<double> &J);
+
+				MatrixOpt::Base_MatrixOpt matrix_opt;
 	};
 
 	template<int dim>
@@ -77,101 +70,55 @@ namespace NumericalIntegration
 				shape_values(i,q) = fe_v.shape_value(i,q);
 			}
 	}
-
+	
 	template<int dim>
-	Full_matrix
+	std::vector<FullMatrix<double>>
 	Base_NumericalIntegration<dim>::
-	Compute_Mass_shape_grad_x(const FEValuesBase<dim> &fe_v,
-							 const unsigned int dofs_per_component,
-							  const std::vector<double> &J)
-	{
-
-		const unsigned int total_ngp = J.size();	
-		const unsigned int num_dof_per_comp = fe_v.get_fe().dofs_per_cell/fe_v.get_fe().n_components();		
-		Full_matrix M(dofs_per_component,dofs_per_component);
-		M.setZero();
-
-		Assert(shape_values.rows() || shape_values.cols() != 0,ExcNotInitialized());
- 		AssertDimension(dofs_per_component,shape_values.rows());
- 		AssertDimension(num_dof_per_comp,dofs_per_component);
- 		
- 		for (unsigned int q = 0 ; q < total_ngp ; q++)
- 		{
- 		const double jacobian_value = J[q];
-		for (unsigned int i = 0 ; i < dofs_per_component ; i ++)
-			for (unsigned int j = 0 ; j < dofs_per_component ; j++)	
-					M.coeffRef(i,j) += shape_values(i,q) * fe_v.shape_grad(j,q)[0] * jacobian_value;
- 		}
-
-
-		return(M);
-
-	}
-
-
-	template<int dim>
-	Full_matrix
-	Base_NumericalIntegration<dim>::
-	Compute_Mass_shape_grad_y(const FEValuesBase<dim> &fe_v,
-							 const unsigned int dofs_per_component,
-							  const std::vector<double> &J)
-	{
-
-		const unsigned int total_ngp = J.size();	
-		const unsigned int num_dof_per_comp = fe_v.get_fe().dofs_per_cell/fe_v.get_fe().n_components();				
-		Full_matrix M(dofs_per_component,dofs_per_component);
-		M.setZero();
-
-		Assert(shape_values.rows() || shape_values.cols() != 0,ExcNotInitialized());
- 		AssertDimension(dofs_per_component,shape_values.rows());
- 		AssertDimension(num_dof_per_comp,dofs_per_component);
- 		
- 		for (unsigned int q = 0 ; q < total_ngp ; q++)
- 		{
- 			const double jacobian_value = J[q];
-			for (unsigned int i = 0 ; i < dofs_per_component ; i ++)
-				for (unsigned int j = 0 ; j < dofs_per_component ; j++)
-						M.coeffRef(i,j) += shape_values(i,q) * fe_v.shape_grad(j,q)[1] * jacobian_value; 			
- 		}
-
-
-		return(M);
-	}
-
-	template<int dim>
-	Full_matrix
-	Base_NumericalIntegration<dim>::
-	Compute_Mass_shape_grad_z(const FEValuesBase<dim> &fe_v,
+	Compute_Mass_shape_grad(const FEValuesBase<dim> &fe_v,
 							 const unsigned int dofs_per_component,
 							  const std::vector<double> &J)
 	{
 
 		const unsigned int total_ngp = J.size();
 		const unsigned int num_dof_per_comp = fe_v.get_fe().dofs_per_cell/fe_v.get_fe().n_components();				
-		Full_matrix M(dofs_per_component,dofs_per_component);
-		M.setZero();
+		std::vector<FullMatrix<double>> M;
+
+		for (int space = 0 ;space < dim ; space++)
+		{
+			M.push_back(FullMatrix<double>(dofs_per_component,dofs_per_component));
+			Assert(M[space].m() != 0,ExcNotInitialized());
+			Assert(M[space].n() != 0,ExcNotInitialized());
+			M[space] = 0;
+		}
+
+	
 
 		Assert(shape_values.rows() || shape_values.cols() != 0,ExcNotInitialized());
   		AssertDimension(dofs_per_component,shape_values.rows());
   		AssertDimension(num_dof_per_comp,dofs_per_component);
 
-  		for (unsigned int q = 0 ; q < total_ngp ; q++)
+  		// the assumption in the following computation is that all the moments have the same order of 
+  		// polynomial degree
+  		for (int space = 0 ;space < dim ; space++)
   		{
-  		const double jacobian_value = J[q];
-		for (unsigned int i = 0 ; i < dofs_per_component ; i ++)
-			for (unsigned int j = 0 ; j < dofs_per_component ; j++)	
-					M(i,j) += shape_values(i,q) * fe_v.shape_grad(j,q)[2] * jacobian_value;
+  			for (unsigned int q = 0 ; q < total_ngp ; q++)
+  			{
+  				const double jacobian_value = J[q];
+  				for (unsigned int i = 0 ; i < dofs_per_component ; i ++)
+  					for (unsigned int j = 0 ; j < dofs_per_component ; j++)	
+  						M[space](i,j) += shape_values(i,q) * fe_v.shape_grad(j,q)[space] * jacobian_value;
+  			}  			
   		}
+
 
 
 
 		return(M);
 
 	}
-	
 	// now we compute the mass matrix corresponding to Integrate phi * phi dx
 	template<int dim>
-	Full_matrix
+	FullMatrix<double>
 	Base_NumericalIntegration<dim>::
 	Compute_Mass_shape_value(const FEValuesBase<dim> &fe_v,
 							 const unsigned int dofs_per_component,
@@ -180,8 +127,8 @@ namespace NumericalIntegration
 
 		const unsigned int total_ngp = J.size();
 		const unsigned int num_dof_per_comp = fe_v.get_fe().dofs_per_cell/fe_v.get_fe().n_components();				
-		Full_matrix M(dofs_per_component,dofs_per_component);
-		M.setZero();
+		FullMatrix<double> M(dofs_per_component,dofs_per_component);
+		M = 0;
 
 		Assert(shape_values.rows() || shape_values.cols() != 0,ExcNotInitialized());
   		AssertDimension(dofs_per_component,shape_values.rows());
@@ -203,7 +150,7 @@ namespace NumericalIntegration
 
 	// the following function computes the matrix M = basis of fe_v1 * basis of fe_v2 dx
 	template<int dim>
-	Full_matrix
+	FullMatrix<double>
 	Base_NumericalIntegration<dim>::
 	Compute_Mass_cell_neighbor(const FEValuesBase<dim> &fe_v1,
 							   const FEValuesBase<dim> &fe_v2,
@@ -215,8 +162,8 @@ namespace NumericalIntegration
 		const unsigned int num_dof_per_comp1 = fe_v1.get_fe().dofs_per_cell/fe_v1.get_fe().n_components();				
 		const unsigned int num_dof_per_comp2 = fe_v2.get_fe().dofs_per_cell/fe_v2.get_fe().n_components();				
 
-		Full_matrix M(dofs_per_component1,dofs_per_component2);
-		M.setZero();
+		FullMatrix<double> M(dofs_per_component1,dofs_per_component2);
+		M = 0;
 
   		AssertDimension(num_dof_per_comp1,dofs_per_component1);
   		AssertDimension(num_dof_per_comp2,dofs_per_component2);

@@ -77,6 +77,8 @@ using namespace dealii;
 											 	 constants.constants_sys.nBC);
 
 			
+				// the number of cells which should be initially present
+				AssertDimension(base_solver.triangulation.n_active_cells(),2);
 				base_solver.run();
 
 				AssertDimension(constants.constants_num.refine_cycles,3);
@@ -112,6 +114,12 @@ using namespace dealii;
 					error_manuel[1]	= 1.0194e-03; 
 					error_manuel[2] = 2.1659e-04;		
 				}
+
+				for (int i = 0 ; i < constants.constants_num.refine_cycles ; i++)
+				{
+					std::cout << "Error difference " << fabs(base_solver.error_per_itr[i] - error_manuel[i]) << std::endl;
+					EXPECT_NEAR(base_solver.error_per_itr[i],error_manuel[i],1e-5);		
+				}	
 			}
 
 

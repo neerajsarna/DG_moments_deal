@@ -18,6 +18,9 @@ namespace MatrixOpt
 				VectorXd array;
 			};
 
+			// multiply the entire matrix by a scalar
+			FullMatrix<double> multiply_scalar(const double scalar,const FullMatrix<double> &A);
+
 			// given as matrix, computes the eigenvectors corresonding to the negative eigenvalues
 			// A is the sparse matrix and num_neg is the number of negative eigenvalues
 			Full_matrix compute_Xminus(const Sparse_matrix &A,const unsigned int num_neg);
@@ -51,13 +54,8 @@ namespace MatrixOpt
 			Full_matrix compute_Aminus(Sparse_matrix &A);
 
 			//compute the dydadic product of A and B i.e 
-			Full_matrix compute_A_outer_B(Full_matrix &A,Full_matrix &B);
-
-			Sparse_matrix compute_A_outer_B(Full_matrix &A,Sparse_matrix &B);
-
-			Sparse_matrix compute_A_outer_B(Sparse_matrix &A,Full_matrix &B);
-
-			Sparse_matrix compute_A_outer_B(Sparse_matrix &A,Sparse_matrix &B);
+			FullMatrix<double> compute_A_outer_B(Full_matrix &A,FullMatrix<double> &B);
+			FullMatrix<double> compute_A_outer_B(Sparse_matrix &A,FullMatrix<double> &B);
 
 
 			// prints a full matrix
@@ -91,6 +89,21 @@ namespace MatrixOpt
                                                                 const double size);
 	};
 
+	FullMatrix<double> Base_MatrixOpt::multiply_scalar(const double scalar,const FullMatrix<double> &A)
+	{
+		Assert(A.m() != 0, ExcNotInitialized());
+		Assert(A.n() != 0, ExcNotInitialized());
+
+		const int rows_A = A.m();
+		const int cols_A = A.n();
+		FullMatrix<double> result(rows_A,cols_A);
+
+		for (int i = 0 ; i < rows_A ; i++)
+			for (int j = 0 ; j < cols_A ; j++)
+				result(i,j) = scalar * A(i,j);
+
+		return(result);
+	}
 	// constructor of the structure
 	Base_MatrixOpt::Ordering::Ordering(VectorXd &Array)
 	{
@@ -414,101 +427,57 @@ namespace MatrixOpt
 	  }
 
 	  // the following function expects result to be initialized before hand
-	  Full_matrix Base_MatrixOpt::compute_A_outer_B(Full_matrix &A,Full_matrix &B)
+	  FullMatrix<double> Base_MatrixOpt::compute_A_outer_B(Full_matrix &A,FullMatrix<double> &B)
 	  {
 	  	
 
 
 	  	const unsigned int rows_A = A.rows();
 	  	const unsigned int cols_A = A.cols();
-	  	const unsigned int rows_B = B.rows();
-	  	const unsigned int cols_B = B.cols();
-	  	Full_matrix result(rows_A * rows_B,cols_A * cols_B);
+	  	const unsigned int rows_B = B.m();
+	  	const unsigned int cols_B = B.n();
+	  	FullMatrix<double> result(rows_A * rows_B,cols_A * cols_B);
+	  	FullMatrix<double> temp(rows_B,cols_B);
 
+	  	AssertDimension(result.m(),rows_A * rows_B);
+	  	AssertDimension(result.n(),cols_A * cols_B);
 
-	  	AssertDimension(result.rows(),rows_A * rows_B);
-	  	AssertDimension(result.cols(),cols_A * cols_B);
+	  	// for (unsigned int i = 0 ; i < rows_A ; i ++)
+	  	// 	for (unsigned int j = 0 ; j < cols_A ; j++)
+	  	// 		result.block(i * rows_B, j * cols_B, rows_B,cols_B) = A(i,j) * B;
 
 	  	for (unsigned int i = 0 ; i < rows_A ; i ++)
 	  		for (unsigned int j = 0 ; j < cols_A ; j++)
-	  			result.block(i * rows_B, j * cols_B, rows_B,cols_B) = A(i,j) * B;
+	  			result.fill(multiply_scalar(A(i,j),B),i * rows_B, j * cols_B);
+	  		
 
 	  	return(result);
 	  }
 
-	  	  // the following function expects result to be initialized before hand
-	  Sparse_matrix Base_MatrixOpt::compute_A_outer_B(Full_matrix &A,Sparse_matrix &B)
-	  {
-	  	
-	  	const unsigned int rows_A = A.rows();
-	  	const unsigned int cols_A = A.cols();
-	  	const unsigned int rows_B = B.rows();
-	  	const unsigned int cols_B = B.cols();
-	  	Sparse_matrix result(rows_A * rows_B, cols_A * cols_B);
 
-	  	AssertDimension(result.rows(),rows_A * rows_B);
-	  	AssertDimension(result.cols(),cols_A * cols_B);
-
-	  	for (unsigned int i = 0 ; i < rows_A ; i ++)
-	  		for (unsigned int j = 0 ; j < cols_A ; j++)
-	  			for (unsigned int m = 0 ; m < B.outerSize(); m++)
-          			for (Sparse_matrix::InnerIterator n(B,m); n ; ++n)
-	  					result.coeffRef(i * rows_B + n.row(),j * cols_B + n.col()) = A(i,j) * n.value();
-
-
-	  	result.makeCompressed();
-	  	return(result);
-	  }
-
-	  Sparse_matrix Base_MatrixOpt::compute_A_outer_B(Sparse_matrix &A,Full_matrix &B)
+	  FullMatrix<double> Base_MatrixOpt::compute_A_outer_B(Sparse_matrix &A,FullMatrix<double> &B)
 	  {
 
 	  	const unsigned int rows_A = A.rows();
 	  	const unsigned int cols_A = A.cols();
-	  	const unsigned int rows_B = B.rows();
-	  	const unsigned int cols_B = B.cols();
-	  	Sparse_matrix result(rows_A * rows_B,cols_A * cols_B);
+	  	const unsigned int rows_B = B.m();
+	  	const unsigned int cols_B = B.n();
+	  	FullMatrix<double> result(rows_A * rows_B,cols_A * cols_B);
 
 
-	  	AssertDimension(result.rows(),rows_A * rows_B);
-	  	AssertDimension(result.cols(),cols_A * cols_B);
+	  	AssertDimension(result.m(),rows_A * rows_B);
+	  	AssertDimension(result.n(),cols_A * cols_B);
 
 	  	for (unsigned int i = 0 ; i < A.outerSize(); i++)
           	for (Sparse_matrix::InnerIterator j(A,i); j ; ++j)
 	  			for (unsigned int k = 0 ; k < rows_B ; k ++)
           			for (unsigned int l = 0 ; l < cols_B ; l ++)
-	  					result.coeffRef(j.row() * rows_B + k,j.col() * cols_B + l) = j.value() * B(k,l);
+	  					result(j.row() * rows_B + k,j.col() * cols_B + l) = j.value() * B(k,l);
 
 
-	  	result.makeCompressed();
 	  	return(result);
 	  }
 
-	  Sparse_matrix Base_MatrixOpt::compute_A_outer_B(Sparse_matrix &A,Sparse_matrix &B)
-	  {
-	 
-
-	  	const unsigned int rows_A = A.rows();
-	  	const unsigned int cols_A = A.cols();
-	  	const unsigned int rows_B = B.rows();
-	  	const unsigned int cols_B = B.cols();
-	  	Sparse_matrix result(rows_A * rows_B, cols_A * cols_B);
-
-
-	  	AssertDimension(result.rows(),rows_A * rows_B);
-	  	AssertDimension(result.cols(),cols_A * cols_B);
-
-	  	for (unsigned int i = 0 ; i < A.outerSize(); i++)
-          	for (Sparse_matrix::InnerIterator j(A,i); j ; ++j)
-	  			for (unsigned int k = 0 ; k < B.outerSize(); k++)
-          			for (Sparse_matrix::InnerIterator l(B,k); l ; ++l)
-	  					result.coeffRef(j.row() * rows_B + l.row(),j.col() * cols_B + l.col())
-	  											 = j.value() * l.value();
-
-
-	  	result.makeCompressed();
-	  	return(result);
-	  }
 
 	  void Base_MatrixOpt::COO_to_CSR(const TrilinosWrappers::SparseMatrix &matrix, MKL_INT *IA,MKL_INT *JA,double *V)
 	  {

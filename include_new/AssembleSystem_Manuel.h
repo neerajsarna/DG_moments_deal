@@ -32,15 +32,15 @@ Base_Solver<dim>::assemble_system_char()
       std::vector<types::global_dof_index> local_dof_indices(dofs_per_cell);
       std::vector<types::global_dof_index> local_dof_indices_neighbor(dofs_per_cell);
 
-      Sparse_matrix cell_matrix(dofs_per_cell,dofs_per_cell);                  // contribution from the interior
+      FullMatrix<double> cell_matrix(dofs_per_cell,dofs_per_cell);                  // contribution from the interior
       FullMatrix<double> boundary_matrix(dofs_per_cell,dofs_per_cell);
       Vector<double>     cell_rhs(dofs_per_cell);                                   // rhs from the current cell
 
       // matrices for the boundary terms
-      Full_matrix u1_v1(dofs_per_cell,dofs_per_cell);      // relating current to current
-      Full_matrix u1_v2(dofs_per_cell,dofs_per_cell);  // relating current to neighbor
-      Full_matrix u2_v1(dofs_per_cell,dofs_per_cell);  // relating neighbor to current
-      Full_matrix u2_v2(dofs_per_cell,dofs_per_cell);  // relating neighbor to current
+      FullMatrix<double> u1_v1(dofs_per_cell,dofs_per_cell);      // relating current to current
+      FullMatrix<double> u1_v2(dofs_per_cell,dofs_per_cell);  // relating current to neighbor
+      FullMatrix<double> u2_v1(dofs_per_cell,dofs_per_cell);  // relating neighbor to current
+      FullMatrix<double> u2_v2(dofs_per_cell,dofs_per_cell);  // relating neighbor to current
 
       // std::vectors to make computations faster
       std::vector<double> Jacobians_interior(total_ngp);
@@ -63,6 +63,7 @@ Base_Solver<dim>::assemble_system_char()
       {
         
         cell_rhs = 0;
+        cell_matrix = 0;
         cell->get_dof_indices(local_dof_indices);
 
         
@@ -107,7 +108,7 @@ Base_Solver<dim>::assemble_system_char()
                   for (unsigned int j = 0 ; j < dofs_per_cell ; j++)
                   {
                
-                   Assert(sparsity_pattern.exists(local_dof_indices[i],local_dof_indices[j]),ExcNoElementInSparsity(local_dof_indices[i],local_dof_indices[j]));
+                   //Assert(sparsity_pattern.exists(local_dof_indices[i],local_dof_indices[j]),ExcNoElementInSparsity(local_dof_indices[i],local_dof_indices[j]));
                    global_matrix.add(local_dof_indices[i],local_dof_indices[j],boundary_matrix(i,j));
                   }
               }
@@ -146,10 +147,10 @@ Base_Solver<dim>::assemble_system_char()
                   for (unsigned int j = 0 ; j < dofs_per_cell ; j++)
                   {
                
-                   Assert(sparsity_pattern.exists(local_dof_indices[i],local_dof_indices[j]),ExcNoElementInSparsity(local_dof_indices[i],local_dof_indices[j]));
-                   Assert(sparsity_pattern.exists(local_dof_indices[i],local_dof_indices_neighbor[j]),ExcNoElementInSparsity(local_dof_indices[i],local_dof_indices_neighbor[j]));
-                   Assert(sparsity_pattern.exists(local_dof_indices_neighbor[i],local_dof_indices[j]),ExcNoElementInSparsity(local_dof_indices_neighbor[i],local_dof_indices[j]));
-                   Assert(sparsity_pattern.exists(local_dof_indices_neighbor[i],local_dof_indices_neighbor[j]),ExcNoElementInSparsity(local_dof_indices_neighbor[i],local_dof_indices_neighbor[j]));
+                   // Assert(sparsity_pattern.exists(local_dof_indices[i],local_dof_indices[j]),ExcNoElementInSparsity(local_dof_indices[i],local_dof_indices[j]));
+                   // Assert(sparsity_pattern.exists(local_dof_indices[i],local_dof_indices_neighbor[j]),ExcNoElementInSparsity(local_dof_indices[i],local_dof_indices_neighbor[j]));
+                   // Assert(sparsity_pattern.exists(local_dof_indices_neighbor[i],local_dof_indices[j]),ExcNoElementInSparsity(local_dof_indices_neighbor[i],local_dof_indices[j]));
+                   // Assert(sparsity_pattern.exists(local_dof_indices_neighbor[i],local_dof_indices_neighbor[j]),ExcNoElementInSparsity(local_dof_indices_neighbor[i],local_dof_indices_neighbor[j]));
 
                    global_matrix.add(local_dof_indices[i],local_dof_indices[j],u1_v1(i,j));
                    global_matrix.add(local_dof_indices_neighbor[i],local_dof_indices_neighbor[j],u2_v2(i,j));
@@ -193,10 +194,10 @@ Base_Solver<dim>::assemble_system_char()
                   for (unsigned int j = 0 ; j < dofs_per_cell ; j++)
                   {
                
-                   Assert(sparsity_pattern.exists(local_dof_indices[i],local_dof_indices[j]),ExcNoElementInSparsity(local_dof_indices[i],local_dof_indices[j]));
-                   Assert(sparsity_pattern.exists(local_dof_indices[i],local_dof_indices_neighbor[j]),ExcNoElementInSparsity(local_dof_indices[i],local_dof_indices_neighbor[j]));
-                   Assert(sparsity_pattern.exists(local_dof_indices_neighbor[i],local_dof_indices[j]),ExcNoElementInSparsity(local_dof_indices_neighbor[i],local_dof_indices[j]));
-                   Assert(sparsity_pattern.exists(local_dof_indices_neighbor[i],local_dof_indices_neighbor[j]),ExcNoElementInSparsity(local_dof_indices_neighbor[i],local_dof_indices_neighbor[j]));
+                   // Assert(sparsity_pattern.exists(local_dof_indices[i],local_dof_indices[j]),ExcNoElementInSparsity(local_dof_indices[i],local_dof_indices[j]));
+                   // Assert(sparsity_pattern.exists(local_dof_indices[i],local_dof_indices_neighbor[j]),ExcNoElementInSparsity(local_dof_indices[i],local_dof_indices_neighbor[j]));
+                   // Assert(sparsity_pattern.exists(local_dof_indices_neighbor[i],local_dof_indices[j]),ExcNoElementInSparsity(local_dof_indices_neighbor[i],local_dof_indices[j]));
+                   // Assert(sparsity_pattern.exists(local_dof_indices_neighbor[i],local_dof_indices_neighbor[j]),ExcNoElementInSparsity(local_dof_indices_neighbor[i],local_dof_indices_neighbor[j]));
 
                    global_matrix.add(local_dof_indices[i],local_dof_indices[j],u1_v1(i,j));
                    global_matrix.add(local_dof_indices_neighbor[i],local_dof_indices_neighbor[j],u2_v2(i,j));
@@ -212,13 +213,11 @@ Base_Solver<dim>::assemble_system_char()
             }
               
 
-            
-            for (unsigned int m = 0 ; m < cell_matrix.outerSize(); m++)
-                for (Sparse_matrix::InnerIterator n(cell_matrix,m); n ; ++n)
+              for (unsigned int i = 0 ; i < dofs_per_cell ; i++)
+                  for (unsigned int j = 0 ; j < dofs_per_cell ; j++)
                 {
-                  Assert(n.row() < dofs_per_cell, ExcMessage("In appropriate size"));
-                  Assert(n.col() < dofs_per_cell, ExcMessage("In appropriate size"));
-                  global_matrix.add(local_dof_indices[n.row()],local_dof_indices[n.col()],n.value());
+                  
+                  global_matrix.add(local_dof_indices[i],local_dof_indices[j],cell_matrix(i,j));
                 }
               
              for(unsigned int i = 0 ; i < dofs_per_cell ; i++)
@@ -262,15 +261,15 @@ Base_Solver<dim>::assemble_system_odd()
       std::vector<types::global_dof_index> local_dof_indices(dofs_per_cell);
       std::vector<types::global_dof_index> local_dof_indices_neighbor(dofs_per_cell);
 
-      Sparse_matrix cell_matrix(dofs_per_cell,dofs_per_cell);                  // contribution from the interior
+      FullMatrix<double> cell_matrix(dofs_per_cell,dofs_per_cell);                  // contribution from the interior
       FullMatrix<double> boundary_matrix(dofs_per_cell,dofs_per_cell);
       Vector<double>     cell_rhs(dofs_per_cell);                                   // rhs from the current cell
 
       // matrices for the boundary terms
-      Full_matrix u1_v1(dofs_per_cell,dofs_per_cell);      // relating current to current
-      Full_matrix u1_v2(dofs_per_cell,dofs_per_cell);  // relating current to neighbor
-      Full_matrix u2_v1(dofs_per_cell,dofs_per_cell);  // relating neighbor to current
-      Full_matrix u2_v2(dofs_per_cell,dofs_per_cell);  // relating neighbor to current
+      FullMatrix<double> u1_v1(dofs_per_cell,dofs_per_cell);      // relating current to current
+      FullMatrix<double> u1_v2(dofs_per_cell,dofs_per_cell);  // relating current to neighbor
+      FullMatrix<double> u2_v1(dofs_per_cell,dofs_per_cell);  // relating neighbor to current
+      FullMatrix<double> u2_v2(dofs_per_cell,dofs_per_cell);  // relating neighbor to current
 
       // std::vectors to make computations faster
       std::vector<double> Jacobians_interior(total_ngp);
@@ -337,7 +336,7 @@ Base_Solver<dim>::assemble_system_odd()
                   for (unsigned int j = 0 ; j < dofs_per_cell ; j++)
                   {
                
-                   Assert(sparsity_pattern.exists(local_dof_indices[i],local_dof_indices[j]),ExcNoElementInSparsity(local_dof_indices[i],local_dof_indices[j]));
+                   //Assert(sparsity_pattern.exists(local_dof_indices[i],local_dof_indices[j]),ExcNoElementInSparsity(local_dof_indices[i],local_dof_indices[j]));
                    global_matrix.add(local_dof_indices[i],local_dof_indices[j],boundary_matrix(i,j));
                   }
               }
@@ -376,10 +375,10 @@ Base_Solver<dim>::assemble_system_odd()
                   for (unsigned int j = 0 ; j < dofs_per_cell ; j++)
                   {
                
-                   Assert(sparsity_pattern.exists(local_dof_indices[i],local_dof_indices[j]),ExcNoElementInSparsity(local_dof_indices[i],local_dof_indices[j]));
-                   Assert(sparsity_pattern.exists(local_dof_indices[i],local_dof_indices_neighbor[j]),ExcNoElementInSparsity(local_dof_indices[i],local_dof_indices_neighbor[j]));
-                   Assert(sparsity_pattern.exists(local_dof_indices_neighbor[i],local_dof_indices[j]),ExcNoElementInSparsity(local_dof_indices_neighbor[i],local_dof_indices[j]));
-                   Assert(sparsity_pattern.exists(local_dof_indices_neighbor[i],local_dof_indices_neighbor[j]),ExcNoElementInSparsity(local_dof_indices_neighbor[i],local_dof_indices_neighbor[j]));
+                   // Assert(sparsity_pattern.exists(local_dof_indices[i],local_dof_indices[j]),ExcNoElementInSparsity(local_dof_indices[i],local_dof_indices[j]));
+                   // Assert(sparsity_pattern.exists(local_dof_indices[i],local_dof_indices_neighbor[j]),ExcNoElementInSparsity(local_dof_indices[i],local_dof_indices_neighbor[j]));
+                   // Assert(sparsity_pattern.exists(local_dof_indices_neighbor[i],local_dof_indices[j]),ExcNoElementInSparsity(local_dof_indices_neighbor[i],local_dof_indices[j]));
+                   // Assert(sparsity_pattern.exists(local_dof_indices_neighbor[i],local_dof_indices_neighbor[j]),ExcNoElementInSparsity(local_dof_indices_neighbor[i],local_dof_indices_neighbor[j]));
 
                    global_matrix.add(local_dof_indices[i],local_dof_indices[j],u1_v1(i,j));
                    global_matrix.add(local_dof_indices_neighbor[i],local_dof_indices_neighbor[j],u2_v2(i,j));
@@ -423,10 +422,10 @@ Base_Solver<dim>::assemble_system_odd()
                   for (unsigned int j = 0 ; j < dofs_per_cell ; j++)
                   {
                
-                   Assert(sparsity_pattern.exists(local_dof_indices[i],local_dof_indices[j]),ExcNoElementInSparsity(local_dof_indices[i],local_dof_indices[j]));
-                   Assert(sparsity_pattern.exists(local_dof_indices[i],local_dof_indices_neighbor[j]),ExcNoElementInSparsity(local_dof_indices[i],local_dof_indices_neighbor[j]));
-                   Assert(sparsity_pattern.exists(local_dof_indices_neighbor[i],local_dof_indices[j]),ExcNoElementInSparsity(local_dof_indices_neighbor[i],local_dof_indices[j]));
-                   Assert(sparsity_pattern.exists(local_dof_indices_neighbor[i],local_dof_indices_neighbor[j]),ExcNoElementInSparsity(local_dof_indices_neighbor[i],local_dof_indices_neighbor[j]));
+                   // Assert(sparsity_pattern.exists(local_dof_indices[i],local_dof_indices[j]),ExcNoElementInSparsity(local_dof_indices[i],local_dof_indices[j]));
+                   // Assert(sparsity_pattern.exists(local_dof_indices[i],local_dof_indices_neighbor[j]),ExcNoElementInSparsity(local_dof_indices[i],local_dof_indices_neighbor[j]));
+                   // Assert(sparsity_pattern.exists(local_dof_indices_neighbor[i],local_dof_indices[j]),ExcNoElementInSparsity(local_dof_indices_neighbor[i],local_dof_indices[j]));
+                   // Assert(sparsity_pattern.exists(local_dof_indices_neighbor[i],local_dof_indices_neighbor[j]),ExcNoElementInSparsity(local_dof_indices_neighbor[i],local_dof_indices_neighbor[j]));
 
                    global_matrix.add(local_dof_indices[i],local_dof_indices[j],u1_v1(i,j));
                    global_matrix.add(local_dof_indices_neighbor[i],local_dof_indices_neighbor[j],u2_v2(i,j));
@@ -443,12 +442,11 @@ Base_Solver<dim>::assemble_system_odd()
               
 
             
-            for (unsigned int m = 0 ; m < cell_matrix.outerSize(); m++)
-                for (Sparse_matrix::InnerIterator n(cell_matrix,m); n ; ++n)
+              for (unsigned int i = 0 ; i < dofs_per_cell ; i++)
+                  for (unsigned int j = 0 ; j < dofs_per_cell ; j++)
                 {
-                  Assert(n.row() < dofs_per_cell, ExcMessage("In appropriate size"));
-                  Assert(n.col() < dofs_per_cell, ExcMessage("In appropriate size"));
-                  global_matrix.add(local_dof_indices[n.row()],local_dof_indices[n.col()],n.value());
+                 
+                  global_matrix.add(local_dof_indices[i],local_dof_indices[j],cell_matrix(i,j));
                 }
               
              for(unsigned int i = 0 ; i < dofs_per_cell ; i++)
@@ -497,15 +495,15 @@ Base_Solver<dim>::assemble_system_periodic_char()
       std::vector<types::global_dof_index> local_dof_indices(dofs_per_cell);
       std::vector<types::global_dof_index> local_dof_indices_neighbor(dofs_per_cell);
 
-      Sparse_matrix cell_matrix(dofs_per_cell,dofs_per_cell);                  // contribution from the interior
+      FullMatrix<double> cell_matrix(dofs_per_cell,dofs_per_cell);                  // contribution from the interior
       FullMatrix<double> boundary_matrix(dofs_per_cell,dofs_per_cell);
       Vector<double>     cell_rhs(dofs_per_cell);                                   // rhs from the current cell
 
       // matrices for the boundary terms
-      Full_matrix u1_v1(dofs_per_cell,dofs_per_cell);      // relating current to current
-      Full_matrix u1_v2(dofs_per_cell,dofs_per_cell);  // relating current to neighbor
-      Full_matrix u2_v1(dofs_per_cell,dofs_per_cell);  // relating neighbor to current
-      Full_matrix u2_v2(dofs_per_cell,dofs_per_cell);  // relating neighbor to current
+      FullMatrix<double> u1_v1(dofs_per_cell,dofs_per_cell);      // relating current to current
+      FullMatrix<double> u1_v2(dofs_per_cell,dofs_per_cell);  // relating current to neighbor
+      FullMatrix<double> u2_v1(dofs_per_cell,dofs_per_cell);  // relating neighbor to current
+      FullMatrix<double> u2_v2(dofs_per_cell,dofs_per_cell);  // relating neighbor to current
 
       // std::vectors to make computations faster
       std::vector<double> Jacobians_interior(total_ngp);
@@ -708,9 +706,12 @@ Base_Solver<dim>::assemble_system_periodic_char()
             }
               
 
-            for (unsigned int m = 0 ; m < cell_matrix.outerSize(); m++)
-                for (Sparse_matrix::InnerIterator n(cell_matrix,m); n ; ++n)
-                  global_matrix.add(local_dof_indices[n.row()],local_dof_indices[n.col()],n.value());
+              for (unsigned int i = 0 ; i < dofs_per_cell ; i++)
+                  for (unsigned int j = 0 ; j < dofs_per_cell ; j++)
+                {
+                  
+                  global_matrix.add(local_dof_indices[i],local_dof_indices[j],cell_matrix(i,j));
+                }
 
              
               
@@ -765,15 +766,15 @@ Base_Solver<dim>::assemble_system_periodic_odd()
       std::vector<types::global_dof_index> local_dof_indices(dofs_per_cell);
       std::vector<types::global_dof_index> local_dof_indices_neighbor(dofs_per_cell);
 
-      Sparse_matrix cell_matrix(dofs_per_cell,dofs_per_cell);                  // contribution from the interior
+      FullMatrix<double> cell_matrix(dofs_per_cell,dofs_per_cell);                  // contribution from the interior
       FullMatrix<double> boundary_matrix(dofs_per_cell,dofs_per_cell);
       Vector<double>     cell_rhs(dofs_per_cell);                                   // rhs from the current cell
 
       // matrices for the boundary terms
-      Full_matrix u1_v1(dofs_per_cell,dofs_per_cell);      // relating current to current
-      Full_matrix u1_v2(dofs_per_cell,dofs_per_cell);  // relating current to neighbor
-      Full_matrix u2_v1(dofs_per_cell,dofs_per_cell);  // relating neighbor to current
-      Full_matrix u2_v2(dofs_per_cell,dofs_per_cell);  // relating neighbor to current
+      FullMatrix<double> u1_v1(dofs_per_cell,dofs_per_cell);      // relating current to current
+      FullMatrix<double> u1_v2(dofs_per_cell,dofs_per_cell);  // relating current to neighbor
+      FullMatrix<double> u2_v1(dofs_per_cell,dofs_per_cell);  // relating neighbor to current
+      FullMatrix<double> u2_v2(dofs_per_cell,dofs_per_cell);  // relating neighbor to current
 
       // std::vectors to make computations faster
       std::vector<double> Jacobians_interior(total_ngp);
@@ -976,9 +977,12 @@ Base_Solver<dim>::assemble_system_periodic_odd()
             }
               
 
-            for (unsigned int m = 0 ; m < cell_matrix.outerSize(); m++)
-                for (Sparse_matrix::InnerIterator n(cell_matrix,m); n ; ++n)
-                  global_matrix.add(local_dof_indices[n.row()],local_dof_indices[n.col()],n.value());
+              for (unsigned int i = 0 ; i < dofs_per_cell ; i++)
+                  for (unsigned int j = 0 ; j < dofs_per_cell ; j++)
+                {
+   
+                  global_matrix.add(local_dof_indices[i],local_dof_indices[j],cell_matrix(i,j));
+                }
 
              
               

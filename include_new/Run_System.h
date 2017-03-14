@@ -40,29 +40,24 @@ Base_Solver<dim>::run()
 			}
 			case manuel:
 			{
-				AssertThrow(1 == 0,ExcMessage("Should not have reached here"));
-				// switch(constants.bc_type)
-				// {
-				// 	case characteristic:
-				// 	{
-				// 		std::cout << "Using characteristic boundary " << std::endl;
-				// 		assemble_system_char();
-				// 		break;
-				// 	}
+				//AssertThrow(1 == 0,ExcMessage("Should not have reached here"));
+				switch(constants.bc_type)
+				{
+					case odd:
+					{
+						std::cout << "Using odd boundary " << std::endl;
+						assemble_system_odd();
+						break;
+					}
 
-				// 	case odd:
-				// 	{
-				// 		std::cout << "Using odd boundary "<< std::endl;
-				// 		assemble_system_odd();
-				// 		break;
-				// 	}
-					
-				// 	default:
-				// 	{
-				// 		AssertThrow(1 == 0, ExcMessage("Should not have reached here"));
-				// 		break;
-				// 	}
-				// }
+					case characteristic:
+					default:
+					{
+						AssertThrow(1 == 0, ExcMessage("Should not have reached here"));
+						break;
+					}
+		
+				}
 				break;
 			}
 
@@ -74,7 +69,6 @@ Base_Solver<dim>::run()
 		}
 		timer.leave_subsection();
 		
-
 		// we initialize the object which will solve our system
 		// We do int the following way so as to keep the solver independent of all the other implementations.
 		// This makes the code highly reusable. So one can directly copy the following class and use it somewhere
@@ -88,6 +82,9 @@ Base_Solver<dim>::run()
 		timer.leave_subsection();
 
 		timer.enter_subsection("Post Processing");
+
+
+
 		PostProc::Base_PostProc<dim> postproc(constants,base_exactsolution,&dof_handler, &mapping,nEqn,nBC);
 
 		const double residual_weak_form = postproc.compute_residual(residual,this->triangulation.n_active_cells());

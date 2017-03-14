@@ -1,15 +1,16 @@
 template<int dim>
 void 
 Base_Solver<dim>
-::integrate_cell_manuel(Sparse_matrix &cell_matrix,
+::integrate_cell_manuel(FullMatrix<double> &cell_matrix,
                         Vector<double> &cell_rhs,
                         FEValuesBase<dim> &fe_v,
                         std::vector<double> &J,
                         std::vector<Vector<double>> &source_term_value,
                         const typename DoFHandler<dim>::active_cell_iterator &cell)
 {
-  Assert(cell_matrix.rows() !=0 || cell_matrix.cols() !=0 ,ExcNotInitialized());
-  Assert(cell_matrix.rows() == cell_matrix.cols() ,ExcMessage("different dof in same cell"));
+
+  Assert(cell_matrix.m() !=0 || cell_matrix.n() !=0 ,ExcNotInitialized());
+  Assert(cell_matrix.m() == cell_matrix.n() ,ExcMessage("different dof in same cell"));
   Assert(cell_rhs.size() != 0,ExcNotInitialized());
   Assert(J.size() !=0,ExcNotInitialized());
   Assert(source_term_value.size() != 0,ExcNotInitialized());
@@ -25,19 +26,18 @@ Base_Solver<dim>
   AssertDimension(indices_per_cell,this->shape_values.rows());
   AssertDimension(total_ngp,this->shape_values.cols());
 
-  Full_matrix Mass_x(indices_per_cell,indices_per_cell);
-  Full_matrix Mass_y(indices_per_cell,indices_per_cell);
-  Full_matrix Mass(indices_per_cell,indices_per_cell);
+  std::vector<FullMatrix<double>> Mass_grad(dim);
+  FullMatrix<double> Mass(indices_per_cell,indices_per_cell);
 
-  // matrix which stores Integrate phi * phi_x dx. Mass_y is the same but for the y-derivative and Mass is the normal mass
-  // matrix.
-  Mass_x = this->Compute_Mass_shape_grad_x(fe_v, indices_per_cell, J);
-  Mass_y = this->Compute_Mass_shape_grad_y(fe_v, indices_per_cell, J);
+  Mass_grad = this->Compute_Mass_shape_grad(fe_v, indices_per_cell, J);
   Mass = this->Compute_Mass_shape_value(fe_v, indices_per_cell, J);
 
-  cell_matrix = matrix_opt.compute_A_outer_B(system_info[0].system_data.A[0].matrix,Mass_x) 
-                    +  matrix_opt.compute_A_outer_B(system_info[0].system_data.A[1].matrix,Mass_y)
-                    +  matrix_opt.compute_A_outer_B(system_info[0].system_data.P.matrix,Mass);
+  // this is for initializing the matrix, it is necessary since we have not put cell_matrix to zero
+  cell_matrix = matrix_opt.compute_A_outer_B(system_info[0].system_data.P.matrix,Mass);
+
+  for (int space = 0 ;space < dim ; space ++ )
+        cell_matrix.add(0,cell_matrix,1,matrix_opt.compute_A_outer_B(system_info[0].system_data.A[space].matrix,Mass_grad[space]));
+                    
 
   std::vector<std::vector<double>> component_to_system(components_per_cell,std::vector<double> (indices_per_cell));
 
@@ -84,6 +84,7 @@ Base_Solver<dim>
                             const typename DoFHandler<dim>::active_cell_iterator &cell,
                             const unsigned int b_id)
 {
+    AssertThrow(1 == 0,ExcMessage("The present routine has not been further developed. Use odd boundary implementation."));
     Assert(cell_matrix.m() !=0 || cell_matrix.n() !=0 ,ExcNotInitialized());
     Assert(cell_matrix.m() == cell_matrix.n() ,ExcMessage("different dof in same cell"));
     Assert(cell_rhs.size() != 0,ExcNotInitialized());
@@ -157,6 +158,8 @@ Base_Solver<dim>
                             const typename DoFHandler<dim>::active_cell_iterator &cell,
                             const unsigned int b_id)
 {
+
+
     Assert(cell_matrix.m() !=0 || cell_matrix.n() !=0 ,ExcNotInitialized());
     Assert(cell_matrix.m() == cell_matrix.n() ,ExcMessage("different dof in same cell"));
     Assert(cell_rhs.size() != 0,ExcNotInitialized());
@@ -169,6 +172,25 @@ Base_Solver<dim>
 
     boundary_rhs_value.reinit(nBC[0]);
 
+    // we use a temporary matrix to determine whether inflow or outflow
+    Sparse_matrix B_temp;
+
+    if(b_id == 101 || b_id == 102)
+    {
+      integrate_inflow++;
+      B_temp = system_info[0].system_data.Binflow.matrix;
+    }
+    else
+    {
+    // B matrix for specular reflection
+      if (b_id == 50)
+        B_temp = system_info[0].system_data.B_specular.matrix;
+
+    // B matrix for full accmmodation
+      else
+        B_temp = system_info[0].system_data.B.matrix;
+    }
+
 for (unsigned int q = 0 ; q < fe_v.n_quadrature_points ; q++)
 {
   const double jacobian_value = J[q];
@@ -176,6 +198,13 @@ for (unsigned int q = 0 ; q < fe_v.n_quadrature_points ; q++)
   boundary_rhs_value = 0;                 
 
 
+  // check for inflow or outflow
+  // Incase of inflow provide the inflow rhs
+  if(b_id == 101 || b_id == 102)
+    system_info[0].bcrhs_inflow.BCrhs(fe_v.quadrature_point(q),fe_v.normal_vector(q),
+                          boundary_rhs_value,b_id);
+
+  else
     system_info[0].bcrhs_wall.BCrhs(fe_v.quadrature_point(q),fe_v.normal_vector(q),
                           boundary_rhs_value,b_id);
 
@@ -220,10 +249,10 @@ for (unsigned int q = 0 ; q < fe_v.n_quadrature_points ; q++)
 template<int dim>
 void 
 Base_Solver<dim>
-::integrate_face_manuel(Full_matrix &u1_v1,
-                        Full_matrix &u1_v2,
-                        Full_matrix &u2_v1,
-                        Full_matrix &u2_v2,
+::integrate_face_manuel(FullMatrix<double> &u1_v1,
+                        FullMatrix<double> &u1_v2,
+                        FullMatrix<double> &u2_v1,
+                        FullMatrix<double> &u2_v2,
                         FEValuesBase<dim> &fe_v,
                         FEValuesBase<dim> &fe_v_neighbor,
                         std::vector<double> &J,
@@ -231,10 +260,10 @@ Base_Solver<dim>
                         const typename DoFHandler<dim>::active_cell_iterator &cell)
 {
 
-    Assert(u1_v1.rows() !=0 || u1_v1.cols() !=0 ,ExcNotInitialized());
-    Assert(u1_v2.rows() !=0 || u1_v2.cols() !=0 ,ExcNotInitialized());
-    Assert(u2_v1.rows() !=0 || u2_v1.cols() !=0 ,ExcNotInitialized());
-    Assert(u2_v2.rows() !=0 || u2_v2.cols() !=0 ,ExcNotInitialized());
+    Assert(u1_v1.m() !=0 || u1_v1.n() !=0 ,ExcNotInitialized());
+    Assert(u1_v2.m() !=0 || u1_v2.n() !=0 ,ExcNotInitialized());
+    Assert(u2_v1.m() !=0 || u2_v1.n() !=0 ,ExcNotInitialized());
+    Assert(u2_v2.m() !=0 || u2_v2.n() !=0 ,ExcNotInitialized());
     Assert(J.size() !=0,ExcNotInitialized());
     
     const FiniteElement<dim> &fe_in_cell1 = fe_v.get_fe();
@@ -255,10 +284,10 @@ Base_Solver<dim>
     Eigen::MatrixXd Am_neighbor = system_info[0].build_Aminus(-outward_normal);
 
 
-    Full_matrix Mass_u1_v1(dofs_per_component1,dofs_per_component1);
-    Full_matrix Mass_u2_v1(dofs_per_component1,dofs_per_component2);
-    Full_matrix Mass_u2_v2(dofs_per_component2,dofs_per_component2);
-    Full_matrix Mass_u1_v2(dofs_per_component2,dofs_per_component1);
+    FullMatrix<double> Mass_u1_v1(dofs_per_component1,dofs_per_component1);
+    FullMatrix<double> Mass_u2_v1(dofs_per_component1,dofs_per_component2);
+    FullMatrix<double> Mass_u2_v2(dofs_per_component2,dofs_per_component2);
+    FullMatrix<double> Mass_u1_v2(dofs_per_component2,dofs_per_component1);
 
     Mass_u1_v1 = this->Compute_Mass_cell_neighbor(fe_v,
                                                    fe_v,dofs_per_component1,
@@ -276,9 +305,9 @@ Base_Solver<dim>
                                                    fe_v,dofs_per_component2,
                                                   dofs_per_component1,J);
 
-    u1_v1 = 0.5 * matrix_opt.compute_A_outer_B(Am,Mass_u1_v1);
-    u2_v1 = -0.5 * matrix_opt.compute_A_outer_B(Am,Mass_u2_v1);
-    u1_v2 = -0.5 * matrix_opt.compute_A_outer_B(Am_neighbor,Mass_u1_v2);
-    u2_v2 = 0.5 * matrix_opt.compute_A_outer_B(Am_neighbor,Mass_u2_v2);
+    u1_v1 = matrix_opt.multiply_scalar(0.5,matrix_opt.compute_A_outer_B(Am,Mass_u1_v1));
+    u2_v1 = matrix_opt.multiply_scalar(-0.5,matrix_opt.compute_A_outer_B(Am,Mass_u2_v1));
+    u1_v2 = matrix_opt.multiply_scalar(-0.5,matrix_opt.compute_A_outer_B(Am_neighbor,Mass_u1_v2));
+    u2_v2 = matrix_opt.multiply_scalar(0.5,matrix_opt.compute_A_outer_B(Am_neighbor,Mass_u2_v2));
 
 }

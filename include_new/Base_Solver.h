@@ -58,6 +58,9 @@ namespace FEM_Solver
 		    void allocate_vectors(); 
             void run();
 
+            // routines for multiple systems
+            void 
+
         	MappingQ<dim,dim> mapping;
         	const unsigned int ngp;
         	const unsigned int ngp_face;
@@ -96,9 +99,10 @@ namespace FEM_Solver
 
 
             // integration for every different element
-        	void integrate_cell_manuel(Sparse_matrix &cell_matrix, Vector<double> &cell_rhs,
+        	void integrate_cell_manuel(FullMatrix<double> &cell_matrix, Vector<double> &cell_rhs,
         								FEValuesBase<dim> &fe_v,  std::vector<double> &J,
-        								std::vector<Vector<double>> &source_term_value, const typename DoFHandler<dim>::active_cell_iterator &cell);
+        								std::vector<Vector<double>> &source_term_value, 
+                                        const typename DoFHandler<dim>::active_cell_iterator &cell);
 
         	// integrate the boundary manuelly using odd boundary implementation
         	void integrate_boundary_manuel_odd(FullMatrix<double> &cell_matrix,
@@ -118,10 +122,10 @@ namespace FEM_Solver
         									const typename DoFHandler<dim>::active_cell_iterator &cell,
                                             const unsigned int b_id);
 
-        	void integrate_face_manuel(Full_matrix &u1_v1,
-                                       Full_matrix &u1_v2,
-                                       Full_matrix &u2_v1,
-                                       Full_matrix &u2_v2,
+        	void integrate_face_manuel(FullMatrix<double> &u1_v1,
+                                       FullMatrix<double> &u1_v2,
+                                       FullMatrix<double> &u2_v1,
+                                       FullMatrix<double> &u2_v2,
         								FEValuesBase<dim> &fe_v,
         								FEValuesBase<dim> &fe_v_neighbor,
         								std::vector<double> &J,
