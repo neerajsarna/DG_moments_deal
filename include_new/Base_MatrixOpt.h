@@ -80,6 +80,9 @@ namespace MatrixOpt
 			void print_dealii_vector(const Vector<double> &vec, 
 									std::string vector_name);
 
+			void print_dealii_full(const FullMatrix<double> &matrix,
+										   std::string matrix_name);
+
 			// a dot product between sparse matrix and a vector
 			Vector<double> Sparse_matrix_dot_Vector(const Sparse_matrix &matrix,const Vector<double> &vec);
 			void COO_to_CSR(const TrilinosWrappers::SparseMatrix &matrix, MKL_INT *IA,MKL_INT *JA,double *V);
@@ -390,6 +393,28 @@ namespace MatrixOpt
 
 
 	  }
+
+	void Base_MatrixOpt::print_dealii_full(const FullMatrix<double> &matrix,
+										   std::string matrix_name)
+	{
+	  	FILE *fp;
+	  	std::string filename;
+	  	filename = "printed_matrices/" + matrix_name;
+	  	fp = fopen(filename.c_str(),"w+");
+
+	  	AssertThrow(fp != NULL, ExcMessage("could not open file for writting global matrix"));
+
+	  	for (unsigned long int i = 0 ; i < matrix.m(); i ++)
+	  	{
+	  		for (unsigned long int j = 0 ; j < matrix.n(); j++)
+	  			fprintf(fp, " %f ",matrix(i,j));
+
+	  		fprintf(fp,"\n");
+	  	}
+	  	
+
+	  	fclose(fp);		
+	}
 
 	  void Base_MatrixOpt::print_dealii_vector(const Vector<double> &vec,
 	  										std::string vector_name)

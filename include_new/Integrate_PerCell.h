@@ -69,6 +69,16 @@ Base_Solver<dim>
     
   }
 
+  // std::string filename;
+  // std::string center_point = boost::lexical_cast<std::string>(cell->center()(0));
+
+
+  // filename = "cell_matrix_original_" + center_point + "_" + std::to_string(nEqn[0]);
+
+
+  // matrix_opt.print_dealii_full(cell_matrix,filename);
+
+
 }
 
 

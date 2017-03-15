@@ -2,35 +2,54 @@ namespace Test_FEValues
 {
 	using namespace dealii;
 
+	// construct the block strucutre for the allocation of fe nothing
+	void construct_block_structure(std::vector<int> &block_structure,std::vector<int> &nEqn)
+	{
+		Assert(nEqn.size() != 0, ExcNotInitialized());
+		Assert(std::is_sorted(std::begin(nEqn),std::end(nEqn)),ExcMessage("number of equations not sorted"));
 
-	// TEST(DofIndex,HandlesDofIndex)
-	// {
-	// 	const unsigned int dim = 2;
-	// 	const unsigned int p = 2;
-	// 	const unsigned int nEqn = 6;
+		// the very first entry should be the number of equations in the first system
+		block_structure.push_back(nEqn[0]);
+
+		for (int i = 1 ; i < nEqn.size() ; i++)
+		{
+			block_structure.push_back(nEqn[i]-nEqn[i-1]);
+			std::cout << "Block structure " << block_structure[i] << std::endl;
+		}
 
 
-	// 	FESystem<dim> finite_element(FE_DGQ<dim>(p),nEqn);
+		AssertDimension(block_structure.size(),nEqn.size());
+	}
 
-	// 	// or the indices per cell
-	// 	const unsigned int dofs_per_component = finite_element.dofs_per_cell / finite_element.n_components();
-	// 	FullMatrix<double> component_to_system(nEqn,dofs_per_component);
 
-	// 	unsigned int count = 0;
+	TEST(DofIndex,HandlesDofIndex)
+	{
+		const unsigned int dim = 2;
+		const unsigned int p = 2;
+		const unsigned int nEqn = 6;
 
-	// 	// loop over a particular component
-	// 	for(unsigned int i = 0 ; i < nEqn ; i++)
 
-	// 	// loop over all the dofs of that particular component
-	// 		for (unsigned int j = 0 ; j < dofs_per_component ; j++)
-	// 		{
-	// 			// compute the dof to which the it corresponds to 
-	// 			component_to_system(i,j) = finite_element.component_to_system_index(i,j);
-	// 			EXPECT_EQ(count,component_to_system(i,j));
-	// 			count ++;
-	// 		}
+		FESystem<dim> finite_element(FE_DGQ<dim>(p),3,FE_DGQ<dim>(p),3);
 
-	// }
+		// or the indices per cell
+		const unsigned int dofs_per_component = finite_element.dofs_per_cell / finite_element.n_components();
+		FullMatrix<double> component_to_system(nEqn,dofs_per_component);
+
+		unsigned int count = 0;
+
+		// loop over a particular component
+		for(unsigned int i = 0 ; i < nEqn ; i++)
+
+		// loop over all the dofs of that particular component
+			for (unsigned int j = 0 ; j < dofs_per_component ; j++)
+			{
+				// compute the dof to which the it corresponds to 
+				component_to_system(i,j) = finite_element.component_to_system_index(i,j);
+				EXPECT_EQ(count,component_to_system(i,j));
+				count ++;
+			}
+
+	}
 
 	// TEST(MassMatrix,HandlesMassMatrix)
 	// {
@@ -206,8 +225,61 @@ namespace Test_FEValues
 		std::cout << "components sys3 " << fe_sys3.n_components() << std::endl;
 
 
-		for (int i = 0 ; i < 3 ; i++)
-			for (int j = 0 ; j < 4 ; j++)
-				std::cout << "Components of the dof " << fe_sys1.component_to_system_index(i,j) << std::endl;
+
+	}
+
+	TEST(BlockStructure,HandlesBlockStructure)
+	{
+		const int dim = 2;
+		std::vector<int> nEqn;
+		std::vector<int> block_structure;
+		hp::FECollection<dim> finite_element;
+
+		nEqn.push_back(3);
+		nEqn.push_back(6);
+		nEqn.push_back(10);
+		nEqn.push_back(15);
+
+		construct_block_structure(block_structure,nEqn);
+
+		std::vector<FESystem<dim>> fe_sys;
+
+		if (block_structure.size() == 1)
+			fe_sys.push_back(FESystem<dim>(FE_DGQ<dim>(1),block_structure[0]));
+
+		if (block_structure.size() == 2)
+		{
+
+			fe_sys.push_back(FESystem<dim>(FE_DGQ<dim>(1),block_structure[0],FE_Nothing<dim>(),block_structure[1]));
+			fe_sys.push_back(FESystem<dim>(FE_DGQ<dim>(1),block_structure[0],FE_DGQ<dim>(1),block_structure[1]));
+		}
+
+		if (block_structure.size() == 3)
+		{
+			fe_sys.push_back(FESystem<dim>(FE_DGQ<dim>(1),block_structure[0],FE_Nothing<dim>(),block_structure[1],FE_Nothing<dim>(),block_structure[2]));
+			fe_sys.push_back(FESystem<dim>(FE_DGQ<dim>(1),block_structure[0],FE_DGQ<dim>(1),block_structure[1],FE_Nothing<dim>(),block_structure[2]));
+			fe_sys.push_back(FESystem<dim>(FE_DGQ<dim>(1),block_structure[0],FE_DGQ<dim>(1),block_structure[1],FE_DGQ<dim>(1),block_structure[2]));
+		}
+
+		if (block_structure.size() == 4)
+		{
+			fe_sys.push_back(FESystem<dim>(FE_DGQ<dim>(1),block_structure[0],FE_Nothing<dim>(),block_structure[1],
+							 FE_Nothing<dim>(),block_structure[2],FE_Nothing<dim>(),block_structure[3]));
+
+			fe_sys.push_back(FESystem<dim>(FE_DGQ<dim>(1),block_structure[0],FE_DGQ<dim>(1),block_structure[1],
+							 FE_Nothing<dim>(),block_structure[2],FE_Nothing<dim>(),block_structure[3]));
+
+			fe_sys.push_back(FESystem<dim>(FE_DGQ<dim>(1),block_structure[0],FE_DGQ<dim>(1),block_structure[1],
+							 FE_DGQ<dim>(1),block_structure[2],FE_Nothing<dim>(),block_structure[3]));
+
+			fe_sys.push_back(FESystem<dim>(FE_DGQ<dim>(1),block_structure[0],FE_DGQ<dim>(1),block_structure[1],
+							 FE_DGQ<dim>(1),block_structure[2],FE_DGQ<dim>(1),block_structure[3]));
+		}
+
+		for (int i = 0 ; i < fe_sys.size() ; i++)
+		{
+			finite_element.push_back(fe_sys[i]);
+			std::cout << "Dofs: " << finite_element[i].dofs_per_cell << std::endl;
+		}
 	}
 }

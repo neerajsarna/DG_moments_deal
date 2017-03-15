@@ -54,7 +54,9 @@ namespace Develop_System
 			BCrhs::BCrhs_wall<dim> bcrhs_wall;
 			BCrhs::BCrhs_inflow<dim> bcrhs_inflow;
 
+	
 			void reinit_BCrhs();
+			bool system_initialized = false;
 
 
 	};
@@ -73,6 +75,8 @@ namespace Develop_System
 	bcrhs_inflow(constants,nBC,this->system_data.Binflow.matrix)
 	{
 
+		system_initialized = true;
+
 		// we reinitialize all the data for base_tensorinfo for this particular system
 		this->base_tensorinfo.reinit();
 
@@ -89,9 +93,10 @@ namespace Develop_System
 
    		this->symmetrize_system();
 
-   		this->force_factor = this->forcing_factor();
+   		this->force_factor = this->forcing_factor();	
 
 	}
+
 
 	template<int dim>
 	void 

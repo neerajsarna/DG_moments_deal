@@ -1,7 +1,7 @@
 using namespace dealii;
 	TEST(Solver,HandlesSolver)
 	{
-		const unsigned int dim = 2;
+		const unsigned int dim = 1;
 
 		std::string folder_name = "../system_matrices/";
 		Constants::Base_Constants constants(input_file);
@@ -78,8 +78,9 @@ using namespace dealii;
 
 			
 				// the number of cells which should be initially present
-				AssertDimension(base_solver.triangulation.n_active_cells(),2);
 				base_solver.run();
+
+				fflush(stdout);
 
 				AssertDimension(constants.constants_num.refine_cycles,3);
 				AssertDimension(constants.constants_num.initial_refinement,1);

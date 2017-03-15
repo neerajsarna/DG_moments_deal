@@ -58,8 +58,7 @@ namespace FEM_Solver
 		    void allocate_vectors(); 
             void run();
 
-            // routines for multiple systems
-            void 
+        
 
         	MappingQ<dim,dim> mapping;
         	const unsigned int ngp;
