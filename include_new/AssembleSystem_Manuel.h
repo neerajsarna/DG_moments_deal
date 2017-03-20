@@ -286,6 +286,9 @@ Base_Solver<dim>::assemble_system_odd()
       // make computation faster
      
       this->Compute_Shape_Value(mapping,ngp,cell);
+        typename DoFHandler<dim>::active_cell_iterator cell_debug = dof_handler.begin_active();
+        cell_debug++;
+
       
 
   for (; cell != endc ; cell++) 

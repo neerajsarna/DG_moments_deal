@@ -34,7 +34,7 @@ Base_Solver<dim>::run()
 		{
 			case meshworker:
 			{
-				AssertThrow(1 == 0,ExcNotImplemented());
+				AssertThrow(1 == 0,ExcMessage("Meshworker not available for hp dof_handler. "));
 				std::cout << "Using meshwoker " << std::endl;
 				//assemble_system_meshworker();
 				break;		
@@ -75,37 +75,38 @@ Base_Solver<dim>::run()
 		// This makes the code highly reusable. So one can directly copy the following class and use it somewhere
 		// else if one wants to.
 
-		// timer.enter_subsection("Linear Solver");
-		// LinearSolver::LinearSolver linear_solver;
-		// std::cout << "Preparing data for pardiso " << std::endl;
-		// linear_solver.develop_pardiso_data(global_matrix);
-		// residual = linear_solver.solve_with_pardiso(system_rhs,solution);
-		// timer.leave_subsection();
+		timer.enter_subsection("Linear Solver");
+		LinearSolver::LinearSolver linear_solver;
+		std::cout << "Preparing data for pardiso " << std::endl;
+		linear_solver.develop_pardiso_data(global_matrix);
+		residual = linear_solver.solve_with_pardiso(system_rhs,solution);
+		timer.leave_subsection();
 
-		// timer.enter_subsection("Post Processing");
-
-
-
-		// PostProc::Base_PostProc<dim> postproc(constants,base_exactsolution,&dof_handler, &mapping,nEqn,nBC);
-
-		// const double residual_weak_form = postproc.compute_residual(residual,this->triangulation.n_active_cells());
-
-		// // // now we compute the error due to computation
-		// postproc.error_evaluation_QGauss(solution,this->triangulation.n_active_cells(),
-		// 								 error_per_itr[i],
-		// 								GridTools::maximal_cell_diameter(this->triangulation),convergence_table,
-		// 								residual_weak_form);
+		timer.enter_subsection("Post Processing");
 
 
+		PostProc::Base_PostProc<dim> postproc(constants,base_exactsolution,nEqn,nBC);
+		postproc.reinit(dof_handler);
+
+		const double residual_weak_form = postproc.compute_residual(residual,this->triangulation.n_active_cells(),
+																	mapping,dof_handler);
+
+		// // now we compute the error due to computation
+		postproc.error_evaluation_QGauss(solution,
+										 this->triangulation.n_active_cells(),
+										 error_per_itr[i],
+										GridTools::maximal_cell_diameter(this->triangulation),
+										convergence_table,
+										residual_weak_form,mapping,dof_handler);
 
 		
-		// postproc.print_options(this->triangulation,solution,i,refine_cycles,convergence_table,
-		// 						system_info[0].base_tensorinfo.S_half_inv,this->finite_element);		
+		postproc.print_options(this->triangulation,solution,i,refine_cycles,convergence_table,
+								system_info[0].base_tensorinfo.S_half_inv,dof_handler);		
 		
-		// timer.leave_subsection();
+		timer.leave_subsection();
 
-		// // Grid refinement should be done in the end.
-		// this->refinement_handling(i,refine_cycles);
+		// Grid refinement should be done in the end.
+		this->refinement_handling(i,refine_cycles);
 
 	}
 

@@ -273,7 +273,7 @@ namespace MeshGenerator
 
 	}
 
-		// specialization for the 2D case
+		// specialization for the 1D case
 	template<>
 	void 
 	Base_MeshGenerator<1>::develop_mesh()

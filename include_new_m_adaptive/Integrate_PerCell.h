@@ -6,7 +6,6 @@ Base_Solver<dim>
                         const FEValuesBase<dim> &fe_v,
                         std::vector<double> &J,
                         std::vector<Vector<double>> &source_term_value,
-                        const typename hp::DoFHandler<dim>::active_cell_iterator &cell,
                         std::vector<Vector<double>> &component_to_system,
                         const unsigned int fe_index)
 {
@@ -17,7 +16,7 @@ Base_Solver<dim>
   Assert(J.size() !=0,ExcNotInitialized());
   Assert(source_term_value.size() != 0,ExcNotInitialized());
   Assert(fe_index < nEqn.size(),ExcMessage("Incorrect fe index"));
-  AssertDimension(component_to_system.size(),nEqn[fe_index]);
+  AssertDimension((int)component_to_system.size(),nEqn[fe_index]);
   AssertDimension(cell_matrix.m(),dofs_per_cell[fe_index]);
   AssertDimension(source_term_value.size(),J.size());
   AssertDimension(fe_v.get_fe().dofs_per_cell,dofs_per_cell[fe_index]);
@@ -150,167 +149,175 @@ Base_Solver<dim>
 
 // // odd implementation of the boundary conditions
 
-// template<int dim>
-// void 
-// Base_Solver<dim>
-// ::integrate_boundary_manuel_odd(FullMatrix<double> &cell_matrix,
-//                             Vector<double> &cell_rhs,
-//                             FEValuesBase<dim> &fe_v,
-//                             std::vector<double> &J,
-//                             Vector<double> &component,
-//                             const typename DoFHandler<dim>::active_cell_iterator &cell,
-//                             const unsigned int b_id)
-// {
+template<int dim>
+void 
+Base_Solver<dim>
+::integrate_boundary_manuel_odd(FullMatrix<double> &cell_matrix,
+                            Vector<double> &cell_rhs,
+                            const FEValuesBase<dim> &fe_v,
+                            std::vector<double> &J,
+                            std::vector<Vector<double>> &component_to_system,
+                            const unsigned int b_id,
+                            const unsigned int fe_index)
+{
 
 
-//     Assert(cell_matrix.m() !=0 || cell_matrix.n() !=0 ,ExcNotInitialized());
-//     Assert(cell_matrix.m() == cell_matrix.n() ,ExcMessage("different dof in same cell"));
-//     Assert(cell_rhs.size() != 0,ExcNotInitialized());
-//     Assert(J.size() !=0,ExcNotInitialized());
-    
-//     const FiniteElement<dim> &fe_in_cell = cell->get_fe();
-//     const unsigned int dofs_per_cell = fe_in_cell.dofs_per_cell;
-
-//     Vector<double> boundary_rhs_value;
-
-//     boundary_rhs_value.reinit(nBC[0]);
-
-//     // we use a temporary matrix to determine whether inflow or outflow
-//     Sparse_matrix B_temp;
-
-//     if(b_id == 101 || b_id == 102)
-//     {
-//       integrate_inflow++;
-//       B_temp = system_info[0].system_data.Binflow.matrix;
-//     }
-//     else
-//     {
-//     // B matrix for specular reflection
-//       if (b_id == 50)
-//         B_temp = system_info[0].system_data.B_specular.matrix;
-
-//     // B matrix for full accmmodation
-//       else
-//         B_temp = system_info[0].system_data.B.matrix;
-//     }
-
-// for (unsigned int q = 0 ; q < fe_v.n_quadrature_points ; q++)
-// {
-//   const double jacobian_value = J[q];
-
-//   boundary_rhs_value = 0;                 
+    Assert(cell_matrix.m() !=0 || cell_matrix.n() !=0 ,ExcNotInitialized());
+    Assert(cell_matrix.m() == cell_matrix.n() ,ExcMessage("different dof in same cell"));
+    Assert(cell_rhs.size() != 0,ExcNotInitialized());
+    Assert(J.size() !=0,ExcNotInitialized());
 
 
-//   // check for inflow or outflow
-//   // Incase of inflow provide the inflow rhs
-//   if(b_id == 101 || b_id == 102)
-//     system_info[0].bcrhs_inflow.BCrhs(fe_v.quadrature_point(q),fe_v.normal_vector(q),
-//                           boundary_rhs_value,b_id);
+    Vector<double> boundary_rhs_value;
 
-//   else
-//     system_info[0].bcrhs_wall.BCrhs(fe_v.quadrature_point(q),fe_v.normal_vector(q),
-//                           boundary_rhs_value,b_id);
+    boundary_rhs_value.reinit(nBC[fe_index]);
+
+    // we use a temporary matrix to determine whether inflow or outflow
+    Sparse_matrix B_temp;
+
+    if(b_id == 101 || b_id == 102)
+    {
+      integrate_inflow++;
+      B_temp = system_info[fe_index].system_data.Binflow.matrix;
+    }
+    else
+    {
+    // B matrix for specular reflection
+      if (b_id == 50)
+        B_temp = system_info[fe_index].system_data.B_specular.matrix;
+
+    // B matrix for full accmmodation
+      else
+        B_temp = system_info[fe_index].system_data.B.matrix;
+    }
+
+for (unsigned int q = 0 ; q < fe_v.n_quadrature_points ; q++)
+{
+  const double jacobian_value = J[q];
+
+  boundary_rhs_value = 0;                 
 
 
-//   Sparse_matrix Projector = system_info[0].build_Projector(fe_v.normal_vector(q));
+  // check for inflow or outflow
+  // Incase of inflow provide the inflow rhs
+  if(b_id == 101 || b_id == 102)
+    system_info[fe_index].bcrhs_inflow.BCrhs(fe_v.quadrature_point(q),fe_v.normal_vector(q),
+                          boundary_rhs_value,b_id);
+
+  else
+    system_info[fe_index].bcrhs_wall.BCrhs(fe_v.quadrature_point(q),fe_v.normal_vector(q),
+                          boundary_rhs_value,b_id);         
+
+
+  Sparse_matrix Projector = system_info[fe_index].build_Projector(fe_v.normal_vector(q));
   
 
 
-//   // Simga(as given in PDF) * B * Projector
-//   // Sigma in the PDF = Projector.transpose * Sigma(In the code)
-//   Full_matrix Sigma_B_P =       Projector.transpose()
-//                                * system_info[0].system_data.Sigma.matrix 
-//                                * system_info[0].system_data.B.matrix
-//                                * Projector;
+  // Simga(as given in PDF) * B * Projector
+  // Sigma in the PDF = Projector.transpose * Sigma(In the code)
+  Full_matrix Sigma_B_P =       Projector.transpose()
+                               * system_info[fe_index].system_data.Sigma.matrix 
+                               * Btemp
+                               * Projector;
 
-//   Full_matrix Sigma = Projector.transpose()
-//                       * system_info[0].system_data.Sigma.matrix ;
-
-//   for (unsigned int i = 0 ; i < dofs_per_cell ; i ++)
-//   {
-//     const double shape_value_test = fe_v.shape_value(i,q);
-//     for (unsigned int j = 0 ; j < dofs_per_cell ; j ++)
-//       cell_matrix(i,j) -= shape_value_test
-//                           * Sigma_B_P(component[i],component[j])
-//                           * fe_v.shape_value(j,q) 
-//                           * jacobian_value;                                    
+  Full_matrix Sigma = Projector.transpose()
+                      * system_info[fe_index].system_data.Sigma.matrix ;
 
 
-//     for (unsigned int j = 0 ; j < boundary_rhs_value.size() ; j++)
-//      cell_rhs(i) -= shape_value_test 
-//                     * Sigma(component[i],j) 
-//                     * boundary_rhs_value[j] 
-//                     * jacobian_value;
+  // we first loop over all the components of the test function
+  for (int component_test = 0; component_test < nEqn[fe_index] ; component_test++)
+    // we now loop over all the dof for our component
+    for (unsigned long int index_test = 0 ; index_test < dofs_per_component ; index_test ++)
+    {
+      const unsigned long int dof_test = component_to_system[component_test][index_test];
+      const double shape_value_test = fe_v.shape_value(dof_test,q);
 
-//  }
+      // we now loop over all the components of the solution 
+      for (int component_sol = 0 ; component_sol < nEqn[fe_index] ; component_sol++)
 
+        // a loop over all the indices of the solution vector
+        for (unsigned long int index_sol = 0 ; index_sol < dofs_per_component ; index_sol++)
+        {
+          const unsigned long int dof_sol = component_to_system[component_sol][index_sol];
+          const double shape_value_sol = fe_v.shape_value(dof_sol,q);
+          cell_matrix(dof_test,dof_sol) -= shape_value_test
+                              * Sigma_B_P(component_test,component_sol)
+                              * shape_value_sol 
+                              * jacobian_value;  
 
-// }
-// }
+        }
 
-
-// template<int dim>
-// void 
-// Base_Solver<dim>
-// ::integrate_face_manuel(FullMatrix<double> &u1_v1,
-//                         FullMatrix<double> &u1_v2,
-//                         FullMatrix<double> &u2_v1,
-//                         FullMatrix<double> &u2_v2,
-//                         FEValuesBase<dim> &fe_v,
-//                         FEValuesBase<dim> &fe_v_neighbor,
-//                         std::vector<double> &J,
-//                         Vector<double> &component,
-//                         const typename DoFHandler<dim>::active_cell_iterator &cell)
-// {
-
-//     Assert(u1_v1.m() !=0 || u1_v1.n() !=0 ,ExcNotInitialized());
-//     Assert(u1_v2.m() !=0 || u1_v2.n() !=0 ,ExcNotInitialized());
-//     Assert(u2_v1.m() !=0 || u2_v1.n() !=0 ,ExcNotInitialized());
-//     Assert(u2_v2.m() !=0 || u2_v2.n() !=0 ,ExcNotInitialized());
-//     Assert(J.size() !=0,ExcNotInitialized());
-    
-//     const FiniteElement<dim> &fe_in_cell1 = fe_v.get_fe();
-//     const FiniteElement<dim> &fe_in_cell2 = fe_v_neighbor.get_fe();
-
-//     const unsigned int dofs_per_cell1 = fe_in_cell1.dofs_per_cell;
-//     const unsigned int n_components1 = fe_in_cell1.n_components();
-//     const unsigned int dofs_per_component1 = dofs_per_cell1/n_components1;
-
-//     const unsigned int dofs_per_cell2 = fe_in_cell2.dofs_per_cell;
-//     const unsigned int n_components2 = fe_in_cell2.n_components();
-//     const unsigned int dofs_per_component2 = dofs_per_cell2/n_components2;
+      for (unsigned int j = 0 ; j < boundary_rhs_value.size() ; j++)
+              cell_rhs(dof_test) -= shape_value_test 
+                                      * Sigma(component_test,j) 
+                                    * boundary_rhs_value[j] 
+                                    * jacobian_value;
 
 
-//     //CAUTION: ASSUMPTION OF STRAIGHT EDGES IN THE INTERIOR
-//     Tensor<1,dim> outward_normal = fe_v.normal_vector(0);
-//     Eigen::MatrixXd Am = system_info[0].build_Aminus(outward_normal);
-//     Eigen::MatrixXd Am_neighbor = system_info[0].build_Aminus(-outward_normal);
+    }
 
 
-//     FullMatrix<double> Mass_u1_v1(dofs_per_component1,dofs_per_component1);
-//     FullMatrix<double> Mass_u2_v1(dofs_per_component1,dofs_per_component2);
-//     FullMatrix<double> Mass_u2_v2(dofs_per_component2,dofs_per_component2);
-//     FullMatrix<double> Mass_u1_v2(dofs_per_component2,dofs_per_component1);
 
-//     Mass_u1_v1 = this->Compute_Mass_cell_neighbor(fe_v,
-//                                                    fe_v,dofs_per_component1,
-//                                                   dofs_per_component1,J);
+}
+}
 
-//     Mass_u2_v1 = this->Compute_Mass_cell_neighbor(fe_v,
-//                                                    fe_v_neighbor,dofs_per_component1,
-//                                                   dofs_per_component2,J);
+template<int dim>
+void 
+Base_Solver<dim>
+::integrate_face_manuel(FullMatrix<double> &u1_v1,
+                        FullMatrix<double> &u1_v2,
+                        FullMatrix<double> &u2_v1,
+                        FullMatrix<double> &u2_v2,
+                        const FEValuesBase<dim> &fe_v,
+                        const FEValuesBase<dim> &fe_v_neighbor,
+                        std::vector<double> &J,
+                        const unsigned int fe_index1,
+                        const unsigned int fe_index2)
+{
 
-//     Mass_u2_v2 =  this->Compute_Mass_cell_neighbor(fe_v_neighbor,
-//                                                    fe_v_neighbor,dofs_per_component2,
-//                                                   dofs_per_component2,J);
+    // all of them must be square matrices
+    Assert(u1_v1.m()!=0 && u1_v1.n() != 0,ExcNotInitialized());
+    Assert(u1_v2.m() != 0 && u1_v2.n() != 0,ExcNotInitialized());
+    Assert(u2_v1.m()!=0 && u2_v1.n()!=0,ExcNotInitialized());
+    Assert(u2_v2.m()!=0 && u2_v2.n()!=0,ExcNotInitialized());
+    Assert(J.size() !=0,ExcNotInitialized());
+  
 
-//     Mass_u1_v2 =  this->Compute_Mass_cell_neighbor(fe_v_neighbor,
-//                                                    fe_v,dofs_per_component2,
-//                                                   dofs_per_component1,J);
+    //CAUTION: ASSUMPTION OF STRAIGHT EDGES IN THE INTERIOR
+    Tensor<1,dim> outward_normal = fe_v.normal_vector(0);
+    Eigen::MatrixXd Am = system_info[std::max(fe_index1,fe_index2)].build_Aminus(outward_normal);
+    Eigen::MatrixXd Am_neighbor = system_info[std::max(fe_index1,fe_index2)].build_Aminus(-outward_normal);
+    const unsigned int nEqn_this = nEqn[fe_index1];
+    const unsigned int nEqn_neighbor = nEqn[fe_index2];
 
-//     u1_v1 = matrix_opt.multiply_scalar(0.5,matrix_opt.compute_A_outer_B(Am,Mass_u1_v1));
-//     u2_v1 = matrix_opt.multiply_scalar(-0.5,matrix_opt.compute_A_outer_B(Am,Mass_u2_v1));
-//     u1_v2 = matrix_opt.multiply_scalar(-0.5,matrix_opt.compute_A_outer_B(Am_neighbor,Mass_u1_v2));
-//     u2_v2 = matrix_opt.multiply_scalar(0.5,matrix_opt.compute_A_outer_B(Am_neighbor,Mass_u2_v2));
+    // mass matrices. Assumption is that all the components of the solution vector are being 
+    // solved using the same polynomial degree
 
-// }
+    FullMatrix<double> Mass_u1_v1(dofs_per_component,dofs_per_component);
+    FullMatrix<double> Mass_u2_v1(dofs_per_component,dofs_per_component);
+    FullMatrix<double> Mass_u2_v2(dofs_per_component,dofs_per_component);
+    FullMatrix<double> Mass_u1_v2(dofs_per_component,dofs_per_component);
+
+    Mass_u1_v1 = this->Compute_Mass_cell_neighbor(fe_v,
+                                                   fe_v,dofs_per_component,
+                                                  dofs_per_component,J);
+
+    Mass_u2_v1 = this->Compute_Mass_cell_neighbor(fe_v,
+                                                   fe_v_neighbor,dofs_per_component,
+                                                  dofs_per_component,J);
+
+    Mass_u2_v2 =  this->Compute_Mass_cell_neighbor(fe_v_neighbor,
+                                                   fe_v_neighbor,dofs_per_component,
+                                                  dofs_per_component,J);
+
+    Mass_u1_v2 =  this->Compute_Mass_cell_neighbor(fe_v_neighbor,
+                                                   fe_v,dofs_per_component,
+                                                  dofs_per_component,J);
+
+    // the number of rows always comes from the test function and the number of columns comes from the solution vector
+    u1_v1 = matrix_opt.multiply_scalar(0.5,matrix_opt.compute_A_outer_B_limitA(Am,Mass_u1_v1,nEqn_this,nEqn_this));
+    u2_v1 = matrix_opt.multiply_scalar(-0.5,matrix_opt.compute_A_outer_B_limitA(Am,Mass_u2_v1,nEqn_this,nEqn_neighbor));
+    u1_v2 = matrix_opt.multiply_scalar(-0.5,matrix_opt.compute_A_outer_B_limitA(Am_neighbor,Mass_u1_v2,nEqn_neighbor,nEqn_this));
+    u2_v2 = matrix_opt.multiply_scalar(0.5,matrix_opt.compute_A_outer_B_limitA(Am_neighbor,Mass_u2_v2,nEqn_neighbor,nEqn_neighbor));
+
+}

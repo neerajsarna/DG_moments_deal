@@ -117,18 +117,17 @@ namespace FEM_Solver
                                         const FEValuesBase<dim> &fe_v,
                                         std::vector<double> &J,
                                         std::vector<Vector<double>> &source_term_value,
-                                        const typename hp::DoFHandler<dim>::active_cell_iterator &cell,
                                         std::vector<Vector<double>> &component_to_system,
                                         const unsigned int fe_index);
 
         	// // integrate the boundary manuelly using odd boundary implementation
-        	// void integrate_boundary_manuel_odd(FullMatrix<double> &cell_matrix,
-        	// 								Vector<double> &cell_rhs,
-        	// 								FEValuesBase<dim> &fe_v,
-        	// 								std::vector<double> &J,
-        	// 								Vector<double> &component,
-        	// 								const typename DoFHandler<dim>::active_cell_iterator &cell,
-         //                                    const unsigned int b_id);
+        	void integrate_boundary_manuel_odd(FullMatrix<double> &cell_matrix,
+                                               Vector<double> &cell_rhs,
+                                                const FEValuesBase<dim> &fe_v,
+                                                std::vector<double> &J,
+                                                std::vector<Vector<double>> &component_to_system,
+                                                const unsigned int b_id,
+                                                const unsigned int fe_index);
         	
         	// // integrate the boundary using characteristic variables
         	// void integrate_boundary_manuel_char(FullMatrix<double> &cell_matrix,
@@ -139,15 +138,15 @@ namespace FEM_Solver
         	// 								const typename DoFHandler<dim>::active_cell_iterator &cell,
          //                                    const unsigned int b_id);
 
-        	// void integrate_face_manuel(FullMatrix<double> &u1_v1,
-         //                               FullMatrix<double> &u1_v2,
-         //                               FullMatrix<double> &u2_v1,
-         //                               FullMatrix<double> &u2_v2,
-        	// 							FEValuesBase<dim> &fe_v,
-        	// 							FEValuesBase<dim> &fe_v_neighbor,
-        	// 							std::vector<double> &J,
-        	// 							Vector<double> &component,
-        	// 							const typename DoFHandler<dim>::active_cell_iterator &cell);
+        	void integrate_face_manuel(FullMatrix<double> &u1_v1,
+                        FullMatrix<double> &u1_v2,
+                        FullMatrix<double> &u2_v1,
+                        FullMatrix<double> &u2_v2,
+                        const FEValuesBase<dim> &fe_v,
+                        const FEValuesBase<dim> &fe_v_neighbor,
+                        std::vector<double> &J,
+                        const unsigned int fe_index1,
+                        const unsigned int fe_index2);
 
             // Data for post proc
             ConvergenceTable convergence_table;
@@ -181,7 +180,7 @@ namespace FEM_Solver
 	ngp_face(constants.p + 1)
 	{
         // we have not implemented any other system till now
-        AssertDimension(nEqn.size(),4);
+        AssertDimension(nEqn.size(),1);
 
         // we construct the block structure for the finite element object and develop the finite element objects 
         // which will be needed for the present problem

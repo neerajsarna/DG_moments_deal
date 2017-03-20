@@ -77,13 +77,14 @@ Base_Solver<dim>
   // we also initialize the values of the shape functions on the first cell. 
   // the values remain the same even for all the other cells.
   this->Compute_Shape_Value(mapping,ngp,cell);
+  typename DoFHandler<dim>::active_cell_iterator cell_debug = dof_handler.begin_active();
 
   switch(constants.bc_type)
   {
     case odd:
     {
       MeshWorker::loop<dim, dim, MeshWorker::DoFInfo<dim>, MeshWorker::IntegrationInfoBox<dim> >
-                          (cell, endc,
+                          (cell, cell_debug++,
                            dof_info, info_box,
                            std_cxx11::bind(&Base_Solver<dim>::integrate_cell_term,
                             this,
@@ -205,6 +206,15 @@ template<int dim>
 	// 	 }
 		
 	// }
+
+  std::cout << "Integrating cell " << std::endl;
+
+  std::string filename;
+
+  filename = "cell_matrix_meshworker";
+
+
+  matrix_opt.print_dealii_full(cell_matrix,filename);
 }
 
 template<int dim> 
@@ -304,6 +314,15 @@ for (unsigned int q = 0 ; q < fe_v.n_quadrature_points ; q++)
 
 
 }
+
+  std::cout << "Integrating boundary term " << std::endl;
+    std::string filename;
+
+  filename = "boundary_matrix_meshworker_" + std::to_string(b_id);
+
+
+  matrix_opt.print_dealii_full(cell_matrix,filename);
+
 }
 
 template<int dim> 

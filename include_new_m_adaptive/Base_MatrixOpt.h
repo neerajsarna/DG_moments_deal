@@ -57,6 +57,14 @@ namespace MatrixOpt
 			FullMatrix<double> compute_A_outer_B(Full_matrix &A,FullMatrix<double> &B);
 			FullMatrix<double> compute_A_outer_B(Sparse_matrix &A,FullMatrix<double> &B);
 
+			// in the following functions we compute the outer product of A and B but with limits
+			// for the maximum columns for A 
+			FullMatrix<double> compute_A_outer_B_limitA(Full_matrix &A,FullMatrix<double> &B,
+														const int row_max_A,const int col_max_A);
+
+			FullMatrix<double> compute_A_outer_B_limitA(Sparse_matrix &A,FullMatrix<double> &B,
+														const int row_max_A,const int col_max_A);
+
 
 			// prints a full matrix
 			void print_eigen_mat(Full_matrix &full_matrix,
@@ -480,6 +488,32 @@ namespace MatrixOpt
 	  }
 
 
+	  // In the following function we compute the outer product of A with B but with given limits for A 
+	  // I.e, Starting from the index 0,0 we would like to extract the part of A which reaches 
+	  // row_max_A-1,col_max_A-1. And then take the dot product of this matrix slice of A with B.
+	  FullMatrix<double> Base_MatrixOpt::compute_A_outer_B_limitA(Full_matrix &A,FullMatrix<double> &B,
+	  																const int row_max_A,const int col_max_A)
+	  {
+	  	
+
+	  	Assert(row_max_A <= A.rows() && col_max_A <= A.cols(),ExcMessage("incorrect entry for row max A and col max A"));
+
+	  	const unsigned int rows_B = B.m();
+	  	const unsigned int cols_B = B.n();
+	  	FullMatrix<double> result(row_max_A * rows_B,col_max_A * cols_B);
+
+	  	AssertDimension(result.m(),row_max_A * rows_B);
+	  	AssertDimension(result.n(),col_max_A * cols_B);
+
+
+	  	for (int i = 0 ; i < row_max_A ; i ++)
+	  		for (int j = 0 ; j < col_max_A ; j++)
+	  			result.fill(multiply_scalar(A(i,j),B),i * rows_B, j * cols_B);
+	  		
+
+	  	return(result);
+	  }
+
 	  FullMatrix<double> Base_MatrixOpt::compute_A_outer_B(Sparse_matrix &A,FullMatrix<double> &B)
 	  {
 
@@ -503,6 +537,36 @@ namespace MatrixOpt
 	  	return(result);
 	  }
 
+	  FullMatrix<double> Base_MatrixOpt::compute_A_outer_B_limitA(Sparse_matrix &A,FullMatrix<double> &B,
+	  													   const int row_max_A,const int col_max_A)
+	  {
+
+	  	Assert(row_max_A <= A.rows() && col_max_A <= A.cols(),ExcMessage("incorrect entry for row max A and col max A"));
+
+	  	const unsigned int rows_B = B.m();
+	  	const unsigned int cols_B = B.n();
+	  	FullMatrix<double> result(row_max_A * rows_B,col_max_A * cols_B);
+
+
+	  	AssertDimension(result.m(),row_max_A * rows_B);
+	  	AssertDimension(result.n(),col_max_A * cols_B);
+
+	  	for (int i = 0 ; i < row_max_A; i++)
+          	for (Sparse_matrix::InnerIterator j(A,i); j ; ++j)
+          	{
+          		// if the present column is equal to maximum allowable column number then move to the next row
+          		if (j == col_max_A)
+          			break;
+
+	  			for (unsigned int k = 0 ; k < rows_B ; k ++)
+          			for (unsigned int l = 0 ; l < cols_B ; l ++)
+	  					result(j.row() * rows_B + k,j.col() * cols_B + l) = j.value() * B(k,l);
+          	}
+	  	
+
+
+	  	return(result);
+	  }
 
 	  void Base_MatrixOpt::COO_to_CSR(const TrilinosWrappers::SparseMatrix &matrix, MKL_INT *IA,MKL_INT *JA,double *V)
 	  {

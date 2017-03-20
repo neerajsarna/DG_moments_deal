@@ -1,7 +1,7 @@
 using namespace dealii;
 	TEST(Solver,HandlesSolver)
 	{
-		const unsigned int dim = 1;
+		const unsigned int dim = 2;
 
 		std::string folder_name = "../system_matrices/";
 		Constants::Base_Constants constants(input_file);
@@ -40,22 +40,50 @@ using namespace dealii;
 				base_solver.run();
 
 
-				Assert(constants.constants_num.problem_type == heat_conduction || constants.constants_num.problem_type == inflow_outflow,ExcNotImplemented());
-				Assert(constants.constants_num.mesh_type == square_domain || constants.constants_num.mesh_type == NACA5012,ExcNotImplemented());
-				AssertDimension(constants.constants_sys.Ntensors[0],6);
-				AssertDimension(constants.constants_num.part_x,50);
-				AssertDimension(constants.constants_num.part_y,50);
+				Assert(constants.constants_num.problem_type == heat_conduction || constants.constants_num.problem_type == inflow_outflow ||
+					  constants.constants_num.problem_type == lid_driven_cavity,ExcNotImplemented());
+				Assert(constants.constants_num.mesh_type == square_domain || constants.constants_num.mesh_type == NACA5012 || constants.constants_num.mesh_type == square_circular_cavity,ExcNotImplemented());
 				AssertDimension(constants.constants_num.refine_cycles,1);
 				AssertDimension(constants.constants_num.initial_refinement,1);
+
+				// value only stored for these number of cells
+				if (constants.constants_num.mesh_type == NACA5012)
+					AssertDimension(base_solver.triangulation.n_active_cells(),53);
+
+				if (constants.constants_num.mesh_type == square_domain && constants.constants_num.problem_type != inflow_outflow)
+					AssertDimension(base_solver.triangulation.n_active_cells(),61);
+
+				if (constants.constants_num.mesh_type == square_circular_cavity && constants.constants_num.problem_type != inflow_outflow)
+					AssertDimension(base_solver.triangulation.n_active_cells(),476);
+
+
+				if (constants.constants_num.mesh_type == square_domain && constants.constants_num.problem_type != inflow_outflow)
+				{
+					AssertDimension(constants.constants_num.part_x,10);
+					AssertDimension(constants.constants_num.part_y,10);
+				}
+
+				if (dim == 2)
+					AssertDimension(constants.constants_sys.Ntensors[0],6);
 
 				// for the heat conduction problem, this is the l2 norm of the temperature
 				double error_manuel;
 
-				if (constants.constants_num.mesh_type == square_domain)
-					error_manuel =  1.8584504140524076;
+				if (constants.constants_num.mesh_type == square_domain && constants.constants_num.problem_type == heat_conduction)
+					error_manuel =  1.8584849033516051;
+
+				if (constants.constants_num.mesh_type == square_domain && constants.constants_num.problem_type == lid_driven_cavity)
+					error_manuel =  1.2248747382201992;
+
+				if (constants.constants_num.mesh_type == square_domain && constants.constants_num.problem_type == inflow_outflow)
+					error_manuel =  1.8776535235692213;
+
+				if (constants.constants_num.mesh_type == square_circular_cavity && constants.constants_num.problem_type == inflow_outflow)
+					error_manuel =  1.7575244416510396;
+
 
 				if (constants.constants_num.mesh_type == NACA5012)
-					error_manuel =  1.1620708876602619;
+					error_manuel =  1.1675197098722727;
 
 
 				EXPECT_NEAR(base_solver.error_per_itr[0],error_manuel,1e-10);		

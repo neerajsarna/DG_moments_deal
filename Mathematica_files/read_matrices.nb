@@ -10,10 +10,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       158,          7]
-NotebookDataLength[     12005,        320]
-NotebookOptionsPosition[     11301,        290]
-NotebookOutlinePosition[     11660,        306]
-CellTagsIndexPosition[     11617,        303]
+NotebookDataLength[     15014,        408]
+NotebookOptionsPosition[     13769,        359]
+NotebookOutlinePosition[     14288,        381]
+CellTagsIndexPosition[     14201,        376]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
@@ -127,7 +127,7 @@ Cell[BoxData[
  CellChangeTimes->{{3.6820685319603024`*^9, 3.682068532982291*^9}, {
   3.6820686319756403`*^9, 3.682068641582653*^9}, {3.682068747332656*^9, 
   3.682068750337764*^9}}]
-}, Open  ]],
+}, Closed]],
 
 Cell[CellGroupData[{
 
@@ -285,6 +285,75 @@ Cell[BoxData[
    3.698420569806849*^9, {3.698589919697513*^9, 3.698589944959711*^9}, 
    3.698592367126066*^9, {3.698592398927598*^9, 3.698592433993697*^9}}]
 }, Open  ]]
+}, Closed]],
+
+Cell[CellGroupData[{
+
+Cell["Manuel and Meshworker assembly comparision", "Subsection",
+ CellChangeTimes->{{3.699008244161455*^9, 3.699008250705886*^9}}],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{
+  "directoryname", "=", 
+   "\"\</Users/neerajsarna/sciebo/DG_moments_deal/Tests/build/printed_\
+matrices\>\""}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"filename", " ", "=", " ", "\"\<global_matrix_meshworker\>\""}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"MatMeshworker", " ", "=", " ", 
+    RowBox[{"ReadMatrixSparse", "[", 
+     RowBox[{"directoryname", ",", "filename"}], "]"}]}], ";"}], 
+  "\[IndentingNewLine]"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"filename", " ", "=", " ", "\"\<global_matrix_manuel\>\""}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"MatManuel", " ", "=", " ", 
+   RowBox[{"ReadMatrixSparse", "[", 
+    RowBox[{"directoryname", ",", "filename"}], "]"}]}], ";"}]}], "Input",
+ CellChangeTimes->{{3.6990082656650352`*^9, 3.6990083376429367`*^9}, {
+  3.6990087392398233`*^9, 3.69900882305573*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"Norm", "[", 
+  RowBox[{"MatMeshworker", "-", "MatManuel"}], "]"}]], "Input",
+ CellChangeTimes->{{3.699008291662341*^9, 3.699008308018073*^9}, {
+  3.69900910307631*^9, 3.699009149492161*^9}, {3.699009225528528*^9, 
+  3.6990092265584173`*^9}, {3.6990104397793007`*^9, 3.699010442195324*^9}}],
+
+Cell[BoxData["0.`"], "Output",
+ CellChangeTimes->{{3.699008297406464*^9, 3.699008308382646*^9}, 
+   3.699008342018478*^9, {3.699009100488159*^9, 3.699009150896798*^9}, 
+   3.69900922730919*^9, 3.6990104600210648`*^9, 3.699010863442532*^9, 
+   3.699011222280192*^9, 3.699011347910797*^9, 3.699011605137846*^9, 
+   3.6990117694177513`*^9, 3.699011916237603*^9}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"?", "MatrixPlot"}]], "Input",
+ CellChangeTimes->{{3.699009127065897*^9, 3.699009129161264*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  StyleBox["\<\"\\!\\(\\*RowBox[{\\\"MatrixPlot\\\", \\\"[\\\", \
+StyleBox[\\\"m\\\", \\\"TI\\\"], \\\"]\\\"}]\\) generates a plot that gives a \
+visual representation of the values of elements in a matrix.\"\>", "MSG"], 
+  "\[NonBreakingSpace]", 
+  ButtonBox[
+   StyleBox["\[RightSkeleton]", "SR"],
+   Active->True,
+   BaseStyle->"Link",
+   ButtonData->"paclet:ref/MatrixPlot"]}]], "Print", "PrintUsage",
+ CellChangeTimes->{3.6990091296288137`*^9},
+ CellTags->"Info603699012729-9779227"]
+}, Open  ]]
 }, Open  ]]
 }, Open  ]]
 },
@@ -298,10 +367,16 @@ StyleDefinitions->"Default.nb"
 
 (* Internal cache information *)
 (*CellTagsOutline
-CellTagsIndex->{}
+CellTagsIndex->{
+ "Info603699012729-9779227"->{
+  Cell[13217, 342, 512, 12, 43, "Print",
+   CellTags->"Info603699012729-9779227"]}
+ }
 *)
 (*CellTagsIndex
-CellTagsIndex->{}
+CellTagsIndex->{
+ {"Info603699012729-9779227", 14094, 370}
+ }
 *)
 (*NotebookFileOutline
 Notebook[{
@@ -310,15 +385,28 @@ Cell[CellGroupData[{
 Cell[772, 28, 96, 1, 64, "Section"],
 Cell[871, 31, 3693, 81, 390, "Input"],
 Cell[4567, 114, 572, 14, 75, "Input"]
-}, Open  ]],
+}, Closed]],
 Cell[CellGroupData[{
-Cell[5176, 133, 99, 1, 64, "Section"],
+Cell[5176, 133, 99, 1, 50, "Section"],
 Cell[CellGroupData[{
 Cell[5300, 138, 166, 2, 44, "Subsection"],
 Cell[5469, 142, 3705, 93, 600, "Input"],
 Cell[CellGroupData[{
 Cell[9199, 239, 296, 6, 32, "Input"],
-Cell[9498, 247, 1763, 38, 412, "Output"]
+Cell[9498, 247, 1763, 38, 378, "Output"]
+}, Open  ]]
+}, Closed]],
+Cell[CellGroupData[{
+Cell[11310, 291, 130, 1, 36, "Subsection"],
+Cell[11443, 294, 915, 23, 159, "Input"],
+Cell[CellGroupData[{
+Cell[12383, 321, 313, 5, 32, "Input"],
+Cell[12699, 328, 359, 5, 66, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[13095, 338, 119, 2, 32, "Input"],
+Cell[13217, 342, 512, 12, 43, "Print",
+ CellTags->"Info603699012729-9779227"]
 }, Open  ]]
 }, Open  ]]
 }, Open  ]]

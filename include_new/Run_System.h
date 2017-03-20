@@ -68,6 +68,7 @@ Base_Solver<dim>::run()
 			}
 		}
 		timer.leave_subsection();
+
 		
 		// we initialize the object which will solve our system
 		// We do int the following way so as to keep the solver independent of all the other implementations.

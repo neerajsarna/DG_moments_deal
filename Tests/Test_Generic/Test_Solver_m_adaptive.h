@@ -2,7 +2,7 @@ using namespace dealii;
 
 TEST(MAdaptiveSolver,HandlesMAdaptiveSolver)
 {
-		const unsigned int dim = 1;
+		const unsigned int dim = 2;
 
 		std::string folder_name = "../system_matrices/";
 		Constants::Base_Constants constants(input_file);
@@ -23,62 +23,119 @@ TEST(MAdaptiveSolver,HandlesMAdaptiveSolver)
 			System[i].initialize_system();
 		
 
-						// the exact solution can only be created for one of the systems
-		ExactSolution::ExactSolution_Dummy<dim>  exactsolution_dummy(constants.constants_num,System[0].base_tensorinfo.S_half,
-			constants.constants_sys.nEqn[0],constants.constants_sys.Ntensors[0]);
+		// the tests have not been implemented for more than one system
+		AssertDimension(constants.constants_sys.total_systems,1);
+		Assert(constants.constants_num.problem_type != periodic,ExcNotImplemented());
 
-		FEM_Solver::Base_Solver<dim> base_solver("grid",
-			constants.constants_num,
-			System,
-			&exactsolution_dummy,
-			constants.constants_sys.nEqn,
-			constants.constants_sys.nBC);
-
-		base_solver.print_mesh_info();
-		fflush(stdout);
-		base_solver.distribute_dof_allocate_matrix();
-
-
-		for (unsigned long int i = 0 ; i < base_solver.nEqn.size(); i++)
-			std::cout << "System: " << i << ", Dofs: " << base_solver.dofs_per_cell[i] << std::endl;
-
-
-		typename hp::DoFHandler<dim>::active_cell_iterator cell = base_solver.dof_handler.begin_active(),
-															endc = base_solver.dof_handler.end();
-
-
-		for (; cell != endc ; cell++)
-			std::cout << "center " << cell->center() << " active fe index" << cell->active_fe_index() << std::endl;
-
-		int count = 0;
-
-		// loop over a particular component
-		for(int i = 0 ; i < base_solver.nEqn[0] ; i++)
-
-		// loop over all the dofs of that particular component
-			for (unsigned int j = 0 ; j < base_solver.dofs_per_component ; j++)
+		if(constants.constants_num.problem_type != periodic)
+		{
+			if (dim == 2)
 			{
-				// compute the dof to which the it corresponds to 
-				
-				EXPECT_EQ(count,base_solver.finite_element[0].component_to_system_index(i,j));
-				count ++;
+
+				// the exact solution can only be created for one of the systems
+				ExactSolution::ExactSolution_Dummy<dim>  exactsolution_dummy(constants.constants_num,System[0].base_tensorinfo.S_half,
+																			 constants.constants_sys.nEqn[0],constants.constants_sys.Ntensors[0]);
+
+				FEM_Solver::Base_Solver<dim> base_solver("grid",
+											 	 constants.constants_num,
+											 	 System,
+											 	 &exactsolution_dummy,
+											 	 constants.constants_sys.nEqn,
+											 	 constants.constants_sys.nBC);
+
+			
+				base_solver.run();
+
+
+				Assert(constants.constants_num.problem_type == heat_conduction || constants.constants_num.problem_type == inflow_outflow,ExcNotImplemented());
+				Assert(constants.constants_num.mesh_type == square_domain || constants.constants_num.mesh_type == NACA5012,ExcNotImplemented());
+				AssertDimension(constants.constants_sys.Ntensors[0],6);
+				AssertDimension(constants.constants_num.part_x,50);
+				AssertDimension(constants.constants_num.part_y,50);
+				AssertDimension(constants.constants_num.refine_cycles,1);
+				AssertDimension(constants.constants_num.initial_refinement,1);
+
+				// value only stored for these number of cells
+				if (constants.constants_num.mesh_type == NACA5012)
+					AssertDimension(base_solver.triangulation.n_active_cells(),53);
+
+				// for the heat conduction problem, this is the l2 norm of the temperature
+				double error_manuel;
+
+				if (constants.constants_num.mesh_type == square_domain)
+					error_manuel =  1.8584504140524076;
+
+				if (constants.constants_num.mesh_type == NACA5012)
+					error_manuel =  1.1675197098722727;
+
+
+				EXPECT_NEAR(base_solver.error_per_itr[0],error_manuel,1e-10);		
+
 			}
 
-		count = 0;
-		
-		// loop over a particular component
-		for(int i = 0 ; i < base_solver.nEqn[1] ; i++)
-
-		// loop over all the dofs of that particular component
-			for (unsigned int j = 0 ; j < base_solver.dofs_per_component ; j++)
+			// incase of the 1D problem we have the exact solution since we solve the poisson heat conduction problem
+			if (dim == 1)
 			{
-				// compute the dof to which the it corresponds to 
-				
-				EXPECT_EQ(count,base_solver.finite_element[1].component_to_system_index(i,j));
-				count ++;
+
+				ExactSolution::PoissonHeat<dim>  PoissonHeat(constants.constants_num,System[0].base_tensorinfo.S_half,
+													constants.constants_sys.nEqn[0],constants.constants_sys.Ntensors[0]);
+
+				FEM_Solver::Base_Solver<dim> base_solver("grid",
+											 	 constants.constants_num,
+											 	 System,
+											 	 &PoissonHeat,
+											 	 constants.constants_sys.nEqn,
+											 	 constants.constants_sys.nBC);
+
+			
+				// the number of cells which should be initially present
+				base_solver.run();
+
+				fflush(stdout);
+
+				AssertDimension(constants.constants_num.refine_cycles,3);
+				AssertDimension(constants.constants_num.initial_refinement,1);
+				AssertDimension(constants.constants_sys.total_systems,1);
+				std::vector<double> error_manuel(constants.constants_num.refine_cycles);
+
+				if(constants.constants_sys.Ntensors[0] == 6)
+				{
+					error_manuel[0] = 4.5432e-03;
+					error_manuel[1]	= 1.1759e-03; 
+					error_manuel[2] = 2.4787e-04;
+				}
+
+				if (constants.constants_sys.Ntensors[0] == 8)
+				{
+					error_manuel[0] = 7.2349e-03;
+					error_manuel[1]	= 2.1590e-03; 
+					error_manuel[2] = 5.0865e-04;		
+				}
+
+				if (constants.constants_sys.Ntensors[0] == 9)
+				{
+					error_manuel[0] = 2.8423e-03;
+					error_manuel[1]	= 6.8201e-04 ; 
+					error_manuel[2] = 1.4148e-04 ;		
+				}
+
+
+				if (constants.constants_sys.Ntensors[0] == 11)
+				{
+					error_manuel[0] = 4.0009e-03;
+					error_manuel[1]	= 1.0194e-03; 
+					error_manuel[2] = 2.1659e-04;		
+				}
+
+				for (int i = 0 ; i < constants.constants_num.refine_cycles ; i++)
+				{
+					std::cout << "Error difference " << fabs(base_solver.error_per_itr[i] - error_manuel[i]) << std::endl;
+					EXPECT_NEAR(base_solver.error_per_itr[i],error_manuel[i],1e-5);		
+				}	
 			}
 
-		base_solver.assemble_system_odd();
 
+
+		}
 
 }

@@ -533,7 +533,7 @@ namespace Constants
 
 			prm.declare_entry("initial_refinement",
 				"1",
-				Patterns::Integer(1,7),
+				Patterns::Integer(1,8),
 				"initial level of refinement");
 
 			prm.declare_entry("inner_radius",
@@ -595,7 +595,7 @@ namespace Constants
 		prm_system_info.leave_subsection();
 
 
-			AssertDimension(constants_sys.total_systems,4);
+			AssertDimension(constants_sys.total_systems,1);
 
 
 			constants_sys.nEqn.resize(constants_sys.total_systems);
@@ -800,8 +800,12 @@ namespace Constants
 		prm.leave_subsection();
 
 
-		constants_num.main_output_dir = "output_N" + std::to_string(constants_sys.Ntensors[0]) 
-														+ "_" + constants_num.main_output_dir;
+		std::string temp = "output";
+
+		for (unsigned int sys = 0 ; sys < constants_sys.total_systems ; sys++)
+			temp +=  "_N" +  std::to_string(constants_sys.Ntensors[sys]);
+
+		constants_num.main_output_dir = temp + "_" + constants_num.main_output_dir;
 
 		Assert(entered,ExcMessage("Did not read the output directory name"));
 	}

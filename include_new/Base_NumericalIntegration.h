@@ -10,13 +10,19 @@ namespace NumericalIntegration
 				Base_NumericalIntegration();
 				Full_matrix shape_values;
 
-				// gauss points are the number of gauss points in a particular direction
+				// values of the shape function at the face of the reference cell
+				Full_matrix shape_values_face;
+
 				void Compute_Shape_Value(const MappingQ<dim> &mapping,
 										 const unsigned int gauss_points,
 										 typename DoFHandler<dim>::active_cell_iterator &cell);
 
 
 				FullMatrix<double>  Compute_Mass_shape_value(const FEValuesBase<dim> &fe_v,
+														const unsigned int dofs_per_component,
+														const std::vector<double> &J);
+
+				FullMatrix<double>  Compute_Mass_shape_value_face(const FEValuesBase<dim> &fe_v,
 														const unsigned int dofs_per_component,
 														const std::vector<double> &J);
 
@@ -71,6 +77,8 @@ namespace NumericalIntegration
 			}
 	}
 	
+
+
 	template<int dim>
 	std::vector<FullMatrix<double>>
 	Base_NumericalIntegration<dim>::
@@ -81,11 +89,10 @@ namespace NumericalIntegration
 
 		const unsigned int total_ngp = J.size();
 		const unsigned int num_dof_per_comp = fe_v.get_fe().dofs_per_cell/fe_v.get_fe().n_components();				
-		std::vector<FullMatrix<double>> M;
+		std::vector<FullMatrix<double>> M(dim,FullMatrix<double>(dofs_per_component,dofs_per_component));
 
 		for (int space = 0 ;space < dim ; space++)
 		{
-			M.push_back(FullMatrix<double>(dofs_per_component,dofs_per_component));
 			Assert(M[space].m() != 0,ExcNotInitialized());
 			Assert(M[space].n() != 0,ExcNotInitialized());
 			M[space] = 0;
@@ -147,6 +154,35 @@ namespace NumericalIntegration
 		return(M);
 
 	}
+
+
+	// now we compute the mass matrix corresponding to Integrate phi * phi dx
+	template<int dim>
+	FullMatrix<double>
+	Base_NumericalIntegration<dim>::
+	Compute_Mass_shape_value_face(const FEValuesBase<dim> &fe_v,
+							 const unsigned int dofs_per_component,
+							  const std::vector<double> &J)
+	{
+
+		const unsigned int total_ngp = J.size();
+		FullMatrix<double> M(dofs_per_component,dofs_per_component);
+		M = 0;
+
+  		for (unsigned int q = 0 ; q < total_ngp ; q++)
+  		{
+  		const double jacobian_value = J[q];
+			for (unsigned int i = 0 ; i < dofs_per_component ; i ++)
+				for (unsigned int j = 0 ; j < dofs_per_component ; j++)	
+						M(i,j) += fe_v.shape_value(i,q) * fe_v.shape_value(j,q) * jacobian_value;
+  		}
+
+
+
+		return(M);
+
+	}
+
 
 	// the following function computes the matrix M = basis of fe_v1 * basis of fe_v2 dx
 	template<int dim>

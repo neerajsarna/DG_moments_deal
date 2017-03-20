@@ -77,6 +77,7 @@ Base_Solver<dim>
   // we also initialize the values of the shape functions on the first cell. 
   // the values remain the same even for all the other cells.
   this->Compute_Shape_Value(mapping,ngp,cell);
+  typename DoFHandler<dim>::active_cell_iterator cell_debug = dof_handler.begin_active();
 
   switch(constants.bc_type)
   {
@@ -205,6 +206,8 @@ template<int dim>
 	// 	 }
 		
 	// }
+
+
 }
 
 template<int dim> 
@@ -304,6 +307,7 @@ for (unsigned int q = 0 ; q < fe_v.n_quadrature_points ; q++)
 
 
 }
+
 }
 
 template<int dim> 

@@ -82,7 +82,7 @@ Base_Solver<1>::allocate_fe_index()
 	typename hp::DoFHandler<1>::active_cell_iterator cell = dof_handler.begin_active(), endc = dof_handler.end();
 
 	// fraction of the half of the domain which will receive lower order moments
-	const double domain_adapt = 0.8;
+	const double domain_adapt = 2.0;
 
 	// has not been implemented for more than two systems
 	AssertThrow(nEqn.size() == 2 || nEqn.size() == 1 || nEqn.size() == 4,ExcNotImplemented());
@@ -102,20 +102,20 @@ Base_Solver<1>::allocate_fe_index()
 			for (; cell != endc ; cell++)
 			{
 				// // higher order moment theory near the boundary
-				// if (cell->center()(0) > domain_adapt * 0.5 || cell->center()(0) < -domain_adapt * 0.5)
-				// 	cell->set_active_fe_index(1);
+				if (cell->center()(0) >= domain_adapt * 0.5 || cell->center()(0) <= -domain_adapt * 0.5)
+					cell->set_active_fe_index(1);
 
-				// // lower order moment theory towards the interior
-				// if (cell->center()(0) >= -domain_adapt * 0.5 && cell->center()(0) <= domain_adapt * 0.5)					
-				// 	cell->set_active_fe_index(0);		
+				// lower order moment theory towards the interior
+				if (cell->center()(0) > -domain_adapt * 0.5 && cell->center()(0) < domain_adapt * 0.5)					
+					cell->set_active_fe_index(0);		
 
 				// we now consider two cells. one of them gets
-				Assert(cell->index() <= 1 ,ExcNotImplemented());
-				if (cell->index() == 0 )
-					cell->set_active_fe_index(0);
+				// Assert(cell->index() <= 1 ,ExcNotImplemented());
+				// if (cell->index() == 0 )
+				// 	cell->set_active_fe_index(0);
 
-				if (cell->index() == 1)
-					cell->set_active_fe_index(1);
+				// if (cell->index() == 1)
+				// 	cell->set_active_fe_index(1);
 
 			}
 

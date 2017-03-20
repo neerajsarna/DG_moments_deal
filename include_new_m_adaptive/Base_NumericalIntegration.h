@@ -177,14 +177,12 @@ namespace NumericalIntegration
 							   const std::vector<double> &J)
 	{
 		const unsigned int total_ngp = J.size();
-		const unsigned int num_dof_per_comp1 = fe_v1.get_fe().dofs_per_cell/fe_v1.get_fe().n_components();				
-		const unsigned int num_dof_per_comp2 = fe_v2.get_fe().dofs_per_cell/fe_v2.get_fe().n_components();				
+
+		// we assume that all the cells have the same polynomial degree
+		AssertDimension(dofs_per_component1,dofs_per_component2);
 
 		FullMatrix<double> M(dofs_per_component1,dofs_per_component2);
 		M = 0;
-
-  		AssertDimension(num_dof_per_comp1,dofs_per_component1);
-  		AssertDimension(num_dof_per_comp2,dofs_per_component2);
 
   		for (unsigned int q = 0 ; q < total_ngp ; q++)
   		{

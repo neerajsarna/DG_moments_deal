@@ -69,14 +69,6 @@ Base_Solver<dim>
     
   }
 
-  // std::string filename;
-  // std::string center_point = boost::lexical_cast<std::string>(cell->center()(0));
-
-
-  // filename = "cell_matrix_original_" + center_point + "_" + std::to_string(nEqn[0]);
-
-
-  // matrix_opt.print_dealii_full(cell_matrix,filename);
 
 
 }
@@ -104,6 +96,7 @@ Base_Solver<dim>
    const unsigned int dofs_per_cell = fe_in_cell.dofs_per_cell;
 
      Vector<double> boundary_rhs_value;
+
 
       boundary_rhs_value.reinit(nBC[0]);
 
@@ -169,14 +162,27 @@ Base_Solver<dim>
                             const unsigned int b_id)
 {
 
-
     Assert(cell_matrix.m() !=0 || cell_matrix.n() !=0 ,ExcNotInitialized());
     Assert(cell_matrix.m() == cell_matrix.n() ,ExcMessage("different dof in same cell"));
     Assert(cell_rhs.size() != 0,ExcNotInitialized());
     Assert(J.size() !=0,ExcNotInitialized());
+
+
     
     const FiniteElement<dim> &fe_in_cell = cell->get_fe();
     const unsigned int dofs_per_cell = fe_in_cell.dofs_per_cell;
+
+    // number of degrees of freedom per component
+    const unsigned int indices_per_cell = dofs_per_cell/nEqn[0];
+
+
+    std::vector<std::vector<double>> component_to_system(nEqn[0],std::vector<double> (indices_per_cell));
+
+
+    for (int i = 0 ; i < nEqn[0] ; i ++)
+      for (unsigned int j = 0 ; j < indices_per_cell ; j ++)
+        component_to_system[i][j] = fe_in_cell.component_to_system_index(i,j); 
+
 
     Vector<double> boundary_rhs_value;
 
@@ -184,6 +190,22 @@ Base_Solver<dim>
 
     // we use a temporary matrix to determine whether inflow or outflow
     Sparse_matrix B_temp;
+
+    // if(b_id == 101 || b_id == 102)
+    // {
+    //   integrate_inflow++;
+    //   B_temp = system_info[0].system_data.Binflow.matrix;
+    // }
+    // else
+    // {
+    // // B matrix for specular reflection
+    //   if (b_id == 50)
+    //     B_temp = system_info[0].system_data.B_specular.matrix;
+
+    // // B matrix for full accmmodation
+    //   else
+    //     B_temp = system_info[0].system_data.B.matrix;
+    // }
 
     if(b_id == 101 || b_id == 102)
     {
@@ -201,7 +223,8 @@ Base_Solver<dim>
         B_temp = system_info[0].system_data.B.matrix;
     }
 
-for (unsigned int q = 0 ; q < fe_v.n_quadrature_points ; q++)
+    
+   for (unsigned int q = 0 ; q < fe_v.n_quadrature_points ; q++)
 {
   const double jacobian_value = J[q];
 
@@ -216,43 +239,56 @@ for (unsigned int q = 0 ; q < fe_v.n_quadrature_points ; q++)
 
   else
     system_info[0].bcrhs_wall.BCrhs(fe_v.quadrature_point(q),fe_v.normal_vector(q),
-                          boundary_rhs_value,b_id);
+                          boundary_rhs_value,b_id);               
 
 
   Sparse_matrix Projector = system_info[0].build_Projector(fe_v.normal_vector(q));
-  
+    
 
 
   // Simga(as given in PDF) * B * Projector
   // Sigma in the PDF = Projector.transpose * Sigma(In the code)
   Full_matrix Sigma_B_P =       Projector.transpose()
                                * system_info[0].system_data.Sigma.matrix 
-                               * system_info[0].system_data.B.matrix
+                               * B_temp
                                * Projector;
 
   Full_matrix Sigma = Projector.transpose()
                       * system_info[0].system_data.Sigma.matrix ;
 
-  for (unsigned int i = 0 ; i < dofs_per_cell ; i ++)
-  {
-    const double shape_value_test = fe_v.shape_value(i,q);
-    for (unsigned int j = 0 ; j < dofs_per_cell ; j ++)
-      cell_matrix(i,j) -= shape_value_test
-                          * Sigma_B_P(component[i],component[j])
-                          * fe_v.shape_value(j,q) 
-                          * jacobian_value;                                    
+  // we first loop over all the components of the test function
+  for (int component_test = 0; component_test < nEqn[0] ; component_test++)
+    // we now loop over all the dof for our component
+    for (unsigned long int index_test = 0 ; index_test < indices_per_cell ; index_test ++)
+    {
+      const unsigned long int dof_test = component_to_system[component_test][index_test];
+      const double shape_value_test = fe_v.shape_value(dof_test,q);
+      // we now loop over all the components of the solution 
+      for (unsigned long int component_sol = 0 ; component_sol < nEqn[0] ; component_sol++)
+
+        // a loop over all the indices of the solution vector
+        for (unsigned long int index_sol = 0 ; index_sol < indices_per_cell ; index_sol++)
+        {
+          const unsigned long int dof_sol = component_to_system[component_sol][index_sol];
+          const double shape_value_sol = fe_v.shape_value(dof_sol,q);
+          cell_matrix(dof_test,dof_sol) -= shape_value_test
+                              * Sigma_B_P(component_test,component_sol)
+                              * shape_value_sol 
+                              * jacobian_value;  
+
+        }
+
+      for (unsigned int j = 0 ; j < boundary_rhs_value.size() ; j++)
+              cell_rhs(dof_test) -= shape_value_test 
+                                      * Sigma(component_test,j) 
+                                    * boundary_rhs_value[j] 
+                                    * jacobian_value;
 
 
-    for (unsigned int j = 0 ; j < boundary_rhs_value.size() ; j++)
-     cell_rhs(i) -= shape_value_test 
-                    * Sigma(component[i],j) 
-                    * boundary_rhs_value[j] 
-                    * jacobian_value;
+    }
 
- }
+} 
 
-
-}
 }
 
 

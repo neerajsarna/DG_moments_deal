@@ -38,22 +38,14 @@
                     }
 
                     case lid_driven_cavity:
+                    case periodic:
+                    default:
                     {
                         AssertThrow(1 == 0 ,ExcNotImplemented());
                         break;
                     }
 
-                    case periodic:
-                    {
-                        AssertThrow(1 == 0,ExcNotImplemented());
-                        break;
-                    }
 
-                    default:
-                    {
-                        AssertThrow(1 == 0,ExcMessage("Should not have reached here"));
-                        break;
-                    }
                 }
 
                 

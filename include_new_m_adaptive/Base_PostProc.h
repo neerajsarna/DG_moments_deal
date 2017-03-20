@@ -9,11 +9,9 @@ namespace PostProc
 	{
 	public:
 		Base_PostProc(const constant_numerics &constants,
-			ExactSolution::Base_ExactSolution<dim> *exact_solution,
-			const DoFHandler<dim> *dof_handle,
-			const MappingQ<dim> *mapping_obj,
-			const std::vector<int> &nEqn,
-			const std::vector<int> &nBC);
+					  ExactSolution::Base_ExactSolution<dim> *exact_solution,
+					  const std::vector<int> &nEqn,
+				      const std::vector<int> &nBC);
 
 			// we need the following information from the calling routine for this class to work
 		ExactSolution::Base_ExactSolution<dim> *base_exactsolution;
@@ -21,8 +19,6 @@ namespace PostProc
 		const std::vector<int> nEqn;
 		const std::vector<int> nBC;
 
-		const DoFHandler<dim> *dof_handler;
-		const MappingQ<dim> *mapping;
 		MatrixOpt::Base_MatrixOpt matrix_opt;
 
 		struct output_files
@@ -38,58 +34,77 @@ namespace PostProc
 
 		bool used_midpoint;
 		bool used_qgauss;
+		bool class_initialized;
+
+		void reinit(const hp::DoFHandler<dim> &dof_handler);
+		void reinit(const DoFHandler<dim> &dof_handler);
 
       		// we prescribe the filename for the output routines
-		void prescribe_file_names();
+		void prescribe_file_names(const hp::DoFHandler<dim> &dof_handler);
+		void prescribe_file_names(const DoFHandler<dim> &dof_handler);
 
       		// we make the required directories
 		void make_directories();
 
-		double compute_residual(Vector<double> &solution,const int n_active_cells);
+		double compute_residual(Vector<double> &solution,const int n_active_cells,
+											const MappingQ<dim> &mapping, const DoFHandler<dim> &dof_handler);
+
+
+		double compute_residual(Vector<double> &solution,const int n_active_cells,
+											const hp::MappingCollection<dim> &mapping, const hp::DoFHandler<dim> &dof_handler);
+
 
       		// error evaluation based upon gauss quadrature
 		void error_evaluation_QGauss(const Vector<double> &solution,
-			const unsigned int active_cells,
-			double &error_value,
-			const double hMax,
-			ConvergenceTable &convergence_table,
-			const double residual);
-
-		double compute_L2_norm(const Vector<double> &solution,const unsigned int active_cells);
-
-			// return the value of the L2_erro
-		double L2_error_QGauss(const Vector<double> &solution,const unsigned int active_cells);
-		double Linfty_error_QGauss(const Vector<double> &solution,const unsigned int active_cells);
+									const unsigned int active_cells,
+									double &error_value,
+									const double hMax,
+									ConvergenceTable &convergence_table,
+									const double residual,
+									const hp::MappingCollection<dim> &mapping,
+									const hp::DoFHandler<dim> &dof_handler);
 
 
-			// error evaluation based upon midpoint rule
-		void error_evaluation_QMidpoint(const Vector<double> &solution,
-			const unsigned int active_cells,
-			double &error_value,
-			const double hMax,
-			ConvergenceTable &convergence_table,
-			const double residual);
+		void error_evaluation_QGauss(const Vector<double> &solution,
+									const unsigned int active_cells,
+									double &error_value,
+									const double hMax,
+									ConvergenceTable &convergence_table,
+									const double residual,
+									const MappingQ<dim> &mapping,
+									const DoFHandler<dim> &dof_handler);
 
-		double L2_error_QMidpoint(const Vector<double> &solution,const unsigned int active_cells);
-		double Linfty_error_QMidpoint(const Vector<double> &solution,const unsigned int active_cells);
+
+
 
 			// print convergence table to a file
 		void print_convergence_table_to_file(ConvergenceTable &convergence_table);
 
 
 		void print_convergence_table_to_file(const double L2_error,const double Linfty_error,
-			const double hMax,const unsigned int active_cells);
+									const double hMax,const unsigned int active_cells);
 
 			// print the solution and the error to a file
 			// With the help of the two booleans we decide whether we want to print the 
 			// solution or we want to print the error.
 		void print_solution_to_file(const Triangulation<dim> &triangulation,
-			const Vector<double> &solution,
-			const Sparse_matrix &S_half_inv,
-			const FESystem<dim> &fe_system);
+									const Vector<double> &solution,
+									const Sparse_matrix &S_half_inv,
+									const hp::DoFHandler<dim> &dof_handler);
+
+		void print_solution_to_file(const Triangulation<dim> &triangulation,
+									const Vector<double> &solution,
+									const Sparse_matrix &S_half_inv,
+									const DoFHandler<dim> &dof_handler);
+
 
 		void print_error_to_file(const Triangulation<dim> &triangulation,
-			const Vector<double> &solution);
+								 const Vector<double> &solution,
+								 const hp::DoFHandler<dim> &dof_handler);	
+
+		void print_error_to_file(const Triangulation<dim> &triangulation,
+								 const Vector<double> &solution,
+								 const DoFHandler<dim> &dof_handler);	
 
 		void print_exactsolution_to_file(const Triangulation<dim> &triangulation,const Sparse_matrix &S_half_inv);
 
@@ -100,54 +115,48 @@ namespace PostProc
 			const unsigned int refine_cycle,
 			ConvergenceTable &convergence_table,
 			const Sparse_matrix &S_half_inv,
-			const FESystem<dim> &fe_system);
+			const DoFHandler<dim> &dof_handler);
 
-			// same as above but prints the error to the file manually
 		void print_options(const Triangulation<dim> &triangulation,
-			const Vector<double> &solution,
-			const unsigned int present_cycle,
-			const unsigned int refine_cycle,
-			const double L2_error,
-			const double Linfty_error,
-			const unsigned int active_cells,
-			const double hMax,
-			const Sparse_matrix &S_half_inv,
-			const FESystem<dim> &fe_system);
+						   const Vector<double> &solution,
+						   const unsigned int present_cycle,
+				           const unsigned int refine_cycle,
+			  			   ConvergenceTable &convergence_table,
+						   const Sparse_matrix &S_half_inv,
+						   const hp::DoFHandler<dim> &dof_handler);
 
 			// write the values of computational constants to a file
-		void create_stamp();
-
-			// we compute the error from our code and print it manually to file
-			// is useful when using external grid
-		void compute_error_print_manuel(const Vector<double> &solution,
-			const unsigned int active_cells,
-			const double hMax);
-
-			// compute error manually. Sometimes we need to compute the error of the 
-			// orginal system. The following routine is for that purpose
-		void compute_error_unsymmetric(const Triangulation<dim> &triangulation,
-			const Vector<double> &solution,
-			const Sparse_matrix &S_half_inv,
-			double &error_value);
+		void create_stamp(const hp::DoFHandler<dim> &dof_handler);
+		void create_stamp(const DoFHandler<dim> &dof_handler);
+		int max_equations;
 
 	};
 
 	template<int dim>
 	Base_PostProc<dim>::Base_PostProc(const constant_numerics &constants,
 		ExactSolution::Base_ExactSolution<dim> *exact_solution,
-		const DoFHandler<dim> *dof_handle,
-		const MappingQ<dim,dim> *mapping_obj,
 		const std::vector<int> &nEqn,
 		const std::vector<int> &nBC)
 	:
 	base_exactsolution(exact_solution),
 	constants(constants),
 	nEqn(nEqn),
-	nBC(nBC),
-	dof_handler(dof_handle),
-	mapping(mapping_obj)
+	nBC(nBC)
 	{
-		prescribe_file_names();
+		// we take the last entry of the vector since it corresponds to the moment systems which has the 
+		// maximum number of equations
+			max_equations = nEqn[nEqn.size()-1];
+
+
+	}
+
+	template<int dim>
+	void
+	Base_PostProc<dim>::reinit(const hp::DoFHandler<dim> &dof_handler)
+	{
+		class_initialized = true;
+		prescribe_file_names(dof_handler);
+		
 
 		used_midpoint = false;
 		used_qgauss = false;
@@ -155,14 +164,37 @@ namespace PostProc
 		make_directories();
 
 		// we leave the details of the computational parameters in the main directory
-		create_stamp();
+		create_stamp(dof_handler);
+
 
 	}
 
 	template<int dim>
 	void
-	Base_PostProc<dim>::prescribe_file_names()
+	Base_PostProc<dim>::reinit(const DoFHandler<dim> &dof_handler)
 	{
+		class_initialized = true;
+		prescribe_file_names(dof_handler);
+		
+
+
+		used_midpoint = false;
+		used_qgauss = false;
+
+		make_directories();
+
+		// we leave the details of the computational parameters in the main directory
+		create_stamp(dof_handler);
+
+	}
+
+
+	template<int dim>
+	void
+	Base_PostProc<dim>::prescribe_file_names(const hp::DoFHandler<dim> &dof_handler)
+	{
+		
+		Assert(class_initialized,ExcMessage("Please initialize the post proc class"));
 		const unsigned int poly_degree = constants.p;
 
 		Assert(constants.sub_directory_names.size() != 0,ExcMessage("Not initialized"));
@@ -170,13 +202,35 @@ namespace PostProc
 		+ std::to_string(poly_degree);
 
 		output_file_names.file_for_num_solution = constants.sub_directory_names[1] + "/numerical_solution_global_degree_"
-		+ std::to_string(poly_degree)+"_DOF_"+std::to_string(dof_handler->n_dofs());
+		+ std::to_string(poly_degree)+"_DOF_"+std::to_string(dof_handler.n_dofs());
 
 		output_file_names.file_for_exact_solution = constants.sub_directory_names[1] + "/exact_solution_global_degree_"
-		+ std::to_string(poly_degree)+"_DOF_"+std::to_string(dof_handler->n_dofs());
+		+ std::to_string(poly_degree)+"_DOF_"+std::to_string(dof_handler.n_dofs());
 
 		output_file_names.file_for_error = constants.sub_directory_names[1] + "/error_global_degree_"
-		+ std::to_string(poly_degree)+"_DOF_"+std::to_string(dof_handler->n_dofs());
+		+ std::to_string(poly_degree)+"_DOF_"+std::to_string(dof_handler.n_dofs());
+
+	}
+
+	template<int dim>
+	void
+	Base_PostProc<dim>::prescribe_file_names(const DoFHandler<dim> &dof_handler)
+	{
+Assert(class_initialized == true,ExcMessage("Please initialize the post proc class"));
+		const unsigned int poly_degree = constants.p;
+
+		Assert(constants.sub_directory_names.size() != 0,ExcMessage("Not initialized"));
+		output_file_names.file_for_convergence_tables = constants.sub_directory_names[2] + "/convergence_table_global_degree_"
+		+ std::to_string(poly_degree);
+
+		output_file_names.file_for_num_solution = constants.sub_directory_names[1] + "/numerical_solution_global_degree_"
+		+ std::to_string(poly_degree)+"_DOF_"+std::to_string(dof_handler.n_dofs());
+
+		output_file_names.file_for_exact_solution = constants.sub_directory_names[1] + "/exact_solution_global_degree_"
+		+ std::to_string(poly_degree)+"_DOF_"+std::to_string(dof_handler.n_dofs());
+
+		output_file_names.file_for_error = constants.sub_directory_names[1] + "/error_global_degree_"
+		+ std::to_string(poly_degree)+"_DOF_"+std::to_string(dof_handler.n_dofs());
 
 	}
 
@@ -197,7 +251,7 @@ namespace PostProc
 
 	template<int dim>
 		void
-		Base_PostProc<dim>::create_stamp()
+		Base_PostProc<dim>::create_stamp(const hp::DoFHandler<dim> &dof_handler)
 		{
 			FILE *fp;
 			std::string filename = constants.main_output_dir + "/computational_parameters.txt";
@@ -212,27 +266,97 @@ namespace PostProc
 			"mapping order" + std::to_string(constants.mapping_order) + "\n" +
 			"uW " + std::to_string(constants.uW) + "\n" +
 			"tau " + std::to_string(constants.tau)+ "\n" +
-			"nEqn " + std::to_string(nEqn[0]) + "\n" +
-			"nBC" + std::to_string(nBC[0]) + "\n" +
 			"bc_type" + std::to_string(constants.bc_type)+ "\n" +
 			"force_type " + std::to_string(constants.force_type) + 
-			"#Dofs " + std::to_string(dof_handler->n_dofs()) +
-			"#Cells " + std::to_string(dof_handler->get_triangulation().n_active_cells());
+			"#Dofs " + std::to_string(dof_handler.n_dofs()) + "\n"
+			"#Cells " + std::to_string(dof_handler.get_triangulation().n_active_cells());
+
+			for (unsigned long int eq = 0 ; eq < nEqn.size(); eq++)
+			{
+				parameters += "nEqn" + std::to_string(nEqn[eq]) + "\n";
+				parameters += "nBC" + std::to_string(nEqn[eq]) + "\n";
+			}
+
 
 			fprintf(fp, "%s\n",parameters.c_str());
 			fclose(fp);
 		}
 
 	template<int dim>
-		double 
-		Base_PostProc<dim>::compute_residual(Vector<double> &solution,const int n_active_cells)
+		void
+		Base_PostProc<dim>::create_stamp(const DoFHandler<dim> &dof_handler)
 		{
+			FILE *fp;
+			std::string filename = constants.main_output_dir + "/computational_parameters.txt";
+
+			fp = fopen(filename.c_str(),"w+");
+			AssertThrow(fp != NULL , ExcMessage("Could not open file for stamping"));
+
+			std::string parameters = "A0 " + std::to_string(constants.A0) + "\n" +
+			"A1 " + std::to_string(constants.A1) + "\n" +
+			"A2 " + std::to_string(constants.A2) + "\n" +
+			"poly degree " + std::to_string(constants.p) + "\n" +
+			"mapping order" + std::to_string(constants.mapping_order) + "\n" +
+			"uW " + std::to_string(constants.uW) + "\n" +
+			"tau " + std::to_string(constants.tau)+ "\n" +
+			"bc_type" + std::to_string(constants.bc_type)+ "\n" +
+			"force_type " + std::to_string(constants.force_type) + 
+			"#Dofs " + std::to_string(dof_handler.n_dofs()) + "\n"
+			"#Cells " + std::to_string(dof_handler.get_triangulation().n_active_cells());
+
+			for (unsigned long int eq = 0 ; eq < nEqn.size(); eq++)
+			{
+				parameters += "nEqn" + std::to_string(nEqn[eq]) + "\n";
+				parameters += "nBC" + std::to_string(nEqn[eq]) + "\n";
+			}
+
+
+			fprintf(fp, "%s\n",parameters.c_str());
+			fclose(fp);
+		}
+
+
+	template<int dim>
+		double 
+		Base_PostProc<dim>::compute_residual(Vector<double> &solution,const int n_active_cells,
+											const hp::MappingCollection<dim> &mapping, const hp::DoFHandler<dim> &dof_handler)
+		{
+			Assert(class_initialized == true,ExcMessage("Please initialize the post proc class"));
+
+			const unsigned int ngp = constants.p + 1;
+			Vector<double> error_per_cell(n_active_cells);
+			QGauss<dim> quadrature_basic(ngp);			
+			hp::QCollection<dim> hp_quadrature;
+
+			hp_quadrature.push_back(quadrature_basic);
+			hp_quadrature.push_back(quadrature_basic);
+
+
+			VectorTools::integrate_difference (mapping,dof_handler,solution,
+				ZeroFunction<dim>(max_equations),
+				error_per_cell,
+				hp_quadrature,
+				VectorTools::L2_norm); 
+
+
+			return(error_per_cell.l2_norm()) ;
+
+
+		}
+
+
+	template<int dim>
+		double 
+		Base_PostProc<dim>::compute_residual(Vector<double> &solution,const int n_active_cells,
+											const MappingQ<dim> &mapping, const DoFHandler<dim> &dof_handler)
+		{
+			Assert(class_initialized == true,ExcMessage("Please initialize the post proc class"));
 
 			const unsigned int ngp = constants.p + 1;
 			Vector<double> error_per_cell(n_active_cells);
 
-			VectorTools::integrate_difference (*mapping,*dof_handler,solution,
-				ZeroFunction<dim>(nEqn[0]),
+			VectorTools::integrate_difference (mapping,dof_handler,solution,
+				ZeroFunction<dim>(max_equations),
 				error_per_cell,
 				QGauss<dim>(ngp),
 				VectorTools::L2_norm); 
@@ -244,41 +368,97 @@ namespace PostProc
 		}
 
 
+	// evaluate the error using gaussian qaudrature
 	template<int dim>
-		double
-		Base_PostProc<dim>::compute_L2_norm(const Vector<double> &solution,const unsigned int active_cells)
-		{
-				// error variable comes from Basics. The following is the component in which
+	void
+	Base_PostProc<dim>::error_evaluation_QGauss(const Vector<double> &solution,
+		const unsigned int active_cells,
+		double &error_value,
+		const double hMax,
+		ConvergenceTable &convergence_table,
+		const double residual,
+		const hp::MappingCollection<dim> &mapping,
+		const hp::DoFHandler<dim> &dof_handler)
+	{
+		const unsigned int ngp = constants.p + 1;
+		QGauss<dim> quadrature_basic(ngp);			
+		hp::QCollection<dim> hp_quadrature;
+		hp_quadrature.push_back(quadrature_basic);
+		hp_quadrature.push_back(quadrature_basic);
+
+
+		used_qgauss = true;
+		Assert(class_initialized == true,ExcMessage("Please initialize the post proc class"));
+
+		// error variable comes from Basics. The following is the component in which
 		// we wish to find the error.
-			Assert(constants.variable_map.size() != 0,ExcMessage("Variable map not initialized"));
-			Assert(constants.variable_map_1D.size() != 0,ExcMessage("Variable map not initialized"));
+        		// error variable comes from Basics. The following is the component in which
+		// we wish to find the error.
+		Assert(constants.variable_map.size() != 0,ExcMessage("Variable map not initialized"));
+		Assert(constants.variable_map_1D.size() != 0,ExcMessage("Variable map not initialized"));
 
-			unsigned int component;
-			
-			if (dim == 1)
-				component = constants.variable_map_1D.find(constants.error_variable)->second;
+		unsigned int component;
+		
+		if (dim == 1)
+			component = constants.variable_map_1D.find(constants.error_variable)->second;
 
-			if (dim == 2)
-				component = constants.variable_map.find(constants.error_variable)->second;
-			Vector<double> norm_per_cell(active_cells); 
-			const unsigned int ngp = constants.p + 1;
+		if (dim == 2)
+			component = constants.variable_map.find(constants.error_variable)->second;
 
-		ComponentSelectFunction<dim> weight(component,nEqn[0]);                              // used to compute only the error in theta
+        // error per cell of the domain
+		Vector<double> error_per_cell(active_cells);      
 
-		ZeroFunction<dim> zero_function(nEqn[0]);
+        ComponentSelectFunction<dim> weight(component,max_equations);                              // used to compute only the error in theta
 
         // computation of L2 error
-		VectorTools::integrate_difference (*mapping,*dof_handler,solution,
-			zero_function,
-			norm_per_cell,
-			QGauss<dim>(ngp),
-			VectorTools::L2_norm,
-			&weight); 
+        VectorTools::integrate_difference (mapping,dof_handler,solution,
+        								  *base_exactsolution,
+        								   error_per_cell,
+        								   hp_quadrature,
+        								   VectorTools::L2_norm,
+        								   &weight);  
 
 
-		return(norm_per_cell.l2_norm());
+        const double L2_error = error_per_cell.l2_norm();
 
-	}
+        error_value = L2_error;
+        // computation of L_inifinity error
+        error_per_cell = 0;
+        VectorTools::integrate_difference (mapping,dof_handler,solution,
+        									*base_exactsolution,
+        									error_per_cell,
+        									hp_quadrature,
+        									VectorTools::Linfty_norm,
+        									&weight);  
+        
+
+        const double Linfty_error = error_per_cell.linfty_norm();
+        
+        std::string column_name_L2;
+        std::string column_name_Linfty;
+        std::string column_name_residual = "#Residual" ;
+
+        column_name_L2 = "#L2 in u(Using QGauss)" + std::to_string(component);
+        column_name_Linfty = "#Linfty in u(Using QGauss)" + std::to_string(component);
+
+        std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<Error Details>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"  << std::endl;
+        printf("L2_error: %e, Linf_error: %e, #DOF: %u, #Cells %u, #Residual %e \n",L2_error,Linfty_error,dof_handler.n_dofs(),active_cells,residual);
+        std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<Error Details>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
+
+        convergence_table.add_value(column_name_L2,L2_error);
+        convergence_table.add_value(column_name_Linfty,Linfty_error);
+        convergence_table.add_value("#degree of freedom",dof_handler.n_dofs());
+        convergence_table.add_value("#number of cells",active_cells);
+        convergence_table.add_value("#hMax",hMax);
+        convergence_table.add_value("#Residual",residual);
+
+        convergence_table.set_scientific(column_name_L2,true);
+        convergence_table.set_scientific(column_name_Linfty,true);
+        convergence_table.set_scientific("#hMax",true);
+        convergence_table.set_scientific(column_name_residual,true);
+
+    }
+
 
 	// evaluate the error using gaussian qaudrature
 	template<int dim>
@@ -288,9 +468,12 @@ namespace PostProc
 		double &error_value,
 		const double hMax,
 		ConvergenceTable &convergence_table,
-		const double residual)
+		const double residual,
+		const MappingQ<dim> &mapping,
+		const DoFHandler<dim> &dof_handler)
 	{
 		used_qgauss = true;
+		Assert(class_initialized == true,ExcMessage("Please initialize the post proc class"));
 
 		// error variable comes from Basics. The following is the component in which
 		// we wish to find the error.
@@ -311,10 +494,10 @@ namespace PostProc
         // error per cell of the domain
 		Vector<double> error_per_cell(active_cells);      
 
-        ComponentSelectFunction<dim> weight(component,nEqn[0]);                              // used to compute only the error in theta
+        ComponentSelectFunction<dim> weight(component,max_equations);                              // used to compute only the error in theta
 
         // computation of L2 error
-        VectorTools::integrate_difference (*mapping,*dof_handler,solution,
+        VectorTools::integrate_difference (mapping,dof_handler,solution,
         	*base_exactsolution,
         	error_per_cell,
         	QGauss<dim>(ngp),
@@ -327,7 +510,7 @@ namespace PostProc
         error_value = L2_error;
         // computation of L_inifinity error
         error_per_cell = 0;
-        VectorTools::integrate_difference (*mapping,*dof_handler,solution,
+        VectorTools::integrate_difference (mapping,dof_handler,solution,
         	*base_exactsolution,
         	error_per_cell,
         	QGauss<dim>(ngp),
@@ -345,12 +528,12 @@ namespace PostProc
         column_name_Linfty = "#Linfty in u(Using QGauss)" + std::to_string(component);
 
         std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<Error Details>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"  << std::endl;
-        printf("L2_error: %e, Linf_error: %e, #DOF: %u, #Cells %u, #Residual %e \n",L2_error,Linfty_error,dof_handler->n_dofs(),active_cells,residual);
+        printf("L2_error: %e, Linf_error: %e, #DOF: %u, #Cells %u, #Residual %e \n",L2_error,Linfty_error,dof_handler.n_dofs(),active_cells,residual);
         std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<Error Details>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
 
         convergence_table.add_value(column_name_L2,L2_error);
         convergence_table.add_value(column_name_Linfty,Linfty_error);
-        convergence_table.add_value("#degree of freedom",dof_handler->n_dofs());
+        convergence_table.add_value("#degree of freedom",dof_handler.n_dofs());
         convergence_table.add_value("#number of cells",active_cells);
         convergence_table.add_value("#hMax",hMax);
         convergence_table.add_value("#Residual",residual);
@@ -363,234 +546,6 @@ namespace PostProc
     }
 
 
-	// returns the L2 error using the gauss quadrature
-	template<int dim>
-    double
-    Base_PostProc<dim>::L2_error_QGauss(const Vector<double> &solution,
-    	const unsigned int active_cells)
-    {
-		// error variable comes from Basics. The following is the component in which
-		// we wish to find the error.
-    	unsigned int component = constants.variable_map.find(constants.error_variable)->second;
-
-    	const unsigned int ngp = constants.p + 1;
-        // error per cell of the domain
-    	Vector<double> error_per_cell(active_cells);      
-
-        ComponentSelectFunction<dim> weight(component,nEqn[0]);                              // used to compute only the error in theta
-
-        // computation of L2 error
-        VectorTools::integrate_difference (*mapping,*dof_handler,solution,
-        	*base_exactsolution,
-        	error_per_cell,
-        	QGauss<dim>(ngp),
-        	VectorTools::L2_norm,
-        	&weight);  
-
-
-        return (error_per_cell.l2_norm());
-        
-    }
-
-	template<int dim>
-    double
-    Base_PostProc<dim>::Linfty_error_QGauss(const Vector<double> &solution,
-    	const unsigned int active_cells)
-    {
-		// error variable comes from Basics. The following is the component in which
-		// we wish to find the error.
-    	Assert(constants.variable_map.size() != 0,ExcMessage("Variable map not initialized"));
-    	Assert(constants.variable_map_1D.size() != 0,ExcMessage("Variable map not initialized"));
-
-    	unsigned int component;
-    	
-    	if (dim == 1)
-    		component = constants.variable_map_1D.find(constants.error_variable)->second;
-
-    	if (dim == 2)
-    		component = constants.variable_map.find(constants.error_variable)->second;
-
-
-    	const unsigned int ngp = constants.p + 1;
-        // error per cell of the domain
-    	Vector<double> error_per_cell(active_cells);      
-
-        ComponentSelectFunction<dim> weight(component,nEqn[0]);                              // used to compute only the error in theta
-
-        // computation of L_inifinity error
-        error_per_cell = 0;
-        VectorTools::integrate_difference (*mapping,*dof_handler,solution,
-        	*base_exactsolution,
-        	error_per_cell,
-        	QGauss<dim>(ngp),
-        	VectorTools::Linfty_norm,
-        	&weight);  
-        
-
-        return(error_per_cell.linfty_norm());
-        
-    }
-
-	// evaluate the error from the solution using midpoint quadrature rule
-	template<int dim>
-    void
-    Base_PostProc<dim>::error_evaluation_QMidpoint(const Vector<double> &solution,
-    	const unsigned int active_cells,
-    	double &error_value,
-    	const double hMax,
-    	ConvergenceTable &convergence_table,
-    	const double residual)
-    {
-
-    	used_midpoint = false;
-
-				// error variable comes from Basics. The following is the component in which
-		// we wish to find the error.
-    	Assert(constants.variable_map.size() != 0,ExcMessage("Variable map not initialized"));
-    	Assert(constants.variable_map_1D.size() != 0,ExcMessage("Variable map not initialized"));
-
-    	unsigned int component;
-    	
-    	if (dim == 1)
-    		component = constants.variable_map_1D.find(constants.error_variable)->second;
-
-    	if (dim == 2)
-    		component = constants.variable_map.find(constants.error_variable)->second;
-
-        // error per cell of the domain
-    	Vector<double> error_per_cell(active_cells);      
-
-        ComponentSelectFunction<dim> weight(component,nEqn[0]);                              // used to compute only the error in theta
-
-        // computation of L2 error
-        VectorTools::integrate_difference (*mapping,*dof_handler,solution,
-        	*base_exactsolution,
-        	error_per_cell,
-        	QMidpoint<dim>(),
-        	VectorTools::L2_norm,
-        	&weight);  
-
-
-        const double L2_error = error_per_cell.l2_norm();
-
-        error_value = L2_error;
-
-        // computation of L_inifinity error
-        error_per_cell = 0;
-        VectorTools::integrate_difference (*mapping,*dof_handler,solution,
-        	*base_exactsolution,
-        	error_per_cell,
-        	QMidpoint<dim>(),
-        	VectorTools::Linfty_norm,
-        	&weight);  
-        
-
-        const double Linfty_error = error_per_cell.linfty_norm();
-        
-        std::string column_name_L2;
-        std::string column_name_Linfty;
-
-        column_name_L2 = "#L2 in u(Using QMidpoint)" + std::to_string(component);
-        column_name_Linfty = "#Linfty in u(Using QMidpoint)" + std::to_string(component);
-
-        
-        std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<Error Details>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"  <<  std::endl;
-        printf("L2_error: %e, Linf_error: %e, #DOF: %u, #Cells %u\n",L2_error,Linfty_error,dof_handler->n_dofs(),active_cells);
-        std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<Error Details>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" <<  std::endl;
-
-
-        convergence_table.add_value(column_name_L2,L2_error);
-        convergence_table.add_value(column_name_Linfty,Linfty_error);
-        convergence_table.add_value("#degree of freedom",dof_handler->n_dofs());
-        convergence_table.add_value("#number of cells",active_cells);
-        convergence_table.add_value("#hMax",hMax);
-
-        convergence_table.set_scientific(column_name_L2,true);
-        convergence_table.set_scientific(column_name_Linfty,true);
-        convergence_table.set_scientific("#hMax",true);
-    }
-
-
-	// returns the L2 error using the gauss quadrature
-	template<int dim>
-    double
-    Base_PostProc<dim>::L2_error_QMidpoint(const Vector<double> &solution,
-    	const unsigned int active_cells)
-    {
-		// error variable comes from Basics. The following is the component in which
-		// we wish to find the error.
-        		// error variable comes from Basics. The following is the component in which
-		// we wish to find the error.
-    	Assert(constants.variable_map.size() != 0,ExcMessage("Variable map not initialized"));
-    	Assert(constants.variable_map_1D.size() != 0,ExcMessage("Variable map not initialized"));
-
-    	unsigned int component;
-    	
-    	if (dim == 1)
-    		component = constants.variable_map_1D.find(constants.error_variable)->second;
-
-    	if (dim == 2)
-    		component = constants.variable_map.find(constants.error_variable)->second;
-
-    	const unsigned int ngp = constants.p + 1;
-        // error per cell of the domain
-    	Vector<double> error_per_cell(active_cells);      
-
-        ComponentSelectFunction<dim> weight(component,nEqn[0]);                              // used to compute only the error in theta
-
-        // computation of L2 error
-        VectorTools::integrate_difference (*mapping,*dof_handler,solution,
-        	*base_exactsolution,
-        	error_per_cell,
-        	QGauss<dim>(ngp),
-        	VectorTools::L2_norm,
-        	&weight);  
-
-
-        return (error_per_cell.l2_norm());
-
-        
-    }
-
-	template<int dim>
-    double
-    Base_PostProc<dim>::Linfty_error_QMidpoint(const Vector<double> &solution,
-    	const unsigned int active_cells)
-    {
-		// error variable comes from Basics. The following is the component in which
-		// we wish to find the error.
-        		// error variable comes from Basics. The following is the component in which
-		// we wish to find the error.
-    	Assert(constants.variable_map.size() != 0,ExcMessage("Variable map not initialized"));
-    	Assert(constants.variable_map_1D.size() != 0,ExcMessage("Variable map not initialized"));
-
-    	unsigned int component;
-    	
-    	if (dim == 1)
-    		component = constants.variable_map_1D.find(constants.error_variable)->second;
-
-    	if (dim == 2)
-    		component = constants.variable_map.find(constants.error_variable)->second;
-
-    	const unsigned int ngp = constants.p + 1;
-        // error per cell of the domain
-    	Vector<double> error_per_cell(active_cells);      
-
-        ComponentSelectFunction<dim> weight(component,nEqn[0]);                              // used to compute only the error in theta
-
-        // computation of L_inifinity error
-        error_per_cell = 0;
-        VectorTools::integrate_difference (*mapping,*dof_handler,solution,
-        	*base_exactsolution,
-        	error_per_cell,
-        	QGauss<dim>(ngp),
-        	VectorTools::Linfty_norm,
-        	&weight);  
-        
-
-        return(error_per_cell.linfty_norm());
-        
-    }
 
 
 	// print the convergence table to a file
@@ -602,6 +557,7 @@ namespace PostProc
 		// we wish to find the error.
     	Assert(constants.variable_map.size() != 0,ExcMessage("Variable map not initialized"));
     	Assert(constants.variable_map_1D.size() != 0,ExcMessage("Variable map not initialized"));
+		Assert(class_initialized == true,ExcMessage("Please initialize the post proc class"));
 
     	unsigned int component;
     	
@@ -633,46 +589,19 @@ namespace PostProc
 
     }
 
-	// print convergence table manually
-	template<int dim> 
-    void 
-    Base_PostProc<dim>::print_convergence_table_to_file(const double L2_error,const double Linfty_error,
-    	const double hMax,const unsigned int active_cells)
-    {
-           		// error variable comes from Basics. The following is the component in which
-		// we wish to find the error.
-    	Assert(constants.variable_map.size() != 0,ExcMessage("Variable map not initialized"));
-    	Assert(constants.variable_map_1D.size() != 0,ExcMessage("Variable map not initialized"));
-
-    	unsigned int component;
-    	
-    	if (dim == 1)
-    		component = constants.variable_map_1D.find(constants.error_variable)->second;
-
-    	if (dim == 2)
-    		component = constants.variable_map.find(constants.error_variable)->second;
-    	
-    	FILE *fp;
-    	fp = fopen(output_file_names.file_for_convergence_tables.c_str(),"a+");
-
-    	fprintf(fp, "L2_error Linf_error hMax active_cells (u%u)\n",component);
-
-    	fprintf(fp, "%f %f %f %u\n",L2_error,Linfty_error,hMax,active_cells);
-
-    	fclose(fp);
-
-    }
 
     template<int dim>
     void 
     Base_PostProc<dim>::
     print_solution_to_file(
-    	const Triangulation<dim> &triangulation,
-    	const Vector<double> &solution,
-    	const Sparse_matrix &S_half_inv,
-    	const FESystem<dim> &fe_system)
+    					const Triangulation<dim> &triangulation,
+    					const Vector<double> &solution,
+    					const Sparse_matrix &S_half_inv,
+    					const hp::DoFHandler<dim> &dof_handler)
     {
     	typename Triangulation<dim>::active_cell_iterator cell = triangulation.begin_active(), endc = triangulation.end();
+
+		Assert(class_initialized == true,ExcMessage("Please initialize the post proc class"));
 
     	FILE *fp_solution;
 
@@ -681,14 +610,8 @@ namespace PostProc
     	AssertThrow(fp_solution != NULL,ExcMessage("file not open"));
 
     	fprintf(fp_solution, "#%s\n","x y at the midpoint of each cell all the solution components");
-    	Vector<double> solution_value(nEqn[0]);
-    	
-    	const QGauss<dim> quadrature(constants.p + 1);
-    	const UpdateFlags update_flags  = update_quadrature_points;
-    	
-    	FEValues<dim>  fe_v(*mapping,fe_system,quadrature, update_flags);
-    	std::vector<Point<dim>> quad_points(quadrature.size());
-    	
+    	Vector<double> solution_value(max_equations);
+    	    	
     	int variables_to_print;
 
     	if (dim == 2)
@@ -702,7 +625,7 @@ namespace PostProc
 		for (unsigned int vertex = 0 ; vertex < GeometryInfo<dim>::vertices_per_cell ; vertex++)
 		{
 			solution_value = 0;
-			VectorTools::point_value(*dof_handler, solution, cell->vertex(vertex),solution_value);	
+			VectorTools::point_value(dof_handler, solution, cell->vertex(vertex),solution_value);	
 
 			// we now convert back to the conventional variables. That is the variables in unsymmetric system	
 			matrix_opt.Sparse_matrix_dot_Vector(S_half_inv,solution);
@@ -722,6 +645,59 @@ namespace PostProc
 	fclose(fp_solution);
 }
 
+    template<int dim>
+    void 
+    Base_PostProc<dim>::
+    print_solution_to_file(
+    					const Triangulation<dim> &triangulation,
+    					const Vector<double> &solution,
+    					const Sparse_matrix &S_half_inv,
+    					const DoFHandler<dim> &dof_handler)
+    {
+    	typename Triangulation<dim>::active_cell_iterator cell = triangulation.begin_active(), endc = triangulation.end();
+    	Assert(class_initialized == true,ExcMessage("Please initialize the post proc class"));
+
+    	FILE *fp_solution;
+
+    	fp_solution = fopen(output_file_names.file_for_num_solution.c_str(),"w+");
+
+    	AssertThrow(fp_solution != NULL,ExcMessage("file not open"));
+
+    	fprintf(fp_solution, "#%s\n","x y at the midpoint of each cell all the solution components");
+    	Vector<double> solution_value(max_equations);
+    	
+    	int variables_to_print;
+
+    	if (dim == 2)
+		variables_to_print = 9;	// we print all the moments till the heat flux
+
+	if (dim == 1)
+		variables_to_print = 5; // we print all the moments till the heat flux
+
+	for (; cell != endc ; cell++)
+	{
+		for (unsigned int vertex = 0 ; vertex < GeometryInfo<dim>::vertices_per_cell ; vertex++)
+		{
+			solution_value = 0;
+			VectorTools::point_value(dof_handler, solution, cell->vertex(vertex),solution_value);	
+
+			// we now convert back to the conventional variables. That is the variables in unsymmetric system	
+			matrix_opt.Sparse_matrix_dot_Vector(S_half_inv,solution);
+
+			for (unsigned int space = 0 ; space < dim ; space ++)
+				fprintf(fp_solution, "%f ",cell->vertex(vertex)(space));
+
+		// we only print variables uptill heat flux
+			for (int i = 0 ; i < variables_to_print ; i++)
+				fprintf(fp_solution, "%f ",solution_value(i));
+
+			fprintf(fp_solution, "\n");
+		}
+	}
+
+
+	fclose(fp_solution);
+}
 
    	// we compute the error at all the vertices and then print it to a file
     template<int dim>
@@ -729,8 +705,10 @@ void
 Base_PostProc<dim>::
 print_error_to_file(
 	const Triangulation<dim> &triangulation,
-	const Vector<double> &solution)
+	const Vector<double> &solution,
+	const hp::DoFHandler<dim> &dof_handler)
 {
+	Assert(class_initialized == true,ExcMessage("Please initialize the post proc class"));
 	typename Triangulation<dim>::active_cell_iterator cell = triangulation.begin_active(), endc = triangulation.end();
 
 	FILE *fp_error;
@@ -745,20 +723,20 @@ print_error_to_file(
 	for (; cell != endc ; cell++)
 	{
 
-		Vector<double> solution_value(nEqn[0]);
-		Vector<double> exact_solution_value(nEqn[0]);
-		Vector<double> error_value(nEqn[0]);
+		Vector<double> solution_value(max_equations);
+		Vector<double> exact_solution_value(max_equations);
+		Vector<double> error_value(max_equations);
 
-		VectorTools::point_value(*dof_handler, solution, cell->center(),solution_value);	
+		VectorTools::point_value(dof_handler, solution, cell->center(),solution_value);	
 		base_exactsolution->vector_value(cell->center(),exact_solution_value);
 
-		for ( int i = 0 ; i < nEqn[0] ; i++)
+		for ( int i = 0 ; i < max_equations ; i++)
 			error_value(i) = fabs(solution_value(i)-exact_solution_value(i));
 
 		for (int space = 0 ; space < dim ; space ++)
 			fprintf(fp_error, "%f ",cell->center()[space]);
 
-		for (int i = 0 ; i < nEqn[0] ; i++)
+		for (int i = 0 ; i < max_equations ; i++)
 			fprintf(fp_error, "%f ",error_value(i));
 
 		fprintf(fp_error, "\n");
@@ -769,12 +747,59 @@ print_error_to_file(
 	fclose(fp_error);
 }
 
-
     template<int dim>
+void 
+Base_PostProc<dim>::
+print_error_to_file(
+	const Triangulation<dim> &triangulation,
+	const Vector<double> &solution,
+	const DoFHandler<dim> &dof_handler)
+{
+	Assert(class_initialized == true,ExcMessage("Please initialize the post proc class"));
+	typename Triangulation<dim>::active_cell_iterator cell = triangulation.begin_active(), endc = triangulation.end();
+
+	FILE *fp_error;
+
+	fp_error = fopen(output_file_names.file_for_error.c_str(),"w+");
+
+	AssertThrow(fp_error != NULL,ExcMessage("file not open"));
+
+	fprintf(fp_error, "#%s\n","x y at the midpoint of each cell and the error in every component");
+
+	// we can print  
+	for (; cell != endc ; cell++)
+	{
+
+		Vector<double> solution_value(max_equations);
+		Vector<double> exact_solution_value(max_equations);
+		Vector<double> error_value(max_equations);
+
+		VectorTools::point_value(dof_handler, solution, cell->center(),solution_value);	
+		base_exactsolution->vector_value(cell->center(),exact_solution_value);
+
+		for ( int i = 0 ; i < max_equations ; i++)
+			error_value(i) = fabs(solution_value(i)-exact_solution_value(i));
+
+		for (int space = 0 ; space < dim ; space ++)
+			fprintf(fp_error, "%f ",cell->center()[space]);
+
+		for (int i = 0 ; i < max_equations ; i++)
+			fprintf(fp_error, "%f ",error_value(i));
+
+		fprintf(fp_error, "\n");
+		
+	}
+
+
+	fclose(fp_error);
+}
+
+template<int dim>
 void 
 Base_PostProc<dim>::
 print_exactsolution_to_file(const Triangulation<dim> &triangulation,const Sparse_matrix &S_half_inv)
 {
+	Assert(class_initialized == true,ExcMessage("Please initialize the post proc class"));
 	typename Triangulation<dim>::active_cell_iterator cell = triangulation.begin_active(), endc = triangulation.end();
 
 	FILE *fp_exact;
@@ -789,7 +814,7 @@ print_exactsolution_to_file(const Triangulation<dim> &triangulation,const Sparse
 		for (unsigned int vertex = 0 ; vertex < GeometryInfo<dim>::vertices_per_cell ; vertex ++)
 		{
 
-			Vector<double> exact_solution_value(nEqn[0]);
+			Vector<double> exact_solution_value(max_equations);
 
 			base_exactsolution->vector_value(cell->vertex(vertex),exact_solution_value);
 
@@ -799,7 +824,7 @@ print_exactsolution_to_file(const Triangulation<dim> &triangulation,const Sparse
 			for (unsigned int space = 0 ; space < dim ; space ++)
 				fprintf(fp_exact, "%f ",cell->vertex(vertex)[space]);
 
-			for (int i = 0 ; i < nEqn[0] ; i++)
+			for (int i = 0 ; i < max_equations ; i++)
 				fprintf(fp_exact, "%f ",exact_solution_value(i));
 
 			fprintf(fp_exact, "\n");
@@ -807,7 +832,7 @@ print_exactsolution_to_file(const Triangulation<dim> &triangulation,const Sparse
 		}
 
 		fclose(fp_exact);
-	}
+}
 
    	template<int dim>
 	void 
@@ -818,16 +843,16 @@ print_exactsolution_to_file(const Triangulation<dim> &triangulation,const Sparse
 		const unsigned int total_cycles,
 		ConvergenceTable &convergence_table,
 		const Sparse_matrix &S_half_inv,
-		const FESystem<dim> &fe_system)
+		const DoFHandler<dim> &dof_handler)
 	{
-
+		Assert(class_initialized == true,ExcMessage("Please initialize the post proc class"));
 		if (constants.print_all)
 		{
 			if (constants.print_solution)
-				print_solution_to_file(triangulation,solution,S_half_inv,fe_system);
+				print_solution_to_file(triangulation,solution,S_half_inv,dof_handler);
 
 			if(constants.print_error)
-				print_error_to_file(triangulation,solution);
+				print_error_to_file(triangulation,solution,dof_handler);
 
 			if(constants.print_exactsolution)
 				print_exactsolution_to_file(triangulation,S_half_inv);
@@ -840,10 +865,10 @@ print_exactsolution_to_file(const Triangulation<dim> &triangulation,const Sparse
 			if (present_cycle == total_cycles - 1)
 			{
 				if(constants.print_solution)
-					print_solution_to_file(triangulation,solution,S_half_inv,fe_system);
+					print_solution_to_file(triangulation,solution,S_half_inv,dof_handler);
 
 				if(constants.print_error)
-					print_error_to_file(triangulation,solution);
+					print_error_to_file(triangulation,solution,dof_handler);
 
 				if(constants.print_exactsolution)
 					print_exactsolution_to_file(triangulation,S_half_inv);
@@ -862,39 +887,34 @@ print_exactsolution_to_file(const Triangulation<dim> &triangulation,const Sparse
 		const Vector<double> &solution,
 		const unsigned int present_cycle,
 		const unsigned int total_cycles,
-		const double L2_error,
-		const double Linfty_error,
-		const unsigned int active_cells,
-		const double hMax,
+		ConvergenceTable &convergence_table,
 		const Sparse_matrix &S_half_inv,
-		const FESystem<dim> &fe_system)
+		const hp::DoFHandler<dim> &dof_handler)
 	{
-
-   		// if we wish to print for all the refinement cycles
+		Assert(class_initialized == true,ExcMessage("Please initialize the post proc class"));
 		if (constants.print_all)
 		{
 			if (constants.print_solution)
-				print_solution_to_file(triangulation,solution,S_half_inv,fe_system);
+				print_solution_to_file(triangulation,solution,S_half_inv,dof_handler);
 
 			if(constants.print_error)
-				print_error_to_file(triangulation,solution);
+				print_error_to_file(triangulation,solution,dof_handler);
 
 			if(constants.print_exactsolution)
 				print_exactsolution_to_file(triangulation,S_half_inv);
 
 		}
 
-   		// if we wish to print only in the end of the computation
 		else
 		{
    			// only print in the final cycle
 			if (present_cycle == total_cycles - 1)
 			{
 				if(constants.print_solution)
-					print_solution_to_file(triangulation,solution,S_half_inv,fe_system);
+					print_solution_to_file(triangulation,solution,S_half_inv,dof_handler);
 
 				if(constants.print_error)
-					print_error_to_file(triangulation,solution);
+					print_error_to_file(triangulation,solution,dof_handler);
 
 				if(constants.print_exactsolution)
 					print_exactsolution_to_file(triangulation,S_half_inv);
@@ -902,120 +922,8 @@ print_exactsolution_to_file(const Triangulation<dim> &triangulation,const Sparse
 		}
 
 		if (constants.print_convergence_table)
-			print_convergence_table_to_file(L2_error,Linfty_error,hMax,active_cells);
+			print_convergence_table_to_file(convergence_table);
 
 	}
 
-   	template<int dim>
-	void
-	Base_PostProc<dim>::compute_error_print_manuel(const Vector<double> &solution,
-		const unsigned int active_cells,
-		const double hMax)
-	{
- 		// error variable comes from Basics. The following is the component in which
-		// we wish to find the error.
-        		// error variable comes from Basics. The following is the component in which
-		// we wish to find the error.
-		Assert(constants.variable_map.size() != 0,ExcMessage("Variable map not initialized"));
-		Assert(constants.variable_map_1D.size() != 0,ExcMessage("Variable map not initialized"));
-
-		unsigned int component;
-		
-		if (dim == 1)
-			component = constants.variable_map_1D.find(constants.error_variable)->second;
-
-		if (dim == 2)
-			component = constants.variable_map.find(constants.error_variable)->second;
-
-        // error per cell of the domain
-		Vector<double> error_per_cell(active_cells);      
-
-        ComponentSelectFunction<dim> weight(component,nEqn[0]);                              // used to compute only the error in theta
-
-        // computation of L2 error
-        VectorTools::integrate_difference (*mapping,*dof_handler,solution,
-        	*base_exactsolution,
-        	error_per_cell,
-        	QMidpoint<dim>(),
-        	VectorTools::L2_norm,
-        	&weight);  
-
-
-        const double L2_error = error_per_cell.l2_norm();
-
-        // computation of L_inifinity error
-        error_per_cell = 0;
-        VectorTools::integrate_difference (*mapping,*dof_handler,solution,
-        	*base_exactsolution,
-        	error_per_cell,
-        	QMidpoint<dim>(),
-        	VectorTools::Linfty_norm,
-        	&weight);  
-        
-
-        const double Linfty_error = error_per_cell.linfty_norm(); 
-        
-        FILE *fp;
-
-        // append the existing file and write values to it
-        fp = fopen(output_file_names.file_for_convergence_tables.c_str(),"a+"); 		
-        AssertThrow(fp != NULL,ExcMessage("Cant open file for convergence table writting"));
-
-        fprintf(fp, "L2_error Linfity_error active_cells hMax\n");
-        fprintf(fp, "%f %f %u %f \n",L2_error, Linfty_error, active_cells,hMax);
-
-        fclose(fp);
-
-    }
-
-   	template<int dim>
-    void
-    Base_PostProc<dim>::compute_error_unsymmetric(const Triangulation<dim> &triangulation,
-    	const Vector<double> &solution,
-    	const Sparse_matrix &S_half_inv,
-    	double &error)
-    {
-    	typename Triangulation<dim>::active_cell_iterator cell = triangulation.begin_active(),
-    	endc = triangulation.end();
-
-    	Assert(triangulation.n_active_cells() != 0, ExcMessage("No grid available"));
-    	Assert(solution.size() !=0 ,ExcMessage("solution not available"));
-
-    	Vector<double> exact_solution_value(nEqn[0]);
-    	Vector<double> solution_value(nEqn[0]);
-    	Vector<double> error_value(triangulation.n_active_cells());
-   				// error variable comes from Basics. The following is the component in which
-		// we wish to find the error.
-    	Assert(constants.variable_map.size() != 0,ExcMessage("Variable map not initialized"));
-    	Assert(constants.variable_map_1D.size() != 0,ExcMessage("Variable map not initialized"));
-
-    	unsigned int component;
-    	
-    	if (dim == 1)
-    		component = constants.variable_map_1D.find(constants.error_variable)->second;
-
-    	if (dim == 2)
-    		component = constants.variable_map.find(constants.error_variable)->second;
-
-    	
-
-    	for (; cell != endc ; cell++)
-    	{
-    		
-					VectorTools::point_value(*dof_handler, solution, cell->center(),solution_value);// compute the exact solution first
-					base_exactsolution->vector_value(cell->center(),exact_solution_value);  	
-
-					exact_solution_value = 	matrix_opt.Sparse_matrix_dot_Vector(S_half_inv,exact_solution_value);	
-					solution_value = 	matrix_opt.Sparse_matrix_dot_Vector(S_half_inv,solution_value);	
-
-					// compute the Linf error at the cell center
-					error_value(cell->index()) = fabs(exact_solution_value(component) - solution_value(component));
-				}
-
-				const double Linf_error = error_value.linfty_norm();
-				error = Linf_error;
-				std::cout << "Linf error from unsymmetric system: " << Linf_error << " #Cells: "<< triangulation.n_active_cells() << std::endl;
-			}
-
-
-		}
+}
