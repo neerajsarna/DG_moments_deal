@@ -46,14 +46,20 @@ using namespace dealii;
 				AssertDimension(constants.constants_num.refine_cycles,1);
 				AssertDimension(constants.constants_num.initial_refinement,1);
 
+
 				// value only stored for these number of cells
 				if (constants.constants_num.mesh_type == NACA5012)
 					AssertDimension(base_solver.triangulation.n_active_cells(),53);
+				
 
-				if (constants.constants_num.mesh_type == square_domain && constants.constants_num.problem_type != inflow_outflow)
+				if (constants.constants_num.mesh_type == square_domain && constants.constants_num.problem_type == inflow_outflow)
+				{
+
+
 					AssertDimension(base_solver.triangulation.n_active_cells(),61);
+				}
 
-				if (constants.constants_num.mesh_type == square_circular_cavity && constants.constants_num.problem_type != inflow_outflow)
+				if (constants.constants_num.mesh_type == square_circular_cavity && constants.constants_num.problem_type == inflow_outflow)
 					AssertDimension(base_solver.triangulation.n_active_cells(),476);
 
 

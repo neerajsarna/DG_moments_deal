@@ -41,8 +41,8 @@ std::vector<std::string> input_file;
 //#include "Test_MatrixOpt.h"
 //#include "Test_MeshGenerator.h"
 //#include "Test_VertexDof.h"
-#include "Test_Solver_Generic.h"
-//#include "Test_Solver_m_adaptive.h"
+//#include "Test_Solver_Generic.h"
+#include "Test_Solver_m_adaptive.h"
 
 #include "SystemA.h"
 

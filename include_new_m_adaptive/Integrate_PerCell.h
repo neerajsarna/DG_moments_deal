@@ -217,7 +217,7 @@ for (unsigned int q = 0 ; q < fe_v.n_quadrature_points ; q++)
   // Sigma in the PDF = Projector.transpose * Sigma(In the code)
   Full_matrix Sigma_B_P =       Projector.transpose()
                                * system_info[fe_index].system_data.Sigma.matrix 
-                               * Btemp
+                               * B_temp
                                * Projector;
 
   Full_matrix Sigma = Projector.transpose()

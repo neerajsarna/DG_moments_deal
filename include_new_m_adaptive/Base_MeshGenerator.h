@@ -119,6 +119,8 @@ namespace MeshGenerator
 	Base_MeshGenerator<dim>::refinement_handling(const unsigned int present_cycle,
 												 const unsigned int total_cycles)
 	{
+		// we do not refine if we are on the last cycle 
+	   if (present_cycle != total_cycles - 1)
 		switch (constants.mesh_type)
 		{
 			case ring:
