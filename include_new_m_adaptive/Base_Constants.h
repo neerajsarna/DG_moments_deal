@@ -533,7 +533,7 @@ namespace Constants
 
 			prm.declare_entry("initial_refinement",
 				"1",
-				Patterns::Integer(1,8),
+				Patterns::Integer(1,50),
 				"initial level of refinement");
 
 			prm.declare_entry("inner_radius",
@@ -595,7 +595,7 @@ namespace Constants
 		prm_system_info.leave_subsection();
 
 
-			AssertDimension(constants_sys.total_systems,1);
+			AssertDimension(constants_sys.total_systems,3);
 
 
 			constants_sys.nEqn.resize(constants_sys.total_systems);

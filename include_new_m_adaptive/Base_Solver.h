@@ -66,8 +66,12 @@ namespace FEM_Solver
             void construct_fe_collection();
             
 
-        	void distribute_dof_allocate_matrix();
-            void allocate_fe_index();
+        	void distribute_dof_allocate_matrix(Vector<double> &error_per_cell, const double tolerance,
+                                                const unsigned int present_cycle, const unsigned int total_cycles);
+
+            void allocate_fe_index(Vector<double> &error_per_cell, const double tolerance,
+                                 const unsigned int present_cycle, const unsigned int total_cycles);
+
 		    void allocate_vectors(); 
             void run();
 
@@ -154,6 +158,7 @@ namespace FEM_Solver
 
          //    // the following quantity is a measure of how good our FE solution satisfies the strong form of the equations
              Vector<double> residual;
+             Vector<double> error_per_cell_VelocitySpace;
             
 	};
 
@@ -180,7 +185,7 @@ namespace FEM_Solver
 	ngp_face(constants.p + 1)
 	{
         // we have not implemented any other system till now
-        AssertDimension(nEqn.size(),1);
+        AssertDimension(nEqn.size(),3);
 
         // we construct the block structure for the finite element object and develop the finite element objects 
         // which will be needed for the present problem
@@ -213,10 +218,12 @@ namespace FEM_Solver
     //can be used for all the applications apart from periodic box
     template<int dim>
     void
-    Base_Solver<dim>::distribute_dof_allocate_matrix()
+    Base_Solver<dim>::distribute_dof_allocate_matrix(Vector<double> &error_per_cell, const double tolerance,
+                                                const unsigned int present_cycle, const unsigned int total_cycles)
     {
         // first we need to allocate the fe_index for all the cells
-        allocate_fe_index();
+        allocate_fe_index(error_per_cell, tolerance,
+                          present_cycle,total_cycles);
 
         dof_handler.distribute_dofs(finite_element);
 
@@ -238,6 +245,7 @@ namespace FEM_Solver
 	solution.reinit(dof_handler.n_dofs());
 	system_rhs.reinit(dof_handler.n_dofs());
     residual.reinit(dof_handler.n_dofs());
+    error_per_cell_VelocitySpace.reinit(this->triangulation.n_active_cells());
    }
 
   

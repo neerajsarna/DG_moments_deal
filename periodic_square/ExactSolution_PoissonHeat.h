@@ -544,14 +544,23 @@ namespace ExactSolution
 
 				}
 
+				if (this->Ntensors == 12)
+				{
 
-				if (this->Ntensors == 12 || 
+					developed_exact_solution = true;
+
+					value[ID_theta] = 0.9899466270992661*x + 0.00010116292970230688*sinh(1.8186266940442457*x) + 
+   									  0.0019797047973874405*sinh(2.3891354429537364*x) + 0.004978603330380985*sinh(3.687003638620778*x) + 
+   									  0.00038639730251888393*sinh(10.604506967165621*x);
+
+				}
+
+				if (
 					this->Ntensors == 15 ||
 					this->Ntensors == 16 ||
 				    this->Ntensors == 19 ||
 					this->Ntensors == 20)
 				{
-					developed_exact_solution  = true;
 					AssertThrow(1 == 0,ExcMessage("Should not have reached here"));
 				}
 

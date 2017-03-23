@@ -77,89 +77,131 @@ Base_Solver<dim>::construct_fe_collection()
 
 template<>
 void 
-Base_Solver<1>::allocate_fe_index()
+Base_Solver<1>::allocate_fe_index(Vector<double> &error_per_cell, const double tolerance,
+								  const unsigned int present_cycle, const unsigned int total_cycles)
 {
 	typename hp::DoFHandler<1>::active_cell_iterator cell = dof_handler.begin_active(), endc = dof_handler.end();
+	unsigned int counter = 0;
+	unsigned int refined = 0;
 
-	// fraction of the half of the domain which will receive lower order moments
-	const double domain_adapt = 2.0;
-
-	// has not been implemented for more than two systems
-	AssertThrow(nEqn.size() == 2 || nEqn.size() == 1 || nEqn.size() == 4,ExcNotImplemented());
-
-	switch(nEqn.size())
+	//if (present_cycle == 0)
+	for (; cell != endc ; cell++)
 	{
-		case 1:
-		{
-			for (; cell != endc ; cell++)
-				cell->set_active_fe_index(0);		
-
-			break;			
-		}
-
-		case 2:
-		{
-			for (; cell != endc ; cell++)
-			{
-				// // higher order moment theory near the boundary
-				if (cell->center()(0) >= domain_adapt * 0.5 || cell->center()(0) <= -domain_adapt * 0.5)
-					cell->set_active_fe_index(1);
-
-				// lower order moment theory towards the interior
-				if (cell->center()(0) > -domain_adapt * 0.5 && cell->center()(0) < domain_adapt * 0.5)					
-					cell->set_active_fe_index(0);		
-
-				// we now consider two cells. one of them gets
-				// Assert(cell->index() <= 1 ,ExcNotImplemented());
-				// if (cell->index() == 0 )
-				// 	cell->set_active_fe_index(0);
-
-				// if (cell->index() == 1)
-				// 	cell->set_active_fe_index(1);
-
-			}
-
-			break;
-		}
-
-
-		case 4:
-		{
-			for (; cell != endc ; cell++)
-			{
-				// // higher order moment theory near the boundary
-				// if (cell->center()(0) > domain_adapt * 0.5 || cell->center()(0) < -domain_adapt * 0.5)
-				// 	cell->set_active_fe_index(1);
-
-				// // lower order moment theory towards the interior
-				// if (cell->center()(0) >= -domain_adapt * 0.5 && cell->center()(0) <= domain_adapt * 0.5)					
-				// 	cell->set_active_fe_index(0);		
-
-				// we now consider two cells. one of them gets
-				Assert(cell->index() <= 3 ,ExcNotImplemented());
-				if (cell->index() == 0 )
-					cell->set_active_fe_index(0);
-
-				if (cell->index() == 1)
-					cell->set_active_fe_index(1);
-
-				if (cell->index() == 2)
-					cell->set_active_fe_index(2);
-
-				if (cell->index() == 3)
-					cell->set_active_fe_index(3);
-			}
-
-			break;
-		}
-
-		default:
-		{
-			AssertThrow(1 == 0,ExcMessage("Should not have reached here"));
-			break;
-		}
+		cell->set_active_fe_index(1);
 
 	}
+
+
+
+	// else
+	// for (; cell != endc ; cell++)
+	// {
+	// 	// we refine if the tolerance is large
+	// 	// if (error_per_cell(counter) > tolerance )
+	// 	// {
+	// 	// 	if (cell->active_fe_index() == 0)
+	// 	// 	{
+	// 	// 		refined++;
+	// 	// 		cell->set_active_fe_index(1);
+	// 	// 	}
+	// 	// }
+
+	// 	// we refine anyhow if the cell is near the boundary
+	// 	if (fabs(cell->center()(0)) >= 0.0)
+	// 	{
+	// 		if (cell->active_fe_index() == 0)
+	// 		{
+	// 			refined++;
+	// 			cell->set_active_fe_index(1);
+	// 		}
+	// 	}
+
+
+	// 	counter++;
+
+	// }
+	// std::cout << "Cells refined: " << refined << std::endl;
+
+	// // fraction of the half of the domain which will receive lower order moments
+	// const double domain_adapt = 0.0;
+
+	// // has not been implemented for more than two systems
+	// AssertThrow(nEqn.size() == 2 || nEqn.size() == 1 || nEqn.size() == 4 || nEqn.size() == 3,ExcNotImplemented());
+
+	// switch(nEqn.size())
+	// {
+	// 	case 1:
+	// 	{
+	// 		for (; cell != endc ; cell++)
+	// 			cell->set_active_fe_index(0);		
+
+	// 		break;			
+	// 	}
+
+	// 	case 2:
+	// 	case 3:
+	// 	{
+	// 		for (; cell != endc ; cell++)
+	// 		{
+	// 			// // // higher order moment theory near the boundary
+	// 			if (cell->center()(0) >= domain_adapt * 0.5 || cell->center()(0) <= -domain_adapt * 0.5)
+	// 				cell->set_active_fe_index(1);
+
+	// 			// lower order moment theory towards the interior
+	// 			if (cell->center()(0) > -domain_adapt * 0.5 && cell->center()(0) < domain_adapt * 0.5)					
+	// 				cell->set_active_fe_index(0);		
+
+	// 			// we now consider two cells. one of them gets	
+	// 			// Assert(cell->index() <= 1 ,ExcNotImplemented());
+	// 			// if (cell->index() == 0 )
+	// 			// 	cell->set_active_fe_index(0);
+
+	// 			// if (cell->index() == 1)
+	// 			// 	cell->set_active_fe_index(1);
+
+	// 		}
+
+	// 		break;
+	// 	}
+
+
+	// 	case 4:
+	// 	{
+	// 		for (; cell != endc ; cell++)
+	// 		{
+	// 			// // higher order moment theory near the boundary
+	// 			// if (cell->center()(0) > domain_adapt * 0.5 || cell->center()(0) < -domain_adapt * 0.5)
+	// 			// 	cell->set_active_fe_index(1);
+
+	// 			// // lower order moment theory towards the interior
+	// 			// if (cell->center()(0) >= -domain_adapt * 0.5 && cell->center()(0) <= domain_adapt * 0.5)					
+	// 			// 	cell->set_active_fe_index(0);		
+
+	// 			// we now consider two cells. one of them gets
+	// 			Assert(cell->index() <= 3 ,ExcNotImplemented());
+	// 			if (cell->index() == 0 )
+	// 				cell->set_active_fe_index(0);
+
+	// 			if (cell->index() == 1)
+	// 				cell->set_active_fe_index(1);
+
+	// 			if (cell->index() == 2)
+	// 				cell->set_active_fe_index(2);
+
+	// 			if (cell->index() == 3)
+	// 				cell->set_active_fe_index(3);
+	// 		}
+
+	// 		break;
+	// 	}
+
+	// 	default:
+	// 	{
+	// 		AssertThrow(1 == 0,ExcMessage("Should not have reached here"));
+	// 		break;
+	// 	}
+
+	// }
 
 }
 
@@ -167,7 +209,8 @@ Base_Solver<1>::allocate_fe_index()
 // allocation of finite element objects for a 2D problem
 template<>
 void 
-Base_Solver<2>::allocate_fe_index()
+Base_Solver<2>::allocate_fe_index(Vector<double> &error_per_cell, const double tolerance,
+								  const unsigned int present_cycle, const unsigned int total_cycles)
 {
 	typename hp::DoFHandler<2>::active_cell_iterator cell = dof_handler.begin_active(), endc = dof_handler.end();
 
@@ -176,6 +219,12 @@ Base_Solver<2>::allocate_fe_index()
 	AssertDimension(nEqn.size(),1);
 
 	for (; cell != endc ; cell++)
-		cell->set_active_fe_index(0);
+	{
+		if (cell->index() %2 == 0)
+			cell->set_active_fe_index(0);
+
+		if (cell->index() %2 != 0)
+			cell->set_active_fe_index(1);
+	}
 
 }

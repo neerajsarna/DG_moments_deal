@@ -65,6 +65,13 @@ namespace PostProc
 									const hp::DoFHandler<dim> &dof_handler);
 
 
+      		// error evaluation based upon gauss quadrature
+		Vector<double> return_error_per_cell(const Vector<double> &solution,
+											 const unsigned int active_cells,
+											 const hp::MappingCollection<dim> &mapping,
+											 const hp::DoFHandler<dim> &dof_handler);
+
+
 		void error_evaluation_QGauss(const Vector<double> &solution,
 									const unsigned int active_cells,
 									double &error_value,
@@ -328,8 +335,9 @@ Assert(class_initialized == true,ExcMessage("Please initialize the post proc cla
 			QGauss<dim> quadrature_basic(ngp);			
 			hp::QCollection<dim> hp_quadrature;
 
-			hp_quadrature.push_back(quadrature_basic);
-			hp_quadrature.push_back(quadrature_basic);
+			for (unsigned long int i = 0 ; i < nEqn.size() ; i++)
+				hp_quadrature.push_back(quadrature_basic);
+				
 
 
 			VectorTools::integrate_difference (mapping,dof_handler,solution,
@@ -383,8 +391,9 @@ Assert(class_initialized == true,ExcMessage("Please initialize the post proc cla
 		const unsigned int ngp = constants.p + 1;
 		QGauss<dim> quadrature_basic(ngp);			
 		hp::QCollection<dim> hp_quadrature;
-		hp_quadrature.push_back(quadrature_basic);
-		hp_quadrature.push_back(quadrature_basic);
+		
+		for (unsigned long int i = 0 ; i < nEqn.size() ; i++)
+				hp_quadrature.push_back(quadrature_basic);
 
 
 		used_qgauss = true;
@@ -925,5 +934,56 @@ print_exactsolution_to_file(const Triangulation<dim> &triangulation,const Sparse
 			print_convergence_table_to_file(convergence_table);
 
 	}
+
+	// evaluates the error per cell using gausian quadrature
+	template<int dim>
+	Vector<double>
+	Base_PostProc<dim>::return_error_per_cell(const Vector<double> &solution,
+		const unsigned int active_cells,
+		const hp::MappingCollection<dim> &mapping,
+		const hp::DoFHandler<dim> &dof_handler)
+	{
+		const unsigned int ngp = constants.p + 1;
+		QGauss<dim> quadrature_basic(ngp);			
+		hp::QCollection<dim> hp_quadrature;
+		
+		for (unsigned long int i = 0 ; i < nEqn.size() ; i++)
+				hp_quadrature.push_back(quadrature_basic);
+
+
+		used_qgauss = true;
+		Assert(class_initialized == true,ExcMessage("Please initialize the post proc class"));
+
+		// error variable comes from Basics. The following is the component in which
+		// we wish to find the error.
+        		// error variable comes from Basics. The following is the component in which
+		// we wish to find the error.
+		Assert(constants.variable_map.size() != 0,ExcMessage("Variable map not initialized"));
+		Assert(constants.variable_map_1D.size() != 0,ExcMessage("Variable map not initialized"));
+
+		unsigned int component;
+		
+		if (dim == 1)
+			component = constants.variable_map_1D.find(constants.error_variable)->second;
+
+		if (dim == 2)
+			component = constants.variable_map.find(constants.error_variable)->second;
+
+        // error per cell of the domain
+		Vector<double> error_per_cell(active_cells);      
+
+        ComponentSelectFunction<dim> weight(component,max_equations);                              // used to compute only the error in theta
+
+        // computation of L2 error
+        VectorTools::integrate_difference (mapping,dof_handler,solution,
+        								  *base_exactsolution,
+        								   error_per_cell,
+        								   hp_quadrature,
+        								   VectorTools::L2_norm,
+        								   &weight);  
+
+        return(error_per_cell);
+
+    }
 
 }

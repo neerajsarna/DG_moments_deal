@@ -66,8 +66,10 @@ Base_Solver<dim>
     
   }
 
-  // std::string filename = "cell_matrix_internal" + std::to_string(fe_index);
-
+  // std::string filename = "cell_matrix_fe_index_" + std::to_string(fe_index);
+  // std::string str = boost::lexical_cast<std::string>(fe_v.quadrature_point(0));
+  // filename += "_" + str;
+  
   // matrix_opt.print_dealii_full(cell_matrix,filename);
 
 
@@ -259,6 +261,12 @@ for (unsigned int q = 0 ; q < fe_v.n_quadrature_points ; q++)
 
 
 }
+
+  // std::string filename = "boundary_matrix_fe_index_" + std::to_string(fe_index);
+  // std::string str = boost::lexical_cast<std::string>(fe_v.quadrature_point(0));
+  // filename += "_bid_" + std::to_string(b_id);
+  
+  // matrix_opt.print_dealii_full(cell_matrix,filename);
 }
 
 template<int dim>
@@ -285,8 +293,9 @@ Base_Solver<dim>
 
     //CAUTION: ASSUMPTION OF STRAIGHT EDGES IN THE INTERIOR
     Tensor<1,dim> outward_normal = fe_v.normal_vector(0);
-    Eigen::MatrixXd Am = system_info[std::max(fe_index1,fe_index2)].build_Aminus(outward_normal);
-    Eigen::MatrixXd Am_neighbor = system_info[std::max(fe_index1,fe_index2)].build_Aminus(-outward_normal);
+    const unsigned int max_fe_index = std::max(fe_index1,fe_index2);
+    Eigen::MatrixXd Am = system_info[max_fe_index].build_Aminus(outward_normal);
+    Eigen::MatrixXd Am_neighbor = system_info[max_fe_index].build_Aminus(-outward_normal);
     const unsigned int nEqn_this = nEqn[fe_index1];
     const unsigned int nEqn_neighbor = nEqn[fe_index2];
 
@@ -320,4 +329,20 @@ Base_Solver<dim>
     u1_v2 = matrix_opt.multiply_scalar(-0.5,matrix_opt.compute_A_outer_B_limitA(Am_neighbor,Mass_u1_v2,nEqn_neighbor,nEqn_this));
     u2_v2 = matrix_opt.multiply_scalar(0.5,matrix_opt.compute_A_outer_B_limitA(Am_neighbor,Mass_u2_v2,nEqn_neighbor,nEqn_neighbor));
 
+
+  // std::string filename = "u1_v1_fe_index_" + std::to_string(fe_index1);
+  
+  // matrix_opt.print_dealii_full(u1_v1,filename);
+
+  // filename = "u1_v2_fe_index_" + std::to_string(fe_index1);
+  
+  // matrix_opt.print_dealii_full(u1_v2,filename);
+
+  //   filename = "u2_v1_fe_index_" + std::to_string(fe_index1);
+  
+  // matrix_opt.print_dealii_full(u2_v1,filename);
+
+  //   filename = "u2_v2_fe_index_" + std::to_string(fe_index1);
+  
+  // matrix_opt.print_dealii_full(u2_v2,filename);
 }

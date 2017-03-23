@@ -2,7 +2,7 @@
 	void
 	Base_MeshGenerator<dim>::mesh_internal_line()
 	{
-		GridGenerator::hyper_cube(triangulation,-0.5,0.5);
+		GridGenerator::hyper_cube(triangulation,constants.xl,constants.xr);
 
 		switch(constants.problem_type)
 		{
@@ -45,11 +45,11 @@
 			for (unsigned int face = 0 ; face < GeometryInfo<dim>::faces_per_cell ; face++)
 				{
 					// inflow of the line
-					if (fabs(cell->face(face)->center()(0)) < 1e-10)
+					if (fabs(cell->face(face)->center()(0)-constants.xl) < 1e-10)
 						cell->face(face)->set_boundary_id(101);
 
 					// outflow of the line
-					if (fabs(cell->face(face)->center()(0) - 1) < 1e-10)
+					if (fabs(cell->face(face)->center()(0) - constants.xr) < 1e-10)
 						cell->face(face)->set_boundary_id(102);
 				}
 
@@ -65,11 +65,11 @@
 			for (unsigned int face = 0 ; face < GeometryInfo<dim>::faces_per_cell ; face++)
 				{
 					// left edge of the line
-					if (fabs(cell->face(face)->center()(0)) < 1e-10)
+					if (fabs(cell->face(face)->center()(0)-constants.xl) < 1e-10)
 						cell->face(face)->set_boundary_id(0);
 
 					// right edge of the line
-					if (fabs(cell->face(face)->center()(0) - 1) < 1e-10)
+					if (fabs(cell->face(face)->center()(0) - constants.xr) < 1e-10)
 						cell->face(face)->set_boundary_id(1);
 				}		
 	}

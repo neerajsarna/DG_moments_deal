@@ -101,7 +101,7 @@ Base_Solver<dim>::run()
 
 		
 		postproc.print_options(this->triangulation,solution,i,refine_cycles,convergence_table,
-								system_info[0].base_tensorinfo.S_half_inv,dof_handler);		
+								system_info[nEqn.size()-1].base_tensorinfo.S_half_inv,dof_handler);		
 		
 		timer.leave_subsection();
 

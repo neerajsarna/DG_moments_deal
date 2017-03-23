@@ -38,7 +38,7 @@ CMakeFiles/test.out.dir/main.cc.o: ../../periodic_square/MeshGenerator_PeriodicS
 CMakeFiles/test.out.dir/main.cc.o: ../../ring/ExactSolution_SystemA.h
 CMakeFiles/test.out.dir/main.cc.o: ../../systems/BCrhs_systemA.h
 CMakeFiles/test.out.dir/main.cc.o: ../../systems/SystemA.h
-CMakeFiles/test.out.dir/main.cc.o: ../Test_Generic/Test_Solver_m_adaptive.h
+CMakeFiles/test.out.dir/main.cc.o: ../Test_Generic/Test_Run.h
 CMakeFiles/test.out.dir/main.cc.o: ../include_tests_G20/basic_routines.h
 CMakeFiles/test.out.dir/main.cc.o: /Applications/deal.II.app/Contents/Resources/include/deal.II/algorithms/any_data.h
 CMakeFiles/test.out.dir/main.cc.o: /Applications/deal.II.app/Contents/Resources/include/deal.II/algorithms/named_selection.h

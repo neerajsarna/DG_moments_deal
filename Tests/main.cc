@@ -42,7 +42,10 @@ std::vector<std::string> input_file;
 //#include "Test_MeshGenerator.h"
 //#include "Test_VertexDof.h"
 //#include "Test_Solver_Generic.h"
-#include "Test_Solver_m_adaptive.h"
+//#include "Test_Solver_m_adaptive.h"
+//#include "Test_Assembly.h"
+//#include "Test_Assembly_MAdaptive.h"
+#include "Test_Run.h"
 
 #include "SystemA.h"
 

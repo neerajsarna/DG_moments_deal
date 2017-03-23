@@ -81,6 +81,7 @@ namespace Develop_System
 	void 
 	System<dim>::initialize_system()
 	{
+		this->initialized_system = true;
 		// we reinitialize all the data for base_tensorinfo for this particular system
 		this->base_tensorinfo.reinit();
 

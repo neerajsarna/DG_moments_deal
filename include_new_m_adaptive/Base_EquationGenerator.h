@@ -51,6 +51,8 @@ namespace EquationGenerator
 
 			};
 
+			bool initialized_system = false;
+
 			// a data structure to store all the system data
 			equation_data system_data;
 
@@ -507,6 +509,8 @@ namespace EquationGenerator
 
 		Assert(base_tensorinfo.varIdx.rows() != 0 || base_tensorinfo.varIdx.cols() !=0 ,
 				ExcMessage("Base tensor info not initialized"));
+
+		Assert(initialized_system,ExcMessage("You are trying to access Projector development without initializing the system. Please initialize the system first."));
 
 		return(base_tensorinfo.reinit_global_2D(nx,ny));
 	}

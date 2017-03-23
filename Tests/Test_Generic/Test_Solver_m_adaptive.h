@@ -24,7 +24,7 @@ TEST(MAdaptiveSolver,HandlesMAdaptiveSolver)
 		
 
 		// the tests have not been implemented for more than one system
-		AssertDimension(constants.constants_sys.total_systems,1);
+		AssertDimension(constants.constants_sys.total_systems,2);
 		Assert(constants.constants_num.problem_type != periodic,ExcNotImplemented());
 
 		if(constants.constants_num.problem_type != periodic)
@@ -33,8 +33,8 @@ TEST(MAdaptiveSolver,HandlesMAdaptiveSolver)
 			{
 
 				// the exact solution can only be created for one of the systems
-				ExactSolution::ExactSolution_Dummy<dim>  exactsolution_dummy(constants.constants_num,System[0].base_tensorinfo.S_half,
-																			 constants.constants_sys.nEqn[0],constants.constants_sys.Ntensors[0]);
+				ExactSolution::ExactSolution_Dummy<dim>  exactsolution_dummy(constants.constants_num,System[constants.constants_sys.total_systems-1].base_tensorinfo.S_half,
+																			 constants.constants_sys.nEqn[constants.constants_sys.total_systems-1],constants.constants_sys.Ntensors[constants.constants_sys.total_systems-1]);
 
 				FEM_Solver::Base_Solver<dim> base_solver("grid",
 											 	 constants.constants_num,
@@ -102,8 +102,8 @@ TEST(MAdaptiveSolver,HandlesMAdaptiveSolver)
 			if (dim == 1)
 			{
 
-				ExactSolution::PoissonHeat<dim>  PoissonHeat(constants.constants_num,System[0].base_tensorinfo.S_half,
-													constants.constants_sys.nEqn[0],constants.constants_sys.Ntensors[0]);
+				ExactSolution::PoissonHeat<dim>  PoissonHeat(constants.constants_num,System[constants.constants_sys.total_systems-1].base_tensorinfo.S_half,
+													constants.constants_sys.nEqn[constants.constants_sys.total_systems-1],constants.constants_sys.Ntensors[constants.constants_sys.total_systems-1]);
 
 				FEM_Solver::Base_Solver<dim> base_solver("grid",
 											 	 constants.constants_num,
@@ -120,7 +120,7 @@ TEST(MAdaptiveSolver,HandlesMAdaptiveSolver)
 
 				AssertDimension(constants.constants_num.refine_cycles,3);
 				AssertDimension(constants.constants_num.initial_refinement,1);
-				AssertDimension(constants.constants_sys.total_systems,1);
+				AssertDimension(constants.constants_sys.total_systems,2);
 				std::vector<double> error_manuel(constants.constants_num.refine_cycles);
 
 				if(constants.constants_sys.Ntensors[0] == 6)
