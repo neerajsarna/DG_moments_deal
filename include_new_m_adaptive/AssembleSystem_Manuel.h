@@ -104,7 +104,7 @@ Base_Solver<dim>::assemble_system_odd()
         const unsigned int fe_index = cell->active_fe_index();
         const unsigned int dofs_this_cell = dofs_per_cell[fe_index];
 
-        Assert(fe_index <=3 ,ExcNotImplemented());
+        Assert(fe_index <= max_fe_index ,ExcNotImplemented());
         cell_rhs[fe_index] = 0;
 
 
@@ -309,4 +309,7 @@ Base_Solver<dim>::assemble_system_odd()
       }
 }
 
+
+
+  
   

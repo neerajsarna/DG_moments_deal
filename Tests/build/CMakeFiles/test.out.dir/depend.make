@@ -29,6 +29,7 @@ CMakeFiles/test.out.dir/main.cc.o: ../../include_new_m_adaptive/MeshGenerator_Sq
 CMakeFiles/test.out.dir/main.cc.o: ../../include_new_m_adaptive/MeshGenerator_Square_CircularCavity.h
 CMakeFiles/test.out.dir/main.cc.o: ../../include_new_m_adaptive/Run_System.h
 CMakeFiles/test.out.dir/main.cc.o: ../../include_new_m_adaptive/basic_data_structures.h
+CMakeFiles/test.out.dir/main.cc.o: ../../include_new_m_adaptive/compute_equilibrium_deviation.h
 CMakeFiles/test.out.dir/main.cc.o: ../../include_new_m_adaptive/dof_handler_m_adaptivity.h
 CMakeFiles/test.out.dir/main.cc.o: ../../include_new_m_adaptive/include_deal.h
 CMakeFiles/test.out.dir/main.cc.o: ../../include_new_m_adaptive/parse_command_line.h
@@ -167,6 +168,7 @@ CMakeFiles/test.out.dir/main.cc.o: /Applications/deal.II.app/Contents/Resources/
 CMakeFiles/test.out.dir/main.cc.o: /Applications/deal.II.app/Contents/Resources/include/deal.II/fe/fe_q.h
 CMakeFiles/test.out.dir/main.cc.o: /Applications/deal.II.app/Contents/Resources/include/deal.II/fe/fe_q_base.h
 CMakeFiles/test.out.dir/main.cc.o: /Applications/deal.II.app/Contents/Resources/include/deal.II/fe/fe_system.h
+CMakeFiles/test.out.dir/main.cc.o: /Applications/deal.II.app/Contents/Resources/include/deal.II/fe/fe_tools.h
 CMakeFiles/test.out.dir/main.cc.o: /Applications/deal.II.app/Contents/Resources/include/deal.II/fe/fe_update_flags.h
 CMakeFiles/test.out.dir/main.cc.o: /Applications/deal.II.app/Contents/Resources/include/deal.II/fe/fe_values.h
 CMakeFiles/test.out.dir/main.cc.o: /Applications/deal.II.app/Contents/Resources/include/deal.II/fe/fe_values_extractors.h

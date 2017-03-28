@@ -188,6 +188,7 @@ namespace Constants
 				Patterns::Integer(2,100),
 				"total number of boundary conditions needed for the system");
 
+			//*****************
 			prm_system_info.declare_entry("Ntensors3",
 				"2",
 				Patterns::Integer(2,100),
@@ -208,6 +209,90 @@ namespace Constants
 				Patterns::Integer(2,100),
 				"total number of boundary conditions needed for the system");
 
+			//////********************
+			prm_system_info.declare_entry("Ntensors4",
+				"2",
+				Patterns::Integer(2,100),
+				"number of tensors");
+
+			prm_system_info.declare_entry("system_id4",
+				"6",
+				Patterns::Integer(-100,100),
+				"system ID(distinguish between regularized and normal theories)");
+
+			prm_system_info.declare_entry("num_equations4",
+				"3",
+				Patterns::Integer(3,100),
+				"total number of equations in system");
+
+			prm_system_info.declare_entry("nBC4",
+				"2",
+				Patterns::Integer(2,100),
+				"total number of boundary conditions needed for the system");
+
+			//*********************
+			prm_system_info.declare_entry("Ntensors5",
+				"2",
+				Patterns::Integer(2,100),
+				"number of tensors");
+
+			prm_system_info.declare_entry("system_id5",
+				"6",
+				Patterns::Integer(-100,100),
+				"system ID(distinguish between regularized and normal theories)");
+
+			prm_system_info.declare_entry("num_equations5",
+				"3",
+				Patterns::Integer(3,100),
+				"total number of equations in system");
+
+			prm_system_info.declare_entry("nBC5",
+				"2",
+				Patterns::Integer(2,100),
+				"total number of boundary conditions needed for the system");
+
+			//**************************
+			prm_system_info.declare_entry("Ntensors6",
+				"2",
+				Patterns::Integer(2,100),
+				"number of tensors");
+
+			prm_system_info.declare_entry("system_id6",
+				"6",
+				Patterns::Integer(-100,100),
+				"system ID(distinguish between regularized and normal theories)");
+
+			prm_system_info.declare_entry("num_equations6",
+				"3",
+				Patterns::Integer(3,100),
+				"total number of equations in system");
+
+			prm_system_info.declare_entry("nBC6",
+				"2",
+				Patterns::Integer(2,100),
+				"total number of boundary conditions needed for the system");
+
+
+			//*************************
+				prm_system_info.declare_entry("Ntensors7",
+				"2",
+				Patterns::Integer(2,100),
+				"number of tensors");
+
+			prm_system_info.declare_entry("system_id7",
+				"6",
+				Patterns::Integer(-100,100),
+				"system ID(distinguish between regularized and normal theories)");
+
+			prm_system_info.declare_entry("num_equations7",
+				"3",
+				Patterns::Integer(3,100),
+				"total number of equations in system");
+
+			prm_system_info.declare_entry("nBC7",
+				"2",
+				Patterns::Integer(2,100),
+				"total number of boundary conditions needed for the system");
 
 		}
 		prm_system_info.leave_subsection();
@@ -226,7 +311,7 @@ namespace Constants
 
 			prm.declare_entry("total h refinement cycles",
 				"1",
-				Patterns::Integer(1,10),
+				Patterns::Integer(1,100),
 				"total number of h refinement cycles");
 
 			prm.declare_entry("type of refinement",
@@ -595,7 +680,8 @@ namespace Constants
 		prm_system_info.leave_subsection();
 
 
-			AssertDimension(constants_sys.total_systems,3);
+			// we check the total number of systems we are loading into our program
+			AssertDimension(constants_sys.total_systems,2);
 
 
 			constants_sys.nEqn.resize(constants_sys.total_systems);
@@ -678,7 +764,169 @@ namespace Constants
 				constants_sys.system_id[3] = prm_system_info.get_integer("system_id3");
 			}
 
+			if (constants_sys.total_systems == 5)
+			{
+				constants_sys.nEqn[0] = prm_system_info.get_integer("num_equations0");
+				constants_sys.Ntensors[0] = prm_system_info.get_integer("Ntensors0");
+				constants_sys.nBC[0] = prm_system_info.get_integer("nBC0");
+				constants_sys.system_id[0] = prm_system_info.get_integer("system_id0");			
 
+				// details of the second system
+				constants_sys.nEqn[1] = prm_system_info.get_integer("num_equations1");
+				constants_sys.Ntensors[1] = prm_system_info.get_integer("Ntensors1");
+				constants_sys.nBC[1] = prm_system_info.get_integer("nBC1");
+				constants_sys.system_id[1] = prm_system_info.get_integer("system_id1");						
+
+
+				// details of the second system
+				constants_sys.nEqn[2] = prm_system_info.get_integer("num_equations2");
+				constants_sys.Ntensors[2] = prm_system_info.get_integer("Ntensors2");
+				constants_sys.nBC[2] = prm_system_info.get_integer("nBC2");
+				constants_sys.system_id[2] = prm_system_info.get_integer("system_id2");		
+
+				// details of the fourth system
+				constants_sys.nEqn[3] = prm_system_info.get_integer("num_equations3");
+				constants_sys.Ntensors[3] = prm_system_info.get_integer("Ntensors3");
+				constants_sys.nBC[3] = prm_system_info.get_integer("nBC3");
+				constants_sys.system_id[3] = prm_system_info.get_integer("system_id3");
+
+				constants_sys.nEqn[4] = prm_system_info.get_integer("num_equations4");
+				constants_sys.Ntensors[4] = prm_system_info.get_integer("Ntensors4");
+				constants_sys.nBC[4] = prm_system_info.get_integer("nBC4");
+				constants_sys.system_id[4] = prm_system_info.get_integer("system_id4");
+
+			}
+
+
+			if (constants_sys.total_systems == 6)
+			{
+				constants_sys.nEqn[0] = prm_system_info.get_integer("num_equations0");
+				constants_sys.Ntensors[0] = prm_system_info.get_integer("Ntensors0");
+				constants_sys.nBC[0] = prm_system_info.get_integer("nBC0");
+				constants_sys.system_id[0] = prm_system_info.get_integer("system_id0");			
+
+				// details of the second system
+				constants_sys.nEqn[1] = prm_system_info.get_integer("num_equations1");
+				constants_sys.Ntensors[1] = prm_system_info.get_integer("Ntensors1");
+				constants_sys.nBC[1] = prm_system_info.get_integer("nBC1");
+				constants_sys.system_id[1] = prm_system_info.get_integer("system_id1");						
+
+
+				// details of the second system
+				constants_sys.nEqn[2] = prm_system_info.get_integer("num_equations2");
+				constants_sys.Ntensors[2] = prm_system_info.get_integer("Ntensors2");
+				constants_sys.nBC[2] = prm_system_info.get_integer("nBC2");
+				constants_sys.system_id[2] = prm_system_info.get_integer("system_id2");		
+
+				// details of the fourth system
+				constants_sys.nEqn[3] = prm_system_info.get_integer("num_equations3");
+				constants_sys.Ntensors[3] = prm_system_info.get_integer("Ntensors3");
+				constants_sys.nBC[3] = prm_system_info.get_integer("nBC3");
+				constants_sys.system_id[3] = prm_system_info.get_integer("system_id3");
+
+				constants_sys.nEqn[4] = prm_system_info.get_integer("num_equations4");
+				constants_sys.Ntensors[4] = prm_system_info.get_integer("Ntensors4");
+				constants_sys.nBC[4] = prm_system_info.get_integer("nBC4");
+				constants_sys.system_id[4] = prm_system_info.get_integer("system_id4");
+
+
+				constants_sys.nEqn[5] = prm_system_info.get_integer("num_equations5");
+				constants_sys.Ntensors[5] = prm_system_info.get_integer("Ntensors5");
+				constants_sys.nBC[5] = prm_system_info.get_integer("nBC5");
+				constants_sys.system_id[5] = prm_system_info.get_integer("system_id5");
+			}
+
+
+			if (constants_sys.total_systems == 7)
+			{
+				constants_sys.nEqn[0] = prm_system_info.get_integer("num_equations0");
+				constants_sys.Ntensors[0] = prm_system_info.get_integer("Ntensors0");
+				constants_sys.nBC[0] = prm_system_info.get_integer("nBC0");
+				constants_sys.system_id[0] = prm_system_info.get_integer("system_id0");			
+
+				// details of the second system
+				constants_sys.nEqn[1] = prm_system_info.get_integer("num_equations1");
+				constants_sys.Ntensors[1] = prm_system_info.get_integer("Ntensors1");
+				constants_sys.nBC[1] = prm_system_info.get_integer("nBC1");
+				constants_sys.system_id[1] = prm_system_info.get_integer("system_id1");						
+
+
+				// details of the second system
+				constants_sys.nEqn[2] = prm_system_info.get_integer("num_equations2");
+				constants_sys.Ntensors[2] = prm_system_info.get_integer("Ntensors2");
+				constants_sys.nBC[2] = prm_system_info.get_integer("nBC2");
+				constants_sys.system_id[2] = prm_system_info.get_integer("system_id2");		
+
+				// details of the fourth system
+				constants_sys.nEqn[3] = prm_system_info.get_integer("num_equations3");
+				constants_sys.Ntensors[3] = prm_system_info.get_integer("Ntensors3");
+				constants_sys.nBC[3] = prm_system_info.get_integer("nBC3");
+				constants_sys.system_id[3] = prm_system_info.get_integer("system_id3");
+
+				constants_sys.nEqn[4] = prm_system_info.get_integer("num_equations4");
+				constants_sys.Ntensors[4] = prm_system_info.get_integer("Ntensors4");
+				constants_sys.nBC[4] = prm_system_info.get_integer("nBC4");
+				constants_sys.system_id[4] = prm_system_info.get_integer("system_id4");
+
+
+				constants_sys.nEqn[5] = prm_system_info.get_integer("num_equations5");
+				constants_sys.Ntensors[5] = prm_system_info.get_integer("Ntensors5");
+				constants_sys.nBC[5] = prm_system_info.get_integer("nBC5");
+				constants_sys.system_id[5] = prm_system_info.get_integer("system_id5");
+
+				constants_sys.nEqn[6] = prm_system_info.get_integer("num_equations6");
+				constants_sys.Ntensors[6] = prm_system_info.get_integer("Ntensors6");
+				constants_sys.nBC[6] = prm_system_info.get_integer("nBC6");
+				constants_sys.system_id[6] = prm_system_info.get_integer("system_id6");
+			}
+
+			if (constants_sys.total_systems == 8)
+			{
+				constants_sys.nEqn[0] = prm_system_info.get_integer("num_equations0");
+				constants_sys.Ntensors[0] = prm_system_info.get_integer("Ntensors0");
+				constants_sys.nBC[0] = prm_system_info.get_integer("nBC0");
+				constants_sys.system_id[0] = prm_system_info.get_integer("system_id0");			
+
+				// details of the second system
+				constants_sys.nEqn[1] = prm_system_info.get_integer("num_equations1");
+				constants_sys.Ntensors[1] = prm_system_info.get_integer("Ntensors1");
+				constants_sys.nBC[1] = prm_system_info.get_integer("nBC1");
+				constants_sys.system_id[1] = prm_system_info.get_integer("system_id1");						
+
+
+				// details of the second system
+				constants_sys.nEqn[2] = prm_system_info.get_integer("num_equations2");
+				constants_sys.Ntensors[2] = prm_system_info.get_integer("Ntensors2");
+				constants_sys.nBC[2] = prm_system_info.get_integer("nBC2");
+				constants_sys.system_id[2] = prm_system_info.get_integer("system_id2");		
+
+				// details of the fourth system
+				constants_sys.nEqn[3] = prm_system_info.get_integer("num_equations3");
+				constants_sys.Ntensors[3] = prm_system_info.get_integer("Ntensors3");
+				constants_sys.nBC[3] = prm_system_info.get_integer("nBC3");
+				constants_sys.system_id[3] = prm_system_info.get_integer("system_id3");
+
+				constants_sys.nEqn[4] = prm_system_info.get_integer("num_equations4");
+				constants_sys.Ntensors[4] = prm_system_info.get_integer("Ntensors4");
+				constants_sys.nBC[4] = prm_system_info.get_integer("nBC4");
+				constants_sys.system_id[4] = prm_system_info.get_integer("system_id4");
+
+
+				constants_sys.nEqn[5] = prm_system_info.get_integer("num_equations5");
+				constants_sys.Ntensors[5] = prm_system_info.get_integer("Ntensors5");
+				constants_sys.nBC[5] = prm_system_info.get_integer("nBC5");
+				constants_sys.system_id[5] = prm_system_info.get_integer("system_id5");
+
+				constants_sys.nEqn[6] = prm_system_info.get_integer("num_equations6");
+				constants_sys.Ntensors[6] = prm_system_info.get_integer("Ntensors6");
+				constants_sys.nBC[6] = prm_system_info.get_integer("nBC6");
+				constants_sys.system_id[6] = prm_system_info.get_integer("system_id6");
+
+				constants_sys.nEqn[7] = prm_system_info.get_integer("num_equations7");
+				constants_sys.Ntensors[7] = prm_system_info.get_integer("Ntensors7");
+				constants_sys.nBC[7] = prm_system_info.get_integer("nBC7");
+				constants_sys.system_id[7] = prm_system_info.get_integer("system_id7");
+			}
 		}
 		prm_system_info.leave_subsection();
 

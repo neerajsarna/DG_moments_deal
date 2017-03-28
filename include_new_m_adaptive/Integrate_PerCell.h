@@ -66,91 +66,11 @@ Base_Solver<dim>
     
   }
 
-  // std::string filename = "cell_matrix_fe_index_" + std::to_string(fe_index);
-  // std::string str = boost::lexical_cast<std::string>(fe_v.quadrature_point(0));
-  // filename += "_" + str;
-  
-  // matrix_opt.print_dealii_full(cell_matrix,filename);
-
-
 }
 
 
-// characteristic implementation of the boundary conditions
-// template<int dim>
-// void 
-// Base_Solver<dim>
-// ::integrate_boundary_manuel_char(FullMatrix<double> &cell_matrix,
-//                             Vector<double> &cell_rhs,
-//                             FEValuesBase<dim> &fe_v,
-//                             std::vector<double> &J,
-//                             Vector<double> &component,
-//                             const typename DoFHandler<dim>::active_cell_iterator &cell,
-//                             const unsigned int b_id)
-// {
-//     AssertThrow(1 == 0,ExcMessage("The present routine has not been further developed. Use odd boundary implementation."));
-//     Assert(cell_matrix.m() !=0 || cell_matrix.n() !=0 ,ExcNotInitialized());
-//     Assert(cell_matrix.m() == cell_matrix.n() ,ExcMessage("different dof in same cell"));
-//     Assert(cell_rhs.size() != 0,ExcNotInitialized());
-//     Assert(J.size() !=0,ExcNotInitialized());
-    
-//     const FiniteElement<dim> &fe_in_cell = cell->get_fe();
-//    const unsigned int dofs_per_cell = fe_in_cell.dofs_per_cell;
 
-//      Vector<double> boundary_rhs_value;
-
-//       boundary_rhs_value.reinit(nBC[0]);
-
-//  for (unsigned int q = 0 ; q < fe_v.n_quadrature_points ; q++)
-//  {
-//   const double jacobian_value = J[q];
-
-//   boundary_rhs_value = 0;                 
-
-//          // the outward normal to the boundary
-//   Tensor<1,dim> outward_normal = fe_v.normal_vector(q);
-
-//   system_info[0].bcrhs_wall.BCrhs(fe_v.quadrature_point(q),outward_normal,
-//                                     boundary_rhs_value,b_id);
-
-//         // build the matrices needed
-//   Full_matrix Am = system_info[0].build_Aminus(outward_normal);
-//   Sparse_matrix Projector = system_info[0].build_Projector(outward_normal);
-//   Sparse_matrix Inv_Projector = system_info[0].build_InvProjector(outward_normal);
-
-//   Eigen::MatrixXd Am_invP_B_hat_P = Am * Inv_Projector 
-//                                     * system_info[0].B_hat 
-//                                     * Projector;
-
-//   Eigen::MatrixXd Am_invP_X_min_B_tild_inv = Am
-//                                             * Inv_Projector 
-//                                             * system_info[0].X_minus
-//                                             * system_info[0].B_tilde_inv;
-
-
-//   for (unsigned int i = 0 ; i < dofs_per_cell ; i ++)
-//   {
-//     const double shape_value_test = fe_v.shape_value(i,q);
-//     for (unsigned int j = 0 ; j < dofs_per_cell ; j ++)
-//       cell_matrix(i,j) += 0.5 * shape_value_test
-//                         * Am_invP_B_hat_P(component[i],component[j])
-//                         * fe_v.shape_value(j,q) 
-//                         * jacobian_value;                                    
-
-
-//     for (unsigned int j = 0 ; j < Am_invP_X_min_B_tild_inv.cols() ; j++)
-//      cell_rhs(i) += 0.5 * shape_value_test 
-//                     * Am_invP_X_min_B_tild_inv(component[i],j)
-//                      * boundary_rhs_value[j] * jacobian_value;
-
-//  }
-
-//  }
-// }
-
-
-// // odd implementation of the boundary conditions
-
+// odd implementation of the boundary conditions
 template<int dim>
 void 
 Base_Solver<dim>

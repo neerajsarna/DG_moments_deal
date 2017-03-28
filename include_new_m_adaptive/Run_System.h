@@ -19,7 +19,7 @@ Base_Solver<dim>::run()
 
 		std::cout << "Distributing dof " << std::endl;
 		timer.enter_subsection("Dof Distribution");
-		distribute_dof_allocate_matrix();
+		distribute_dof_allocate_matrix(i,refine_cycles);
 		allocate_vectors();
 		timer.leave_subsection();
 
@@ -88,8 +88,8 @@ Base_Solver<dim>::run()
 		PostProc::Base_PostProc<dim> postproc(constants,base_exactsolution,nEqn,nBC);
 		postproc.reinit(dof_handler);
 
-		const double residual_weak_form = postproc.compute_residual(residual,this->triangulation.n_active_cells(),
-																	mapping,dof_handler);
+		// const double residual_weak_form = postproc.compute_residual(residual,this->triangulation.n_active_cells(),
+		// 															mapping,dof_handler);
 
 		// // now we compute the error due to computation
 		postproc.error_evaluation_QGauss(solution,
@@ -97,7 +97,7 @@ Base_Solver<dim>::run()
 										 error_per_itr[i],
 										GridTools::maximal_cell_diameter(this->triangulation),
 										convergence_table,
-										residual_weak_form,mapping,dof_handler);
+										0,mapping,dof_handler);
 
 		
 		postproc.print_options(this->triangulation,solution,i,refine_cycles,convergence_table,

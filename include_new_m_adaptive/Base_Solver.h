@@ -29,8 +29,14 @@ namespace FEM_Solver
             DeclException2 (ExcNoElementInSparsity, size_t, size_t,
                         << "Dof-1 " << arg1 << " Dof-2 " << arg2 << " Entry does not exist in sparsity pattern");
 
+            // the data structure which store the constants corresponding to numerics.
 			const constant_numerics constants;
+
+            // a vector containing all the number of equations in the ssytems
             const std::vector<int> nEqn;
+
+            // a vector containing the number of boundary conditions corresponding to different systems begin 
+            // considered.
             const std::vector<int> nBC;
 
             // the exact solution will correspond to a particular system
@@ -57,22 +63,35 @@ namespace FEM_Solver
 
 			// x in final Ax = b
 			Vector<double> solution;
+            
 
 			// The rhs in final Ax = b.
         	Vector<double> system_rhs;
 
-        	// running routines for a ring
+        	// to construct our fe collection we need the block structure of the elementary finite element
+            // objects.
             void construct_block_structure(std::vector<int> &block_structure,const std::vector<int> &nEqn);
+
+            // using the block structure constructed in the previous routine, in the following routine we develop 
+            // the fe collection object.
             void construct_fe_collection();
             
 
-        	void distribute_dof_allocate_matrix(Vector<double> &error_per_cell, const double tolerance,
-                                                const unsigned int present_cycle, const unsigned int total_cycles);
+            // distribute the dofs and allocate the matrices
+        	  void distribute_dof_allocate_matrix(const unsigned int present_cycle,const unsigned int total_cycles);
 
-            void allocate_fe_index(Vector<double> &error_per_cell, const double tolerance,
-                                 const unsigned int present_cycle, const unsigned int total_cycles);
+            // void distribute_dof_residual_computation();
+            // void develop_solution_max_moments();
+            // void compute_residual();   // the following routine computes the residual 
+            void compute_equilibrium_deviation();
 
-		    void allocate_vectors(); 
+            // sets the tolerance band for difference moment systems
+            void set_tolerance_bands();
+
+
+            void allocate_fe_index(const unsigned int present_cycle,const unsigned int total_cycles);
+
+		        void allocate_vectors(); 
             void run();
 
         	MappingQ<dim,dim> mapping_basic;
@@ -80,39 +99,23 @@ namespace FEM_Solver
         	const unsigned int ngp;
         	const unsigned int ngp_face;
             unsigned int integrate_inflow = 0;
+
+            // we store the number of degrees of freedom in every cell. The assumption is that all the components 
+            // of all the moment system are solved with the same polynomial degree.
             std::vector<unsigned int> dofs_per_cell;
+
+            // fe_index of the maximum moment system which has to be solver in the computation
+            unsigned int max_fe_index;
+
+            // tolerance for the residual, if we find that the residual in a particular cell is greater than this value
+            // then we refine it. 
+            std::vector<double> VelocitySpace_error_tolerance;
+
+            // the total number of degrees of freedom per component will remain the same for every cell since we do not
+            // have p-adaptivity presently
             unsigned int dofs_per_component;
 
-        	// routines for a periodic box
-         //    void distribute_dof_allocate_matrix_periodic_box();
-        	// void run_periodic();
-
-        	// assembling routines for meshworker
-    		// variables and functions for meshworker
-        	// void assemble_rhs();
-
-        	// void integrate_cell_term (DoFInfo &dinfo,
-        	// 	CellInfo &info);
-        	// void integrate_boundary_term_odd (DoFInfo &dinfo,
-        	// 								CellInfo &info);
-
-        	// // integrate boundary term using characteristic variables
-        	// void integrate_boundary_term_char(DoFInfo &dinfo,
-        	// 								CellInfo &info);
-
-        	// void integrate_face_term (DoFInfo &dinfo1,
-        	// 	DoFInfo &dinfo2,
-        	// 	CellInfo &info1,
-        	// 	CellInfo &info2);
-
-
-        	//void assemble_system_meshworker();
-
-            // different implementations of the same routine
-        	//void assemble_system_char();
             void assemble_system_odd();
-            //void assemble_system_periodic_char();
-            //void assemble_system_periodic_odd();
 
 
             // integration for every different element
@@ -133,15 +136,6 @@ namespace FEM_Solver
                                                 const unsigned int b_id,
                                                 const unsigned int fe_index);
         	
-        	// // integrate the boundary using characteristic variables
-        	// void integrate_boundary_manuel_char(FullMatrix<double> &cell_matrix,
-        	// 								Vector<double> &cell_rhs,
-        	// 								FEValuesBase<dim> &fe_v,
-        	// 								std::vector<double> &J,
-        	// 								Vector<double> &component,
-        	// 								const typename DoFHandler<dim>::active_cell_iterator &cell,
-         //                                    const unsigned int b_id);
-
         	void integrate_face_manuel(FullMatrix<double> &u1_v1,
                         FullMatrix<double> &u1_v2,
                         FullMatrix<double> &u2_v1,
@@ -156,9 +150,18 @@ namespace FEM_Solver
             ConvergenceTable convergence_table;
             std::vector<double> error_per_itr;
 
-         //    // the following quantity is a measure of how good our FE solution satisfies the strong form of the equations
+         // the following quantity is a measure of how good our FE solution satisfies the weak form of the equations
              Vector<double> residual;
-             Vector<double> error_per_cell_VelocitySpace;
+
+         // Data objects needed for refinement in the velocity space. In the residual we compute the 
+         // dofs of the error and in the error_per_cell object we store the error per cell generated by these
+         // degress of freedom.
+             Vector<double> VelocitySpace_residual;
+             Vector<double> VelocitySpace_error_per_cell;
+
+
+
+                 
             
 	};
 
@@ -182,10 +185,10 @@ namespace FEM_Solver
 	dof_handler(this->triangulation),
 	mapping_basic(constants.mapping_order),
 	ngp(constants.p + 1),
-	ngp_face(constants.p + 1)
+	ngp_face(constants.p + 1),
+  // maximum fe index possible in the system
+  max_fe_index(nEqn.size()-1)
 	{
-        // we have not implemented any other system till now
-        AssertDimension(nEqn.size(),3);
 
         // we construct the block structure for the finite element object and develop the finite element objects 
         // which will be needed for the present problem
@@ -218,12 +221,10 @@ namespace FEM_Solver
     //can be used for all the applications apart from periodic box
     template<int dim>
     void
-    Base_Solver<dim>::distribute_dof_allocate_matrix(Vector<double> &error_per_cell, const double tolerance,
-                                                const unsigned int present_cycle, const unsigned int total_cycles)
+    Base_Solver<dim>::distribute_dof_allocate_matrix(const unsigned int present_cycle,const unsigned int total_cycles)
     {
         // first we need to allocate the fe_index for all the cells
-        allocate_fe_index(error_per_cell, tolerance,
-                          present_cycle,total_cycles);
+        allocate_fe_index(present_cycle,total_cycles);
 
         dof_handler.distribute_dofs(finite_element);
 
@@ -245,7 +246,7 @@ namespace FEM_Solver
 	solution.reinit(dof_handler.n_dofs());
 	system_rhs.reinit(dof_handler.n_dofs());
     residual.reinit(dof_handler.n_dofs());
-    error_per_cell_VelocitySpace.reinit(this->triangulation.n_active_cells());
+    VelocitySpace_error_per_cell.reinit(this->triangulation.n_active_cells());
    }
 
   
@@ -257,6 +258,10 @@ namespace FEM_Solver
     #include "Run_System.h"     // run a particular test case(Not involving periodic boundaries)
     //#include "Run_Periodic.h"   // A periodic square box
     #include "dof_handler_m_adaptivity.h"
-    
+
+    //computes the dofs of a residual through numerical integration
+//    #include "compute_residual.h"    
+    // this is the deviation of the distribution function from the equilibrium
+    #include "compute_equilibrium_deviation.h"
 
 }

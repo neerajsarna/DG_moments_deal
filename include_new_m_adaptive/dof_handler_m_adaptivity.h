@@ -23,22 +23,29 @@ Base_Solver<dim>::construct_fe_collection()
 		// first create the block structure for the finite element object which will then be used to construct the fe system
 		construct_block_structure(block_structure,nEqn);
 
-		if (block_structure.size() == 1)
-			finite_element.push_back(FESystem<dim>(fe_dg,block_structure[0]));
-
-		if (block_structure.size() == 2)
+		switch (block_structure.size())
 		{
+			case 1:
+			{
+				finite_element.push_back(FESystem<dim>(fe_dg,block_structure[0]));
+				break;
+			}
 
-			finite_element.push_back(FESystem<dim>(fe_dg,block_structure[0],
+			case 2:
+			{
+			
+				finite_element.push_back(FESystem<dim>(fe_dg,block_structure[0],
 													FE_Nothing<dim>(),block_structure[1]));
 
-			finite_element.push_back(FESystem<dim>(fe_dg,block_structure[0],
+				finite_element.push_back(FESystem<dim>(fe_dg,block_structure[0],
 													fe_dg,block_structure[1]));
-		}
 
-		if (block_structure.size() == 3)
-		{
-			finite_element.push_back(FESystem<dim>(fe_dg,block_structure[0],
+				break;
+			}
+
+			case 3:
+			{
+							finite_element.push_back(FESystem<dim>(fe_dg,block_structure[0],
 													FE_Nothing<dim>(),block_structure[1],
 													FE_Nothing<dim>(),block_structure[2]));
 
@@ -49,11 +56,12 @@ Base_Solver<dim>::construct_fe_collection()
 			finite_element.push_back(FESystem<dim>(fe_dg,block_structure[0],
 												   fe_dg,block_structure[1],
 												   fe_dg,block_structure[2]));
-		}
+				break;
+			}
 
-		if (block_structure.size() == 4)
-		{
-			finite_element.push_back(FESystem<dim>(fe_dg,block_structure[0],
+			case 4:
+			{
+							finite_element.push_back(FESystem<dim>(fe_dg,block_structure[0],
 												   FE_Nothing<dim>(),block_structure[1],
 							 						FE_Nothing<dim>(),block_structure[2],
 							 						FE_Nothing<dim>(),block_structure[3]));
@@ -72,159 +80,295 @@ Base_Solver<dim>::construct_fe_collection()
 				                                   fe_dg,block_structure[1],
 							 					   fe_dg,block_structure[2],
 							 					   fe_dg,block_structure[3]));
+				break;
+			}
+
+			case 5:
+			{
+			finite_element.push_back(FESystem<dim>(fe_dg,block_structure[0],
+												   FE_Nothing<dim>(),block_structure[1],
+							 						FE_Nothing<dim>(),block_structure[2],
+							 						FE_Nothing<dim>(),block_structure[3],
+							 						FE_Nothing<dim>(),block_structure[4]));
+
+			finite_element.push_back(FESystem<dim>(fe_dg,block_structure[0],
+												   fe_dg,block_structure[1],
+							 						FE_Nothing<dim>(),block_structure[2],
+							 						FE_Nothing<dim>(),block_structure[3],
+							 						FE_Nothing<dim>(),block_structure[4]));
+
+			finite_element.push_back(FESystem<dim>(fe_dg,block_structure[0],
+												   fe_dg,block_structure[1],
+							 						fe_dg,block_structure[2],
+							 						FE_Nothing<dim>(),block_structure[3],
+							 						FE_Nothing<dim>(),block_structure[4]));
+
+			finite_element.push_back(FESystem<dim>(fe_dg,block_structure[0],
+												   fe_dg,block_structure[1],
+							 						fe_dg,block_structure[2],
+							 						fe_dg,block_structure[3],
+							 						FE_Nothing<dim>(),block_structure[4]));
+
+		finite_element.push_back(FESystem<dim>(fe_dg,block_structure[0],
+												   fe_dg,block_structure[1],
+							 						fe_dg,block_structure[2],
+							 						fe_dg,block_structure[3],
+							 						fe_dg,block_structure[4]));
+				break;
+			}
+
+			// case 6:
+			// {
+			// 			finite_element.push_back(FESystem<dim>(fe_dg,block_structure[0],
+			// 									   FE_Nothing<dim>(),block_structure[1],
+			// 				 						FE_Nothing<dim>(),block_structure[2],
+			// 				 						FE_Nothing<dim>(),block_structure[3],
+			// 				 						FE_Nothing<dim>(),block_structure[4],
+			// 										FE_Nothing<dim>(),block_structure[5]));
+
+			// 			finite_element.push_back(FESystem<dim>(fe_dg,block_structure[0],
+			// 									   fe_dg,block_structure[1],
+			// 				 						FE_Nothing<dim>(),block_structure[2],
+			// 				 						FE_Nothing<dim>(),block_structure[3],
+			// 				 						FE_Nothing<dim>(),block_structure[4],
+			// 										FE_Nothing<dim>(),block_structure[5]));
+
+
+			// 			finite_element.push_back(FESystem<dim>(fe_dg,block_structure[0],
+			// 									   fe_dg,block_structure[1],
+			// 				 						fe_dg,block_structure[2],
+			// 				 						FE_Nothing<dim>(),block_structure[3],
+			// 				 						FE_Nothing<dim>(),block_structure[4],
+			// 										FE_Nothing<dim>(),block_structure[5]));
+
+
+			// 			finite_element.push_back(FESystem<dim>(fe_dg,block_structure[0],
+			// 									   fe_dg,block_structure[1],
+			// 				 						fe_dg,block_structure[2],
+			// 				 						fe_dg,block_structure[3],
+			// 				 						FE_Nothing<dim>(),block_structure[4],
+			// 										FE_Nothing<dim>(),block_structure[5]));
+
+
+			// 			finite_element.push_back(FESystem<dim>(fe_dg,block_structure[0],
+			// 									   fe_dg,block_structure[1],
+			// 				 						fe_dg,block_structure[2],
+			// 				 						fe_dg,block_structure[3],
+			// 				 						fe_dg,block_structure[4],
+			// 										FE_Nothing<dim>(),block_structure[5]));
+
+
+			// 			finite_element.push_back(FESystem<dim>(fe_dg,block_structure[0],
+			// 									   fe_dg,block_structure[1],
+			// 				 						fe_dg,block_structure[2],
+			// 				 						fe_dg,block_structure[3],
+			// 				 						fe_dg,block_structure[4],
+			// 										fe_dg,block_structure[5]));
+			// 	break;
+			// }
+
+
+			// case 7:
+			// {
+			// 			finite_element.push_back(FESystem<dim>(fe_dg,block_structure[0],
+			// 									   FE_Nothing<dim>(),block_structure[1],
+			// 				 						FE_Nothing<dim>(),block_structure[2],
+			// 				 						FE_Nothing<dim>(),block_structure[3],
+			// 				 						FE_Nothing<dim>(),block_structure[4],
+			// 										FE_Nothing<dim>(),block_structure[5],
+			// 										FE_Nothing<dim>(),block_structure[6]));
+
+			// 			finite_element.push_back(FESystem<dim>(fe_dg,block_structure[0],
+			// 									   fe_dg,block_structure[1],
+			// 				 						FE_Nothing<dim>(),block_structure[2],
+			// 				 						FE_Nothing<dim>(),block_structure[3],
+			// 				 						FE_Nothing<dim>(),block_structure[4],
+			// 										FE_Nothing<dim>(),block_structure[5],
+			// 										FE_Nothing<dim>(),block_structure[6]));
+
+
+
+			// 			finite_element.push_back(FESystem<dim>(fe_dg,block_structure[0],
+			// 									   fe_dg,block_structure[1],
+			// 				 						fe_dg,block_structure[2],
+			// 				 						FE_Nothing<dim>(),block_structure[3],
+			// 				 						FE_Nothing<dim>(),block_structure[4],
+			// 										FE_Nothing<dim>(),block_structure[5],
+			// 										FE_Nothing<dim>(),block_structure[6]));
+
+			// 			finite_element.push_back(FESystem<dim>(fe_dg,block_structure[0],
+			// 									   fe_dg,block_structure[1],
+			// 				 						fe_dg,block_structure[2],
+			// 				 						fe_dg,block_structure[3],
+			// 				 						FE_Nothing<dim>(),block_structure[4],
+			// 										FE_Nothing<dim>(),block_structure[5],
+			// 										FE_Nothing<dim>(),block_structure[6]));
+
+			// 			finite_element.push_back(FESystem<dim>(fe_dg,block_structure[0],
+			// 									   fe_dg,block_structure[1],
+			// 				 						fe_dg,block_structure[2],
+			// 				 						fe_dg,block_structure[3],
+			// 				 						fe_dg,block_structure[4],
+			// 										FE_Nothing<dim>(),block_structure[5],
+			// 										FE_Nothing<dim>(),block_structure[6]));
+
+
+			// 			finite_element.push_back(FESystem<dim>(fe_dg,block_structure[0],
+			// 									   fe_dg,block_structure[1],
+			// 				 						fe_dg,block_structure[2],
+			// 				 						fe_dg,block_structure[3],
+			// 				 						fe_dg,block_structure[4],
+			// 										fe_dg,block_structure[5],
+			// 										FE_Nothing<dim>(),block_structure[6]));
+
+
+			// 			finite_element.push_back(FESystem<dim>(fe_dg,block_structure[0],
+			// 									   fe_dg,block_structure[1],
+			// 				 						fe_dg,block_structure[2],
+			// 				 						fe_dg,block_structure[3],
+			// 				 						fe_dg,block_structure[4],
+			// 										fe_dg,block_structure[5],
+			// 										fe_dg,block_structure[6]));
+
+
+			// 	break;
+			// }
+
+			// case 8:
+			// {
+
+			// 	finite_element.push_back(FESystem<dim>(fe_dg,block_structure[0],
+			// 									   FE_Nothing<dim>(),block_structure[1],
+			// 				 						FE_Nothing<dim>(),block_structure[2],
+			// 				 						FE_Nothing<dim>(),block_structure[3],
+			// 				 						FE_Nothing<dim>(),block_structure[4],
+			// 										FE_Nothing<dim>(),block_structure[5],
+			// 										FE_Nothing<dim>(),block_structure[6],
+			// 										FE_Nothing<dim>(),block_structure[7]));
+				
+			// 	finite_element.push_back(FESystem<dim>(fe_dg,block_structure[0],
+			// 									   fe_dg,block_structure[1],
+			// 				 						FE_Nothing<dim>(),block_structure[2],
+			// 				 						FE_Nothing<dim>(),block_structure[3],
+			// 				 						FE_Nothing<dim>(),block_structure[4],
+			// 										FE_Nothing<dim>(),block_structure[5],
+			// 										FE_Nothing<dim>(),block_structure[6],
+			// 										FE_Nothing<dim>(),block_structure[7]));
+
+
+			// 	finite_element.push_back(FESystem<dim>(fe_dg,block_structure[0],
+			// 									   fe_dg,block_structure[1],
+			// 				 						fe_dg,block_structure[2],
+			// 				 						FE_Nothing<dim>(),block_structure[3],
+			// 				 						FE_Nothing<dim>(),block_structure[4],
+			// 										FE_Nothing<dim>(),block_structure[5],
+			// 										FE_Nothing<dim>(),block_structure[6],
+			// 										FE_Nothing<dim>(),block_structure[7]));
+
+
+			// 	finite_element.push_back(FESystem<dim>(fe_dg,block_structure[0],
+			// 									   fe_dg,block_structure[1],
+			// 				 						fe_dg,block_structure[2],
+			// 				 						fe_dg,block_structure[3],
+			// 				 						FE_Nothing<dim>(),block_structure[4],
+			// 										FE_Nothing<dim>(),block_structure[5],
+			// 										FE_Nothing<dim>(),block_structure[6],
+			// 										FE_Nothing<dim>(),block_structure[7]));
+
+			// 	finite_element.push_back(FESystem<dim>(fe_dg,block_structure[0],
+			// 									   fe_dg,block_structure[1],
+			// 				 						fe_dg,block_structure[2],
+			// 				 						fe_dg,block_structure[3],
+			// 				 						fe_dg,block_structure[4],
+			// 										FE_Nothing<dim>(),block_structure[5],
+			// 										FE_Nothing<dim>(),block_structure[6],
+			// 										FE_Nothing<dim>(),block_structure[7]));
+
+
+			// 	finite_element.push_back(FESystem<dim>(fe_dg,block_structure[0],
+			// 									   fe_dg,block_structure[1],
+			// 				 						fe_dg,block_structure[2],
+			// 				 						fe_dg,block_structure[3],
+			// 				 						fe_dg,block_structure[4],
+			// 										fe_dg,block_structure[5],
+			// 										FE_Nothing<dim>(),block_structure[6],
+			// 										FE_Nothing<dim>(),block_structure[7]));
+
+
+
+			// 	finite_element.push_back(FESystem<dim>(fe_dg,block_structure[0],
+			// 									   fe_dg,block_structure[1],
+			// 				 						fe_dg,block_structure[2],
+			// 				 						fe_dg,block_structure[3],
+			// 				 						fe_dg,block_structure[4],
+			// 										fe_dg,block_structure[5],
+			// 										fe_dg,block_structure[6],
+			// 										FE_Nothing<dim>(),block_structure[7]));
+
+			// 	finite_element.push_back(FESystem<dim>(fe_dg,block_structure[0],
+			// 										   fe_dg,block_structure[1],
+			// 				 						   fe_dg,block_structure[2],
+			// 				 						   fe_dg,block_structure[3],
+			// 				 						fe_dg,block_structure[4],
+			// 										fe_dg,block_structure[5],
+			// 										fe_dg,block_structure[6],
+			// 										fe_dg,block_structure[7]));
+			// 	break;
+			// }
+			default:
+			{
+				AssertThrow(1 == 0, ExcMessage("Should not have reached here"));
+				break;
+			}
 		}
+
+			
 }
 
-template<>
+
+template<int dim>
 void 
-Base_Solver<1>::allocate_fe_index(Vector<double> &error_per_cell, const double tolerance,
-								  const unsigned int present_cycle, const unsigned int total_cycles)
+Base_Solver<dim>::allocate_fe_index(const unsigned int present_cycle,const unsigned int total_cycles)
 {
-	typename hp::DoFHandler<1>::active_cell_iterator cell = dof_handler.begin_active(), endc = dof_handler.end();
+	typename hp::DoFHandler<dim>::active_cell_iterator cell = dof_handler.begin_active(), endc = dof_handler.end();
 	unsigned int counter = 0;
-	unsigned int refined = 0;
+	Vector<double> refined(max_fe_index+1);
+	refined = 0;
 
-	//if (present_cycle == 0)
-	for (; cell != endc ; cell++)
-	{
-		cell->set_active_fe_index(1);
-
-	}
-
-
-
-	// else
-	// for (; cell != endc ; cell++)
-	// {
-	// 	// we refine if the tolerance is large
-	// 	// if (error_per_cell(counter) > tolerance )
-	// 	// {
-	// 	// 	if (cell->active_fe_index() == 0)
-	// 	// 	{
-	// 	// 		refined++;
-	// 	// 		cell->set_active_fe_index(1);
-	// 	// 	}
-	// 	// }
-
-	// 	// we refine anyhow if the cell is near the boundary
-	// 	if (fabs(cell->center()(0)) >= 0.0)
-	// 	{
-	// 		if (cell->active_fe_index() == 0)
-	// 		{
-	// 			refined++;
-	// 			cell->set_active_fe_index(1);
-	// 		}
-	// 	}
-
-
-	// 	counter++;
-
-	// }
-	// std::cout << "Cells refined: " << refined << std::endl;
-
-	// // fraction of the half of the domain which will receive lower order moments
-	// const double domain_adapt = 0.0;
-
-	// // has not been implemented for more than two systems
-	// AssertThrow(nEqn.size() == 2 || nEqn.size() == 1 || nEqn.size() == 4 || nEqn.size() == 3,ExcNotImplemented());
-
-	// switch(nEqn.size())
-	// {
-	// 	case 1:
-	// 	{
-	// 		for (; cell != endc ; cell++)
-	// 			cell->set_active_fe_index(0);		
-
-	// 		break;			
-	// 	}
-
-	// 	case 2:
-	// 	case 3:
-	// 	{
-	// 		for (; cell != endc ; cell++)
-	// 		{
-	// 			// // // higher order moment theory near the boundary
-	// 			if (cell->center()(0) >= domain_adapt * 0.5 || cell->center()(0) <= -domain_adapt * 0.5)
-	// 				cell->set_active_fe_index(1);
-
-	// 			// lower order moment theory towards the interior
-	// 			if (cell->center()(0) > -domain_adapt * 0.5 && cell->center()(0) < domain_adapt * 0.5)					
-	// 				cell->set_active_fe_index(0);		
-
-	// 			// we now consider two cells. one of them gets	
-	// 			// Assert(cell->index() <= 1 ,ExcNotImplemented());
-	// 			// if (cell->index() == 0 )
-	// 			// 	cell->set_active_fe_index(0);
-
-	// 			// if (cell->index() == 1)
-	// 			// 	cell->set_active_fe_index(1);
-
-	// 		}
-
-	// 		break;
-	// 	}
-
-
-	// 	case 4:
-	// 	{
-	// 		for (; cell != endc ; cell++)
-	// 		{
-	// 			// // higher order moment theory near the boundary
-	// 			// if (cell->center()(0) > domain_adapt * 0.5 || cell->center()(0) < -domain_adapt * 0.5)
-	// 			// 	cell->set_active_fe_index(1);
-
-	// 			// // lower order moment theory towards the interior
-	// 			// if (cell->center()(0) >= -domain_adapt * 0.5 && cell->center()(0) <= domain_adapt * 0.5)					
-	// 			// 	cell->set_active_fe_index(0);		
-
-	// 			// we now consider two cells. one of them gets
-	// 			Assert(cell->index() <= 3 ,ExcNotImplemented());
-	// 			if (cell->index() == 0 )
-	// 				cell->set_active_fe_index(0);
-
-	// 			if (cell->index() == 1)
-	// 				cell->set_active_fe_index(1);
-
-	// 			if (cell->index() == 2)
-	// 				cell->set_active_fe_index(2);
-
-	// 			if (cell->index() == 3)
-	// 				cell->set_active_fe_index(3);
-	// 		}
-
-	// 		break;
-	// 	}
-
-	// 	default:
-	// 	{
-	// 		AssertThrow(1 == 0,ExcMessage("Should not have reached here"));
-	// 		break;
-	// 	}
-
-	// }
-
-}
-
-
-// allocation of finite element objects for a 2D problem
-template<>
-void 
-Base_Solver<2>::allocate_fe_index(Vector<double> &error_per_cell, const double tolerance,
-								  const unsigned int present_cycle, const unsigned int total_cycles)
-{
-	typename hp::DoFHandler<2>::active_cell_iterator cell = dof_handler.begin_active(), endc = dof_handler.end();
-
-
-	// has not been implemented for more than 1 systems
-	AssertDimension(nEqn.size(),1);
-
-	for (; cell != endc ; cell++)
-	{
-		if (cell->index() %2 == 0)
+	// the very first cycle of m refinement
+	 if (present_cycle == 0)
+	 {
+		for (; cell != endc ; cell++)
 			cell->set_active_fe_index(0);
 
-		if (cell->index() %2 != 0)
-			cell->set_active_fe_index(1);
+		cell = dof_handler.begin_active();
+
 	}
+
+
+	else
+	{
+
+		for (; cell != endc ; cell++)
+		{
+			const double error_value = VelocitySpace_error_per_cell(counter);
+
+			for (unsigned int i = 0 ; i < VelocitySpace_error_tolerance.size()-1 ; i++)
+				if (error_value >= VelocitySpace_error_tolerance[i] && error_value <= VelocitySpace_error_tolerance[i+1])
+				{
+					refined(i)++;
+					cell->set_active_fe_index(i);
+				}
+ 
+			counter++;
+
+		}		
+	}
+
+
+	for (unsigned long int i = 0 ; i < refined.size() ; i++)
+		std::cout << "Fe Index: " << i << " Times: " << refined(i) << std::endl;
+
+
 
 }

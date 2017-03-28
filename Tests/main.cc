@@ -46,6 +46,8 @@ std::vector<std::string> input_file;
 //#include "Test_Assembly.h"
 //#include "Test_Assembly_MAdaptive.h"
 #include "Test_Run.h"
+//#include "Test_ResidualCompution.h"
+//#include "Test_Projection.h"
 
 #include "SystemA.h"
 

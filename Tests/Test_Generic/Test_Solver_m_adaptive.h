@@ -2,7 +2,7 @@ using namespace dealii;
 
 TEST(MAdaptiveSolver,HandlesMAdaptiveSolver)
 {
-		const unsigned int dim = 2;
+		const unsigned int dim = 1;
 
 		std::string folder_name = "../system_matrices/";
 		Constants::Base_Constants constants(input_file);
@@ -24,7 +24,7 @@ TEST(MAdaptiveSolver,HandlesMAdaptiveSolver)
 		
 
 		// the tests have not been implemented for more than one system
-		AssertDimension(constants.constants_sys.total_systems,2);
+		AssertDimension(constants.constants_sys.total_systems,1);
 		Assert(constants.constants_num.problem_type != periodic,ExcNotImplemented());
 
 		if(constants.constants_num.problem_type != periodic)
@@ -120,7 +120,6 @@ TEST(MAdaptiveSolver,HandlesMAdaptiveSolver)
 
 				AssertDimension(constants.constants_num.refine_cycles,3);
 				AssertDimension(constants.constants_num.initial_refinement,1);
-				AssertDimension(constants.constants_sys.total_systems,2);
 				std::vector<double> error_manuel(constants.constants_num.refine_cycles);
 
 				if(constants.constants_sys.Ntensors[0] == 6)

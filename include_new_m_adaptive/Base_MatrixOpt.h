@@ -91,13 +91,22 @@ namespace MatrixOpt
 			void print_dealii_vector(const Vector<double> &vec, 
 									std::string vector_name);
 
+			// finds the minimum of a dealii vector
+			double min_Vector(Vector<double> &vector);
+			double max_Vector(Vector<double> &vector);
+
 			// a dot product between sparse matrix and a vector
 			Vector<double> Sparse_matrix_dot_Vector(const Sparse_matrix &matrix,const Vector<double> &vec);
+			Vector<double> Sparse_matrix_dot_Vector(const TrilinosWrappers::SparseMatrix &matrix,const Vector<double> &vec);
+			Vector<double> Sparse_matrix_dot_Vector(const Full_matrix &matrix,const Vector<double> &vec);
+			Vector<double> Sparse_matrix_dot_Vector(const FullMatrix<double> &matrix,const Vector<double> &vec);
+
 			void COO_to_CSR(const TrilinosWrappers::SparseMatrix &matrix, MKL_INT *IA,MKL_INT *JA,double *V);
 
 			Vector<double> Sparse_matrix_dot_Vector(const MKL_INT *ia,const MKL_INT *ja,
                                                                  const double *values,const Vector<double> &vec,
                                                                 const double size);
+
 	};
 
 	FullMatrix<double> Base_MatrixOpt::multiply_scalar(const double scalar,const FullMatrix<double> &A)
@@ -431,9 +440,10 @@ namespace MatrixOpt
 
 	  	FILE *fp;
 	  	fp = fopen(filename.c_str(),"w+");
+	  	AssertThrow(fp != NULL, ExcMessage("could not open file for writting global matrix"));
 
 	  	for (unsigned int i = 0 ; i < vec.size() ; i ++)
-	  		fprintf(fp, "%f\n",vec(i));
+	  		fprintf(fp, "%.30f\n",vec(i));
 
 	  	fclose(fp);
 	  }
@@ -442,7 +452,7 @@ namespace MatrixOpt
 	  Vector<double> Base_MatrixOpt::Sparse_matrix_dot_Vector(const Sparse_matrix &matrix,
 	  														  const Vector<double> &vec)
 	  {
-	  	const unsigned int num_entries = vec.size();
+	  	const unsigned int num_entries = matrix.rows();
 	  	Assert(matrix.rows() != 0 || matrix.cols() != 0,ExcNotInitialized());
 	  	Assert(vec.size() != 0,ExcNotInitialized());
 	  	Assert(matrix.IsRowMajor,ExcMessage("Basic assumption failed"));
@@ -458,6 +468,30 @@ namespace MatrixOpt
 
 		return(result);
 	  }
+
+	  // The following function performs the dot product between a dealii sparse matrix and a vector
+	  Vector<double> Base_MatrixOpt::Sparse_matrix_dot_Vector(const TrilinosWrappers::SparseMatrix &matrix,
+	  														  const Vector<double> &vec)
+	  {
+	  	const unsigned int num_entries = matrix.m();
+
+	  	Assert(matrix.m() != 0 || matrix.n() != 0,ExcNotInitialized());
+	  	AssertDimension(vec.size(),matrix.n());
+
+		Vector<double> result(num_entries);
+		result = 0;
+
+		typename TrilinosWrappers::SparseMatrix::const_iterator it = matrix.begin();
+	  	const typename TrilinosWrappers::SparseMatrix::const_iterator it_end = matrix.end();
+
+	  	for (; it != it_end ; it++)
+	  		result(it->row()) += it->value() * vec(it->column());
+	  	
+
+		return(result);
+	  }
+
+
 
 	  // the following function expects result to be initialized before hand
 	  FullMatrix<double> Base_MatrixOpt::compute_A_outer_B(Full_matrix &A,FullMatrix<double> &B)
@@ -670,4 +704,82 @@ namespace MatrixOpt
 
                 return(result);
         }
+
+
+       // The following function performs the dot product between a dealii sparse matrix and a vector
+	  Vector<double> Base_MatrixOpt::Sparse_matrix_dot_Vector(const Full_matrix &matrix,
+	  														  const Vector<double> &vec)
+	  {
+	  	// the number of entries which the result should contain
+	  	const unsigned int num_entries = matrix.rows();
+
+	  	// we need to check whether they are of the same size or not
+	  	AssertDimension(matrix.cols(),vec.size());
+
+		Vector<double> result(num_entries);
+
+		// we first integrate over all the rows of the matrix
+		for (unsigned int m = 0 ; m < matrix.rows(); m++)
+		{
+			result(m) = 0;
+
+			// now we integrate over all the columns of the matrix
+			for (unsigned int n = 0 ; n < matrix.cols() ; n++)
+				result(m) += matrix.coeffRef(m,n) * vec(n);
+		}
+
+		return(result);
+	  }
+
+	  // The following function performs the dot product between a dealii sparse matrix and a vector
+	  Vector<double> Base_MatrixOpt::Sparse_matrix_dot_Vector(const FullMatrix<double> &matrix,
+	  														  const Vector<double> &vec)
+	  {
+	  	// the total number of entries in the final resulting vector
+	  	const unsigned int num_entries = matrix.m();
+
+	  	// we need to check whether they are of the same size or not
+	  	AssertDimension(matrix.n(),vec.size());
+
+		Vector<double> result(num_entries);
+
+		// we first integrate over all the rows of the matrix
+		for (unsigned int m = 0 ; m < matrix.m(); m++)
+		{
+			result(m) = 0;
+
+			// now we integrate over all the columns of the matrix
+			for (unsigned int n = 0 ; n < matrix.n() ; n++)
+				result(m) += matrix(m,n) * vec(n);
+		}
+
+		return(result);
+	  }
+
+
+	  double Base_MatrixOpt::min_Vector(Vector<double> &vector)
+	  {
+	  	Assert(vector.size() != 0,ExcNotInitialized());
+
+	  	double min_value = vector(0);
+
+	  	for (unsigned long int i = 0 ; i < vector.size(); i++)
+	  		if (vector(i) < min_value)
+	  			min_value = vector(i);
+
+	  	return(min_value);
+	  }
+
+	  double Base_MatrixOpt::max_Vector(Vector<double> &vector)
+	  {
+	  	Assert(vector.size() != 0,ExcNotInitialized());
+
+	  	double max_value = vector(0);
+
+	  	for (unsigned long int i = 0 ; i < vector.size(); i++)
+	  		if (vector(i) > max_value)
+	  			max_value = vector(i);
+
+	  	return(max_value);
+	  }
 }
