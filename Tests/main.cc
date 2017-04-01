@@ -31,7 +31,10 @@ std::vector<std::string> input_file;
 #include "Base_PeriodicityHandler.h"
 #include "Base_PostProc.h"
 #include "Base_NumericalIntegration.h"
-#include "Base_Solver.h"
+//#include "Base_Solver.h"
+#include "FE_Data.h"
+#include "Assembler.h"
+#include "Run_Problem.h"
 
 #include "ExactSolution_PoissonHeat.h"
 

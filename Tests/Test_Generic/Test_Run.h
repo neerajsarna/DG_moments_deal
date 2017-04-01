@@ -1,5 +1,61 @@
 using namespace dealii;
 
+// the following routine checks the number of active cell and the corresponding mesh
+
+void check_active_cells(const enum Mesh_type &mesh_type,
+						const enum Problem_type &problem_type,
+						const unsigned long int n_cells)
+{
+		if (mesh_type == NACA5012)
+			AssertDimension(n_cells,53);
+
+		if (mesh_type == square_domain && problem_type == inflow_outflow)				
+			AssertDimension(n_cells,61);
+
+
+		if (mesh_type == square_circular_cavity && problem_type == inflow_outflow)
+			AssertDimension(n_cells,476);
+
+
+
+
+}
+
+
+// to perform our tests completely we would like to save the values of the error and then in the end check whether 
+// or not we can reproduce them
+// the 2D case
+void set_error_values(const enum Mesh_type &mesh_type,
+					 const enum Problem_type &problem_type,
+					 double &error_value)
+{
+
+		if (mesh_type == square_domain && problem_type == heat_conduction)
+			error_value =  1.8584849033516051;
+
+		if (mesh_type == square_domain && problem_type == lid_driven_cavity)
+			error_value =  1.2248747382201992;
+
+		if (mesh_type == square_domain && problem_type == inflow_outflow)
+			error_value =  1.8776535235692213;
+
+		if (mesh_type == square_circular_cavity && problem_type == inflow_outflow)
+			error_value =  1.7575244416510396;
+
+		if (mesh_type == NACA5012)
+			error_value =  1.1675197098722727;	
+}
+
+// error values for the 1d heat conduction case
+void set_error_values(const enum Mesh_type &mesh_type,
+					 const enum Problem_type &problem_type,
+					 std::vector<double> &error_value)
+{
+	error_value[0] = 4.5432e-03;
+	error_value[1]	= 1.1759e-03; 
+	error_value[2] = 2.4787e-04;
+}
+
 // TEST(SetTolerance,HandlesToleranceSetting)
 // {
 // 		const unsigned int dim = 1;
@@ -48,13 +104,16 @@ using namespace dealii;
 // 			std::cout << "Tolerance: " <<  base_solver.VelocitySpace_error_tolerance[i] << std::endl;
 // }
 
-// // run the system without any restrictions
-TEST(Solver,HandlesSolver)
+TEST(SolverSingleSystem,HandlesSolverSingleSystem)
 {
-		const unsigned int dim = 2;
+		const unsigned int dim = 1;
 
 		std::string folder_name = "../system_matrices/";
 		Constants::Base_Constants constants(input_file);
+
+
+		AssertDimension(constants.constants_sys.total_systems,1);
+
 
 	// 	// we construct a vector of all the system data being considered 
 		std::vector<Develop_System::System<dim>> System;
@@ -70,193 +129,120 @@ TEST(Solver,HandlesSolver)
 	
 		for (int i = 0 ; i < constants.constants_sys.total_systems ; i++)
 			System[i].initialize_system();
-		
-		
+
+		AssertDimension(constants.constants_sys.Ntensors[0],6);
+
+		// we check the test case for which the triangulation has been saved 
 		if (dim == 2)
 		{
-		// the exact solution can only be created for one of the systems
-		ExactSolution::ExactSolution_Dummy<dim>  exactsolution_dummy(constants.constants_num,System[constants.constants_sys.total_systems-1].base_tensorinfo.S_half,
+			Assert(constants.constants_num.problem_type == heat_conduction || constants.constants_num.problem_type == inflow_outflow ||
+			constants.constants_num.problem_type == lid_driven_cavity,ExcNotImplemented());
+			Assert(constants.constants_num.mesh_type == square_domain || constants.constants_num.mesh_type == NACA5012 || 
+				constants.constants_num.mesh_type == square_circular_cavity ,ExcNotImplemented());
+			AssertDimension(constants.constants_num.initial_refinement,1);
+
+			if (constants.constants_num.mesh_type == square_domain && constants.constants_num.problem_type != inflow_outflow)
+			{
+				AssertDimension(constants.constants_num.part_x,10);
+				AssertDimension(constants.constants_num.part_y,10);
+			}
+
+					// the exact solution can only be created for one of the systems
+			ExactSolution::ExactSolution_Dummy<dim>  exactsolution_dummy(constants.constants_num,System[constants.constants_sys.total_systems-1].base_tensorinfo.S_half,
 																			 constants.constants_sys.nEqn[constants.constants_sys.total_systems-1],constants.constants_sys.Ntensors[constants.constants_sys.total_systems-1]);
 
-		FEM_Solver::Base_Solver<dim> base_solver("grid",
+			// finite element solver for a single system
+			FEM_Solver::Run_Problem_FE<dim> fe_solver("grid",
 											 	 constants.constants_num,
 											 	 System,
 											 	 &exactsolution_dummy,
 											 	 constants.constants_sys.nEqn,
 											 	 constants.constants_sys.nBC);
 
-		base_solver.print_mesh_info();
-		
+		// finite element solver for hp data structures, used for m adaptivity
+		FEM_Solver::Run_Problem_hp_FE<dim> hp_solver("grid",
+											 	 constants.constants_num,
+											 	 System,
+											 	 &exactsolution_dummy,
+											 	 constants.constants_sys.nEqn,
+											 	 constants.constants_sys.nBC);
+
+		check_active_cells(fe_solver.constants.mesh_type,fe_solver.constants.problem_type,fe_solver.fe_data.triangulation.n_active_cells());
 
 
+			double error_manuel;
+			set_error_values(fe_solver.constants.mesh_type,fe_solver.constants.problem_type,error_manuel);
 
-		base_solver.error_per_itr.resize(constants.constants_num.refine_cycles);
-		for (int cycle = 0 ; cycle < constants.constants_num.refine_cycles ; cycle++)
+
+		if (constants.constants_num.assembly_type == meshworker)
 		{
-			base_solver.distribute_dof_allocate_matrix(cycle,constants.constants_num.refine_cycles);
-
-			base_solver.allocate_vectors();
-			base_solver.assemble_system_odd();
-		
-			LinearSolver::LinearSolver linear_solver;
-			linear_solver.develop_pardiso_data(base_solver.global_matrix);
-			base_solver.residual = linear_solver.solve_with_pardiso(base_solver.system_rhs,base_solver.solution);
-
-
-			PostProc::Base_PostProc<dim> postproc(base_solver.constants,&exactsolution_dummy,base_solver.nEqn,base_solver.nBC);
-			postproc.reinit(base_solver.dof_handler);
-
-
-		// // now we compute the error due to computation
-			postproc.error_evaluation_QGauss(base_solver.solution,
-										 	base_solver.triangulation.n_active_cells(),
-										   base_solver.error_per_itr[cycle],
-										GridTools::maximal_cell_diameter(base_solver.triangulation),
-										base_solver.convergence_table,
-										0,base_solver.mapping,base_solver.dof_handler);
-
-			postproc.print_options(base_solver.triangulation,base_solver.solution,cycle,constants.constants_num.refine_cycles,
-								base_solver.convergence_table,
-								base_solver.system_info[constants.constants_sys.total_systems-1].base_tensorinfo.S_half_inv,
-								base_solver.dof_handler);
-
-
-			base_solver.compute_equilibrium_deviation();
-
-			// we now set the tolerance
-			// we do not set the tolerance for the last iteration
-			if (cycle != constants.constants_num.refine_cycles -1)
-				base_solver.set_tolerance_bands();
-
-		
-
-			FILE *fp;
-			std::string filename;
-
-			filename = "residual_per_cell_" + std::to_string(cycle);
-			fp = fopen(filename.c_str(),"w+");
-
-			AssertThrow(fp != NULL,ExcMessage("could not open the file"));
-			
-			typename hp::DoFHandler<dim>::active_cell_iterator cell = base_solver.dof_handler.begin_active(),
-													  endc = base_solver.dof_handler.end();
-
-
-			unsigned int counter  = 0;
-
-			for (; cell != endc; cell++)
-			{
-				if (dim == 1)
-					fprintf(fp, "%f %0.30f %u\n",cell->center()(0),base_solver.VelocitySpace_error_per_cell(counter),cell->active_fe_index());
-
-				if (dim == 2)
-					fprintf(fp, "%f %f %f %u\n",cell->center()(0),cell->center()(1),base_solver.VelocitySpace_error_per_cell(counter),cell->active_fe_index());
-
-				counter++;
-			}
-
-			fclose(fp);		
-
-
-
-
-	
-
-		}			
+			fe_solver.run();
+			EXPECT_NEAR(fe_solver.error_per_itr[0],error_manuel,1e-10);	
 		}
 
-		if (dim == 1)
+		if (constants.constants_num.assembly_type == manuel)
 		{
-		// the exact solution can only be created for one of the systems
-		ExactSolution::PoissonHeat<dim>  PoissonHeat(constants.constants_num,System[constants.constants_sys.total_systems-1].base_tensorinfo.S_half,
-													constants.constants_sys.nEqn[constants.constants_sys.total_systems-1],constants.constants_sys.Ntensors[constants.constants_sys.total_systems-1]);
+			hp_solver.run();
+			EXPECT_NEAR(hp_solver.error_per_itr[0],error_manuel,1e-10);	
 
-		FEM_Solver::Base_Solver<dim> base_solver("grid",
+		}
+
+
+		}
+
+		if (dim == 1) 
+		{
+			Assert(constants.constants_num.mesh_type == line , ExcMessage("Violates the only possible geometry in the 1D case."));
+			AssertDimension(constants.constants_num.refine_cycles,3);
+			AssertDimension(constants.constants_num.initial_refinement,1);
+
+			ExactSolution::PoissonHeat<dim>  PoissonHeat(constants.constants_num,System[constants.constants_sys.total_systems-1].base_tensorinfo.S_half,
+																			 constants.constants_sys.nEqn[constants.constants_sys.total_systems-1],constants.constants_sys.Ntensors[constants.constants_sys.total_systems-1]);
+
+			// finite element solver for a single system
+			FEM_Solver::Run_Problem_FE<dim> fe_solver("grid",
 											 	 constants.constants_num,
 											 	 System,
 											 	 &PoissonHeat,
 											 	 constants.constants_sys.nEqn,
 											 	 constants.constants_sys.nBC);
 
-		base_solver.print_mesh_info();
-		
+		// finite element solver for hp data structures, used for m adaptivity
+		FEM_Solver::Run_Problem_hp_FE<dim> hp_solver("grid",
+											 	 constants.constants_num,
+											 	 System,
+											 	 &PoissonHeat,
+											 	 constants.constants_sys.nEqn,
+											 	 constants.constants_sys.nBC);
 
 
+			std::vector<double> error_manuel(constants.constants_num.refine_cycles);
+			set_error_values(fe_solver.constants.mesh_type,fe_solver.constants.problem_type,error_manuel);
 
-		base_solver.error_per_itr.resize(constants.constants_num.refine_cycles);
-		for (int cycle = 0 ; cycle < constants.constants_num.refine_cycles ; cycle++)
+
+		if (constants.constants_num.assembly_type == meshworker)
 		{
-			base_solver.distribute_dof_allocate_matrix(cycle,constants.constants_num.refine_cycles);
-
-			base_solver.allocate_vectors();
-			base_solver.assemble_system_odd();
-		
-			LinearSolver::LinearSolver linear_solver;
-			linear_solver.develop_pardiso_data(base_solver.global_matrix);
-			base_solver.residual = linear_solver.solve_with_pardiso(base_solver.system_rhs,base_solver.solution);
-
-
-			PostProc::Base_PostProc<dim> postproc(base_solver.constants,&PoissonHeat,base_solver.nEqn,base_solver.nBC);
-			postproc.reinit(base_solver.dof_handler);
-
-
-		// // now we compute the error due to computation
-			postproc.error_evaluation_QGauss(base_solver.solution,
-										 	base_solver.triangulation.n_active_cells(),
-										   base_solver.error_per_itr[cycle],
-										GridTools::maximal_cell_diameter(base_solver.triangulation),
-										base_solver.convergence_table,
-										0,base_solver.mapping,base_solver.dof_handler);
-
-			postproc.print_options(base_solver.triangulation,base_solver.solution,cycle,constants.constants_num.refine_cycles,
-								base_solver.convergence_table,
-								base_solver.system_info[constants.constants_sys.total_systems-1].base_tensorinfo.S_half_inv,
-								base_solver.dof_handler);
-
-
-			base_solver.compute_equilibrium_deviation();
-
-			// we now set the tolerance
-			// we do not set the tolerance for the last iteration
-			if (cycle != constants.constants_num.refine_cycles -1)
-				base_solver.set_tolerance_bands();
-
-		
-
-			FILE *fp;
-			std::string filename;
-
-			filename = "residual_per_cell_" + std::to_string(cycle);
-			fp = fopen(filename.c_str(),"w+");
-
-			AssertThrow(fp != NULL,ExcMessage("could not open the file"));
+			fe_solver.run();
 			
-			typename hp::DoFHandler<dim>::active_cell_iterator cell = base_solver.dof_handler.begin_active(),
-													  endc = base_solver.dof_handler.end();
 
+			for (int i = 0 ; i < constants.constants_num.refine_cycles ; i++)
+				{
+					std::cout << "Error difference " << fabs(fe_solver.error_per_itr[i] - error_manuel[i]) << std::endl;
+					EXPECT_NEAR(fe_solver.error_per_itr[i],error_manuel[i],1e-7);		
+				}	
+		}
 
-			unsigned int counter  = 0;
-
-			for (; cell != endc; cell++)
-			{
-				if (dim == 1)
-					fprintf(fp, "%f %0.30f %u\n",cell->center()(0),base_solver.VelocitySpace_error_per_cell(counter),cell->active_fe_index());
-
-				if (dim == 2)
-					fprintf(fp, "%f %f %f %u\n",cell->center()(0),cell->center()(1),base_solver.VelocitySpace_error_per_cell(counter),cell->active_fe_index());
-
-				counter++;
-			}
-
-			fclose(fp);		
-
-
-
-
-	
+		if (constants.constants_num.assembly_type == manuel)
+		{
+			hp_solver.run();
+			
+			for (int i = 0 ; i < constants.constants_num.refine_cycles ; i++)
+				{
+					std::cout << "Error difference " << fabs(hp_solver.error_per_itr[i] - error_manuel[i]) << std::endl;
+					EXPECT_NEAR(hp_solver.error_per_itr[i],error_manuel[i],1e-7);		
+				}	
 
 		}
-	}
 
-	
+		}
 }

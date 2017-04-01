@@ -108,6 +108,7 @@ namespace Constants
 			constants_num.p = prm.get_integer("polynomial degree");
 			constants_num.mapping_order = prm.get_integer("mapping order");
 			constants_num.refine_cycles = prm.get_integer("total h refinement cycles");
+			constants_num.refine_cycles_c = prm.get_integer("refine_cycles_c");
 			constants_num.refinement = (Refinement)prm.get_integer("type of refinement");
 			constants_num.assembly_type = (Assembly_Type)prm.get_integer("assembly type");
 		}
@@ -313,6 +314,11 @@ namespace Constants
 				"1",
 				Patterns::Integer(1,100),
 				"total number of h refinement cycles");
+
+			// total number of refinement cycles in the velocity space
+			prm.declare_entry("refine_cycles_c",
+							"1",Patterns::Integer(0,100),
+							"total number of refinement cycles in the velocity space");
 
 			prm.declare_entry("type of refinement",
 				"0",
@@ -681,7 +687,7 @@ namespace Constants
 
 
 			// we check the total number of systems we are loading into our program
-			AssertDimension(constants_sys.total_systems,2);
+			AssertDimension(constants_sys.total_systems,1);
 
 
 			constants_sys.nEqn.resize(constants_sys.total_systems);

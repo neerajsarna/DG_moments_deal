@@ -8,6 +8,7 @@ namespace MatrixOpt
 	Base_MatrixOpt
 	{
 		public:
+			// the default constructor takes no input arguments
 			Base_MatrixOpt(){;};
 
 			struct Ordering
