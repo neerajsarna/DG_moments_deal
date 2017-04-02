@@ -71,12 +71,22 @@ namespace FEM_Solver
                void compute_equilibrium_deviation(const int ngp,
                                                 const std::vector<int> &nEqn,
                                                 Triangulation<dim> &triangulation,
-                                                Vector<double> &solution);
+                                                Vector<double> &solution,
+                                                const int cycle);
 
                 // sets the tolerance band for difference moment systems
-                void set_tolerance_bands();
+               // setting of the tolerance based upon the deviation of the distribution function from the local
+               // maxwellian.
+                void set_tolerance_bands_equilibrium_deviation(const int cycle);
 
-                void allocate_fe_index(const unsigned int present_cycle,const unsigned int total_cycles);
+               // setting of the tolerance based upon the distance of the cell from the center.
+                void set_tolerance_bands_distance_center(const int cycle);
+
+                void allocate_fe_index_equilibrium_deviation(const unsigned int present_cycle,
+                											 const unsigned int total_cycles);
+
+                void allocate_fe_index_distance_center(const unsigned int present_cycle,
+                									   const unsigned int total_cycles);
 
                 // compute the norm of the deviation of the distribution function from the local Maxwellian
                 Vector<double> VelocitySpace_error_per_cell;
@@ -272,10 +282,10 @@ hp_fe_data<dim>::construct_fe_collection(const std::vector<int> &nEqn)
 }
 
 
-// in the following function we try to compute the tolerance bands for the differen theories
+//setting of the tolerance bands based upon the deviation of the distribution function from the equilibrium
 template<int dim>
 void 
-hp_fe_data<dim>::set_tolerance_bands()
+hp_fe_data<dim>::set_tolerance_bands_equilibrium_deviation(const int cycle)
 {
 	MatrixOpt::Base_MatrixOpt matrix_opt;
     // we only compute the tolerance bands for the 
@@ -302,21 +312,127 @@ hp_fe_data<dim>::set_tolerance_bands()
 
     // equipartition for all the other elements
     // values for all the interior bands
-    for (unsigned long int i = 0 ; i < frac.size()-1; i ++)
+    // for (unsigned long int i = 0 ; i < frac.size()-1; i ++)
+    // {
+    //     if (i == 0)
+    //         frac[i] = 1.0/(max_fe_index+1);
+
+    //     else
+    //         frac[i] = 1.0/(max_fe_index+1) + frac[i-1];
+
+    // }
+
+    // adaptive fractions
+    switch(max_fe_index)
     {
-        if (i == 0)
-            frac[i] = 1.0/(max_fe_index+1);
+    	// 2 systems
+    	// use a negative value if all of the cells should get the higher order moment
+    	// use 2.0 if all the cells should get the lowest order moment
+    	case 1:
+    	{
+    		frac[0] = 1 - (cycle * 0.5 + 1.0)/10;
+    		std::cout << "********* fractions of 0 fe index " << frac[0] << std::endl;
+    		break;
+    	}
+    	
+    	// 3 systems
+    	case 2:
+    	{
+    		frac[0] = 1 - (cycle * 0.5 + 1.0)/5;
+    		frac[1] = 1 - (cycle * 0.5 + 1.0)/10;
+    		break;
+    	}
 
-        else
-            frac[i] = 1.0/(max_fe_index+1) + frac[i-1];
+    	// 4 systems
+    	case 3:
+    	{
+    		frac[0] = 1 - (cycle * 0.5 + 1.0)/2.5;
+    		frac[1] = 1 - (cycle * 0.5 + 1.0)/5;
+    		frac[2] = 1 - (cycle * 0.5 + 1.0)/10;
+    		break;
+    	}
 
+
+
+    	default:
+    	{
+    		AssertThrow(1 == 0 ,ExcMessage("Should not have reached here"));
+    		break;
+    	}
     }
-
     // the value for the first one has alreayd been set
     for (unsigned long int i = 0 ; i < frac.size() ; i++)
         VelocitySpace_error_tolerance[i + 1] = min_error + frac[i] * (max_error-min_error);
 
 }
+
+// tolerance band based upon the distance of the cell from the center of the domain
+template<>
+void 
+hp_fe_data<1>::set_tolerance_bands_distance_center(const int cycle)
+{ 
+	const double min_distance = 0;
+	const double max_distance = 0.5;
+
+    // size = max_nEqn + 1
+    VelocitySpace_error_tolerance.resize(max_fe_index+2);
+
+    // the first entry will just be the minimum value  and the last entry will we the maximum value
+    VelocitySpace_error_tolerance[0] = min_distance;
+
+    // the fractions of the total difference for every band
+    // size = nEqn
+    std::vector<double> frac(max_fe_index + 1);
+
+    // the last element will always be one
+    frac[frac.size()-1] = 1.0;
+
+
+    // adaptive fractions
+    switch(max_fe_index)
+    {
+    	// 2 systems
+    	// use a negative value if all of the cells should get the higher order moment
+    	// use 2.0 if all the cells should get the lowest order moment
+    	case 1:
+    	{
+    		frac[0] = 1 - (cycle * 0.5 + 1.0)/10;
+    		std::cout << "********* fractions of 0 fe index " << frac[0] << std::endl;
+    		break;
+    	}
+    	
+    	// 3 systems
+    	case 2:
+    	{
+    		frac[0] = 1 - (cycle * 0.5 + 1.0)/5;
+    		frac[1] = 1 - (cycle * 0.5 + 1.0)/10;
+    		break;
+    	}
+
+    	// 4 systems
+    	case 3:
+    	{
+    		frac[0] = 1 - (cycle * 0.5 + 1.0)/2.5;
+    		frac[1] = 1 - (cycle * 0.5 + 1.0)/5;
+    		frac[2] = 1 - (cycle * 0.5 + 1.0)/10;
+    		break;
+    	}
+
+
+
+    	default:
+    	{
+    		AssertThrow(1 == 0 ,ExcMessage("Should not have reached here"));
+    		break;
+    	}
+    }
+    // the value for the first one has alreayd been set
+    for (unsigned long int i = 0 ; i < frac.size() ; i++)
+        VelocitySpace_error_tolerance[i + 1] = min_distance + frac[i] * (max_distance-min_distance);
+
+}
+
+
 
 // in the following function we compute the deviation of the distribution function from the equilibrium
 template<int dim>
@@ -324,7 +440,8 @@ void
 hp_fe_data<dim>::compute_equilibrium_deviation(const int ngp,
 											    const std::vector<int> &nEqn,
 											    Triangulation<dim> &triangulation,
-											    Vector<double> &solution)
+											    Vector<double> &solution,
+											    const int cycle)
 {
 
 	  const QGauss<dim> quadrature_basic(ngp);
@@ -381,15 +498,16 @@ hp_fe_data<dim>::compute_equilibrium_deviation(const int ngp,
 
 
     // now we set the limits for the tolerance
-    set_tolerance_bands();
+    set_tolerance_bands_distance_center(cycle);
         
     
 }
 
 
+// allocation of the fe index based upon the deviation of the distribution function from the equilibrium.
 template<int dim>
 void 
-hp_fe_data<dim>::allocate_fe_index(const unsigned int present_cycle,const unsigned int total_cycles)
+hp_fe_data<dim>::allocate_fe_index_equilibrium_deviation(const unsigned int present_cycle,const unsigned int total_cycles)
 {
 	typename hp::DoFHandler<dim>::active_cell_iterator cell = dof_handler.begin_active(), endc = dof_handler.end();
 	unsigned int counter = 0;
@@ -420,6 +538,59 @@ hp_fe_data<dim>::allocate_fe_index(const unsigned int present_cycle,const unsign
 
 			for (unsigned int i = 0 ; i < VelocitySpace_error_tolerance.size()-1 ; i++)
 				if (error_value >= VelocitySpace_error_tolerance[i] && error_value <= VelocitySpace_error_tolerance[i+1])
+				{
+					refined(i)++;
+					cell->set_active_fe_index(i);
+				}
+ 
+			counter++;
+
+		}		
+	}
+
+
+	for (unsigned long int i = 0 ; i < refined.size() ; i++)
+		std::cout << "Fe Index: " << i << " Times: " << refined(i) << std::endl;
+
+
+
+}
+
+
+template<int dim>
+void 
+hp_fe_data<dim>::allocate_fe_index_distance_center(const unsigned int present_cycle,const unsigned int total_cycles)
+{
+	typename hp::DoFHandler<dim>::active_cell_iterator cell = dof_handler.begin_active(), endc = dof_handler.end();
+	unsigned int counter = 0;
+	const unsigned int initial_fe_index = 0;
+	Vector<double> refined(max_fe_index+1);
+	refined = 0;
+
+	// the very first cycle of m refinement
+	 if (present_cycle == 0)
+	 {
+		for (; cell != endc ; cell++)
+		{
+			refined(initial_fe_index)++;
+			cell->set_active_fe_index(initial_fe_index);
+		}
+
+		cell = dof_handler.begin_active();
+
+	}
+
+
+	else
+	{
+
+		for (; cell != endc ; cell++)
+		{
+			const double distance_center = cell->center().norm();
+
+			for (unsigned int i = 0 ; i < VelocitySpace_error_tolerance.size()-1 ; i++)
+				if (distance_center >= VelocitySpace_error_tolerance[i] && 
+					distance_center <= VelocitySpace_error_tolerance[i+1])
 				{
 					refined(i)++;
 					cell->set_active_fe_index(i);

@@ -666,6 +666,17 @@ namespace Constants
 							  "true",
 							  Patterns::Anything(),
 							  "decide to print the convergence table");
+
+			prm.declare_entry("print_velocity_space_error",
+							  "false",
+							  Patterns::Anything(),
+							  "decide whether we want to print the error in the velocity space or not");
+
+			prm.declare_entry("print_fe_index",
+							  "false",
+							  Patterns::Anything(),
+							  "decide to print the fe index ");
+
 		}
 		prm.leave_subsection();
 
@@ -682,12 +693,13 @@ namespace Constants
 
 			constants_sys.total_systems = prm_system_info.get_integer("total_systems");
 			
+
 		}
 		prm_system_info.leave_subsection();
 
 
 			// we check the total number of systems we are loading into our program
-			AssertDimension(constants_sys.total_systems,1);
+			AssertDimension(constants_sys.total_systems,3);
 
 
 			constants_sys.nEqn.resize(constants_sys.total_systems);
@@ -1123,6 +1135,8 @@ namespace Constants
 			constants_num.print_error = prm.get_bool("print_error");
 			constants_num.print_exactsolution = prm.get_bool("print_exactsolution");
 			constants_num.print_convergence_table = prm.get_bool("print_convergence_table");
+			constants_num.print_velocity_space_error = prm.get_bool("print_velocity_space_error");
+			constants_num.print_fe_index = prm.get_bool("print_fe_index");
             entered = true;
 		}
 		prm.leave_subsection();

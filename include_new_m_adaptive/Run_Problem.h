@@ -279,7 +279,7 @@ template<int dim>
 					// allocate the index for every cell
 					timer.enter_subsection("Dof Distribution");
 					std::cout << "Dof distirubtion" << std::endl;
-					this->hp_fe_data.allocate_fe_index(cycle_c,refine_cycles_c);
+					this->hp_fe_data.allocate_fe_index_distance_center(cycle_c,refine_cycles_c);
 
 					// distribute the degrees of freedom for the different fe indices which have been distributed
 					this->distribute_dof_allocate_matrix(this->hp_fe_data.dof_handler,
@@ -309,6 +309,14 @@ template<int dim>
 					std::cout << "post processing " << std::endl;
 					timer.enter_subsection("post processing");
 
+
+					this->hp_fe_data.compute_equilibrium_deviation(this->ngp,
+                                                				this->nEqn,
+                                                				this->hp_fe_data.triangulation,
+                                                				this->solution,
+                                                				cycle_h);
+
+
 					PostProc::Base_PostProc<dim> postproc(this->constants,
 														 this->base_exactsolution,
 														this->nEqn,this->nBC);
@@ -330,13 +338,10 @@ template<int dim>
 					postproc.print_options(this->hp_fe_data.triangulation,this->solution,cycle_c,refine_cycles_c,
 										   this->convergence_table,
 										  this->system_info[this->hp_fe_data.max_fe_index].base_tensorinfo.S_half_inv,
-										  this->hp_fe_data.dof_handler);
+										  this->hp_fe_data.dof_handler,
+										  this->hp_fe_data.VelocitySpace_error_per_cell);
 
 
-				  this->hp_fe_data.compute_equilibrium_deviation(this->ngp,
-                                                				this->nEqn,
-                                                				this->hp_fe_data.triangulation,
-                                                				this->solution);
 
 
 				  timer.leave_subsection();
@@ -344,7 +349,7 @@ template<int dim>
 				}	
 				
 				// Grid refinement should be done in the end.
-				this->hp_fe_data.refinement_handling(cycle_h,refine_cycles_h);			
+				//this->hp_fe_data.refinement_handling(cycle_h,refine_cycles_h);			
 			}
 
 	}

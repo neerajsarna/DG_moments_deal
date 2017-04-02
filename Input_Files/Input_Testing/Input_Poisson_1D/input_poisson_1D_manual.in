@@ -2,7 +2,8 @@
 subsection Numerical Constants
 	set polynomial degree = 1
 	set mapping order = 1
-	set total h refinement cycles = 3
+	set total h refinement cycles = 20
+	set refine_cycles_c = 2
 
 	# global = 0
 	# adaptive = 1
@@ -112,15 +113,17 @@ subsection Mesh Info
  	set problem type = 0
 	set inner_radius = 0.5
 	set outer_radius = 2.0
-	set initial_refinement = 1
+	set initial_refinement = 10
 end
 
 subsection Printing Options
-	set print_all = false
+	set print_all = true
 	set print_solution = true
 	set print_error = true
 	set print_exactsolution = true
 	set print_convergence_table = true
+	set print_velocity_space_error = true
+	set print_fe_index = true
 end
 
 subsection Output Directory Name

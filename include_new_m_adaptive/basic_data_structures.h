@@ -183,6 +183,10 @@ struct tensor_data
 	// decide whether to print the convergence table or not
 		bool print_convergence_table;
 
+		bool print_velocity_space_error;
+
+		bool print_fe_index;
+
 
 	// we create a map between the id of the variable and it's name
 		std::map<std::string,unsigned int> variable_map;

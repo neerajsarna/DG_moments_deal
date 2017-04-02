@@ -56,7 +56,7 @@ void set_error_values(const enum Mesh_type &mesh_type,
 	error_value[2] = 2.4787e-04;
 }
 
-// TEST(SetTolerance,HandlesToleranceSetting)
+// TEST(DISABLED_SetTolerance,HandlesToleranceSetting)
 // {
 // 		const unsigned int dim = 1;
 
@@ -104,7 +104,7 @@ void set_error_values(const enum Mesh_type &mesh_type,
 // 			std::cout << "Tolerance: " <<  base_solver.VelocitySpace_error_tolerance[i] << std::endl;
 // }
 
-TEST(SolverSingleSystem,HandlesSolverSingleSystem)
+TEST(DISABLED_SolverSingleSystem,HandlesSolverSingleSystem)
 {
 		const unsigned int dim = 1;
 
@@ -196,6 +196,7 @@ TEST(SolverSingleSystem,HandlesSolverSingleSystem)
 			AssertDimension(constants.constants_num.refine_cycles,3);
 			AssertDimension(constants.constants_num.initial_refinement,1);
 
+			// we take the solution of the Boltzmann equation as the reference
 			ExactSolution::PoissonHeat<dim>  PoissonHeat(constants.constants_num,System[constants.constants_sys.total_systems-1].base_tensorinfo.S_half,
 																			 constants.constants_sys.nEqn[constants.constants_sys.total_systems-1],constants.constants_sys.Ntensors[constants.constants_sys.total_systems-1]);
 
@@ -243,6 +244,88 @@ TEST(SolverSingleSystem,HandlesSolverSingleSystem)
 				}	
 
 		}
+
+		}
+}
+
+
+
+TEST(SolverMultipleSystem,HandlesSolverMultipleSystem)
+{
+		const unsigned int dim = 1;
+
+		std::string folder_name = "../system_matrices/";
+		Constants::Base_Constants constants(input_file);
+
+
+	// 	// we construct a vector of all the system data being considered 
+		std::vector<Develop_System::System<dim>> System;
+
+		// initialize the vector containing all the systems
+		// initialize the vector containing all the systems
+		for(int i = 0 ; i < constants.constants_sys.total_systems ; i++)
+		{
+			System.push_back(Develop_System::System<dim>(constants.constants_num,constants.constants_sys.nEqn[i],
+				constants.constants_sys.nBC[i],constants.constants_sys.Ntensors[i],folder_name));
+
+		}
+	
+		for (int i = 0 ; i < constants.constants_sys.total_systems ; i++)
+			System[i].initialize_system();
+
+		AssertDimension(constants.constants_sys.Ntensors[0],6);
+
+		// we check the test case for which the triangulation has been saved 
+		if (dim == 2)
+		{
+			Assert(constants.constants_num.problem_type == heat_conduction || constants.constants_num.problem_type == inflow_outflow ||
+			constants.constants_num.problem_type == lid_driven_cavity,ExcNotImplemented());
+			Assert(constants.constants_num.mesh_type == square_domain || constants.constants_num.mesh_type == NACA5012 || 
+				constants.constants_num.mesh_type == square_circular_cavity ,ExcNotImplemented());
+			AssertDimension(constants.constants_num.initial_refinement,1);
+
+			if (constants.constants_num.mesh_type == square_domain && constants.constants_num.problem_type != inflow_outflow)
+			{
+				AssertDimension(constants.constants_num.part_x,10);
+				AssertDimension(constants.constants_num.part_y,10);
+			}
+
+					// the exact solution can only be created for one of the systems
+			ExactSolution::ExactSolution_Dummy<dim>  exactsolution_dummy(constants.constants_num,System[constants.constants_sys.total_systems-1].base_tensorinfo.S_half,
+																			 constants.constants_sys.nEqn[constants.constants_sys.total_systems-1],constants.constants_sys.Ntensors[constants.constants_sys.total_systems-1]);
+
+			// finite element solver for hp data structures, used for m adaptivity
+			FEM_Solver::Run_Problem_hp_FE<dim> hp_solver("grid",
+											 	 constants.constants_num,
+											 	 System,
+											 	 &exactsolution_dummy,
+											 	 constants.constants_sys.nEqn,
+											 	 constants.constants_sys.nBC);
+
+
+			hp_solver.run();
+
+		}
+
+		if (dim == 1) 
+		{
+			Assert(constants.constants_num.mesh_type == line , ExcMessage("Violates the only possible geometry in the 1D case."));
+			
+			AssertDimension(constants.constants_num.initial_refinement,10);
+
+			ExactSolution::PoissonHeat_HigherOrder<dim>  PoissonHeat(constants.constants_num,System[constants.constants_sys.total_systems-1].base_tensorinfo.S_half,
+																			 constants.constants_sys.nEqn[constants.constants_sys.total_systems-1],constants.constants_sys.Ntensors[constants.constants_sys.total_systems-1]);
+			// finite element solver for hp data structures, used for m adaptivity
+			FEM_Solver::Run_Problem_hp_FE<dim> hp_solver("grid",
+											 	 constants.constants_num,
+											 	 System,
+											 	 &PoissonHeat,
+											 	 constants.constants_sys.nEqn,
+											 	 constants.constants_sys.nBC);
+
+
+
+			hp_solver.run();
 
 		}
 }

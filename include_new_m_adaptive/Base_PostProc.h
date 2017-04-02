@@ -28,6 +28,8 @@ namespace PostProc
 			std::string file_for_num_solution;
 			std::string file_for_exact_solution;
 			std::string file_for_error;
+			std::string file_for_velocity_space_error;
+			std::string file_for_fe_index;
 		};
 
 		output_files output_file_names;
@@ -115,6 +117,12 @@ namespace PostProc
 
 		void print_exactsolution_to_file(const Triangulation<dim> &triangulation,const Sparse_matrix &S_half_inv);
 
+		void print_VelocitySpace_error_to_file(const Triangulation<dim> &triangulation,const Vector<double> &error);
+
+		// print the fe index of every cell
+		void print_fe_index(const hp::DoFHandler<dim> &dof_handler);
+
+
 			// print the solution depending upon printing options
 		void print_options(const Triangulation<dim> &triangulation,
 			const Vector<double> &solution,
@@ -130,7 +138,8 @@ namespace PostProc
 				           const unsigned int refine_cycle,
 			  			   ConvergenceTable &convergence_table,
 						   const Sparse_matrix &S_half_inv,
-						   const hp::DoFHandler<dim> &dof_handler);
+						   const hp::DoFHandler<dim> &dof_handler,
+						   const Vector<double> &VelocitySpace_error_per_cell);
 
 			// write the values of computational constants to a file
 		void create_stamp(const hp::DoFHandler<dim> &dof_handler);
@@ -217,13 +226,18 @@ namespace PostProc
 		output_file_names.file_for_error = constants.sub_directory_names[1] + "/error_global_degree_"
 		+ std::to_string(poly_degree)+"_DOF_"+std::to_string(dof_handler.n_dofs());
 
+		output_file_names.file_for_velocity_space_error = constants.sub_directory_names[1] + "/error_velocity_space_global_degree_"
+		+ std::to_string(poly_degree)+"_DOF_"+std::to_string(dof_handler.n_dofs());
+
+		output_file_names.file_for_fe_index = constants.sub_directory_names[1] + "/fe_index_global_degree_"
+		+ std::to_string(poly_degree)+"_DOF_"+std::to_string(dof_handler.n_dofs());
 	}
 
 	template<int dim>
 	void
 	Base_PostProc<dim>::prescribe_file_names(const DoFHandler<dim> &dof_handler)
 	{
-Assert(class_initialized == true,ExcMessage("Please initialize the post proc class"));
+		Assert(class_initialized == true,ExcMessage("Please initialize the post proc class"));
 		const unsigned int poly_degree = constants.p;
 
 		Assert(constants.sub_directory_names.size() != 0,ExcMessage("Not initialized"));
@@ -843,6 +857,79 @@ print_exactsolution_to_file(const Triangulation<dim> &triangulation,const Sparse
 		fclose(fp_exact);
 }
 
+template<int dim>
+void 
+Base_PostProc<dim>::
+print_VelocitySpace_error_to_file(const Triangulation<dim> &triangulation,const Vector<double> &error)
+{
+	Assert(class_initialized == true,ExcMessage("Please initialize the post proc class"));
+	Assert(error.size()!=0,ExcNotInitialized());
+	typename Triangulation<dim>::active_cell_iterator cell = triangulation.begin_active(), endc = triangulation.end();
+
+	FILE *fp_exact;
+
+	fp_exact = fopen(output_file_names.file_for_velocity_space_error.c_str(),"w+");
+
+	AssertThrow(fp_exact != NULL,ExcMessage("file not open"));
+
+	fprintf(fp_exact, "#%s\n","cell coordinates and the corresponding deviation from the equilibrium ");
+
+	unsigned int counter = 0;
+
+	for (; cell != endc ; cell++)
+	{
+		for (unsigned int space = 0 ; space < dim ; space ++)
+				fprintf(fp_exact, "%f ",cell->center()[space]);
+
+		fprintf(fp_exact, "%f ",error(counter));
+
+		fprintf(fp_exact, "\n");
+
+		counter++;
+
+	}
+
+		fclose(fp_exact);
+}
+
+
+
+template<int dim>
+void 
+Base_PostProc<dim>::
+print_fe_index(const hp::DoFHandler<dim> &dof_handler)
+{
+	Assert(class_initialized == true,ExcMessage("Please initialize the post proc class"));
+	typename hp::DoFHandler<dim>::active_cell_iterator cell = dof_handler.begin_active(),
+														 endc = dof_handler.end();
+
+	FILE *fp_exact;
+
+	fp_exact = fopen(output_file_names.file_for_fe_index.c_str(),"w+");
+
+	AssertThrow(fp_exact != NULL,ExcMessage("file not open"));
+
+	fprintf(fp_exact, "#%s\n","cell coordinates and the corresponding fe_index");
+
+	unsigned int counter = 0;
+
+	for (; cell != endc ; cell++)
+	{
+		for (unsigned int space = 0 ; space < dim ; space ++)
+				fprintf(fp_exact, "%f ",cell->center()[space]);
+
+	
+		fprintf(fp_exact, "%d ",cell->active_fe_index());
+
+		fprintf(fp_exact, "\n");
+
+	}
+
+		fclose(fp_exact);
+}
+
+
+
    	template<int dim>
 	void 
 	Base_PostProc<dim>::
@@ -855,6 +942,7 @@ print_exactsolution_to_file(const Triangulation<dim> &triangulation,const Sparse
 		const DoFHandler<dim> &dof_handler)
 	{
 		Assert(class_initialized == true,ExcMessage("Please initialize the post proc class"));
+		// if we would like to print for all the refinement cycles
 		if (constants.print_all)
 		{
 			if (constants.print_solution)
@@ -881,6 +969,7 @@ print_exactsolution_to_file(const Triangulation<dim> &triangulation,const Sparse
 
 				if(constants.print_exactsolution)
 					print_exactsolution_to_file(triangulation,S_half_inv);
+
 			}
 		}
 
@@ -898,7 +987,8 @@ print_exactsolution_to_file(const Triangulation<dim> &triangulation,const Sparse
 		const unsigned int total_cycles,
 		ConvergenceTable &convergence_table,
 		const Sparse_matrix &S_half_inv,
-		const hp::DoFHandler<dim> &dof_handler)
+		const hp::DoFHandler<dim> &dof_handler,
+		const Vector<double> &VelocitySpace_error_per_cell)
 	{
 		Assert(class_initialized == true,ExcMessage("Please initialize the post proc class"));
 		if (constants.print_all)
@@ -912,6 +1002,11 @@ print_exactsolution_to_file(const Triangulation<dim> &triangulation,const Sparse
 			if(constants.print_exactsolution)
 				print_exactsolution_to_file(triangulation,S_half_inv);
 
+			if(constants.print_velocity_space_error)
+				print_VelocitySpace_error_to_file(triangulation,VelocitySpace_error_per_cell);
+
+			if(constants.print_fe_index)
+				print_fe_index(dof_handler);
 		}
 
 		else
@@ -927,6 +1022,12 @@ print_exactsolution_to_file(const Triangulation<dim> &triangulation,const Sparse
 
 				if(constants.print_exactsolution)
 					print_exactsolution_to_file(triangulation,S_half_inv);
+
+				if(constants.print_velocity_space_error)
+					print_VelocitySpace_error_to_file(triangulation,VelocitySpace_error_per_cell);
+
+				if(constants.print_fe_index)
+					print_fe_index(dof_handler);
 			}
 		}
 

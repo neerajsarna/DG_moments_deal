@@ -700,4 +700,122 @@ namespace ExactSolution
 
 		}
 
+	// exact solution obtained from a very high order moment method Ntensors = 30
+	template<int dim>
+		class
+		PoissonHeat_HigherOrder:public PoissonHeat<dim>
+		{
+		public:
+
+			PoissonHeat_HigherOrder(const constant_numerics &constants,const Sparse_matrix &S_half,const int nEqn,const int Ntensors);
+
+			virtual void vector_value(const Point<dim> &p,Vector<double> &value) const ;
+
+			virtual double s_r(const double r,const double phi) const;
+			virtual double s_phi(const double r,const double phi) const;
+			virtual double thetaP(const double r,const double phi) const;	
+			virtual double R_rr(const double r,const double phi) const;
+			virtual double R_thetatheta(const double r,const double phi) const;
+			virtual double R_rtheta(const double r,const double phi) const;
+			virtual double R_zz(const double r,const double phi) const;
+
+		};
+
+	template<int dim>
+	PoissonHeat_HigherOrder<dim>::PoissonHeat_HigherOrder(const constant_numerics &constants,const Sparse_matrix &S_half,const int nEqn,
+								const int Ntensors)
+	:
+	PoissonHeat<dim>(constants,S_half,nEqn,Ntensors)
+	{
+
+	}
+
+	template<>
+	void 
+	PoissonHeat_HigherOrder<1>::vector_value(const Point<1> &p,Vector<double> &value) const
+	{
+		// first we check the size of the value vector
+		Assert((int)value.size() == this->nEqn,ExcNotInitialized());
+		Assert(fabs(this->constants.alpha) < 1e-5,ExcMessage("Exact Solution does not correspond to the given value of alpha"));
+		Assert(fabs(this->constants.theta0+1) < 1e-5,ExcMessage("Incorrect temperature value"));
+		Assert(fabs(this->constants.theta1-1) < 1e-5,ExcMessage("Incorrect temperature value"));
+		Assert(fabs(this->constants.tau-0.1) < 1e-5,ExcMessage("Incorrect tau value"));
+		bool developed_exact_solution = false;
+
+		// variables for which we need the exact solution
+		const unsigned int ID_theta = this->constants.variable_map_1D.find("theta")->second;
+
+		AssertDimension(ID_theta,2);
+		const double x = p(0);
+
+		value = 0;
+		value[ID_theta] = 0.9886241450400803*x - 1.4284622829507996e-9*sinh(1.2779468215207301*x) + 
+   						5.266949286451139e-8*sinh(1.4173548123589153*x) + 1.1902338825856906e-6*sinh(1.5772937256341433*x) + 
+   						0.00002541376197682671*sinh(1.766211842724685*x) + 0.00020307410067078814*sinh(1.9973620316950804*x) + 
+   0.0008206049409972356*sinh(2.29896310304997*x) + 0.0017197261477691537*sinh(2.7338379482754673*x) + 
+   0.002324240918088127*sinh(3.4334119104667082*x) + 0.0019292768842024432*sinh(4.722835521599962*x) + 
+   0.0006649745620110362*sinh(7.7807719198946925*x) + 4.5110234469975064e-7*sinh(23.209091470407046*x);
+
+   		// The above values correspond to a unsymmetric system, therefore we now need to accomodate the symmetric system
+			MatrixOpt::Base_MatrixOpt matrix_opt;
+			value = matrix_opt.Sparse_matrix_dot_Vector(this->S_half,value);
+	}
+
+	template<int dim>
+		double
+		PoissonHeat_HigherOrder<dim>::s_r(const double r,const double phi)const
+		{
+			return 0;
+
+		}
+
+	template<int dim>
+		double
+		PoissonHeat_HigherOrder<dim>::s_phi(const double r,const double phi)const
+		{
+
+			return 0;
+
+		}
+
+	template<int dim>
+		double
+		PoissonHeat_HigherOrder<dim>::thetaP(const double r,const double phi)const
+		{
+			return 0;
+
+		}
+
+	template<int dim>
+		double
+		PoissonHeat_HigherOrder<dim>::R_rr(const double r,const double phi)const
+		{
+			return 0;
+
+		}
+
+	template<int dim>
+		double
+		PoissonHeat_HigherOrder<dim>::R_thetatheta(const double r,const double phi)const
+		{
+			return 0;
+
+		}
+
+	template<int dim>
+		double
+		PoissonHeat_HigherOrder<dim>::R_rtheta(const double r,const double phi)const
+		{
+			return 0;
+
+		}
+
+	template<int dim>
+		double
+		PoissonHeat_HigherOrder<dim>::R_zz(const double r,const double phi)const
+		{
+			return 0;
+
+		}
+
 	}
