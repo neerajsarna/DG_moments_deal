@@ -1,11 +1,26 @@
 # The set of languages for which implicit dependencies are needed:
-set(CMAKE_DEPENDS_LANGUAGES
+SET(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 
 # Targets to which this target links.
-set(CMAKE_TARGET_LINKED_INFO_FILES
+SET(CMAKE_TARGET_LINKED_INFO_FILES
   )
 
-# Fortran module output directory.
-set(CMAKE_Fortran_TARGET_MODULE_DIR "")
+# The include file search paths:
+SET(CMAKE_C_TARGET_INCLUDE_PATH
+  "../../include_new_m_adaptive"
+  "../include_tests_G20"
+  "../Test_Generic"
+  "../../periodic_square"
+  "../../systems"
+  "/home/sarna/Desktop/Libraries/eigenv3/eigen"
+  "../../Projector_Data"
+  "../../Symmetrizer_Data"
+  "../../ring"
+  "/opt/intel/composer_xe_2013_sp1.0.080/mkl/include"
+  "/home/sarna/Desktop/Libraries/googletest/include"
+  )
+SET(CMAKE_CXX_TARGET_INCLUDE_PATH ${CMAKE_C_TARGET_INCLUDE_PATH})
+SET(CMAKE_Fortran_TARGET_INCLUDE_PATH ${CMAKE_C_TARGET_INCLUDE_PATH})
+SET(CMAKE_ASM_TARGET_INCLUDE_PATH ${CMAKE_C_TARGET_INCLUDE_PATH})

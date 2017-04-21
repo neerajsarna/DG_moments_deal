@@ -167,7 +167,7 @@ TEST(DISABLED_SolverSingleSystem,HandlesSolverSingleSystem)
 											 	 constants.constants_sys.nEqn,
 											 	 constants.constants_sys.nBC);
 
-		check_active_cells(fe_solver.constants.mesh_type,fe_solver.constants.problem_type,fe_solver.fe_data.triangulation.n_active_cells());
+		check_active_cells(fe_solver.constants.mesh_type,fe_solver.constants.problem_type,fe_solver.fe_data_structure.triangulation.n_active_cells());
 
 
 			double error_manuel;

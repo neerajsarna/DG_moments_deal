@@ -24,7 +24,7 @@ namespace FEM_Solver
                         const std::vector<int> &nEqn,
                         const std::vector<int> &nBC);
 		     // finite element data structure 
-     fe_data<dim> fe_data;
+     fe_data<dim> fe_data_structure;
 
 			const std::vector<int> nEqn;
 			const std::vector<int> nBC;
@@ -80,7 +80,7 @@ namespace FEM_Solver
                         					const std::vector<int> &nEqn,
                         					const std::vector<int> &nBC)
 	:
-	fe_data(output_file_name,
+	fe_data_structure(output_file_name,
 					constants,nEqn),
 	nEqn(nEqn),
 	nBC(nBC),
@@ -117,19 +117,19 @@ namespace FEM_Solver
                              update_gradients;
 
   info_box.add_update_flags(update_flags, true, true, true, true);
-  info_box.initialize(fe_data.finite_element,fe_data.mapping);
-  MeshWorker::DoFInfo<dim> dof_info(fe_data.dof_handler);
+  info_box.initialize(fe_data_structure.finite_element,fe_data_structure.mapping);
+  MeshWorker::DoFInfo<dim> dof_info(fe_data_structure.dof_handler);
 
   MeshWorker::Assembler::SystemSimple<TrilinosWrappers::SparseMatrix, Vector<double>> assembler;
   assembler.initialize(global_matrix,system_rhs);
 
 
-  typename DoFHandler<dim>::active_cell_iterator cell = fe_data.dof_handler.begin_active();
-  typename DoFHandler<dim>::active_cell_iterator endc = fe_data.dof_handler.end();
+  typename DoFHandler<dim>::active_cell_iterator cell = fe_data_structure.dof_handler.begin_active();
+  typename DoFHandler<dim>::active_cell_iterator endc = fe_data_structure.dof_handler.end();
 
   // we also initialize the values of the shape functions on the first cell. 
   // the values remain the same even for all the other cells.
-  this->Compute_Shape_Value(fe_data.mapping,ngp,cell);
+  this->Compute_Shape_Value(fe_data_structure.mapping,ngp,cell);
 
   switch(this->constants.bc_type)
   {
@@ -177,12 +177,12 @@ namespace FEM_Solver
     const QGauss<dim> quadrature(ngp);
     const UpdateFlags update_flags  = update_values | update_JxW_values | update_quadrature_points;
 
-    FEValues<dim>  fe_v(fe_data.mapping,fe_data.finite_element,quadrature, update_flags);
-    typename DoFHandler<dim>::active_cell_iterator cell = fe_data.dof_handler.begin_active(), 
-                             endc = fe_data.dof_handler.end();
+    FEValues<dim>  fe_v(fe_data_structure.mapping,fe_data_structure.finite_element,quadrature, update_flags);
+    typename DoFHandler<dim>::active_cell_iterator cell = fe_data_structure.dof_handler.begin_active(), 
+                             endc = fe_data_structure.dof_handler.end();
 
     const unsigned int total_ngp = quadrature.size();
-    const unsigned int dofs_per_cell = fe_data.finite_element.dofs_per_cell;
+    const unsigned int dofs_per_cell = fe_data_structure.finite_element.dofs_per_cell;
 
     std::vector<types::global_dof_index> local_dof_indices(dofs_per_cell);
     Vector<double> cell_rhs(dofs_per_cell);
@@ -191,7 +191,7 @@ namespace FEM_Solver
     Vector<double> component(dofs_per_cell);
 
     for (unsigned int i = 0 ; i < dofs_per_cell ; i++)
-      component[i] = fe_data.finite_element.system_to_component_index(i).first;
+      component[i] = fe_data_structure.finite_element.system_to_component_index(i).first;
 
     for (; cell != endc ; cell++) 
     {
@@ -436,7 +436,7 @@ namespace FEM_Solver
                         const std::vector<int> &nEqn,
                         const std::vector<int> &nBC);
 
-     		hp_fe_data<dim> hp_fe_data;
+     		hp_fe_data<dim> hp_fe_data_structure;
 			const std::vector<int> nEqn;
 			const std::vector<int> nBC;
 			const constant_numerics constants;
@@ -509,7 +509,7 @@ namespace FEM_Solver
                         					const std::vector<int> &nEqn,
                         					const std::vector<int> &nBC)
 	:
-	hp_fe_data(output_file_name,
+	hp_fe_data_structure(output_file_name,
 					constants,nEqn),
 	nEqn(nEqn),
 	nBC(nBC),
@@ -526,8 +526,8 @@ namespace FEM_Solver
 	{
 	// we check whether the moment systems are using the same polynomial degree or not
     for (unsigned long int i = 0 ; i < nEqn.size()-1; i++)
-      AssertDimension(hp_fe_data.finite_element[i].dofs_per_cell/nEqn[i],
-      				 hp_fe_data.finite_element[i+1].dofs_per_cell/nEqn[i+1]);
+      AssertDimension(hp_fe_data_structure.finite_element[i].dofs_per_cell/nEqn[i],
+      				 hp_fe_data_structure.finite_element[i+1].dofs_per_cell/nEqn[i+1]);
 
       const QGauss<dim> quadrature_basic(ngp);
       const QGauss<dim-1> face_quadrature_basic(ngp_face);
@@ -556,18 +556,18 @@ namespace FEM_Solver
       | update_normal_vectors,
       neighbor_face_update_flags = update_values;
 
-      hp::FEValues<dim>  hp_fe_v(hp_fe_data.mapping,
-      							 hp_fe_data.finite_element,quadrature, update_flags);
+      hp::FEValues<dim>  hp_fe_v(hp_fe_data_structure.mapping,
+      							 hp_fe_data_structure.finite_element,quadrature, update_flags);
 
-      hp::FEFaceValues<dim> hp_fe_v_face(hp_fe_data.mapping,
-      									 hp_fe_data.finite_element, face_quadrature, face_update_flags);
+      hp::FEFaceValues<dim> hp_fe_v_face(hp_fe_data_structure.mapping,
+      									 hp_fe_data_structure.finite_element, face_quadrature, face_update_flags);
 
-      hp::FEFaceValues<dim> hp_fe_v_face_neighbor(hp_fe_data.mapping,
-      											hp_fe_data.finite_element,
+      hp::FEFaceValues<dim> hp_fe_v_face_neighbor(hp_fe_data_structure.mapping,
+      											hp_fe_data_structure.finite_element,
       											 face_quadrature, neighbor_face_update_flags);
 
-      hp::FESubfaceValues<dim> hp_fe_v_subface_neighbor(hp_fe_data.mapping,
-      													hp_fe_data.finite_element, 
+      hp::FESubfaceValues<dim> hp_fe_v_subface_neighbor(hp_fe_data_structure.mapping,
+      													hp_fe_data_structure.finite_element, 
       													face_quadrature, neighbor_face_update_flags);  
 
 
@@ -576,8 +576,8 @@ namespace FEM_Solver
       const unsigned int total_ngp_face = face_quadrature_basic.size();
 
       // iterator over the cells 
-      typename hp::DoFHandler<dim>::active_cell_iterator cell = hp_fe_data.dof_handler.begin_active(), 
-      													 endc = hp_fe_data.dof_handler.end();
+      typename hp::DoFHandler<dim>::active_cell_iterator cell = hp_fe_data_structure.dof_handler.begin_active(), 
+      													 endc = hp_fe_data_structure.dof_handler.end();
       typename hp::DoFHandler<dim>::cell_iterator neighbor;
 
 
@@ -589,9 +589,9 @@ namespace FEM_Solver
 
       for (unsigned long int i = 0 ; i < nEqn.size() ; i++)
       {
-        cell_matrix.push_back(FullMatrix<double>(hp_fe_data.dofs_per_cell[i],hp_fe_data.dofs_per_cell[i]));
-        boundary_matrix.push_back(FullMatrix<double>(hp_fe_data.dofs_per_cell[i],hp_fe_data.dofs_per_cell[i]));
-        cell_rhs.push_back(Vector<double>(hp_fe_data.dofs_per_cell[i]));
+        cell_matrix.push_back(FullMatrix<double>(hp_fe_data_structure.dofs_per_cell[i],hp_fe_data_structure.dofs_per_cell[i]));
+        boundary_matrix.push_back(FullMatrix<double>(hp_fe_data_structure.dofs_per_cell[i],hp_fe_data_structure.dofs_per_cell[i]));
+        cell_rhs.push_back(Vector<double>(hp_fe_data_structure.dofs_per_cell[i]));
       }
 
       // std::vectors to make computations faster
@@ -606,13 +606,13 @@ namespace FEM_Solver
       for (unsigned long int i = 0 ; i < nEqn.size(); i++)
         // loop over all the equations of the particular system
         for (int j = 0 ; j < nEqn[i]; j++)
-          component_to_system[i].push_back(Vector<double>(hp_fe_data.dofs_per_component));
+          component_to_system[i].push_back(Vector<double>(hp_fe_data_structure.dofs_per_component));
 
       // now we allocate the values for component_to_system
       for (unsigned long int i = 0 ; i < nEqn.size(); i++)
           for (int k = 0 ; k < nEqn[i] ;k ++)
-              for (unsigned int j = 0 ; j < hp_fe_data.dofs_per_component ; j++)
-                component_to_system[i][k](j) = hp_fe_data.finite_element[i].component_to_system_index(k,j);
+              for (unsigned int j = 0 ; j < hp_fe_data_structure.dofs_per_component ; j++)
+                component_to_system[i][k](j) = hp_fe_data_structure.finite_element[i].component_to_system_index(k,j);
            
 
       // source term
@@ -625,15 +625,15 @@ namespace FEM_Solver
      
       // need to initialize fe_v so as to save the values of the shape functions
       hp_fe_v.reinit(cell);
-      this->Compute_Shape_Value(hp_fe_v,hp_fe_data.dofs_per_component);
+      this->Compute_Shape_Value(hp_fe_v,hp_fe_data_structure.dofs_per_component);
       
 
   for (; cell != endc ; cell++) 
       {
         const unsigned int fe_index = cell->active_fe_index();
-        const unsigned int dofs_this_cell = hp_fe_data.dofs_per_cell[fe_index];
+        const unsigned int dofs_this_cell = hp_fe_data_structure.dofs_per_cell[fe_index];
 
-        Assert(fe_index <= hp_fe_data.max_fe_index ,ExcNotImplemented());
+        Assert(fe_index <= hp_fe_data_structure.max_fe_index ,ExcNotImplemented());
         cell_rhs[fe_index] = 0;
 
 
@@ -705,7 +705,7 @@ namespace FEM_Solver
 
 
                  const unsigned int fe_index_neighbor = neighbor->active_fe_index();
-                 const unsigned int dofs_neighbor = hp_fe_data.dofs_per_cell[fe_index_neighbor];
+                 const unsigned int dofs_neighbor = hp_fe_data_structure.dofs_per_cell[fe_index_neighbor];
                  std::vector<types::global_dof_index> local_dof_indices_neighbor(dofs_neighbor);
 
                  // we now allocate the memory for the matrices which will store the integrals
@@ -858,27 +858,27 @@ namespace FEM_Solver
 		Assert(source_term_value.size() != 0,ExcNotInitialized());
 		Assert(fe_index < nEqn.size(),ExcMessage("Incorrect fe index"));
 		AssertDimension((int)component_to_system.size(),nEqn[fe_index]);
-		AssertDimension(cell_matrix.m(),hp_fe_data.dofs_per_cell[fe_index]);
+		AssertDimension(cell_matrix.m(),hp_fe_data_structure.dofs_per_cell[fe_index]);
 		AssertDimension(source_term_value.size(),J.size());
-		AssertDimension(fe_v.get_fe().dofs_per_cell,hp_fe_data.dofs_per_cell[fe_index]);
+		AssertDimension(fe_v.get_fe().dofs_per_cell,hp_fe_data_structure.dofs_per_cell[fe_index]);
 
 
 		const unsigned int total_ngp = J.size();
 
 
-		AssertDimension(hp_fe_data.dofs_per_component,
+		AssertDimension(hp_fe_data_structure.dofs_per_component,
 						this->shape_values.rows());
 		AssertDimension(total_ngp,this->shape_values.cols());
 
 		std::vector<FullMatrix<double>> Mass_grad(dim);
 
 		// mass matrix corresponding to one particular set of basis functions
-		FullMatrix<double> Mass(hp_fe_data.dofs_per_component,
-								hp_fe_data.dofs_per_component);
+		FullMatrix<double> Mass(hp_fe_data_structure.dofs_per_component,
+								hp_fe_data_structure.dofs_per_component);
 
 		const int components_per_cell =nEqn[fe_index];
-		Mass_grad = this->Compute_Mass_shape_grad(fe_v, hp_fe_data.dofs_per_component, J);
-		Mass = this->Compute_Mass_shape_value(fe_v, hp_fe_data.dofs_per_component, J);
+		Mass_grad = this->Compute_Mass_shape_grad(fe_v, hp_fe_data_structure.dofs_per_component, J);
+		Mass = this->Compute_Mass_shape_value(fe_v, hp_fe_data_structure.dofs_per_component, J);
 
   // this is for initializing the matrix, it is necessary since we have not put cell_matrix to zero
 		cell_matrix = matrix_opt.compute_A_outer_B(this->system_info[fe_index].system_data.P.matrix,Mass);
@@ -887,7 +887,7 @@ namespace FEM_Solver
 			cell_matrix.add(0,cell_matrix,1,matrix_opt.compute_A_outer_B(this->system_info[fe_index].system_data.A[space].matrix,Mass_grad[space]));
 
 
-		AssertDimension(hp_fe_data.dofs_per_component,this->shape_values.rows());
+		AssertDimension(hp_fe_data_structure.dofs_per_component,this->shape_values.rows());
 		AssertDimension(total_ngp,this->shape_values.cols());
 
   // loop over all the gauss points
@@ -897,7 +897,7 @@ namespace FEM_Solver
 			double jacobian_value = J[q];
 
     // index is the local id of the degree of freedom
-			for (unsigned int index_test = 0 ; index_test < this->hp_fe_data.dofs_per_component ; index_test++)
+			for (unsigned int index_test = 0 ; index_test < this->hp_fe_data_structure.dofs_per_component ; index_test++)
 			{
      // for the right hand side we iterate over all the components of the test function
 				for (int m = 0 ; m < nEqn[fe_index] ; m++)
@@ -994,7 +994,7 @@ namespace FEM_Solver
   // we first loop over all the components of the test function
 			for (int component_test = 0; component_test < nEqn[fe_index] ; component_test++)
     // we now loop over all the dof for our component
-				for (unsigned long int index_test = 0 ; index_test < this->hp_fe_data.dofs_per_component ; index_test ++)
+				for (unsigned long int index_test = 0 ; index_test < this->hp_fe_data_structure.dofs_per_component ; index_test ++)
 				{
 					const unsigned long int dof_test = component_to_system[component_test][index_test];
 					const double shape_value_test = fe_v.shape_value(dof_test,q);
@@ -1003,7 +1003,7 @@ namespace FEM_Solver
 					for (int component_sol = 0 ; component_sol < nEqn[fe_index] ; component_sol++)
 
         // a loop over all the indices of the solution vector
-						for (unsigned long int index_sol = 0 ; index_sol < this->hp_fe_data.dofs_per_component ; index_sol++)
+						for (unsigned long int index_sol = 0 ; index_sol < this->hp_fe_data_structure.dofs_per_component ; index_sol++)
 						{
 							const unsigned long int dof_sol = component_to_system[component_sol][index_sol];
 							const double shape_value_sol = fe_v.shape_value(dof_sol,q);
@@ -1064,26 +1064,26 @@ namespace FEM_Solver
     // mass matrices. Assumption is that all the components of the solution vector are being 
     // solved using the same polynomial degree
 
-				FullMatrix<double> Mass_u1_v1(hp_fe_data.dofs_per_component,hp_fe_data.dofs_per_component);
-				FullMatrix<double> Mass_u2_v1(hp_fe_data.dofs_per_component,hp_fe_data.dofs_per_component);
-				FullMatrix<double> Mass_u2_v2(hp_fe_data.dofs_per_component,hp_fe_data.dofs_per_component);
-				FullMatrix<double> Mass_u1_v2(hp_fe_data.dofs_per_component,hp_fe_data.dofs_per_component);
+				FullMatrix<double> Mass_u1_v1(hp_fe_data_structure.dofs_per_component,hp_fe_data_structure.dofs_per_component);
+				FullMatrix<double> Mass_u2_v1(hp_fe_data_structure.dofs_per_component,hp_fe_data_structure.dofs_per_component);
+				FullMatrix<double> Mass_u2_v2(hp_fe_data_structure.dofs_per_component,hp_fe_data_structure.dofs_per_component);
+				FullMatrix<double> Mass_u1_v2(hp_fe_data_structure.dofs_per_component,hp_fe_data_structure.dofs_per_component);
 
 				Mass_u1_v1 = this->Compute_Mass_cell_neighbor(fe_v,
-															fe_v,hp_fe_data.dofs_per_component,
-															hp_fe_data.dofs_per_component,J);
+															fe_v,hp_fe_data_structure.dofs_per_component,
+															hp_fe_data_structure.dofs_per_component,J);
 
 				Mass_u2_v1 = this->Compute_Mass_cell_neighbor(fe_v,
-															fe_v_neighbor,hp_fe_data.dofs_per_component,
-															hp_fe_data.dofs_per_component,J);
+															fe_v_neighbor,hp_fe_data_structure.dofs_per_component,
+															hp_fe_data_structure.dofs_per_component,J);
 
 				Mass_u2_v2 =  this->Compute_Mass_cell_neighbor(fe_v_neighbor,
-																fe_v_neighbor,hp_fe_data.dofs_per_component,
-																hp_fe_data.dofs_per_component,J);
+																fe_v_neighbor,hp_fe_data_structure.dofs_per_component,
+																hp_fe_data_structure.dofs_per_component,J);
 
 				Mass_u1_v2 =  this->Compute_Mass_cell_neighbor(fe_v_neighbor,
-															  fe_v,hp_fe_data.dofs_per_component,
-															  hp_fe_data.dofs_per_component,J);
+															  fe_v,hp_fe_data_structure.dofs_per_component,
+															  hp_fe_data_structure.dofs_per_component,J);
 
     // the number of rows always comes from the test function and the number of columns comes from the solution vector
 				u1_v1 = matrix_opt.multiply_scalar(0.5,matrix_opt.compute_A_outer_B_limitA(Am,Mass_u1_v1,nEqn_this,nEqn_this));
