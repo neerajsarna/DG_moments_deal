@@ -699,7 +699,7 @@ namespace Constants
 
 
 			// we check the total number of systems we are loading into our program
-			AssertDimension(constants_sys.total_systems,3);
+			AssertDimension(constants_sys.total_systems,1);
 
 
 			constants_sys.nEqn.resize(constants_sys.total_systems);

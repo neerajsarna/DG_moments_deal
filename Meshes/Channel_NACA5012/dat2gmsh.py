@@ -18,7 +18,7 @@ def convert_pts_togmsh(filename,outputname,startpoint):
 			data = string.split(line)
 			x.append(float(data[0]))
 			y.append(float(data[1]))
-			z.append(float(data[2]))
+			z.append(0)
 
 			n_lines = int(i)
 

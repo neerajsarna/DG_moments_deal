@@ -250,7 +250,7 @@ TEST(DISABLED_SolverSingleSystem,HandlesSolverSingleSystem)
 
 
 
-TEST(SolverMultipleSystem,HandlesSolverMultipleSystem)
+TEST(DISABLED_SolverMultipleSystem,HandlesSolverMultipleSystem)
 {
 		const unsigned int dim = 1;
 
@@ -329,3 +329,48 @@ TEST(SolverMultipleSystem,HandlesSolverMultipleSystem)
 
 		}
 }
+
+TEST(RunSystem,HandlesRunSystem)
+{
+		const unsigned int dim = 2;
+
+		std::string folder_name = "../system_matrices/";
+		Constants::Base_Constants constants(input_file);
+
+
+	// 	// we construct a vector of all the system data being considered 
+		std::vector<Develop_System::System<dim>> System;
+
+		// initialize the vector containing all the systems
+		// initialize the vector containing all the systems
+		for(int i = 0 ; i < constants.constants_sys.total_systems ; i++)
+		{
+			System.push_back(Develop_System::System<dim>(constants.constants_num,constants.constants_sys.nEqn[i],
+				constants.constants_sys.nBC[i],constants.constants_sys.Ntensors[i],folder_name));
+
+		}
+	
+		for (int i = 0 ; i < constants.constants_sys.total_systems ; i++)
+			System[i].initialize_system();
+
+
+		// the exact solution can only be created for one of the systems
+		ExactSolution::ExactSolution_Dummy<dim>  exactsolution_dummy(constants.constants_num,System[constants.constants_sys.total_systems-1].base_tensorinfo.S_half,
+													constants.constants_sys.nEqn[constants.constants_sys.total_systems-1],constants.constants_sys.Ntensors[constants.constants_sys.total_systems-1]);
+
+
+			// finite element solver for a single system
+		FEM_Solver::Run_Problem_FE<dim> fe_solver("grid",
+											constants.constants_num,
+											System,
+											&exactsolution_dummy,
+											constants.constants_sys.nEqn,
+											constants.constants_sys.nBC);
+
+
+		fe_solver.run();
+
+
+
+}
+
