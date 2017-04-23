@@ -144,7 +144,7 @@ template<int dim>
 
 	for (unsigned int cycle = 0 ; cycle < refine_cycles ; cycle ++)
 	{
-		this->fe_data.print_mesh_info();
+		this->fe_data_structure.print_mesh_info();
 
 
 	
@@ -155,14 +155,14 @@ template<int dim>
 
 		std::cout << "Distributing dof " << std::endl;
 		timer.enter_subsection("Dof Distribution");
-		this->distribute_dof_allocate_matrix(this->fe_data.dof_handler,this->fe_data.finite_element,this->global_matrix);
-		this->allocate_vectors(this->fe_data.dof_handler,this->solution,this->system_rhs,this->residual);
+		this->distribute_dof_allocate_matrix(this->fe_data_structure.dof_handler,this->fe_data_structure.finite_element,this->global_matrix);
+		this->allocate_vectors(this->fe_data_structure.dof_handler,this->solution,this->system_rhs,this->residual);
 		timer.leave_subsection();
 
-		std::cout << "#CELLS " << this->fe_data.triangulation.n_active_cells() << std::endl;
-		std::cout << "#DOFS " << this->fe_data.dof_handler.n_dofs() << std::endl;
+		std::cout << "#CELLS " << this->fe_data_structure.triangulation.n_active_cells() << std::endl;
+		std::cout << "#DOFS " << this->fe_data_structure.dof_handler.n_dofs() << std::endl;
 		std::cout << "Memory by dof handler(Gb) " << 
-					this->fe_data.dof_handler.memory_consumption()/pow(10,9)<< std::endl;	
+					this->fe_data_structure.dof_handler.memory_consumption()/pow(10,9)<< std::endl;	
 
 		// the following routine assembles
 		std::cout << "Assembling" << std::endl;
@@ -191,32 +191,32 @@ template<int dim>
 		PostProc::Base_PostProc<dim> postproc(this->constants,this->base_exactsolution,
 											 this->nEqn,this->nBC);
 
-		postproc.reinit(this->fe_data.dof_handler);
+		postproc.reinit(this->fe_data_structure.dof_handler);
 
 		// // now we compute the error due to computation
 		postproc.error_evaluation_QGauss(this->solution,
-										 this->fe_data.triangulation.n_active_cells(),
+										 this->fe_data_structure.triangulation.n_active_cells(),
 										  this->error_per_itr[cycle],
-										GridTools::maximal_cell_diameter(this->fe_data.triangulation),
+										GridTools::maximal_cell_diameter(this->fe_data_structure.triangulation),
 										this->convergence_table,
 										this->residual.l2_norm(),
-										this->fe_data.mapping,
-										this->fe_data.dof_handler);
+										this->fe_data_structure.mapping,
+										this->fe_data_structure.dof_handler);
 
 
 
 		// we sent the symmetrizer corresponding to the maximum moment system which we are solving for
 		// In this case, since we are only considering a single moment system therefore this value corresponds to zero.
 		
-		postproc.print_options(this->fe_data.triangulation,this->solution,cycle,refine_cycles,
+		postproc.print_options(this->fe_data_structure.triangulation,this->solution,cycle,refine_cycles,
 							  this->convergence_table,
 							this->system_info[0].base_tensorinfo.S_half_inv,
-								this->fe_data.dof_handler);		
+								this->fe_data_structure.dof_handler);		
 		
 		timer.leave_subsection();
 
 		// Grid refinement should be done in the end.
-		this->fe_data.refinement_handling(cycle,refine_cycles);
+		this->fe_data_structure.refinement_handling(cycle,refine_cycles);
 
 	}
 	}
@@ -270,7 +270,7 @@ template<int dim>
 			TimerOutput timer (std::cout, TimerOutput::summary,
                 	   TimerOutput::wall_times);
 
-			this->hp_fe_data.print_mesh_info();
+			this->hp_fe_data_structure.print_mesh_info();
 			// we first do h-refinement
 			for (int cycle_h = 0 ; cycle_h < refine_cycles_h ; cycle_h ++)
 			{
@@ -279,15 +279,15 @@ template<int dim>
 					// allocate the index for every cell
 					timer.enter_subsection("Dof Distribution");
 					std::cout << "Dof distirubtion" << std::endl;
-					this->hp_fe_data.allocate_fe_index_distance_center(cycle_c,refine_cycles_c);
+					this->hp_fe_data_structure.allocate_fe_index_distance_center(cycle_c,refine_cycles_c);
 
 					// distribute the degrees of freedom for the different fe indices which have been distributed
-					this->distribute_dof_allocate_matrix(this->hp_fe_data.dof_handler,
-														 this->hp_fe_data.finite_element,
+					this->distribute_dof_allocate_matrix(this->hp_fe_data_structure.dof_handler,
+														 this->hp_fe_data_structure.finite_element,
 														 this->global_matrix);
 
 
-					this->allocate_vectors(this->hp_fe_data.dof_handler,this->solution,this->system_rhs,
+					this->allocate_vectors(this->hp_fe_data_structure.dof_handler,this->solution,this->system_rhs,
 										   this->residual);
 
 					timer.leave_subsection();
@@ -310,9 +310,9 @@ template<int dim>
 					timer.enter_subsection("post processing");
 
 
-					this->hp_fe_data.compute_equilibrium_deviation(this->ngp,
+					this->hp_fe_data_structure.compute_equilibrium_deviation(this->ngp,
                                                 				this->nEqn,
-                                                				this->hp_fe_data.triangulation,
+                                                				this->hp_fe_data_structure.triangulation,
                                                 				this->solution,
                                                 				cycle_h);
 
@@ -321,25 +321,25 @@ template<int dim>
 														 this->base_exactsolution,
 														this->nEqn,this->nBC);
 
-					postproc.reinit(this->hp_fe_data.dof_handler);
+					postproc.reinit(this->hp_fe_data_structure.dof_handler);
 
 
 					// // now we compute the error due to computation
 					postproc.error_evaluation_QGauss(this->solution,
-										 			this->hp_fe_data.triangulation.n_active_cells(),
+										 			this->hp_fe_data_structure.triangulation.n_active_cells(),
 										   			this->error_per_itr[cycle_h *(refine_cycles_c) + cycle_c],
-													GridTools::maximal_cell_diameter(this->hp_fe_data.triangulation),
+													GridTools::maximal_cell_diameter(this->hp_fe_data_structure.triangulation),
 													this->convergence_table,
 													this->residual.l2_norm(),
-													this->hp_fe_data.mapping,
-													this->hp_fe_data.dof_handler);
+													this->hp_fe_data_structure.mapping,
+													this->hp_fe_data_structure.dof_handler);
 
 
-					postproc.print_options(this->hp_fe_data.triangulation,this->solution,cycle_c,refine_cycles_c,
+					postproc.print_options(this->hp_fe_data_structure.triangulation,this->solution,cycle_c,refine_cycles_c,
 										   this->convergence_table,
-										  this->system_info[this->hp_fe_data.max_fe_index].base_tensorinfo.S_half_inv,
-										  this->hp_fe_data.dof_handler,
-										  this->hp_fe_data.VelocitySpace_error_per_cell);
+										  this->system_info[this->hp_fe_data_structure.max_fe_index].base_tensorinfo.S_half_inv,
+										  this->hp_fe_data_structure.dof_handler,
+										  this->hp_fe_data_structure.VelocitySpace_error_per_cell);
 
 
 
@@ -349,7 +349,7 @@ template<int dim>
 				}	
 				
 				// Grid refinement should be done in the end.
-				//this->hp_fe_data.refinement_handling(cycle_h,refine_cycles_h);			
+				//this->hp_fe_data_structure.refinement_handling(cycle_h,refine_cycles_h);			
 			}
 
 	}
