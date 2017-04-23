@@ -456,6 +456,7 @@ namespace MatrixOpt
 	  	const unsigned int num_entries = matrix.rows();
 	  	Assert(matrix.rows() != 0 || matrix.cols() != 0,ExcNotInitialized());
 	  	Assert(vec.size() != 0,ExcNotInitialized());
+	  	AssertDimension(vec.size(),matrix.cols());
 	  	Assert(matrix.IsRowMajor,ExcMessage("Basic assumption failed"));
 
 		Vector<double> result(num_entries);

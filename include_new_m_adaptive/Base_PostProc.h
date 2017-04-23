@@ -146,6 +146,14 @@ namespace PostProc
 		void create_stamp(const DoFHandler<dim> &dof_handler);
 		int max_equations;
 
+		 Vector<double>
+    	compute_lift_drag(const MappingQ<dim> &mapping,
+    									  const FESystem<dim> &finite_element,
+    									  const DoFHandler<dim> &dof_handler,
+    									  const Sparse_matrix &S_half_inv,
+    									  const Vector<double> &solution,
+    									  const unsigned int b_id_surface);
+
 	};
 
 	template<int dim>
@@ -651,7 +659,7 @@ namespace PostProc
 			VectorTools::point_value(dof_handler, solution, cell->vertex(vertex),solution_value);	
 
 			// we now convert back to the conventional variables. That is the variables in unsymmetric system	
-			matrix_opt.Sparse_matrix_dot_Vector(S_half_inv,solution);
+			solution_value = matrix_opt.Sparse_matrix_dot_Vector(S_half_inv,solution_value);
 
 			for (unsigned int space = 0 ; space < dim ; space ++)
 				fprintf(fp_solution, "%f ",cell->vertex(vertex)(space));
@@ -705,7 +713,7 @@ namespace PostProc
 			VectorTools::point_value(dof_handler, solution, cell->vertex(vertex),solution_value);	
 
 			// we now convert back to the conventional variables. That is the variables in unsymmetric system	
-			matrix_opt.Sparse_matrix_dot_Vector(S_half_inv,solution);
+			solution_value = matrix_opt.Sparse_matrix_dot_Vector(S_half_inv,solution_value);
 
 			for (unsigned int space = 0 ; space < dim ; space ++)
 				fprintf(fp_solution, "%f ",cell->vertex(vertex)(space));
@@ -842,7 +850,7 @@ print_exactsolution_to_file(const Triangulation<dim> &triangulation,const Sparse
 			base_exactsolution->vector_value(cell->vertex(vertex),exact_solution_value);
 
 		// we now convert back to the original variables
-			matrix_opt.Sparse_matrix_dot_Vector(S_half_inv,exact_solution_value);
+			exact_solution_value = matrix_opt.Sparse_matrix_dot_Vector(S_half_inv,exact_solution_value);
 
 			for (unsigned int space = 0 ; space < dim ; space ++)
 				fprintf(fp_exact, "%f ",cell->vertex(vertex)[space]);
@@ -1084,6 +1092,116 @@ print_fe_index(const hp::DoFHandler<dim> &dof_handler)
         								   &weight);  
 
         return(error_per_cell);
+
+    }
+
+    // in the following routine we compute the lift and drag on an object
+    template<int dim>
+    Vector<double>
+    Base_PostProc<dim>::compute_lift_drag(const MappingQ<dim> &mapping,
+    									  const FESystem<dim> &finite_element,
+    									  const DoFHandler<dim> &dof_handler,
+    									  const Sparse_matrix &S_half_inv,
+    									  const Vector<double> &solution,
+    									  const unsigned int b_id_surface)
+    {
+    	AssertDimension(dim,2);
+    	Assert(class_initialized == true,ExcMessage("Please initialize the post proc class"));
+
+    	// location of the needed variables and the corresponding conversion factors
+    	const unsigned int id_rho = this->constants.variable_map.find("rho")->second; 
+    	const unsigned int id_theta = this->constants.variable_map.find("theta")->second;
+    	const unsigned int id_sigmaxx = this->constants.variable_map.find("sigmaxx")->second;
+    	const unsigned int id_sigmayy = this->constants.variable_map.find("sigmayy")->second;
+    	const unsigned int id_sigmaxy = this->constants.variable_map.find("sigmaxy")->second;
+
+    	double rho;					// value of density
+    	double theta;				// value of temperature
+    	double sigmaxx;				// value of sigma
+    	double sigmaxy;				
+    	double sigmayy;
+
+    	double Tx; 					// traction force in the x-direction
+    	double Ty;					// traction force in the y-direction
+    	double pressure_x;			// force due to pressure in the x-direction
+    	double pressure_y;			// force due to pressure in the y-direction
+
+    	// conversion factors for different moments
+    	const double fac_rho = 1.0;
+    	const double fac_theta = -sqrt(2.0/3.0);
+    	const double fac_sigma = sqrt(2);
+
+    	// values of the lift and drag coefficients
+    	Vector<double> lift_drag(2);
+
+      	const UpdateFlags face_update_flags  = update_values
+      											| update_q_points
+      											| update_JxW_values
+      											| update_normal_vectors;
+
+
+      	lift_drag = 0;
+      	QGauss<dim-1> face_quadrature(constants.p+1);
+      	const unsigned int total_ngp = face_quadrature.size();
+    	FEFaceValues<dim> fe_v_face(mapping,finite_element, face_quadrature, face_update_flags);
+
+    	Vector<double> solution_value(max_equations);
+    	typename DoFHandler<dim>::active_cell_iterator cell = dof_handler.begin_active(), endc = dof_handler.end();
+
+    	for (; cell != endc ; cell++)
+    	{
+    		for (unsigned int face = 0 ; face < GeometryInfo<dim>::faces_per_cell ; face++)
+    			// if the face is at the boundary at which we wish to compute the forces
+    			if (cell->face(face)->at_boundary() && cell->face(face)->boundary_id() == b_id_surface)
+    			{
+    				fe_v_face.reinit(cell,face);
+    				 const std::vector<double> &Jacobian_face = fe_v_face.get_JxW_values();
+ 					 const std::vector<Point<dim>> &quad_points = fe_v_face.get_quadrature_points();
+
+    				for (unsigned int q = 0 ; q < total_ngp ; q++)
+    				{
+    					Tensor<1,dim> normal_vector = fe_v_face.normal_vector(q);
+    					const double nx = normal_vector[0];
+    					const double ny = normal_vector[1];
+
+    					// value of the solution at the quadrature point
+    					VectorTools::point_value(dof_handler, solution, quad_points[q],solution_value);	
+
+    					// converting back to unsymmetric variables
+    					solution_value = matrix_opt.Sparse_matrix_dot_Vector(S_half_inv,solution_value);
+
+    					// pressure force in the x-direction
+    					pressure_x = nx * (fac_rho * solution_value(id_rho) + fac_theta * solution_value(id_theta));
+
+    					// pressure force in the y-direction
+    					pressure_y = ny * (fac_rho * solution_value(id_rho) + fac_theta * solution_value(id_theta));
+
+
+    					// traction in the x-direction
+    					Tx = fac_sigma * (solution_value(id_sigmaxx) * nx + solution_value(id_sigmaxy) * ny);
+
+    					// traction in the y-direction
+    					Ty = fac_sigma * (solution_value(id_sigmaxy) * nx + solution_value(id_sigmayy) * ny);
+
+    					// std::cout << "Solution value: " << solution_value << std::endl;
+    					// std::cout << "Qudrature point: " << quad_points[q] << std::endl;
+    					// std::cout << "nx: " << nx << " ny: " << ny << std::endl;
+    					// std::cout << "pressure_x: " << pressure_x << " pressure_y: " << pressure_y << std::endl;
+    					// std::cout << "Tx: " << Tx << " Ty: " << Ty << std::endl;
+
+    					// we now integrate over the surface
+    					// drag on the force, i.e the force in the x-direction
+    					lift_drag(0) += (pressure_x + Tx) * Jacobian_face[q];
+
+    					// lift on the surface, i.e. the force in the y-direction
+    					lift_drag(1) += (pressure_y + Ty) * Jacobian_face[q];
+
+    				}
+    			}
+    	}
+
+    	return(lift_drag);
+
 
     }
 
