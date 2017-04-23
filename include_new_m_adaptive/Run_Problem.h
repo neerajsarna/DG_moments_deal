@@ -204,6 +204,13 @@ template<int dim>
 										this->fe_data_structure.dof_handler);
 
 
+		postproc.compute_lift_drag(this->fe_data_structure.mapping,
+    							   this->fe_data_structure.finite_element,
+    							   this->fe_data_structure.dof_handler,
+    							   this->system_info[0].base_tensorinfo.S_half_inv,
+    							   this->solution,
+    							   this->convergence_table,
+    								2);
 
 		// we sent the symmetrizer corresponding to the maximum moment system which we are solving for
 		// In this case, since we are only considering a single moment system therefore this value corresponds to zero.

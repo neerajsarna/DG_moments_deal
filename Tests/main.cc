@@ -40,7 +40,7 @@ std::vector<std::string> input_file;
 
 // certain generic tests which have to be performed independent of the system
 //#include "Test_LinearSolver.h"
-#include "Test_FEValues.h"
+//#include "Test_FEValues.h"
 //#include "Test_MatrixOpt.h"
 //#include "Test_MeshGenerator.h"
 //#include "Test_VertexDof.h"
@@ -48,7 +48,7 @@ std::vector<std::string> input_file;
 //#include "Test_Solver_m_adaptive.h"
 //#include "Test_Assembly.h"
 //#include "Test_Assembly_MAdaptive.h"
-//#include "Test_Run.h"
+#include "Test_Run.h"
 //#include "Test_ResidualCompution.h"
 //#include "Test_Projection.h"
 

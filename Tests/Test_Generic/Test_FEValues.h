@@ -53,7 +53,7 @@ namespace Test_FEValues
 
 	}
 
-	TEST(LiftDrag,HandlesLiftDragComputation)
+	TEST(DISABLED_LiftDrag,HandlesLiftDragComputation)
 	{
 		const unsigned int dim = 2;
 
@@ -90,18 +90,18 @@ namespace Test_FEValues
 											constants.constants_sys.nEqn,
 											constants.constants_sys.nBC);
 
-		fe_solver.distribute_dof_allocate_matrix(fe_solver.fe_data.dof_handler,fe_solver.fe_data.finite_element,
+		fe_solver.distribute_dof_allocate_matrix(fe_solver.fe_data_structure.dof_handler,fe_solver.fe_data_structure.finite_element,
 												fe_solver.global_matrix);
 
 
 
-		fe_solver.allocate_vectors(fe_solver.fe_data.dof_handler,fe_solver.solution,
+		fe_solver.allocate_vectors(fe_solver.fe_data_structure.dof_handler,fe_solver.solution,
 									fe_solver.system_rhs,fe_solver.residual);
 
 		initial_value<dim> solution_function(System[0].nEqn);
 
-		VectorTools::interpolate(fe_solver.fe_data.mapping,
-								 fe_solver.fe_data.dof_handler,
+		VectorTools::interpolate(fe_solver.fe_data_structure.mapping,
+								 fe_solver.fe_data_structure.dof_handler,
 								 solution_function,
 								 fe_solver.solution);
 
@@ -110,14 +110,15 @@ namespace Test_FEValues
 											 	fe_solver.nEqn,fe_solver.nBC);
 
 
-		 postproc.reinit(fe_solver.fe_data.dof_handler);
+		 postproc.reinit(fe_solver.fe_data_structure.dof_handler);
 
 		// // we now compute the lift and drag over a surface of a plate
-		 Vector<double> lift_drag = postproc.compute_lift_drag(fe_solver.fe_data.mapping,
-    								fe_solver.fe_data.finite_element,
-    								fe_solver.fe_data.dof_handler,
+		 Vector<double> lift_drag = postproc.compute_lift_drag(fe_solver.fe_data_structure.mapping,
+    								fe_solver.fe_data_structure.finite_element,
+    								fe_solver.fe_data_structure.dof_handler,
     								System[0].base_tensorinfo.S_half_inv,
     								fe_solver.solution,
+    								fe_solver.convergence_table,
     								3);
 
 

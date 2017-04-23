@@ -152,6 +152,7 @@ namespace PostProc
     									  const DoFHandler<dim> &dof_handler,
     									  const Sparse_matrix &S_half_inv,
     									  const Vector<double> &solution,
+    									  ConvergenceTable &convergence_table,
     									  const unsigned int b_id_surface);
 
 	};
@@ -559,7 +560,8 @@ namespace PostProc
         column_name_Linfty = "#Linfty in u(Using QGauss)" + std::to_string(component);
 
         std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<Error Details>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"  << std::endl;
-        printf("L2_error: %e, Linf_error: %e, #DOF: %u, #Cells %u, #Residual %e \n",L2_error,Linfty_error,dof_handler.n_dofs(),active_cells,residual);
+        printf("L2_error: %e, Linf_error: %e, #DOF: %u, #Cells %u, #Residual %e  \n",
+        		L2_error,Linfty_error,dof_handler.n_dofs(),active_cells,residual);
         std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<Error Details>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
 
         convergence_table.add_value(column_name_L2,L2_error);
@@ -1103,6 +1105,7 @@ print_fe_index(const hp::DoFHandler<dim> &dof_handler)
     									  const DoFHandler<dim> &dof_handler,
     									  const Sparse_matrix &S_half_inv,
     									  const Vector<double> &solution,
+    									  ConvergenceTable &convergence_table,
     									  const unsigned int b_id_surface)
     {
     	AssertDimension(dim,2);
@@ -1199,6 +1202,16 @@ print_fe_index(const hp::DoFHandler<dim> &dof_handler)
     				}
     			}
     	}
+
+    	std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<Lift and Drag>>>>>>>>>>>>>>>>>>>>>>>>"<<std::endl;
+    	std::cout << "Drag: " << lift_drag(0) << " Lift: " << lift_drag(1) << std::endl;
+    	std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
+
+    	convergence_table.add_value("#Drag",lift_drag(0));
+    	convergence_table.add_value("#Lift",lift_drag(1));
+
+        convergence_table.set_scientific("#Drag",true);
+        convergence_table.set_scientific("#Lift",true);
 
     	return(lift_drag);
 
