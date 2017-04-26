@@ -108,6 +108,9 @@ namespace MatrixOpt
                                                                  const double *values,const Vector<double> &vec,
                                                                 const double size);
 
+			// adds two dealii vectors
+			Vector<double> add_Vector(const Vector<double> &a,const Vector<double> &b);
+
 	};
 
 	FullMatrix<double> Base_MatrixOpt::multiply_scalar(const double scalar,const FullMatrix<double> &A)
@@ -783,5 +786,20 @@ namespace MatrixOpt
 	  			max_value = vector(i);
 
 	  	return(max_value);
+	  }
+
+	  Vector<double> Base_MatrixOpt::add_Vector(const Vector<double> &a,const Vector<double> &b)
+	  {
+	  	// the dimension of both the vectors should be the same
+	  	const int num_entries = a.size();
+	  	AssertDimension(a.size(),b.size());
+
+	  	Vector<double> result(num_entries);
+
+	  	for (unsigned int i = 0 ; i < num_entries ; i++)
+	  		result(i) =a(i) + b(i);
+
+	  	return(result);
+
 	  }
 }

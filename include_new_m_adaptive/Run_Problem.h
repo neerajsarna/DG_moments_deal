@@ -361,4 +361,186 @@ template<int dim>
 
 	}
 
+
+	// time stepping using meshworker
+	template<int dim>
+	class
+	Run_Problem_FE_Time_Stepping:public Assembly_Manager_FE<dim>,
+								 public Run_Problem<dim>
+	{
+		public:
+			Run_Problem_FE_Time_Stepping(const std::string &output_file_name,
+						const constant_numerics &constants,
+						std::vector<Develop_System::System<dim>> &equation_info,
+                        ExactSolution::Base_ExactSolution<dim> *exact_solution,
+                        const std::vector<int> &nEqn,
+                        const std::vector<int> &nBC);
+
+
+			// the following function prescribes the initial conditions
+			class
+			initial_conditions:public Function<dim>
+			{
+				public:
+					initial_conditions(const unsigned int  &nEqn);
+					virtual void vector_value(const Point<dim> &p,Vector<double> &value) const ;
+			};
+
+			const double delta_t = 1.0;
+			void run();
+
+	};
+
+	template<int dim>
+	Run_Problem_FE_Time_Stepping<dim>::Run_Problem_FE_Time_Stepping(const std::string &output_file_name,
+						const constant_numerics &constants,
+						std::vector<Develop_System::System<dim>> &equation_info,
+                        ExactSolution::Base_ExactSolution<dim> *exact_solution,
+                        const std::vector<int> &nEqn,
+                        const std::vector<int> &nBC)
+	:
+	Assembly_Manager_FE<dim>(output_file_name,
+					constants,equation_info,
+                	nEqn,nBC),
+	Run_Problem<dim>(exact_solution)
+	{
+		// only works for finite volume scheme, does not have higher order time stepping scheme
+		AssertDimension(constants.p,0);
+
+		// has not been implemented for more than one system
+		AssertDimension(nEqn.size(),1);
+	}
+
+	template<int dim>
+	Run_Problem_FE_Time_Stepping<dim>::initial_conditions::initial_conditions(const unsigned int &nEqn)
+	:
+	Function<dim>(nEqn)
+	{;};
+
+	template<int dim>
+	void
+	Run_Problem_FE_Time_Stepping<dim>::initial_conditions::vector_value(const Point<dim> &p,Vector<double> &value) const
+	{
+		const double x = p(0);
+
+		// zero initial conditions to all the variables
+		unsigned int ID_rho;
+		unsigned int ID_vx;
+		unsigned int ID_vy;
+		unsigned int ID_theta;
+
+		if (dim == 2)
+		{
+			ID_rho = 0;
+			ID_vx = 1;
+			ID_vy = 2;
+			ID_theta = 3;			
+		}
+
+		value = 0;
+
+		// rho of one of the walls
+		value(ID_rho) = -1.0 * x / 4.0 + 3.0 / 2.0;
+
+		// theta of the inflow
+		value(ID_theta) = -sqrt(3.0/2.0) * 1.0 ;
+	}
+
+
+	template<int dim>
+	void 
+	Run_Problem_FE_Time_Stepping<dim>::run()
+	{
+			//
+	const unsigned int refine_cycles = this->constants.refine_cycles;
+
+	this->error_per_itr.resize(refine_cycles);
+
+    TimerOutput timer (std::cout, TimerOutput::summary,
+                	   TimerOutput::wall_times);
+
+
+   	// we first assemble the differential operator
+   	this->fe_data_structure.print_mesh_info();
+
+
+
+   	AssertDimension(this->error_per_itr.size(),refine_cycles);
+
+		//now we distribute the dofs and allocate the memory for the global matrix. We have 
+		// already created the mesh so we can directly distribute the degrees of freedom now.
+
+   	std::cout << "Distributing dof " << std::endl;
+   	timer.enter_subsection("Dof Distribution");
+   	this->distribute_dof_allocate_matrix(this->fe_data_structure.dof_handler,this->fe_data_structure.finite_element,this->global_matrix);
+   	this->allocate_vectors(this->fe_data_structure.dof_handler,this->solution,this->system_rhs,this->residual);
+   	timer.leave_subsection();
+
+
+
+
+   	std::cout << "#CELLS " << this->fe_data_structure.triangulation.n_active_cells() << std::endl;
+   	std::cout << "#DOFS " << this->fe_data_structure.dof_handler.n_dofs() << std::endl;
+   	std::cout << "Memory by dof handler(Gb) " << 
+   	this->fe_data_structure.dof_handler.memory_consumption()/pow(10,9)<< std::endl;	
+
+		// the following routine assembles
+   	std::cout << "Assembling" << std::endl;
+   	timer.enter_subsection("Assembly");
+   	Assert(this->constants.assembly_type!= manuel,ExcMessage("Manuel Assembly not supported for this problem."));
+   	this->assemble_system_meshworker();
+   	timer.leave_subsection();
+
+   	std::cout << "Computing intial conditions " << std::endl;
+   	initial_conditions initial_data(this->nEqn[0]);
+
+   	VectorTools::interpolate(this->fe_data_structure.mapping,
+						     this->fe_data_structure.dof_handler,
+							  initial_data,
+							 this->solution);
+
+   	MatrixOpt::Base_MatrixOpt matrix_opt;
+
+   	// deviation from the steady state value
+   	Vector<double> residual_steady_state(this->solution.size());
+   	Vector<double> new_solution(this->solution.size());
+   	residual_steady_state = 100;
+
+   	std::cout << "Time stepping " << std::endl;
+   	fflush(stdout);
+
+   	while (residual_steady_state.l2_norm() > 1e-6)
+   	{
+   		// new_solution = delta_t * system_rhs
+   		new_solution.equ(delta_t,this->system_rhs);
+
+   		// new_solution += -delta_t * global_matrix.solution
+   		new_solution.add(-delta_t,matrix_opt.Sparse_matrix_dot_Vector(this->global_matrix,this->solution));
+   		new_solution += this->solution;
+
+   		residual_steady_state = matrix_opt.Sparse_matrix_dot_Vector(this->global_matrix,new_solution);
+   		residual_steady_state -= this->system_rhs;
+
+   		std::cout << "residual_steady_state " << residual_steady_state.l2_norm() << " Solution Norm " << new_solution.l2_norm() << std::endl;
+   		// update the old solution
+   		this->solution = new_solution;
+   	}
+
+   		PostProc::Base_PostProc<dim> postproc(this->constants,this->base_exactsolution,
+											 this->nEqn,this->nBC);
+
+		postproc.reinit(this->fe_data_structure.dof_handler);
+
+		// // now we compute the error due to computation
+		postproc.error_evaluation_QGauss(this->solution,
+										 this->fe_data_structure.triangulation.n_active_cells(),
+										  this->error_per_itr[0],
+										GridTools::maximal_cell_diameter(this->fe_data_structure.triangulation),
+										this->convergence_table,
+										this->residual.l2_norm(),
+										this->fe_data_structure.mapping,
+										this->fe_data_structure.dof_handler);
+
+	}
+
 }

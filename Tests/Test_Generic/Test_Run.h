@@ -332,7 +332,7 @@ TEST(DISABLED_SolverMultipleSystem,HandlesSolverMultipleSystem)
 
 TEST(RunSystem,HandlesRunSystem)
 {
-		const unsigned int dim = 1;
+		const unsigned int dim = 2;
 
 		std::string folder_name = "../system_matrices/";
 		Constants::Base_Constants constants(input_file);
@@ -355,7 +355,7 @@ TEST(RunSystem,HandlesRunSystem)
 
 
 		// the exact solution can only be created for one of the systems
-		ExactSolution::ExactSolution_Dummy<dim>  exactsolution_dummy(constants.constants_num,System[constants.constants_sys.total_systems-1].base_tensorinfo.S_half,
+		ExactSolution::ExactSolution_Dummy<dim>  dummy(constants.constants_num,System[constants.constants_sys.total_systems-1].base_tensorinfo.S_half,
 													constants.constants_sys.nEqn[constants.constants_sys.total_systems-1],constants.constants_sys.Ntensors[constants.constants_sys.total_systems-1]);
 
 
@@ -363,7 +363,7 @@ TEST(RunSystem,HandlesRunSystem)
 		FEM_Solver::Run_Problem_FE<dim> fe_solver("grid",
 											constants.constants_num,
 											System,
-											&exactsolution_dummy,
+											&dummy,
 											constants.constants_sys.nEqn,
 											constants.constants_sys.nBC);
 
