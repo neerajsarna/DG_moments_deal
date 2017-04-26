@@ -1,4 +1,4 @@
-// points on the circle
+	// points on the circle
 char_len = 0.5;
 Point(1) = {0.25, 0.0, 0, char_len};
 Point(2) = {0.0, 0.0, 0, char_len};

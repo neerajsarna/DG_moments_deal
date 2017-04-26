@@ -1,40 +1,39 @@
 # The set of languages for which implicit dependencies are needed:
-SET(CMAKE_DEPENDS_LANGUAGES
+set(CMAKE_DEPENDS_LANGUAGES
   "CXX"
   )
 # The set of files for implicit dependencies of each language:
-SET(CMAKE_DEPENDS_CHECK_CXX
-  "/home/sarna/Desktop/DG_moments_dealii/Tests/main.cc" "/home/sarna/Desktop/DG_moments_dealii/Tests/build/CMakeFiles/test.out.dir/main.cc.o"
+set(CMAKE_DEPENDS_CHECK_CXX
+  "/Users/neerajsarna/sciebo/DG_moments_deal/Tests/main.cc" "/Users/neerajsarna/sciebo/DG_moments_deal/Tests/build/CMakeFiles/test.out.dir/main.cc.o"
   )
-SET(CMAKE_CXX_COMPILER_ID "GNU")
-
-# Targets to which this target links.
-SET(CMAKE_TARGET_LINKED_INFO_FILES
-  )
+set(CMAKE_CXX_COMPILER_ID "Clang")
 
 # The include file search paths:
-SET(CMAKE_C_TARGET_INCLUDE_PATH
+set(CMAKE_CXX_TARGET_INCLUDE_PATH
   "../../include_new_m_adaptive"
   "../include_tests_G20"
   "../Test_Generic"
   "../../periodic_square"
   "../../systems"
-  "/home/sarna/Desktop/Libraries/eigenv3/eigen"
+  "/usr/local/include/eigen"
   "../../Projector_Data"
   "../../Symmetrizer_Data"
   "../../ring"
-  "/opt/intel/composer_xe_2013_sp1.0.080/mkl/include"
-  "/home/sarna/Desktop/Libraries/googletest/include"
-  "/home/sarna/Desktop/Libraries/dealii/include"
-  "/home/sarna/Desktop/Libraries/dealii/include/deal.II/bundled"
-  "/home/sarna/Desktop/Libraries/mpich/include"
-  "/home/sarna/Desktop/Libraries/tbb/include/tbb"
-  "/home/sarna/Desktop/Libraries/metis/include"
-  "/home/sarna/Desktop/Libraries/trilinos_12.6/include"
-  "/usr/bin/include"
-  "/home/sarna/Desktop/Libraries/hdf5/include"
-  "/home/sarna/Desktop/Libraries/oce/include/oce"
+  "/opt/intel/compilers_and_libraries_2016.3.170/mac/mkl/include"
+  "/usr/local/include"
+  "/Applications/deal.II.app/Contents/Resources/include"
+  "/Applications/deal.II.app/Contents/Resources/include/deal.II/bundled"
+  "/Applications/deal.II.app/Contents/Resources/opt/openmpi-1.10.2/include"
+  "/Applications/deal.II.app/Contents/Resources/opt/petsc-3e25e16/include"
+  "/Applications/deal.II.app/Contents/Resources/opt/trilinos-0b08cd5/include"
+  "/Applications/deal.II.app/Contents/Resources/opt/oce-c0cdb53/include/oce"
+  "/Applications/deal.II.app/Contents/Resources/opt/p4est-8d811a8/include"
+  "/Applications/deal.II.app/Contents/Resources/opt/slepc-2c065dd/include"
   )
-SET(CMAKE_CXX_TARGET_INCLUDE_PATH ${CMAKE_C_TARGET_INCLUDE_PATH})
-SET(CMAKE_Fortran_TARGET_INCLUDE_PATH ${CMAKE_C_TARGET_INCLUDE_PATH})
-SET(CMAKE_ASM_TARGET_INCLUDE_PATH ${CMAKE_C_TARGET_INCLUDE_PATH})
+
+# Targets to which this target links.
+set(CMAKE_TARGET_LINKED_INFO_FILES
+  )
+
+# Fortran module output directory.
+set(CMAKE_Fortran_TARGET_MODULE_DIR "")
