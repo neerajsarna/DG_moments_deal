@@ -106,6 +106,13 @@ namespace PostProc
 									const Sparse_matrix &S_half_inv,
 									const DoFHandler<dim> &dof_handler);
 
+		void print_solution_to_file(const Triangulation<dim> &triangulation,
+									const Vector<double> &solution,
+									const Sparse_matrix &S_half_inv,
+									const DoFHandler<dim> &dof_handler,
+									std::string &filename);
+
+
 
 		void print_error_to_file(const Triangulation<dim> &triangulation,
 								 const Vector<double> &solution,
@@ -731,6 +738,65 @@ namespace PostProc
 
 	fclose(fp_solution);
 }
+
+
+	// same as above but can take a user defined input filename
+    template<int dim>
+    void 
+    Base_PostProc<dim>::
+    print_solution_to_file(
+    					const Triangulation<dim> &triangulation,
+    					const Vector<double> &solution,
+    					const Sparse_matrix &S_half_inv,
+    					const DoFHandler<dim> &dof_handler,
+    					std::string &filename)
+    {
+    	typename Triangulation<dim>::active_cell_iterator cell = triangulation.begin_active(), endc = triangulation.end();
+    	Assert(class_initialized == true,ExcMessage("Please initialize the post proc class"));
+
+    	FILE *fp_solution;
+
+    	fp_solution = fopen(filename.c_str(),"w+");
+
+    	AssertThrow(fp_solution != NULL,ExcMessage("file not open"));
+
+    	fprintf(fp_solution, "#%s\n","x y at the midpoint of each cell all the solution components");
+    	Vector<double> solution_value(max_equations);
+    	
+    	int variables_to_print;
+
+    	if (dim == 2)
+		variables_to_print = 9;	// we print all the moments till the heat flux
+
+	if (dim == 1)
+		variables_to_print = 5; // we print all the moments till the heat flux
+
+	for (; cell != endc ; cell++)
+	{
+		for (unsigned int vertex = 0 ; vertex < GeometryInfo<dim>::vertices_per_cell ; vertex++)
+		{
+			solution_value = 0;
+			VectorTools::point_value(dof_handler, solution, cell->vertex(vertex),solution_value);	
+
+			// we now convert back to the conventional variables. That is the variables in unsymmetric system	
+			solution_value = matrix_opt.Sparse_matrix_dot_Vector(S_half_inv,solution_value);
+
+			for (unsigned int space = 0 ; space < dim ; space ++)
+				fprintf(fp_solution, "%f ",cell->vertex(vertex)(space));
+
+		// we only print variables uptill heat flux
+			for (int i = 0 ; i < variables_to_print ; i++)
+				fprintf(fp_solution, "%f ",solution_value(i));
+
+			fprintf(fp_solution, "\n");
+		}
+	}
+
+
+	fclose(fp_solution);
+}
+
+
 
    	// we compute the error at all the vertices and then print it to a file
     template<int dim>

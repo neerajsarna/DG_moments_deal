@@ -332,7 +332,7 @@ TEST(DISABLED_SolverMultipleSystem,HandlesSolverMultipleSystem)
 
 TEST(RunSystem,HandlesRunSystem)
 {
-		const unsigned int dim = 2;
+		const unsigned int dim =1;
 
 		std::string folder_name = "../system_matrices/";
 		Constants::Base_Constants constants(input_file);
@@ -360,7 +360,7 @@ TEST(RunSystem,HandlesRunSystem)
 
 
 			// finite element solver for a single system
-		FEM_Solver::Run_Problem_FE<dim> fe_solver("grid",
+		FEM_Solver::Run_Problem_FE_Time_Stepping<dim> fe_solver("grid",
 											constants.constants_num,
 											System,
 											&dummy,

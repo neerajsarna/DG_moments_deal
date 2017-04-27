@@ -386,7 +386,7 @@ template<int dim>
 					virtual void vector_value(const Point<dim> &p,Vector<double> &value) const ;
 			};
 
-			const double delta_t = 1.0;
+			const double delta_t = 0.1;
 			void run();
 
 	};
@@ -405,7 +405,7 @@ template<int dim>
 	Run_Problem<dim>(exact_solution)
 	{
 		// only works for finite volume scheme, does not have higher order time stepping scheme
-		AssertDimension(constants.p,0);
+		//AssertDimension(constants.p,0);
 
 		// has not been implemented for more than one system
 		AssertDimension(nEqn.size(),1);
@@ -437,13 +437,25 @@ template<int dim>
 			ID_theta = 3;			
 		}
 
+		if (dim == 1)
+		{
+			ID_rho = 0;
+			ID_vx = 1;
+			ID_theta = 2;			
+		}
+
+
 		value = 0;
 
+		if (dim == 2)
+		{
 		// rho of one of the walls
 		value(ID_rho) = -1.0 * x / 4.0 + 3.0 / 2.0;
 
 		// theta of the inflow
-		value(ID_theta) = -sqrt(3.0/2.0) * 1.0 ;
+		value(ID_theta) = -sqrt(3.0/2.0) * 1.0 ;			
+		}
+
 	}
 
 
@@ -504,32 +516,60 @@ template<int dim>
    	// deviation from the steady state value
    	Vector<double> residual_steady_state(this->solution.size());
    	Vector<double> new_solution(this->solution.size());
+   	Vector<double> new_solution2(this->solution.size());
    	residual_steady_state = 100;
 
    	std::cout << "Time stepping " << std::endl;
    	fflush(stdout);
 
+   	// counts the number of time steps
+   	unsigned int counter = 0;
+
+   	PostProc::Base_PostProc<dim> postproc(this->constants,this->base_exactsolution,
+											 this->nEqn,this->nBC);
+
+	postproc.reinit(this->fe_data_structure.dof_handler);
+
+
    	while (residual_steady_state.l2_norm() > 1e-6)
    	{
+   		// forward euler step
    		// new_solution = delta_t * system_rhs
    		new_solution.equ(delta_t,this->system_rhs);
-
-   		// new_solution += -delta_t * global_matrix.solution
    		new_solution.add(-delta_t,matrix_opt.Sparse_matrix_dot_Vector(this->global_matrix,this->solution));
    		new_solution += this->solution;
 
-   		residual_steady_state = matrix_opt.Sparse_matrix_dot_Vector(this->global_matrix,new_solution);
+   		// second update
+   		new_solution2.equ(3.0/4.0,this->solution);
+   		new_solution2.add(1.0/4.0,new_solution);
+   		new_solution2.add(delta_t * 1.0/4.0,this->system_rhs);
+   		new_solution2.add(-delta_t * 1.0/4,matrix_opt.Sparse_matrix_dot_Vector(this->global_matrix,new_solution));
+   
+
+   		residual_steady_state = matrix_opt.Sparse_matrix_dot_Vector(this->global_matrix,new_solution2);
    		residual_steady_state -= this->system_rhs;
 
-   		std::cout << "residual_steady_state " << residual_steady_state.l2_norm() << " Solution Norm " << new_solution.l2_norm() << std::endl;
    		// update the old solution
-   		this->solution = new_solution;
+   		this->solution = new_solution2;
+
+   		counter++;
+
+   		if (counter % 10 == 0 && counter < 500)
+   		{
+   			std::cout << "residual_steady_state " << residual_steady_state.l2_norm() << " Solution Norm " << new_solution2.l2_norm() << std::endl;
+
+   			// std::string filename = "solution_" + std::to_string(counter);
+
+   			// postproc.print_solution_to_file(this->fe_data_structure.triangulation,
+						// 			this->solution,
+						// 			this->system_info[0].base_tensorinfo.S_half_inv,
+						// 			this->fe_data_structure.dof_handler,
+						// 			filename);
+   		}
+
    	}
 
-   		PostProc::Base_PostProc<dim> postproc(this->constants,this->base_exactsolution,
-											 this->nEqn,this->nBC);
 
-		postproc.reinit(this->fe_data_structure.dof_handler);
 
 		// // now we compute the error due to computation
 		postproc.error_evaluation_QGauss(this->solution,
