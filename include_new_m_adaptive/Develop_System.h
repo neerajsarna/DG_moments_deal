@@ -53,10 +53,11 @@ namespace Develop_System
 			// a member of the base class.
 			BCrhs::BCrhs_wall<dim> bcrhs_wall;
 			BCrhs::BCrhs_inflow<dim> bcrhs_inflow;
+			BCrhs_systemA::BCrhs_ring_char_systemA<dim> bcrhs_ring_char_systemA;
+
 
 			void reinit_BCrhs();
 			void initialize_system();
-
 
 	};
 
@@ -71,9 +72,12 @@ namespace Develop_System
 	Base_DevelopSystem<dim>(constants,nEqn,nBC,Ntensors,folder_name),
 	// CAUTION sending B without relaxational normal velocity
 	bcrhs_wall(constants,nBC,this->system_data.B.matrix),
-	bcrhs_inflow(constants,nBC,this->system_data.Binflow.matrix)
+	bcrhs_inflow(constants,nBC,this->system_data.Binflow.matrix),
+	bcrhs_ring_char_systemA(constants,nBC)
 	{
-
+		// if system A then no odd boundary implementation
+		if(Ntensors == 3)
+			Assert(constants.bc_type == characteristic,ExcNotImplemented());
 	}
 
 
@@ -82,7 +86,8 @@ namespace Develop_System
 	System<dim>::initialize_system()
 	{
 		this->initialized_system = true;
-		// we reinitialize all the data for base_tensorinfo for this particular system
+
+		// else
 		this->base_tensorinfo.reinit();
 
 		//initialize the forcing term for this system
@@ -98,15 +103,22 @@ namespace Develop_System
 
    		this->symmetrize_system();
 
-   		this->force_factor = this->forcing_factor();		
+   		this->force_factor = this->forcing_factor();
+
+   		this->reinit_BCrhs();		
 	}
 
 	template<int dim>
 	void 
 	System<dim>::reinit_BCrhs()
 	{
-		this->base_bcrhs = &bcrhs_wall;
+		if (this->Ntensors == 3 && dim == 2)
+			this->base_bcrhs = &bcrhs_ring_char_systemA;
+
+		else
+			this->base_bcrhs = &bcrhs_wall;
 	}
+
 
 
 }

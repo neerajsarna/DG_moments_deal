@@ -57,7 +57,7 @@ void set_error_values(const enum Mesh_type &mesh_type,
 }
 
 
-TEST(SolverSingleSystem,HandlesSolverSingleSystem)
+TEST(DISABLED_SolverSingleSystem,HandlesSolverSingleSystem)
 {
 		const unsigned int dim = 1;
 
@@ -201,12 +201,9 @@ TEST(SolverSingleSystem,HandlesSolverSingleSystem)
 		}
 }
 
-
-
-// run without any restrictions
-TEST(DISABLED_RunSystem,DISABLED_HandlesRunSystem)
+TEST(DISABLED_RunSystemA,HandlesSystemA)
 {
-		const unsigned int dim =2;
+		const int dim = 2;
 
 		std::string folder_name = "../system_matrices/";
 		Constants::Base_Constants constants(input_file);
@@ -229,8 +226,80 @@ TEST(DISABLED_RunSystem,DISABLED_HandlesRunSystem)
 
 
 		// the exact solution can only be created for one of the systems
-		ExactSolution::ExactSolution_Dummy<dim>  dummy(constants.constants_num,System[constants.constants_sys.total_systems-1].base_tensorinfo.S_half,
-													constants.constants_sys.nEqn[constants.constants_sys.total_systems-1],constants.constants_sys.Ntensors[constants.constants_sys.total_systems-1]);
+		// ExactSolution::ExactSolution_Dummy<dim>  dummy(constants.constants_num,System[constants.constants_sys.total_systems-1].base_tensorinfo.S_half,
+		// 											constants.constants_sys.nEqn[constants.constants_sys.total_systems-1],constants.constants_sys.Ntensors[constants.constants_sys.total_systems-1]);
+
+
+		ExactSolution::ExactSolution_SystemA_ring<dim>  exact_solution_systemA(constants.constants_num,
+																			System[constants.constants_sys.total_systems-1].base_tensorinfo.S_half,
+																			constants.constants_sys.nEqn[constants.constants_sys.total_systems-1],
+																			constants.constants_sys.Ntensors[constants.constants_sys.total_systems-1]);
+
+			// finite element solver for a single system
+		FEM_Solver::Run_Problem_FE<dim> fe_solver("grid",
+											constants.constants_num,
+											System,
+											&exact_solution_systemA,
+											constants.constants_sys.nEqn,
+											constants.constants_sys.nBC);
+
+
+		fe_solver.run();
+
+
+
+		AssertThrow(constants.constants_num.refine_cycles == 2,ExcMessage("The refine cycles requested for have not been implemented"));
+		AssertThrow(constants.constants_num.p == 1,ExcNotImplemented());
+		AssertThrow(constants.constants_num.mapping_order == 2 , ExcNotImplemented());
+		AssertThrow(fabs(constants.constants_num.initial_refinement - 1) < 1e-5,ExcNotImplemented());
+
+		Vector<double> exact_error(constants.constants_num.refine_cycles);
+
+		if (fabs(constants.constants_num.tau - 0.1) < 1e-5)
+		{
+			if(constants.constants_num.bc_type == characteristic)
+			{
+				
+				exact_error(0) = 1.6451e-01;
+				exact_error(1) = 2.8996e-02;
+			}
+		}
+
+
+		for (int i = 0 ; i < constants.constants_num.refine_cycles ; i++)
+				EXPECT_NEAR(fe_solver.error_per_itr[i],exact_error(i),1e-5);	
+}
+
+
+// run without any restrictions
+TEST(RunSystem,HandlesRunSystem)
+{
+		const unsigned int dim =2;
+
+		std::string folder_name = "../system_matrices/";
+		Constants::Base_Constants constants(input_file);
+
+
+	// 	// we construct a vector of all the system data being considered 
+		std::vector<Develop_System::System<dim>> System;
+
+		// initialize the vector containing all the systems
+		// initialize the vector containing all the systems
+		for(int i = 0 ; i < constants.constants_sys.total_systems ; i++)
+		{
+			System.push_back(Develop_System::System<dim>(constants.constants_num,constants.constants_sys.nEqn[i],
+				constants.constants_sys.nBC[i],constants.constants_sys.Ntensors[i],folder_name));
+
+		}
+	
+		for (int i = 0 ; i < constants.constants_sys.total_systems ; i++)
+			System[i].initialize_system();
+
+		
+		ExactSolution::ExactSolution_Dummy<dim>  dummy(constants.constants_num,
+														System[constants.constants_sys.total_systems-1].base_tensorinfo.S_half,
+														constants.constants_sys.nEqn[constants.constants_sys.total_systems-1],
+														constants.constants_sys.Ntensors[constants.constants_sys.total_systems-1]);
 
 
 			// finite element solver for a single system
@@ -243,8 +312,6 @@ TEST(DISABLED_RunSystem,DISABLED_HandlesRunSystem)
 
 
 		fe_solver.run();
-
-
 
 }
 

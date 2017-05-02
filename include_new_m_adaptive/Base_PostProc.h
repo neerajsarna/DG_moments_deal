@@ -714,6 +714,9 @@ namespace PostProc
 	if (dim == 1)
 		variables_to_print = 5; // we print all the moments till the heat flux
 
+    	//variables_to_print = 6;
+
+    	Assert(variables_to_print<=max_equations,ExcMessage("to many variables to print"));
 	for (; cell != endc ; cell++)
 	{
 		for (unsigned int vertex = 0 ; vertex < GeometryInfo<dim>::vertices_per_cell ; vertex++)

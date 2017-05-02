@@ -22,6 +22,14 @@ namespace FEM_Solver
                         const std::vector<int> &nBC);
 
 
+            // initializer for system A
+            Base_Solver(
+                        const std::string &output_file_name,
+                        const constant_numerics &constants,
+                        std::vector<SystemA::SystemA<dim>> &equation_info,
+                        ExactSolution::Base_ExactSolution<dim> *exact_solution,
+                        const std::vector<int> &nEqn,
+                        const std::vector<int> &nBC);
 
             DeclException2 (ExcCellCenter, double, double,
                         << "Cell Center = " << arg1 << "Neighbor Center = " << arg2 << "Mesh not lexiographical ");

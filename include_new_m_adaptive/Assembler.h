@@ -431,7 +431,7 @@ namespace FEM_Solver
           boundary_rhs_value,face_itr->boundary_id());
 
       else
-        system_info[0].bcrhs_wall.BCrhs(fe_v.quadrature_point(q),outward_normal,
+        system_info[0].base_bcrhs->BCrhs(fe_v.quadrature_point(q),outward_normal,
                                       boundary_rhs_value,face_itr->boundary_id());
 
 

@@ -39,6 +39,7 @@ namespace SystemA
 	EquationGenerator::Base_EquationGenerator<dim>(constants,nEqn,nBC,Ntensors)
 	{
 
+		AssertDimension(Ntensors,3);
 		// initialize the system
 		this->reinit_system(folder_name);
 
@@ -106,6 +107,9 @@ namespace SystemA
 	bcrhs_ring_char_systemA(constants,nBC),
 	bcrhs_ring_odd_systemA(constants,nBC)
 	{
+
+		// the penalty matrix for the odd implementation has not been implemented
+		Assert(constants.bc_type == characteristic,ExcNotImplemented());
 
 		// we reinitialize all the data for base_tensorinfo for this particular system
 		this->base_tensorinfo.reinit(this->varIdx,this->Ntensors);

@@ -31,12 +31,12 @@ std::vector<std::string> input_file;
 #include "Base_PeriodicityHandler.h"
 #include "Base_PostProc.h"
 #include "Base_NumericalIntegration.h"
-//#include "Base_Solver.h"
 #include "FE_Data.h"
 #include "Assembler.h"
 #include "Run_Problem.h"
 
 #include "ExactSolution_PoissonHeat.h"
+//#include "SystemA.h"
 
 // certain generic tests which have to be performed independent of the system
 //#include "Test_LinearSolver.h"
@@ -52,7 +52,7 @@ std::vector<std::string> input_file;
 //#include "Test_ResidualCompution.h"
 //#include "Test_Projection.h"
 
-#include "SystemA.h"
+
 
 //tests
 

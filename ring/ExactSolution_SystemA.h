@@ -35,14 +35,19 @@ namespace ExactSolution
 		Assert(fabs(this->constants.A0 - 0.0) < 1e-5 &&
 			fabs(this->constants.A1 - 0.2) < 1e-5 &&
 			fabs(this->constants.A2 - 0.1) < 1e-5 &&
-			fabs(this->constants.uW - this->constants.tau) < 1e-5, ExcMessage("Please load the exact solution for this test problem"));
+			fabs(this->constants.uW - this->constants.tau) < 1e-5 &&
+			fabs(this->constants.theta0 - 2.0) < 1e-5 &&
+			fabs(this->constants.theta1 - 1.0) < 1e-5, ExcMessage("Please load the exact solution for this test problem"));
 
 		// different test cases
 		if (fabs(this->constants.A0 - 0.0) < 1e-5 &&
 			fabs(this->constants.A1 - 0.2) < 1e-5 &&
 			fabs(this->constants.A2 - 0.1) < 1e-5 &&
-			fabs(this->constants.uW - this->constants.tau) < 1e-5)
+			fabs(this->constants.uW - this->constants.tau) < 1e-5 &&
+			fabs(this->constants.theta0 - 2.0) < 1e-5 &&
+			fabs(this->constants.theta1 - 1.0) < 1e-5)
 		{
+
 
 			if (fabs(this->constants.tau - 0.01) < 1e-5)
 			{

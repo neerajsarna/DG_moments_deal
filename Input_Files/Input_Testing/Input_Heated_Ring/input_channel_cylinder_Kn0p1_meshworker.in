@@ -2,7 +2,7 @@
 subsection Numerical Constants
 	set polynomial degree = 1
 	set mapping order = 2
-	set total h refinement cycles = 1
+	set total h refinement cycles = 2
 
 	# global = 0
 	# adaptive = 1
@@ -31,16 +31,16 @@ subsection Physical Constants
 	set epsilon = 1e-5
  
  # the mapping for system A is different. So to compare the values for theta, we need to use rho
-	set error_variable = theta
+	set error_variable = rho
 
  # there is no rho in system A, so this rho corresponds to theta
-    set force_variable = theta
+    set force_variable = rho
     
 	set alpha = 0.0
 
  # temperatures of different walls
-	set theta0 = 1.0
-	set theta1 = 2.0
+	set theta0 = 2.0
+	set theta1 = 1.0
 	set theta2 = 0.0
 	set theta3 = 0.0
 	set theta4 = 0.0
@@ -72,10 +72,10 @@ subsection Physical Constants
  	set vy102 = 0
 
        # 0 for force of systemA,1 for force of systemB, 2 for poisson heat conduction
-        set force type = 2
+        set force type = 0
 
         # 0 for characteristic and 1 for odd
-        set BC type = 1
+        set BC type = 0
 
         # 0 for BGK
         # 1 for Boltzmann_MM
@@ -122,5 +122,5 @@ subsection Printing Options
 end
 
 subsection Output Directory Name
-	set Main Output Directory = channel_cylinder_Kn0p1
+	set Main Output Directory = heated_cylinder_Kn0p1
 end

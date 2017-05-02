@@ -23,7 +23,7 @@ namespace TensorInfo
 
 			// For certain systems, for ex the A system we do not have a direct correlation between the various
 			// Ntensors and varIdx. For such system we directly provide varIdx
-			void reinit(const MatrixUI &var_idx,const unsigned int n_tensors);
+			void reinit_systemA(const MatrixUI &var_idx,const unsigned int n_tensors);
 
 			MatrixUI varIdx;
 			// we have the max tensorial degree because only then the projectors for individual tensors can be 
@@ -54,6 +54,7 @@ namespace TensorInfo
 			unsigned int compute_nEqn(MatrixUI &free_indices);
 
 			MatrixUI generate_varIdx();
+			MatrixUI generate_varIdx_systemA();
 			MatrixUI generate_num_free_indices(MatrixUI &varIdx);
 			MatrixUI generate_cumilative_index(MatrixUI &free_indices);
 			void allocate_tensor_memory(std::vector<projector_data> &tensor_project);
@@ -139,7 +140,12 @@ namespace TensorInfo
 		Assert(max_tensorial_degree == 11,ExcNotImplemented());
 
 		// generate the varIdx, similar to the Mathematica file
-		varIdx = generate_varIdx();
+		if (Ntensors == 3)
+			varIdx = generate_varIdx_systemA();
+
+		else
+			varIdx = generate_varIdx();
+
 		Assert(compute_max_tensorial_degree() <= max_tensorial_degree,ExcMessage("Projector and Symmetrizer data not available for this tensorial degree"));
 
 		// now we generate the number of components corresponding to all the free indices
@@ -168,42 +174,7 @@ namespace TensorInfo
 	}
 
 
-	// same as above but with different parameters. To be used for systems in which var_idx cannot be computed for eg the GA system
-	template<int dim>
-	void 
-	Base_TensorInfo<dim>::reinit(const MatrixUI &var_idx,const unsigned int n_tensors)
-	{
-		varIdx = var_idx;
-		Ntensors = n_tensors;
 
-		free_indices.resize(varIdx.rows(),1);
-		Assert(varIdx.rows() != 0 || varIdx.cols() != 0,ExcNotInitialized());
-		Assert(free_indices.size() != 0,ExcNotInitialized());
-		
-
-
-		Assert(compute_max_tensorial_degree() <= max_tensorial_degree,ExcMessage("Projector and Symmetrizer data not available for this tensorial degree"));
-
-		// the situation for dim ==1 has not be implemented yet
-		Assert(dim > 1,ExcNotImplemented());
-
-		// now we generate the number of components corresponding to all the free indices
-		free_indices = generate_num_free_indices(varIdx);
-
-		// we also generate the cumilative free indices for the development of projector
-		free_indices_cumilative = generate_cumilative_index(free_indices);
-
-		// id_odd_global = generate_ID_odd();
-
-		// compute the total number of equations in the system
-		nEqn = compute_nEqn(free_indices);
-
-		// create the symmetrizer for this particular ssytem
-		create_Symmetrizer_2D();
-
-		// create the symmetrizer for this particular system
-		create_InvSymmetrizer_2D();
-	}
 
 	template<int dim>
 	unsigned int
@@ -256,6 +227,33 @@ namespace TensorInfo
 
 		return(result);
 	}
+
+	template<int dim>
+	MatrixUI
+	Base_TensorInfo<dim>
+	::generate_varIdx_systemA()
+	{
+		MatrixUI result;
+		result.resize(this->Ntensors,2);
+
+		Assert(result.rows() !=0 ,ExcNotInitialized());
+		Assert(result.cols() !=0 ,ExcNotInitialized());
+		
+		// theta
+		result(0,0) = 1;
+		result(0,1) = 0;
+
+		// q
+		result(1,0) = 0;
+		result(1,1) = 1;
+
+		// R
+		result(2,0) = 1;
+		result(2,1) = 2;
+
+		return(result);
+	}
+
 
 	// computes the number of free components of a tensor of a particular degree in 2D
 	template<int dim>
