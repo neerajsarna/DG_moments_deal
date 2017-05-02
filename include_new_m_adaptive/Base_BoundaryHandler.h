@@ -33,7 +33,7 @@ namespace BoundaryHandler
 			Full_matrix build_B_tilde_inv() const;
 
 			// build X_minus.inverse(B_tilde).B
-			Full_matrix build_B_hat(const Full_matrix &B_tilde_inv) const;
+			Full_matrix build_penalty_char() const;
 
 									
 	};
@@ -90,10 +90,12 @@ namespace BoundaryHandler
 
 	Full_matrix
 	Base_BoundaryHandler_Char
-	::build_B_hat(const Full_matrix &B_tilde_inv) const
+	::build_penalty_char() const
 	{
 		Assert(B->rows() !=0 && B->cols() !=0,ExcNotInitialized());
 		Assert(X_minus.rows() !=0 && X_minus.cols() !=0,ExcNotInitialized());
+
+		Full_matrix B_tilde_inv = build_B_tilde_inv();
 
 		// B.rows = number of boundary conditions = number of negative eigenvalues
 		// B.cols = number of eqatuions in the system
@@ -104,7 +106,7 @@ namespace BoundaryHandler
 
 		Assert(B_tilde_inv.rows()!=0 && B_tilde_inv.cols() != 0, ExcMessage("Matrix not initialized"));
 
-		return(X_minus * B_tilde_inv * (*B));
+		return(X_minus * B_tilde_inv);
 	}
 
 	// we would now like to look into the development of odd Boundary Conditions

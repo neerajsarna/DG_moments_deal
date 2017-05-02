@@ -104,19 +104,10 @@ namespace EquationGenerator
 			void source_term(const std::vector<Point<dim>> &p,
 									 std::vector<Vector<double>> &value);
 			
-			// matrices for the boundary conditions
-			struct boundary_mat
-			{
-				Full_matrix B_tilde_inv;
-				Full_matrix B_hat;
-				Full_matrix X_minus;
-			};
-
-			// boundary matrices for the wall boundary conditions
-			boundary_mat boundary_wall;
-
-			// boundary matrices for the inflow boundary conditions
-			boundary_mat boundary_inflow;
+			// penalty matrices for the characteristic implementation of boundary conditions
+			Full_matrix penalty_char_wall;
+			Full_matrix penalty_char_inflow;
+			Full_matrix X_minus;
 
 
 			// first we create the class which handles matrix orperations
@@ -154,7 +145,7 @@ namespace EquationGenerator
 
 			void reinit_force();
 
-			void reinit_char_matrices(const Sparse_matrix &Ax,const Sparse_matrix &B,Full_matrix &B_tilde_inv,Full_matrix &B_hat);
+			void reinit_penalty_matrices(const Sparse_matrix &Ax, Sparse_matrix &B,Full_matrix &penalty_matrix);
 			void reinit_BoundaryMatrices();
 
 			void reinit_Bspecular();
@@ -718,7 +709,7 @@ namespace EquationGenerator
 	void 
 	Base_EquationGenerator<dim>
 	::
-	reinit_char_matrices(const Sparse_matrix &Ax,const Sparse_matrix &B,Full_matrix &B_tilde_inv,Full_matrix &B_hat)
+	reinit_penalty_matrices(const Sparse_matrix &Ax,Sparse_matrix &B,Full_matrix &penalty_matrix)
 	{
 		BoundaryHandler::Base_BoundaryHandler_Char boundary_handler_char(Ax,
 																		 B,
@@ -726,13 +717,7 @@ namespace EquationGenerator
 
 
 
-		B_tilde_inv.resize(nBC,nBC);
-		B_hat.resize(nEqn,this->nEqn);		
-
-		B_tilde_inv = boundary_handler_char.build_B_tilde_inv();
-		B_hat = boundary_handler_char.build_B_hat(B_tilde_inv);
-
-
+		penalty_matrix = boundary_handler_char.build_penalty_char();
 
 	}
 
@@ -750,12 +735,10 @@ namespace EquationGenerator
 			{
 
 				//boundary matrices for the wall boundary
-				reinit_char_matrices(system_data.A[0].matrix,system_data.B.matrix,boundary_wall.B_tilde_inv,
-									boundary_wall.B_hat);
+				reinit_penalty_matrices(system_data.A[0].matrix,system_data.B.matrix,penalty_char_wall);
 
 				// boundary matrices for the inflow boundary
-				reinit_char_matrices(system_data.A[0].matrix,system_data.Binflow.matrix,boundary_inflow.B_tilde_inv,
-									boundary_inflow.B_hat);
+				reinit_penalty_matrices(system_data.A[0].matrix,system_data.Binflow.matrix,penalty_char_inflow);
 
 				break;
 			}

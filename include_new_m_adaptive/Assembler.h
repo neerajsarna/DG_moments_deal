@@ -57,8 +57,8 @@ namespace FEM_Solver
         									CellInfo &info);
 
      // integrate boundary term using characteristic variables
-      // void integrate_boundary_term_char(DoFInfo &dinfo,
-      //   								CellInfo &info);
+      void integrate_boundary_term_char(DoFInfo &dinfo,
+        								CellInfo &info);
 
      void integrate_face_term (DoFInfo &dinfo1,
      			        		DoFInfo &dinfo2,
@@ -157,7 +157,23 @@ namespace FEM_Solver
 
     case characteristic:
     {
-      AssertThrow(1 == 0 ,ExcMessage("Should not have reached here"));
+            MeshWorker::loop<dim, dim, MeshWorker::DoFInfo<dim>, MeshWorker::IntegrationInfoBox<dim> >
+                          (cell, endc,
+                           dof_info, info_box,
+                           std_cxx11::bind(&Assembly_Manager_FE<dim>::integrate_cell_term,
+                            this,
+                            std_cxx11::_1,std_cxx11::_2),
+                           std_cxx11::bind(&Assembly_Manager_FE<dim>::integrate_boundary_term_char,
+                            this,
+                            std_cxx11::_1,
+                            std_cxx11::_2),
+                           std_cxx11::bind(&Assembly_Manager_FE<dim>::integrate_face_term,
+                            this,
+                            std_cxx11::_1,
+                            std_cxx11::_2,
+                            std_cxx11::_3,
+                            std_cxx11::_4),
+                           assembler);
       break;
     }
 
@@ -345,6 +361,117 @@ namespace FEM_Solver
     }
 
   }
+
+
+  // boundary implementation using characteristic variables
+  template<int dim> 
+  void 
+  Assembly_Manager_FE<dim>
+  ::integrate_boundary_term_char(DoFInfo &dinfo,
+    CellInfo &info)
+  {
+
+    const FEValuesBase<dim> &fe_v = info.fe_values();
+    typename Triangulation<dim>::face_iterator face_itr= dinfo.face;
+    FullMatrix<double> &cell_matrix = dinfo.matrix(0).matrix;
+    Vector<double> &cell_rhs = dinfo.vector(0).block(0);
+    const std::vector<double> &Jacobian_face = fe_v.get_JxW_values ();
+
+    const FiniteElement<dim> &fe_in_cell = info.finite_element();
+
+    const unsigned int dofs_per_cell = fe_v.dofs_per_cell;
+    std::vector<unsigned int> component(dofs_per_cell);
+
+    for (unsigned int i = 0 ; i < dofs_per_cell ; i ++)
+      component[i] = fe_in_cell.system_to_component_index(i).first;
+
+    Vector<double> boundary_rhs_value;
+    boundary_rhs_value.reinit(nBC[0]);
+    const unsigned int b_id = face_itr->boundary_id();
+
+    Assert(system_info[0].system_data.B.matrix.rows() == system_info[0].system_data.Sigma.matrix.cols() ,ExcMessage("Incorrect dimension"));
+
+// we use a temporary matrix to determine whether inflow or outflow
+    Sparse_matrix B_temp;
+    Full_matrix penalty_temp;
+
+    if(b_id == 101 || b_id == 102)
+    {
+      integrate_inflow++;
+      B_temp = this->system_info[0].system_data.Binflow.matrix;
+      penalty_temp = this->system_info[0].penalty_char_inflow;
+    }
+    else
+    {
+    // B matrix for specular reflection
+      if (b_id == 50)
+        B_temp = this->system_info[0].system_data.B_specular.matrix;
+
+    // B matrix for full accmmodation
+      else
+      {
+        B_temp = this->system_info[0].system_data.B.matrix;
+        penalty_temp = this->system_info[0].penalty_char_wall;
+      }
+      
+    }
+
+    for (unsigned int q = 0 ; q < fe_v.n_quadrature_points ; q++)
+    {
+      const double jacobian_value = Jacobian_face[q];
+      Tensor<1,dim> outward_normal = fe_v.normal_vector(q);
+
+      boundary_rhs_value = 0;                 
+
+
+  // check for inflow or outflow
+  // Incase of inflow provide the inflow rhs
+      if(face_itr->boundary_id() == 101 || face_itr->boundary_id() == 102)
+        system_info[0].bcrhs_inflow.BCrhs(fe_v.quadrature_point(q),outward_normal,
+          boundary_rhs_value,face_itr->boundary_id());
+
+      else
+        system_info[0].bcrhs_wall.BCrhs(fe_v.quadrature_point(q),outward_normal,
+                                      boundary_rhs_value,face_itr->boundary_id());
+
+
+      Sparse_matrix Projector = system_info[0].build_Projector(outward_normal);
+      Sparse_matrix Inv_Projector = system_info[0].build_InvProjector(outward_normal);
+      Eigen::MatrixXd Am = system_info[0].build_Aminus(outward_normal);
+
+
+      // the projector was not included in the development of the penalty matrix
+      Full_matrix Am_Penalty_B = 0.5 * Am * Inv_Projector * 
+                                 penalty_temp * B_temp * Projector;
+
+      Full_matrix Am_Penalty = 0.5 * Am * Inv_Projector * 
+                                          penalty_temp;
+
+      // boundary condition has been implemented in the form BU-g. Therefore the right hand side 
+      // gets a plus sign
+      for (unsigned int i = 0 ; i < dofs_per_cell ; i ++)
+      {
+        const double shape_value_test = fe_v.shape_value(i,q);
+        for (unsigned int j = 0 ; j < dofs_per_cell ; j ++)
+          cell_matrix(i,j) += shape_value_test
+                              * Am_Penalty_B(component[i],component[j])
+                              * fe_v.shape_value(j,q) 
+                              * jacobian_value;                                    
+
+
+        for (unsigned int j = 0 ; j < boundary_rhs_value.size() ; j++)
+          cell_rhs(i) += shape_value_test 
+                          * Am_Penalty(component[i],j) 
+                          * boundary_rhs_value[j] 
+                          * jacobian_value;
+
+      }
+
+
+    }
+
+  }
+
 
 
   template<int dim>
