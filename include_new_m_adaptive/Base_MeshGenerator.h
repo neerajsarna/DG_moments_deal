@@ -254,7 +254,7 @@ namespace MeshGenerator
 				fflush(stdout);
 				std::cout << "Developing a ring " << std::endl;
 				loaded_mesh = true;
-				mesh_internal_ring();
+				read_gmsh();
 			}
 
 			if (constants.mesh_type == square_domain)

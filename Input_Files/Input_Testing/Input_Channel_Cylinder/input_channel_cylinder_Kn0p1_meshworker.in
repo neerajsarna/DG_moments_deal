@@ -1,6 +1,6 @@
 
 subsection Numerical Constants
-	set polynomial degree = 0
+	set polynomial degree = 1
 	set mapping order = 2
 	set total h refinement cycles = 1
 
@@ -60,8 +60,8 @@ subsection Physical Constants
 	set vy4 = 0.0
 
  # conditions for inflow
- 	set rho101 = 1.0
- 	set theta101 = 2.0
+ 	set rho101 = 2.0
+ 	set theta101 = 1.0
  	set vx101 = 0
  	set vy101 = 0
 
@@ -71,19 +71,19 @@ subsection Physical Constants
  	set vx102 = 0
  	set vy102 = 0
 
-       # 0 for force of systemA,1 for force of systemB, 2 for poisson heat conduction
-        set force type = 2
+ 	# 0 for force of systemA,1 for force of systemB, 2 for poisson heat conduction
+ 	set force type = 2
 
-        # 0 for characteristic and 1 for odd
-        set BC type = 1
+ 	# 0 for characteristic and 1 for odd
+ 	set BC type = 1
 
-        # 0 for BGK
-        # 1 for Boltzmann_MM
-        set Collision_Operator = 1
+ 	# 0 for BGK
+ 	# 1 for Boltzmann_MM
+ 	set Collision_Operator = 1
 end
 
 subsection Mesh Info
-	set mesh_filename = ../../Meshes/Channel_Cylinder/square_circular_cavity_cells_476.msh
+	set mesh_filename = ../../Meshes/Testing_Meshes/square_circular_cavity.msh
 
 	# ring
 	# square_domain 
