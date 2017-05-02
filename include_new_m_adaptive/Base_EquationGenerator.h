@@ -105,10 +105,19 @@ namespace EquationGenerator
 									 std::vector<Vector<double>> &value);
 			
 			// matrices for the boundary conditions
-			Full_matrix B_tilde_inv;
-			Full_matrix B_hat;
-			Full_matrix X_minus;
-			Sparse_matrix BC;
+			struct boundary_mat
+			{
+				Full_matrix B_tilde_inv;
+				Full_matrix B_hat;
+				Full_matrix X_minus;
+			};
+
+			// boundary matrices for the wall boundary conditions
+			boundary_mat boundary_wall;
+
+			// boundary matrices for the inflow boundary conditions
+			boundary_mat boundary_inflow;
+
 
 			// first we create the class which handles matrix orperations
 			MatrixOpt::Base_MatrixOpt matrixopt;
@@ -145,6 +154,7 @@ namespace EquationGenerator
 
 			void reinit_force();
 
+			void reinit_char_matrices(const Sparse_matrix &Ax,const Sparse_matrix &B,Full_matrix &B_tilde_inv,Full_matrix &B_hat);
 			void reinit_BoundaryMatrices();
 
 			void reinit_Bspecular();
@@ -707,6 +717,28 @@ namespace EquationGenerator
 	template<int dim>
 	void 
 	Base_EquationGenerator<dim>
+	::
+	reinit_char_matrices(const Sparse_matrix &Ax,const Sparse_matrix &B,Full_matrix &B_tilde_inv,Full_matrix &B_hat)
+	{
+		BoundaryHandler::Base_BoundaryHandler_Char boundary_handler_char(Ax,
+																		 B,
+																		 nBC);
+
+
+
+		B_tilde_inv.resize(nBC,nBC);
+		B_hat.resize(nEqn,this->nEqn);		
+
+		B_tilde_inv = boundary_handler_char.build_B_tilde_inv();
+		B_hat = boundary_handler_char.build_B_hat(B_tilde_inv);
+
+
+
+	}
+
+	template<int dim>
+	void 
+	Base_EquationGenerator<dim>
 	::reinit_BoundaryMatrices()
 	{
 		
@@ -717,17 +749,13 @@ namespace EquationGenerator
 			case characteristic:
 			{
 
-				BoundaryHandler::Base_BoundaryHandler_Char boundary_handler_char(system_data.Ax.matrix,
-																				system_data.B.matrix,
-																				nBC);
+				//boundary matrices for the wall boundary
+				reinit_char_matrices(system_data.A[0].matrix,system_data.B.matrix,boundary_wall.B_tilde_inv,
+									boundary_wall.B_hat);
 
-
-
-				B_tilde_inv.resize(nBC,nBC);
-				B_hat.resize(nEqn,this->nEqn);
-
-				B_tilde_inv = boundary_handler_char.build_B_tilde_inv();
-				B_hat = boundary_handler_char.build_B_hat(this->B_tilde_inv);
+				// boundary matrices for the inflow boundary
+				reinit_char_matrices(system_data.A[0].matrix,system_data.Binflow.matrix,boundary_inflow.B_tilde_inv,
+									boundary_inflow.B_hat);
 
 				break;
 			}
@@ -880,6 +908,9 @@ namespace EquationGenerator
 					 if(i != constants.variable_map.find("vx")->second)			
 						Assert(fabs(system_data.B.matrix.coeffRef(0,i)) < 1e-3,ExcMessage("relaxational normal velocity not accommodated in B"));
 		}
+
+
+		// 
 
 		// now we can initialize the boundary matrix for specular reflection
 		reinit_Bspecular();
