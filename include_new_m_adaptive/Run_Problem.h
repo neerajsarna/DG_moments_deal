@@ -389,6 +389,7 @@ template<int dim>
 
 			const double delta_t = 0.1;
 			void run();
+			void compute_energy_bound();
 
 	};
 
@@ -467,6 +468,9 @@ template<int dim>
 			//
 	const unsigned int refine_cycles = this->constants.refine_cycles;
 
+	// does not support grid refinement right now
+	AssertDimension(refine_cycles,1);
+
 	this->error_per_itr.resize(refine_cycles);
 
     TimerOutput timer (std::cout, TimerOutput::summary,
@@ -531,21 +535,48 @@ template<int dim>
 
 	postproc.reinit(this->fe_data_structure.dof_handler);
 
+	FILE *energy_growth;
+	energy_growth = fopen("energy_growth","w+");
+
+	double present_time = 0;
+
+	compute_energy_bound();
 
    	while (residual_steady_state.l2_norm() > 1e-6)
    	{
+   		counter++;
+
+   		double initial_energy;
+   		double final_energy;
+
    		// forward euler step
    		// new_solution = delta_t * system_rhs
+   		if (counter%100 == 0 )
+   			initial_energy = postproc.compute_energy(this->solution,
+   															this->fe_data_structure.triangulation.n_active_cells(),
+															this->fe_data_structure.mapping, 
+															this->fe_data_structure.dof_handler);
+
+   		// update with the solution rhs
    		new_solution.equ(delta_t,this->system_rhs);
+   		// update with the spatial derivative
    		new_solution.add(-delta_t,matrix_opt.Sparse_matrix_dot_Vector(this->global_matrix,this->solution));
+   		// update with the previous solution
    		new_solution += this->solution;
 
    		// second update
+   		// update with the previous solution
    		new_solution2.equ(3.0/4.0,this->solution);
    		new_solution2.add(1.0/4.0,new_solution);
    		new_solution2.add(delta_t * 1.0/4.0,this->system_rhs);
    		new_solution2.add(-delta_t * 1.0/4,matrix_opt.Sparse_matrix_dot_Vector(this->global_matrix,new_solution));
    
+
+   		if (counter %100 == 0)
+   			final_energy = postproc.compute_energy(new_solution2,
+   															this->fe_data_structure.triangulation.n_active_cells(),
+															this->fe_data_structure.mapping, 
+															this->fe_data_structure.dof_handler);
 
    		residual_steady_state = matrix_opt.Sparse_matrix_dot_Vector(this->global_matrix,new_solution2);
    		residual_steady_state -= this->system_rhs;
@@ -553,19 +584,16 @@ template<int dim>
    		// update the old solution
    		this->solution = new_solution2;
 
-   		counter++;
+   		present_time +=delta_t;
 
-   		if (counter % 10 == 0 && counter < 500)
+   		if (counter % 100 == 0)
    		{
-   			std::cout << "residual_steady_state " << residual_steady_state.l2_norm() << " Solution Norm " << new_solution2.l2_norm() << std::endl;
+   			std::cout << "residual_steady_state " << residual_steady_state.l2_norm() << 
+   					" Solution Norm " << new_solution2.l2_norm() << std::endl;
 
-   			// std::string filename = "solution_" + std::to_string(counter);
+   			printf("energy growth rate: %e \n",(final_energy-initial_energy)/delta_t);
+   			fprintf(energy_growth, "%f %0.15f\n",present_time,(final_energy-initial_energy)/delta_t);
 
-   			// postproc.print_solution_to_file(this->fe_data_structure.triangulation,
-						// 			this->solution,
-						// 			this->system_info[0].base_tensorinfo.S_half_inv,
-						// 			this->fe_data_structure.dof_handler,
-						// 			filename);
    		}
 
    	}
@@ -582,6 +610,47 @@ template<int dim>
 										this->fe_data_structure.mapping,
 										this->fe_data_structure.dof_handler);
 
+		fclose(energy_growth);
+
 	}
+
+	// the following routines computes the energy bound 
+	template<>
+	void 
+	Run_Problem_FE_Time_Stepping<1>::compute_energy_bound()
+	{
+
+		Tensor<1,1> normal_vector;
+		Tensor<1,1> boundary_point;
+		unsigned int b_id;
+		Vector<double> bc_rhs(this->system_info[0].nBC);
+
+		// boundary at the left hand side
+		b_id = 101;
+		normal_vector[0] = -1.0;
+		boundary_point[0] = -0.5;
+
+		this->system_info[0].bcrhs_inflow.BCrhs(boundary_point,
+						  			normal_vector,
+						  			bc_rhs,
+						  			b_id);
+
+		std::cout << "b_id 101:" << bc_rhs << std::endl;
+
+		// boundary at the right hand side
+		b_id = 102;
+		normal_vector[0] = 1.0;
+		boundary_point[0] = 0.5;
+
+		this->system_info[0].bcrhs_inflow.BCrhs(boundary_point,
+						  			normal_vector,
+						  			bc_rhs,
+						  			b_id);		
+
+
+		std::cout << "b_id 102:" << bc_rhs << std::endl;
+
+	}
+
 
 }

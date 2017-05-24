@@ -56,6 +56,11 @@ namespace PostProc
 											const hp::MappingCollection<dim> &mapping, const hp::DoFHandler<dim> &dof_handler);
 
 
+		double compute_energy(Vector<double> &solution,const int n_active_cells,
+											const MappingQ<dim> &mapping, const DoFHandler<dim> &dof_handler);
+
+		double compute_energy_bound();
+
       		// error evaluation based upon gauss quadrature
 		void error_evaluation_QGauss(const Vector<double> &solution,
 									const unsigned int active_cells,
@@ -405,6 +410,29 @@ namespace PostProc
 
 		}
 
+	// compute energy or the entropy function corresponding to the 1D moment system
+	template<>
+		double 
+		Base_PostProc<1>::compute_energy(Vector<double> &solution,const int n_active_cells,
+											const MappingQ<1> &mapping, const DoFHandler<1> &dof_handler)
+		{
+			Assert(class_initialized == true,ExcMessage("Please initialize the post proc class"));
+
+			const unsigned int ngp = constants.p + 1;
+			Vector<double> energy_per_cell(n_active_cells);
+
+			VectorTools::integrate_difference (mapping,dof_handler,solution,
+				ZeroFunction<1>(max_equations),
+				energy_per_cell,
+				QGauss<1>(ngp),
+				VectorTools::L2_norm); 
+
+
+			// divide by 0.5 due to gauss theorem, sqaure because of the entropy
+			return(pow(energy_per_cell.l2_norm(),2) * 0.5);
+
+
+		}
 
 	// evaluate the error using gaussian qaudrature
 	template<int dim>
