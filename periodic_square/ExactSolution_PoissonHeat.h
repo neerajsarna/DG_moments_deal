@@ -489,6 +489,9 @@ namespace ExactSolution
 	void
 	PoissonHeat<1>::vector_value(const Point<1> &p,Vector<double> &value) const
 	{
+
+		fflush(stdout);
+
 		// first we check the size of the value vector
 		Assert((int)value.size() == this->nEqn,ExcNotInitialized());
 		Assert(fabs(this->constants.alpha) < 1e-5,ExcMessage("Exact Solution does not correspond to the given value of alpha"));

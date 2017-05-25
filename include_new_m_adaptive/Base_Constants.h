@@ -699,7 +699,8 @@ namespace Constants
 
 
 			// we check the total number of systems we are loading into our program
-			AssertDimension(constants_sys.total_systems,1);
+			AssertThrow(constants_sys.total_systems == 3,
+						ExcMessage("Incorrect number of systems being loaded"));
 
 
 			constants_sys.nEqn.resize(constants_sys.total_systems);
@@ -1068,7 +1069,7 @@ namespace Constants
 
 		std::string temp = "output";
 
-		for (unsigned int sys = 0 ; sys < constants_sys.total_systems ; sys++)
+		for (int sys = 0 ; sys < constants_sys.total_systems ; sys++)
 			temp +=  "_N" +  std::to_string(constants_sys.Ntensors[sys]);
 
 		constants_num.main_output_dir = temp + "_" + constants_num.main_output_dir;

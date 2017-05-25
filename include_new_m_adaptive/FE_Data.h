@@ -3,6 +3,7 @@ namespace FEM_Solver
 {
 	using namespace dealii;
 
+    // the data structures needed for finite element computation
 	template<int dim>
 	class
 	fe_data:public MeshGenerator::Base_MeshGenerator<dim>
@@ -11,7 +12,7 @@ namespace FEM_Solver
 			fe_data(
 							const std::string &output_file_name,
 							const constant_numerics &constants,
-						  const std::vector<int> &nEqn);
+						  const int nEqn);
 
 			FESystem<dim> finite_element;
             DoFHandler<dim> dof_handler;
@@ -22,14 +23,13 @@ namespace FEM_Solver
 	fe_data<dim>::fe_data(
 							const std::string &output_file_name,
 							const constant_numerics &constants,
-						  const std::vector<int> &nEqn)
+						  const int nEqn)
 	:
 	MeshGenerator::Base_MeshGenerator<dim>(output_file_name,constants),
-	finite_element(FE_DGQ<dim>(constants.p),nEqn[0]),
+	finite_element(FE_DGQ<dim>(constants.p),nEqn),
 	dof_handler(this->triangulation),
 	mapping(constants.mapping_order)
 	{
-		AssertDimension(nEqn.size(),1);
 	}
 
 	template<int dim>
@@ -57,8 +57,11 @@ namespace FEM_Solver
                 
                 hp::MappingCollection<dim,dim> mapping;
 
+                MatrixOpt::Base_MatrixOpt matrix_opt;
+
                 // fe_index of the maximum moment system which has to be solved in the computation
                 const unsigned int max_fe_index;
+                const unsigned int max_equations;
 
 
                 void construct_block_structure(std::vector<int> &block_structure,const std::vector<int> &nEqn);
@@ -67,26 +70,17 @@ namespace FEM_Solver
                 // the fe collection object.
                 void construct_fe_collection(const std::vector<int> &nEqn);
             
-                // compute the deviation from the equilibrium value
-               void compute_equilibrium_deviation(const int ngp,
+               void compute_distribution_deviation(const int ngp,
                                                 const std::vector<int> &nEqn,
                                                 Triangulation<dim> &triangulation,
                                                 Vector<double> &solution,
                                                 const int cycle);
 
-                // sets the tolerance band for difference moment systems
-               // setting of the tolerance based upon the deviation of the distribution function from the local
-               // maxwellian.
-                void set_tolerance_bands_equilibrium_deviation(const int cycle);
+              // we set the tolerance depending upon which moment theory has to be adapted
+                double set_tolerance_distribution_deviation(const unsigned int cycle);
 
-               // setting of the tolerance based upon the distance of the cell from the center.
-                void set_tolerance_bands_distance_center(const int cycle);
-
-                void allocate_fe_index_equilibrium_deviation(const unsigned int present_cycle,
-                											 const unsigned int total_cycles);
-
-                void allocate_fe_index_distance_center(const unsigned int present_cycle,
-                									   const unsigned int total_cycles);
+                
+                void allocate_fe_index_distribution_deviation(const unsigned int present_cycle);
 
                 // compute the norm of the deviation of the distribution function from the local Maxwellian
                 Vector<double> VelocitySpace_error_per_cell;
@@ -119,7 +113,8 @@ namespace FEM_Solver
 	fe_dg(constants.p),
 	dof_handler(this->triangulation),
 	mapping_basic(constants.mapping_order),
-    max_fe_index(nEqn.size()-1)
+    max_fe_index(nEqn.size()-1),
+    max_equations(nEqn[max_fe_index])
     {
     		// construct the finite element collection for the present class
     	     construct_fe_collection(nEqn);
@@ -281,170 +276,17 @@ hp_fe_data<dim>::construct_fe_collection(const std::vector<int> &nEqn)
 			
 }
 
-
-//setting of the tolerance bands based upon the deviation of the distribution function from the equilibrium
+// deviation of the distribution function from the previous one
 template<int dim>
 void 
-hp_fe_data<dim>::set_tolerance_bands_equilibrium_deviation(const int cycle)
-{
-	MatrixOpt::Base_MatrixOpt matrix_opt;
-    // we only compute the tolerance bands for the 
-    
-    // size = max_nEqn + 1
-    VelocitySpace_error_tolerance.resize(max_fe_index+2);
-
-    //The maximum deviation obtained 
-    const double max_error = matrix_opt.max_Vector(VelocitySpace_error_per_cell);
-
-    // the minum deviation obtained
-    const double min_error = matrix_opt.min_Vector(VelocitySpace_error_per_cell);
- 
-    // the first entry will just be the minimum value  and the last entry will we the maximum value
-    VelocitySpace_error_tolerance[0] = min_error;
-
-    // the fractions of the total difference for every band
-    // size = nEqn
-    std::vector<double> frac(max_fe_index + 1);
-
-    // the last element will always be one
-    frac[frac.size()-1] = 1.0;
-
-
-    // equipartition for all the other elements
-    // values for all the interior bands
-    // for (unsigned long int i = 0 ; i < frac.size()-1; i ++)
-    // {
-    //     if (i == 0)
-    //         frac[i] = 1.0/(max_fe_index+1);
-
-    //     else
-    //         frac[i] = 1.0/(max_fe_index+1) + frac[i-1];
-
-    // }
-
-    // adaptive fractions
-    switch(max_fe_index)
-    {
-    	// 2 systems
-    	// use a negative value if all of the cells should get the higher order moment
-    	// use 2.0 if all the cells should get the lowest order moment
-    	case 1:
-    	{
-    		frac[0] = 1 - (cycle * 0.5 + 1.0)/10;
-    		std::cout << "********* fractions of 0 fe index " << frac[0] << std::endl;
-    		break;
-    	}
-    	
-    	// 3 systems
-    	case 2:
-    	{
-    		frac[0] = 1 - (cycle * 0.5 + 1.0)/5;
-    		frac[1] = 1 - (cycle * 0.5 + 1.0)/10;
-    		break;
-    	}
-
-    	// 4 systems
-    	case 3:
-    	{
-    		frac[0] = 1 - (cycle * 0.5 + 1.0)/2.5;
-    		frac[1] = 1 - (cycle * 0.5 + 1.0)/5;
-    		frac[2] = 1 - (cycle * 0.5 + 1.0)/10;
-    		break;
-    	}
-
-
-
-    	default:
-    	{
-    		AssertThrow(1 == 0 ,ExcMessage("Should not have reached here"));
-    		break;
-    	}
-    }
-    // the value for the first one has alreayd been set
-    for (unsigned long int i = 0 ; i < frac.size() ; i++)
-        VelocitySpace_error_tolerance[i + 1] = min_error + frac[i] * (max_error-min_error);
-
-}
-
-// tolerance band based upon the distance of the cell from the center of the domain
-template<>
-void 
-hp_fe_data<1>::set_tolerance_bands_distance_center(const int cycle)
-{ 
-	const double min_distance = 0;
-	const double max_distance = 0.5;
-
-    // size = max_nEqn + 1
-    VelocitySpace_error_tolerance.resize(max_fe_index+2);
-
-    // the first entry will just be the minimum value  and the last entry will we the maximum value
-    VelocitySpace_error_tolerance[0] = min_distance;
-
-    // the fractions of the total difference for every band
-    // size = nEqn
-    std::vector<double> frac(max_fe_index + 1);
-
-    // the last element will always be one
-    frac[frac.size()-1] = 1.0;
-
-
-    // adaptive fractions
-    switch(max_fe_index)
-    {
-    	// 2 systems
-    	// use a negative value if all of the cells should get the higher order moment
-    	// use 2.0 if all the cells should get the lowest order moment
-    	case 1:
-    	{
-    		frac[0] = 1 - (cycle * 0.5 + 1.0)/10;
-    		std::cout << "********* fractions of 0 fe index " << frac[0] << std::endl;
-    		break;
-    	}
-    	
-    	// 3 systems
-    	case 2:
-    	{
-    		frac[0] = 1 - (cycle * 0.5 + 1.0)/5;
-    		frac[1] = 1 - (cycle * 0.5 + 1.0)/10;
-    		break;
-    	}
-
-    	// 4 systems
-    	case 3:
-    	{
-    		frac[0] = 1 - (cycle * 0.5 + 1.0)/2.5;
-    		frac[1] = 1 - (cycle * 0.5 + 1.0)/5;
-    		frac[2] = 1 - (cycle * 0.5 + 1.0)/10;
-    		break;
-    	}
-
-
-
-    	default:
-    	{
-    		AssertThrow(1 == 0 ,ExcMessage("Should not have reached here"));
-    		break;
-    	}
-    }
-    // the value for the first one has alreayd been set
-    for (unsigned long int i = 0 ; i < frac.size() ; i++)
-        VelocitySpace_error_tolerance[i + 1] = min_distance + frac[i] * (max_distance-min_distance);
-
-}
-
-
-
-// in the following function we compute the deviation of the distribution function from the equilibrium
-template<int dim>
-void 
-hp_fe_data<dim>::compute_equilibrium_deviation(const int ngp,
-											    const std::vector<int> &nEqn,
-											    Triangulation<dim> &triangulation,
-											    Vector<double> &solution,
-											    const int cycle)
+hp_fe_data<dim>::compute_distribution_deviation(const int ngp,
+                                                const std::vector<int> &nEqn,
+                                                Triangulation<dim> &triangulation,
+                                                Vector<double> &solution,
+                                                const int cycle)
 {
 
-	  const QGauss<dim> quadrature_basic(ngp);
+      const QGauss<dim> quadrature_basic(ngp);
       // integration on the volume
       hp::QCollection<dim> quadrature;
 
@@ -452,35 +294,45 @@ hp_fe_data<dim>::compute_equilibrium_deviation(const int ngp,
         quadrature.push_back(quadrature_basic);
         
 
-	// total number of conserved variables = dim (velocity) + rho + theta.
-	// -1 to accommodate for the c indices
-	const unsigned int ID_num_conserved = dim + 1;
-	std::pair<unsigned int,unsigned int> selected;
+    // ID of the moments from where we need to mask the elements
+    unsigned int ID_start;
 
-    // the maximum number of equations present in the moment system
-	const int max_equations = nEqn[max_fe_index];
+    // end ID till where we need to mask the moments
+    unsigned int ID_end;
 
-	// zero weightage to all the quantities which are conserved
-    // The deviation of the distribution function from the local Maxwellian is only modelled by the higher
-    // order moments. Therefore while computing the residuals we do not consider any contribution from 
-    // the higher order moments. We mask all the conserved quantities
-	selected = std::make_pair(ID_num_conserved+1,max_equations);
+    std::pair<unsigned int,unsigned int> selected;
+
+    if (cycle == 0)
+    {
+        ID_start = dim + 2;     // number of conserved quantities
+        ID_end = nEqn[0];    // component ID of the present system
+    }
+    else
+    {
+        ID_start = nEqn[cycle-1];   // total equations of the previous cycle
+        ID_end = nEqn[cycle];     // total equations in the present cycle
+    }
+
+
+    AssertIndexRange(ID_start,max_equations + 1);
+    AssertIndexRange(ID_end,max_equations + 1);
+
+    // a pair containing the IDs of the moments which should be computed [ID_start,ID_end)
+    selected = std::make_pair(ID_start,ID_end); 
 
     ComponentSelectFunction<dim> weight(selected,max_equations);          // used to compute only the error in theta
 
-
-    // compute the l1 norm of the residual
-    // we first compute the L2 norm per cell. Lets assume that the higher order contribution is being denoted by 
-    // only the second order moment R_{ij}. Then the following function will compute \sqrt(\int R_{ij}dx) on the domain
     VectorTools::integrate_difference (mapping,
-    						           dof_handler,
-        	                           solution,
-        							  ZeroFunction<dim>(max_equations),
-        				 			  VelocitySpace_error_per_cell,
-        							  quadrature,
-        							  VectorTools::L2_norm,
-        							  &weight);  
+                                       dof_handler,
+                                       solution,
+                                      ZeroFunction<dim>(max_equations),
+                                      VelocitySpace_error_per_cell,
+                                      quadrature,
+                                      VectorTools::L2_norm,
+                                      &weight);  
 
+    std::cout << "Start ID: " << ID_start << std::endl;
+    std::cout << "End ID: " << ID_end << std::endl; 
 
     // we now convert from the l2 norm to the l1 norm. We would like to compute the l1 norm of the deviation and therefore
     // we simply square the value obtained above. The reason for this is that since we have already taken the square 
@@ -492,123 +344,96 @@ hp_fe_data<dim>::compute_equilibrium_deviation(const int ngp,
     unsigned int counter = 0;
     for (; cell != endc ; cell++)
     {
+        // by taking the square, we are converting back into the l1 norm. Divide by the cell measure to normalize
+        // with respect to the area of the cell.
         VelocitySpace_error_per_cell(counter) = pow(VelocitySpace_error_per_cell(counter),2)/cell->measure();
         counter ++;
     }
 
-
-    // now we set the limits for the tolerance
-    set_tolerance_bands_distance_center(cycle);
-        
-    
+            
 }
 
-
-// allocation of the fe index based upon the deviation of the distribution function from the equilibrium.
-template<int dim>
-void 
-hp_fe_data<dim>::allocate_fe_index_equilibrium_deviation(const unsigned int present_cycle,const unsigned int total_cycles)
-{
-	typename hp::DoFHandler<dim>::active_cell_iterator cell = dof_handler.begin_active(), endc = dof_handler.end();
-	unsigned int counter = 0;
-	const unsigned int initial_fe_index = 0;
-	Vector<double> refined(max_fe_index+1);
-	refined = 0;
-
-	// the very first cycle of m refinement
-	 if (present_cycle == 0)
-	 {
-		for (; cell != endc ; cell++)
-		{
-			refined(initial_fe_index)++;
-			cell->set_active_fe_index(initial_fe_index);
-		}
-
-		cell = dof_handler.begin_active();
-
-	}
-
-
-	else
-	{
-
-		for (; cell != endc ; cell++)
-		{
-			const double error_value = VelocitySpace_error_per_cell(counter);
-
-			for (unsigned int i = 0 ; i < VelocitySpace_error_tolerance.size()-1 ; i++)
-				if (error_value >= VelocitySpace_error_tolerance[i] && error_value <= VelocitySpace_error_tolerance[i+1])
-				{
-					refined(i)++;
-					cell->set_active_fe_index(i);
-				}
- 
-			counter++;
-
-		}		
-	}
-
-
-	for (unsigned long int i = 0 ; i < refined.size() ; i++)
-		std::cout << "Fe Index: " << i << " Times: " << refined(i) << std::endl;
-
-
-
-}
 
 
 template<int dim>
-void 
-hp_fe_data<dim>::allocate_fe_index_distance_center(const unsigned int present_cycle,const unsigned int total_cycles)
+double
+hp_fe_data<dim>::set_tolerance_distribution_deviation(const unsigned int cycle)
 {
-	typename hp::DoFHandler<dim>::active_cell_iterator cell = dof_handler.begin_active(), endc = dof_handler.end();
-	unsigned int counter = 0;
-	const unsigned int initial_fe_index = 0;
-	Vector<double> refined(max_fe_index+1);
-	refined = 0;
+        typename hp::DoFHandler<dim>::active_cell_iterator cell = dof_handler.begin_active(), 
+                                                           endc = dof_handler.end();
 
-	// the very first cycle of m refinement
-	 if (present_cycle == 0)
-	 {
-		for (; cell != endc ; cell++)
-		{
-			refined(initial_fe_index)++;
-			cell->set_active_fe_index(initial_fe_index);
-		}
+        // the error in the velocity space corresponding to the highest present fe index
+        std::vector<double> error_VelocitySpace_max_theory;
+        int counter = 0;
+        int count_lower = 0;
 
-		cell = dof_handler.begin_active();
+        for (; cell != endc ; cell++)
+        {
+            if (cell->active_fe_index() == cycle - 1)  // if the fe index is equal to the highest fe index present, then only we store
+            {
+                error_VelocitySpace_max_theory.push_back(VelocitySpace_error_per_cell(counter));
+                count_lower ++ ;
+            }
 
-	}
+            counter++;            
+        }
 
+        // all the cells which have a deviation > min + frac(max - min) will be refined
 
-	else
-	{
-
-		for (; cell != endc ; cell++)
-		{
-			const double distance_center = cell->center().norm();
-
-			for (unsigned int i = 0 ; i < VelocitySpace_error_tolerance.size()-1 ; i++)
-				if (distance_center >= VelocitySpace_error_tolerance[i] && 
-					distance_center <= VelocitySpace_error_tolerance[i+1])
-				{
-					refined(i)++;
-					cell->set_active_fe_index(i);
-				}
- 
-			counter++;
-
-		}		
-	}
+        const double frac = 0.3;
+        const double max_error = matrix_opt.max_Vector(error_VelocitySpace_max_theory);
+        const double min_error = matrix_opt.min_Vector(error_VelocitySpace_max_theory);
+        const double tolerance = min_error + frac * (max_error - min_error) ;
 
 
-	for (unsigned long int i = 0 ; i < refined.size() ; i++)
-		std::cout << "Fe Index: " << i << " Times: " << refined(i) << std::endl;
-
-
-
+        return(tolerance);
 }
 
+template<int dim>
+void 
+hp_fe_data<dim>::allocate_fe_index_distribution_deviation(const unsigned int present_cycle)
+{
+        typename hp::DoFHandler<dim>::active_cell_iterator cell = dof_handler.begin_active(), 
+                                                           endc = dof_handler.end();   
 
+
+        int counter = 0;
+        std::vector<int> fe_index_count(max_fe_index+1);
+
+        if (present_cycle == 0)
+            for(; cell != endc ; cell++)
+            {
+                cell->set_active_fe_index(0);
+                fe_index_count[cell->active_fe_index()]++;
+            }
+
+        else
+        {
+            const double tolerance = set_tolerance_distribution_deviation(present_cycle);
+
+            for(; cell != endc ; cell++)
+            {
+
+            if (cell->active_fe_index()  == present_cycle - 1) // only increase the fe index if we are on a lower order moment theory
+                if ((VelocitySpace_error_per_cell(counter) - tolerance) > 10e-16 )
+                {
+                    std::cout << "Actual error: " << VelocitySpace_error_per_cell(counter) << std::endl;
+                    std::cout << "Tolerance: " << tolerance << std::endl;
+                    
+                    cell->set_active_fe_index(present_cycle);   // increase the fe index if the residual is too high
+                }
+
+                fe_index_count[cell->active_fe_index()]++;      // keep a count of the number of systems in the domain
+                counter ++;
+            }
+
+        }
+
+
+
+    for (unsigned long int i = 0 ; i < fe_index_count.size() ; i++)
+        std::cout << "Fe Index: " << i << " Times: " << fe_index_count[i] << std::endl;
+
+}
 
 }

@@ -9,15 +9,11 @@ namespace PostProc
 	{
 	public:
 		Base_PostProc(const constant_numerics &constants,
-					  ExactSolution::Base_ExactSolution<dim> *exact_solution,
-					  const std::vector<int> &nEqn,
-				      const std::vector<int> &nBC);
+					  ExactSolution::Base_ExactSolution<dim> *exact_solution);
 
 			// we need the following information from the calling routine for this class to work
 		ExactSolution::Base_ExactSolution<dim> *base_exactsolution;
 		const constant_numerics constants;
-		const std::vector<int> nEqn;
-		const std::vector<int> nBC;
 
 		MatrixOpt::Base_MatrixOpt matrix_opt;
 
@@ -38,6 +34,10 @@ namespace PostProc
 		bool used_qgauss;
 		bool class_initialized;
 
+		// returns the maximum entry of a vector
+		int return_max_entry(const std::vector<int> &vec);
+		double return_max_entry(const std::vector<double> &vec);
+
 		void reinit(const hp::DoFHandler<dim> &dof_handler);
 		void reinit(const DoFHandler<dim> &dof_handler);
 
@@ -49,17 +49,21 @@ namespace PostProc
 		void make_directories();
 
 		double compute_residual(Vector<double> &solution,const int n_active_cells,
-											const MappingQ<dim> &mapping, const DoFHandler<dim> &dof_handler);
+											const MappingQ<dim> &mapping, 
+											const DoFHandler<dim> &dof_handler,
+											const int nEqn);
 
 
 		double compute_residual(Vector<double> &solution,const int n_active_cells,
-											const hp::MappingCollection<dim> &mapping, const hp::DoFHandler<dim> &dof_handler);
+								const hp::MappingCollection<dim> &mapping,
+							    const hp::DoFHandler<dim> &dof_handler,
+							    const std::vector<int> &nEqn);
 
 
 		double compute_energy(Vector<double> &solution,const int n_active_cells,
-											const MappingQ<dim> &mapping, const DoFHandler<dim> &dof_handler);
-
-		double compute_energy_bound();
+							  const MappingQ<dim> &mapping,
+							  const DoFHandler<dim> &dof_handler,
+							  const int nEqn);
 
       		// error evaluation based upon gauss quadrature
 		void error_evaluation_QGauss(const Vector<double> &solution,
@@ -69,14 +73,16 @@ namespace PostProc
 									ConvergenceTable &convergence_table,
 									const double residual,
 									const hp::MappingCollection<dim> &mapping,
-									const hp::DoFHandler<dim> &dof_handler);
+									const hp::DoFHandler<dim> &dof_handler,
+									const std::vector<int> &nEqn);
 
 
       		// error evaluation based upon gauss quadrature
 		Vector<double> return_error_per_cell(const Vector<double> &solution,
 											 const unsigned int active_cells,
 											 const hp::MappingCollection<dim> &mapping,
-											 const hp::DoFHandler<dim> &dof_handler);
+											 const hp::DoFHandler<dim> &dof_handler,
+											 const std::vector<int> &nEqn);
 
 
 		void error_evaluation_QGauss(const Vector<double> &solution,
@@ -86,7 +92,8 @@ namespace PostProc
 									ConvergenceTable &convergence_table,
 									const double residual,
 									const MappingQ<dim> &mapping,
-									const DoFHandler<dim> &dof_handler);
+									const DoFHandler<dim> &dof_handler,
+									const int nEqn);
 
 
 
@@ -104,30 +111,43 @@ namespace PostProc
 		void print_solution_to_file(const Triangulation<dim> &triangulation,
 									const Vector<double> &solution,
 									const Sparse_matrix &S_half_inv,
-									const hp::DoFHandler<dim> &dof_handler);
-
-		void print_solution_to_file(const Triangulation<dim> &triangulation,
-									const Vector<double> &solution,
-									const Sparse_matrix &S_half_inv,
-									const DoFHandler<dim> &dof_handler);
+									const hp::DoFHandler<dim> &dof_handler,
+									const std::vector<int> &nEqn);
 
 		void print_solution_to_file(const Triangulation<dim> &triangulation,
 									const Vector<double> &solution,
 									const Sparse_matrix &S_half_inv,
 									const DoFHandler<dim> &dof_handler,
-									std::string &filename);
+									const int nEqn);
+
+		void print_solution_to_file(const Triangulation<dim> &triangulation,
+									const Vector<double> &solution,
+									const Sparse_matrix &S_half_inv,
+									const DoFHandler<dim> &dof_handler,
+									std::string &filename,
+									const int nEqn);
 
 
 
 		void print_error_to_file(const Triangulation<dim> &triangulation,
 								 const Vector<double> &solution,
-								 const hp::DoFHandler<dim> &dof_handler);	
+								 const hp::DoFHandler<dim> &dof_handler,
+								 const std::vector<int> &nEqn);	
 
 		void print_error_to_file(const Triangulation<dim> &triangulation,
 								 const Vector<double> &solution,
-								 const DoFHandler<dim> &dof_handler);	
+								 const DoFHandler<dim> &dof_handler,
+								 const int nEqn);	
 
-		void print_exactsolution_to_file(const Triangulation<dim> &triangulation,const Sparse_matrix &S_half_inv);
+		void print_exactsolution_to_file(const Triangulation<dim> &triangulation,
+										 const Sparse_matrix &S_half_inv,
+										 const int nEqn);
+
+
+		void print_exactsolution_to_file(const Triangulation<dim> &triangulation,
+										 const Sparse_matrix &S_half_inv,
+										 const std::vector<int> &nEqn);
+
 
 		void print_VelocitySpace_error_to_file(const Triangulation<dim> &triangulation,const Vector<double> &error);
 
@@ -137,13 +157,15 @@ namespace PostProc
 
 			// print the solution depending upon printing options
 		void print_options(const Triangulation<dim> &triangulation,
-			const Vector<double> &solution,
-			const unsigned int present_cycle,
-			const unsigned int refine_cycle,
-			ConvergenceTable &convergence_table,
-			const Sparse_matrix &S_half_inv,
-			const DoFHandler<dim> &dof_handler);
+						   const Vector<double> &solution,
+						   const unsigned int present_cycle,
+						   const unsigned int refine_cycle,
+					       ConvergenceTable &convergence_table,
+						   const Sparse_matrix &S_half_inv,
+						   const DoFHandler<dim> &dof_handler,
+						   const int nEqn);
 
+		// same as above but for hp finite element objects
 		void print_options(const Triangulation<dim> &triangulation,
 						   const Vector<double> &solution,
 						   const unsigned int present_cycle,
@@ -151,41 +173,70 @@ namespace PostProc
 			  			   ConvergenceTable &convergence_table,
 						   const Sparse_matrix &S_half_inv,
 						   const hp::DoFHandler<dim> &dof_handler,
-						   const Vector<double> &VelocitySpace_error_per_cell);
+						   const Vector<double> &VelocitySpace_error_per_cell,
+						   const std::vector<int> &nEqn);
 
 			// write the values of computational constants to a file
 		void create_stamp(const hp::DoFHandler<dim> &dof_handler);
 		void create_stamp(const DoFHandler<dim> &dof_handler);
-		int max_equations;
 
 		 Vector<double>
     	compute_lift_drag(const MappingQ<dim> &mapping,
-    									  const FESystem<dim> &finite_element,
-    									  const DoFHandler<dim> &dof_handler,
-    									  const Sparse_matrix &S_half_inv,
-    									  const Vector<double> &solution,
-    									  ConvergenceTable &convergence_table,
-    									  const unsigned int b_id_surface);
+    					  const FESystem<dim> &finite_element,
+    					  const DoFHandler<dim> &dof_handler,
+    					  const Sparse_matrix &S_half_inv,
+    					  const Vector<double> &solution,
+    					  ConvergenceTable &convergence_table,
+    					  const unsigned int b_id_surface,
+    					  const int nEqn);
 
 	};
 
 	template<int dim>
 	Base_PostProc<dim>::Base_PostProc(const constant_numerics &constants,
-		ExactSolution::Base_ExactSolution<dim> *exact_solution,
-		const std::vector<int> &nEqn,
-		const std::vector<int> &nBC)
+										ExactSolution::Base_ExactSolution<dim> *exact_solution)
 	:
 	base_exactsolution(exact_solution),
-	constants(constants),
-	nEqn(nEqn),
-	nBC(nBC)
+	constants(constants)
 	{
 		// we take the last entry of the vector since it corresponds to the moment systems which has the 
 		// maximum number of equations
-			max_equations = nEqn[nEqn.size()-1];
-
 
 	}
+
+
+	// return the maximum value in a vector
+	template<int dim>
+	int
+	Base_PostProc<dim>::return_max_entry(const std::vector<int> &vec)
+	{
+		int max_entry = 0;
+		int num_entries = vec.size();
+
+		for (int i = 0 ; i < num_entries ; i++)
+			if (vec[i] > max_entry)
+				max_entry = vec[i];
+
+		return(max_entry);
+
+	}
+
+	// return the maximum value in a vector
+	template<int dim>
+	double
+	Base_PostProc<dim>::return_max_entry(const std::vector<double> &vec)
+	{
+		double max_entry = 0;
+		int num_entries = vec.size();
+
+		for (int i = 0 ; i < num_entries ; i++)
+			if (vec[i] > max_entry)
+				max_entry = vec[i];
+
+		return(max_entry);
+
+	}
+
 
 	template<int dim>
 	void
@@ -291,6 +342,8 @@ namespace PostProc
 
 		}
 
+	// we leave a stamp in the main folder which contains all the details of the 
+	// details of the computational parameters
 	template<int dim>
 		void
 		Base_PostProc<dim>::create_stamp(const hp::DoFHandler<dim> &dof_handler)
@@ -312,12 +365,6 @@ namespace PostProc
 			"force_type " + std::to_string(constants.force_type) + 
 			"#Dofs " + std::to_string(dof_handler.n_dofs()) + "\n"
 			"#Cells " + std::to_string(dof_handler.get_triangulation().n_active_cells());
-
-			for (unsigned long int eq = 0 ; eq < nEqn.size(); eq++)
-			{
-				parameters += "nEqn" + std::to_string(nEqn[eq]) + "\n";
-				parameters += "nBC" + std::to_string(nEqn[eq]) + "\n";
-			}
 
 
 			fprintf(fp, "%s\n",parameters.c_str());
@@ -346,22 +393,19 @@ namespace PostProc
 			"#Dofs " + std::to_string(dof_handler.n_dofs()) + "\n"
 			"#Cells " + std::to_string(dof_handler.get_triangulation().n_active_cells());
 
-			for (unsigned long int eq = 0 ; eq < nEqn.size(); eq++)
-			{
-				parameters += "nEqn" + std::to_string(nEqn[eq]) + "\n";
-				parameters += "nBC" + std::to_string(nEqn[eq]) + "\n";
-			}
-
-
 			fprintf(fp, "%s\n",parameters.c_str());
 			fclose(fp);
 		}
 
 
+		// residual computation for an hp dof handler. Computes the l2 norm of the function solution 
 	template<int dim>
 		double 
-		Base_PostProc<dim>::compute_residual(Vector<double> &solution,const int n_active_cells,
-											const hp::MappingCollection<dim> &mapping, const hp::DoFHandler<dim> &dof_handler)
+		Base_PostProc<dim>::compute_residual(Vector<double> &solution,
+											const int n_active_cells,
+											const hp::MappingCollection<dim> &mapping,
+											const hp::DoFHandler<dim> &dof_handler,
+											const std::vector<int> &nEqn)
 		{
 			Assert(class_initialized == true,ExcMessage("Please initialize the post proc class"));
 
@@ -373,6 +417,8 @@ namespace PostProc
 			for (unsigned long int i = 0 ; i < nEqn.size() ; i++)
 				hp_quadrature.push_back(quadrature_basic);
 				
+
+			const unsigned int max_equations = nEqn[nEqn.size()-1];
 
 
 			VectorTools::integrate_difference (mapping,dof_handler,solution,
@@ -388,10 +434,13 @@ namespace PostProc
 		}
 
 
+		// same as above but for a simple dof handler
 	template<int dim>
 		double 
 		Base_PostProc<dim>::compute_residual(Vector<double> &solution,const int n_active_cells,
-											const MappingQ<dim> &mapping, const DoFHandler<dim> &dof_handler)
+											const MappingQ<dim> &mapping, 
+											const DoFHandler<dim> &dof_handler,
+											const int nEqn)
 		{
 			Assert(class_initialized == true,ExcMessage("Please initialize the post proc class"));
 
@@ -399,7 +448,7 @@ namespace PostProc
 			Vector<double> error_per_cell(n_active_cells);
 
 			VectorTools::integrate_difference (mapping,dof_handler,solution,
-				ZeroFunction<dim>(max_equations),
+				ZeroFunction<dim>(nEqn),
 				error_per_cell,
 				QGauss<dim>(ngp),
 				VectorTools::L2_norm); 
@@ -414,7 +463,8 @@ namespace PostProc
 	template<>
 		double 
 		Base_PostProc<1>::compute_energy(Vector<double> &solution,const int n_active_cells,
-											const MappingQ<1> &mapping, const DoFHandler<1> &dof_handler)
+											const MappingQ<1> &mapping, const DoFHandler<1> &dof_handler,
+											const int nEqn)
 		{
 			Assert(class_initialized == true,ExcMessage("Please initialize the post proc class"));
 
@@ -422,7 +472,7 @@ namespace PostProc
 			Vector<double> energy_per_cell(n_active_cells);
 
 			VectorTools::integrate_difference (mapping,dof_handler,solution,
-				ZeroFunction<1>(max_equations),
+				ZeroFunction<1>(nEqn),
 				energy_per_cell,
 				QGauss<1>(ngp),
 				VectorTools::L2_norm); 
@@ -444,7 +494,8 @@ namespace PostProc
 		ConvergenceTable &convergence_table,
 		const double residual,
 		const hp::MappingCollection<dim> &mapping,
-		const hp::DoFHandler<dim> &dof_handler)
+		const hp::DoFHandler<dim> &dof_handler,
+		const std::vector<int> &nEqn)
 	{
 		const unsigned int ngp = constants.p + 1;
 		QGauss<dim> quadrature_basic(ngp);			
@@ -473,7 +524,8 @@ namespace PostProc
 			component = constants.variable_map.find(constants.error_variable)->second;
 
         // error per cell of the domain
-		Vector<double> error_per_cell(active_cells);      
+		Vector<double> error_per_cell(active_cells);    
+		const int max_equations = return_max_entry(nEqn);  
 
         ComponentSelectFunction<dim> weight(component,max_equations);                              // used to compute only the error in theta
 
@@ -537,7 +589,8 @@ namespace PostProc
 		ConvergenceTable &convergence_table,
 		const double residual,
 		const MappingQ<dim> &mapping,
-		const DoFHandler<dim> &dof_handler)
+		const DoFHandler<dim> &dof_handler,
+		const int nEqn)
 	{
 		used_qgauss = true;
 		Assert(class_initialized == true,ExcMessage("Please initialize the post proc class"));
@@ -561,7 +614,8 @@ namespace PostProc
         // error per cell of the domain
 		Vector<double> error_per_cell(active_cells);      
 
-        ComponentSelectFunction<dim> weight(component,max_equations);                              // used to compute only the error in theta
+
+        ComponentSelectFunction<dim> weight(component,nEqn);                              // used to compute only the error in theta
 
         // computation of L2 error
         VectorTools::integrate_difference (mapping,dof_handler,solution,
@@ -665,7 +719,8 @@ namespace PostProc
     					const Triangulation<dim> &triangulation,
     					const Vector<double> &solution,
     					const Sparse_matrix &S_half_inv,
-    					const hp::DoFHandler<dim> &dof_handler)
+    					const hp::DoFHandler<dim> &dof_handler,
+    					const std::vector<int> &nEqn)
     {
     	typename Triangulation<dim>::active_cell_iterator cell = triangulation.begin_active(), endc = triangulation.end();
 
@@ -678,6 +733,8 @@ namespace PostProc
     	AssertThrow(fp_solution != NULL,ExcMessage("file not open"));
 
     	fprintf(fp_solution, "#%s\n","x y at the midpoint of each cell all the solution components");
+
+    	const int max_equations = return_max_entry(nEqn);
     	Vector<double> solution_value(max_equations);
     	    	
     	int variables_to_print;
@@ -720,7 +777,8 @@ namespace PostProc
     					const Triangulation<dim> &triangulation,
     					const Vector<double> &solution,
     					const Sparse_matrix &S_half_inv,
-    					const DoFHandler<dim> &dof_handler)
+    					const DoFHandler<dim> &dof_handler,
+    					const int nEqn)
     {
     	typename Triangulation<dim>::active_cell_iterator cell = triangulation.begin_active(), endc = triangulation.end();
     	Assert(class_initialized == true,ExcMessage("Please initialize the post proc class"));
@@ -732,7 +790,7 @@ namespace PostProc
     	AssertThrow(fp_solution != NULL,ExcMessage("file not open"));
 
     	fprintf(fp_solution, "#%s\n","x y at the midpoint of each cell all the solution components");
-    	Vector<double> solution_value(max_equations);
+    	Vector<double> solution_value(nEqn);
     	
     	int variables_to_print;
 
@@ -744,7 +802,7 @@ namespace PostProc
 
     	//variables_to_print = 6;
 
-    	Assert(variables_to_print<=max_equations,ExcMessage("to many variables to print"));
+    	Assert(variables_to_print<=nEqn,ExcMessage("to many variables to print"));
 	for (; cell != endc ; cell++)
 	{
 		for (unsigned int vertex = 0 ; vertex < GeometryInfo<dim>::vertices_per_cell ; vertex++)
@@ -780,7 +838,8 @@ namespace PostProc
     					const Vector<double> &solution,
     					const Sparse_matrix &S_half_inv,
     					const DoFHandler<dim> &dof_handler,
-    					std::string &filename)
+    					std::string &filename,
+    					const int nEqn)
     {
     	typename Triangulation<dim>::active_cell_iterator cell = triangulation.begin_active(), endc = triangulation.end();
     	Assert(class_initialized == true,ExcMessage("Please initialize the post proc class"));
@@ -792,7 +851,7 @@ namespace PostProc
     	AssertThrow(fp_solution != NULL,ExcMessage("file not open"));
 
     	fprintf(fp_solution, "#%s\n","x y at the midpoint of each cell all the solution components");
-    	Vector<double> solution_value(max_equations);
+    	Vector<double> solution_value(nEqn);
     	
     	int variables_to_print;
 
@@ -836,7 +895,8 @@ Base_PostProc<dim>::
 print_error_to_file(
 	const Triangulation<dim> &triangulation,
 	const Vector<double> &solution,
-	const hp::DoFHandler<dim> &dof_handler)
+	const hp::DoFHandler<dim> &dof_handler,
+	const std::vector<int> &nEqn)
 {
 	Assert(class_initialized == true,ExcMessage("Please initialize the post proc class"));
 	typename Triangulation<dim>::active_cell_iterator cell = triangulation.begin_active(), endc = triangulation.end();
@@ -848,6 +908,7 @@ print_error_to_file(
 	AssertThrow(fp_error != NULL,ExcMessage("file not open"));
 
 	fprintf(fp_error, "#%s\n","x y at the midpoint of each cell and the error in every component");
+	const int max_equations = return_max_entry(nEqn);
 
 	// we can print  
 	for (; cell != endc ; cell++)
@@ -883,7 +944,8 @@ Base_PostProc<dim>::
 print_error_to_file(
 	const Triangulation<dim> &triangulation,
 	const Vector<double> &solution,
-	const DoFHandler<dim> &dof_handler)
+	const DoFHandler<dim> &dof_handler,
+	const int nEqn)
 {
 	Assert(class_initialized == true,ExcMessage("Please initialize the post proc class"));
 	typename Triangulation<dim>::active_cell_iterator cell = triangulation.begin_active(), endc = triangulation.end();
@@ -900,20 +962,21 @@ print_error_to_file(
 	for (; cell != endc ; cell++)
 	{
 
-		Vector<double> solution_value(max_equations);
-		Vector<double> exact_solution_value(max_equations);
-		Vector<double> error_value(max_equations);
+		Vector<double> solution_value(nEqn);
+		Vector<double> exact_solution_value(nEqn);
+		Vector<double> error_value(nEqn);
 
 		VectorTools::point_value(dof_handler, solution, cell->center(),solution_value);	
 		base_exactsolution->vector_value(cell->center(),exact_solution_value);
 
-		for ( int i = 0 ; i < max_equations ; i++)
+		// computes the l1 error in the desired quantity
+		for ( int i = 0 ; i < nEqn ; i++)
 			error_value(i) = fabs(solution_value(i)-exact_solution_value(i));
 
 		for (int space = 0 ; space < dim ; space ++)
 			fprintf(fp_error, "%f ",cell->center()[space]);
 
-		for (int i = 0 ; i < max_equations ; i++)
+		for (int i = 0 ; i < nEqn ; i++)
 			fprintf(fp_error, "%f ",error_value(i));
 
 		fprintf(fp_error, "\n");
@@ -927,7 +990,9 @@ print_error_to_file(
 template<int dim>
 void 
 Base_PostProc<dim>::
-print_exactsolution_to_file(const Triangulation<dim> &triangulation,const Sparse_matrix &S_half_inv)
+print_exactsolution_to_file(const Triangulation<dim> &triangulation,
+							const Sparse_matrix &S_half_inv,
+							const int nEqn)
 {
 	Assert(class_initialized == true,ExcMessage("Please initialize the post proc class"));
 	typename Triangulation<dim>::active_cell_iterator cell = triangulation.begin_active(), endc = triangulation.end();
@@ -939,6 +1004,51 @@ print_exactsolution_to_file(const Triangulation<dim> &triangulation,const Sparse
 	AssertThrow(fp_exact != NULL,ExcMessage("file not open"));
 
 	fprintf(fp_exact, "#%s\n","cell coordinates and the values of the exact solution ");
+
+	for (; cell != endc ; cell++)
+		for (unsigned int vertex = 0 ; vertex < GeometryInfo<dim>::vertices_per_cell ; vertex ++)
+		{
+
+			Vector<double> exact_solution_value(nEqn);
+
+			base_exactsolution->vector_value(cell->vertex(vertex),exact_solution_value);
+
+		// we now convert back to the original variables
+			exact_solution_value = matrix_opt.Sparse_matrix_dot_Vector(S_half_inv,exact_solution_value);
+
+			for (unsigned int space = 0 ; space < dim ; space ++)
+				fprintf(fp_exact, "%f ",cell->vertex(vertex)[space]);
+
+			for (int i = 0 ; i < nEqn ; i++)
+				fprintf(fp_exact, "%f ",exact_solution_value(i));
+
+			fprintf(fp_exact, "\n");
+			
+		}
+
+		fclose(fp_exact);
+}
+
+// same as above but can be used for hp fe 
+template<int dim>
+void 
+Base_PostProc<dim>::
+print_exactsolution_to_file(const Triangulation<dim> &triangulation,
+							const Sparse_matrix &S_half_inv,
+							const std::vector<int> &nEqn)
+{
+	Assert(class_initialized == true,ExcMessage("Please initialize the post proc class"));
+	typename Triangulation<dim>::active_cell_iterator cell = triangulation.begin_active(), endc = triangulation.end();
+
+	FILE *fp_exact;
+
+	fp_exact = fopen(output_file_names.file_for_exact_solution.c_str(),"w+");
+
+	AssertThrow(fp_exact != NULL,ExcMessage("file not open"));
+
+	fprintf(fp_exact, "#%s\n","cell coordinates and the values of the exact solution ");
+
+	const int max_equations = return_max_entry(nEqn);
 
 	for (; cell != endc ; cell++)
 		for (unsigned int vertex = 0 ; vertex < GeometryInfo<dim>::vertices_per_cell ; vertex ++)
@@ -963,6 +1073,7 @@ print_exactsolution_to_file(const Triangulation<dim> &triangulation,const Sparse
 
 		fclose(fp_exact);
 }
+
 
 template<int dim>
 void 
@@ -1046,20 +1157,21 @@ print_fe_index(const hp::DoFHandler<dim> &dof_handler)
 		const unsigned int total_cycles,
 		ConvergenceTable &convergence_table,
 		const Sparse_matrix &S_half_inv,
-		const DoFHandler<dim> &dof_handler)
+		const DoFHandler<dim> &dof_handler,
+		const int nEqn)
 	{
 		Assert(class_initialized == true,ExcMessage("Please initialize the post proc class"));
 		// if we would like to print for all the refinement cycles
 		if (constants.print_all)
 		{
 			if (constants.print_solution)
-				print_solution_to_file(triangulation,solution,S_half_inv,dof_handler);
+				print_solution_to_file(triangulation,solution,S_half_inv,dof_handler,nEqn);
 
 			if(constants.print_error)
-				print_error_to_file(triangulation,solution,dof_handler);
+				print_error_to_file(triangulation,solution,dof_handler,nEqn);
 
 			if(constants.print_exactsolution)
-				print_exactsolution_to_file(triangulation,S_half_inv);
+				print_exactsolution_to_file(triangulation,S_half_inv,nEqn);
 
 		}
 
@@ -1068,14 +1180,14 @@ print_fe_index(const hp::DoFHandler<dim> &dof_handler)
    			// only print in the final cycle
 			if (present_cycle == total_cycles - 1)
 			{
-				if(constants.print_solution)
-					print_solution_to_file(triangulation,solution,S_half_inv,dof_handler);
+			if (constants.print_solution)
+				print_solution_to_file(triangulation,solution,S_half_inv,dof_handler,nEqn);
 
-				if(constants.print_error)
-					print_error_to_file(triangulation,solution,dof_handler);
+			if(constants.print_error)
+				print_error_to_file(triangulation,solution,dof_handler,nEqn);
 
-				if(constants.print_exactsolution)
-					print_exactsolution_to_file(triangulation,S_half_inv);
+			if(constants.print_exactsolution)
+				print_exactsolution_to_file(triangulation,S_half_inv,nEqn);
 
 			}
 		}
@@ -1095,19 +1207,20 @@ print_fe_index(const hp::DoFHandler<dim> &dof_handler)
 		ConvergenceTable &convergence_table,
 		const Sparse_matrix &S_half_inv,
 		const hp::DoFHandler<dim> &dof_handler,
-		const Vector<double> &VelocitySpace_error_per_cell)
+		const Vector<double> &VelocitySpace_error_per_cell,
+		const std::vector<int> &nEqn)
 	{
 		Assert(class_initialized == true,ExcMessage("Please initialize the post proc class"));
 		if (constants.print_all)
 		{
 			if (constants.print_solution)
-				print_solution_to_file(triangulation,solution,S_half_inv,dof_handler);
+				print_solution_to_file(triangulation,solution,S_half_inv,dof_handler,nEqn);
 
 			if(constants.print_error)
-				print_error_to_file(triangulation,solution,dof_handler);
+				print_error_to_file(triangulation,solution,dof_handler,nEqn);
 
 			if(constants.print_exactsolution)
-				print_exactsolution_to_file(triangulation,S_half_inv);
+				print_exactsolution_to_file(triangulation,S_half_inv,nEqn);
 
 			if(constants.print_velocity_space_error)
 				print_VelocitySpace_error_to_file(triangulation,VelocitySpace_error_per_cell);
@@ -1121,20 +1234,20 @@ print_fe_index(const hp::DoFHandler<dim> &dof_handler)
    			// only print in the final cycle
 			if (present_cycle == total_cycles - 1)
 			{
-				if(constants.print_solution)
-					print_solution_to_file(triangulation,solution,S_half_inv,dof_handler);
+			if (constants.print_solution)
+				print_solution_to_file(triangulation,solution,S_half_inv,dof_handler,nEqn);
 
-				if(constants.print_error)
-					print_error_to_file(triangulation,solution,dof_handler);
+			if(constants.print_error)
+				print_error_to_file(triangulation,solution,dof_handler,nEqn);
 
-				if(constants.print_exactsolution)
-					print_exactsolution_to_file(triangulation,S_half_inv);
+			if(constants.print_exactsolution)
+				print_exactsolution_to_file(triangulation,S_half_inv,nEqn);
 
-				if(constants.print_velocity_space_error)
-					print_VelocitySpace_error_to_file(triangulation,VelocitySpace_error_per_cell);
+			if(constants.print_velocity_space_error)
+				print_VelocitySpace_error_to_file(triangulation,VelocitySpace_error_per_cell);
 
-				if(constants.print_fe_index)
-					print_fe_index(dof_handler);
+			if(constants.print_fe_index)
+				print_fe_index(dof_handler);
 			}
 		}
 
@@ -1143,13 +1256,14 @@ print_fe_index(const hp::DoFHandler<dim> &dof_handler)
 
 	}
 
-	// evaluates the error per cell using gausian quadrature
+	//returns a vector containing the error in every cell
 	template<int dim>
 	Vector<double>
 	Base_PostProc<dim>::return_error_per_cell(const Vector<double> &solution,
 		const unsigned int active_cells,
 		const hp::MappingCollection<dim> &mapping,
-		const hp::DoFHandler<dim> &dof_handler)
+		const hp::DoFHandler<dim> &dof_handler,
+		const std::vector<int> &nEqn)
 	{
 		const unsigned int ngp = constants.p + 1;
 		QGauss<dim> quadrature_basic(ngp);			
@@ -1179,6 +1293,7 @@ print_fe_index(const hp::DoFHandler<dim> &dof_handler)
 
         // error per cell of the domain
 		Vector<double> error_per_cell(active_cells);      
+		const int max_equations = return_max_entry(nEqn);
 
         ComponentSelectFunction<dim> weight(component,max_equations);                              // used to compute only the error in theta
 
@@ -1203,7 +1318,8 @@ print_fe_index(const hp::DoFHandler<dim> &dof_handler)
     									  const Sparse_matrix &S_half_inv,
     									  const Vector<double> &solution,
     									  ConvergenceTable &convergence_table,
-    									  const unsigned int b_id_surface)
+    									  const unsigned int b_id_surface,
+    									  const int nEqn)
     {
     	AssertDimension(dim,2);
     	Assert(class_initialized == true,ExcMessage("Please initialize the post proc class"));
@@ -1245,7 +1361,7 @@ print_fe_index(const hp::DoFHandler<dim> &dof_handler)
       	const unsigned int total_ngp = face_quadrature.size();
     	FEFaceValues<dim> fe_v_face(mapping,finite_element, face_quadrature, face_update_flags);
 
-    	Vector<double> solution_value(max_equations);
+    	Vector<double> solution_value(nEqn);
     	typename DoFHandler<dim>::active_cell_iterator cell = dof_handler.begin_active(), endc = dof_handler.end();
 
     	for (; cell != endc ; cell++)

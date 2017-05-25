@@ -110,7 +110,8 @@ template<int dim>
 						std::vector<Develop_System::System<dim>> &equation_info,
                         ExactSolution::Base_ExactSolution<dim> *exact_solution,
                         const std::vector<int> &nEqn,
-                        const std::vector<int> &nBC);
+                        const std::vector<int> &nBC,
+                        const unsigned int system_to_solve);
 
 
 			void run();
@@ -123,11 +124,12 @@ template<int dim>
 						std::vector<Develop_System::System<dim>> &equation_info,
                         ExactSolution::Base_ExactSolution<dim> *exact_solution,
                         const std::vector<int> &nEqn,
-                        const std::vector<int> &nBC)
+                        const std::vector<int> &nBC,
+                        const unsigned int system_to_solve)
 	:
 	Assembly_Manager_FE<dim>(output_file_name,
 					constants,equation_info,
-                	nEqn,nBC),
+                	nEqn,nBC,system_to_solve),
 	Run_Problem<dim>(exact_solution)
 	{}
 
@@ -189,8 +191,7 @@ template<int dim>
 
 
 
-		PostProc::Base_PostProc<dim> postproc(this->constants,this->base_exactsolution,
-											 this->nEqn,this->nBC);
+		PostProc::Base_PostProc<dim> postproc(this->constants,this->base_exactsolution);
 
 		postproc.reinit(this->fe_data_structure.dof_handler);
 
@@ -202,7 +203,8 @@ template<int dim>
 										this->convergence_table,
 										this->residual.l2_norm(),
 										this->fe_data_structure.mapping,
-										this->fe_data_structure.dof_handler);
+										this->fe_data_structure.dof_handler,
+										this->nEqn);
 
 
 		// postproc.compute_lift_drag(this->fe_data_structure.mapping,
@@ -218,8 +220,8 @@ template<int dim>
 		
 		postproc.print_options(this->fe_data_structure.triangulation,this->solution,cycle,refine_cycles,
 							  this->convergence_table,
-							this->system_info[0].base_tensorinfo.S_half_inv,
-								this->fe_data_structure.dof_handler);		
+							this->system_info.base_tensorinfo.S_half_inv,
+								this->fe_data_structure.dof_handler,this->nEqn);		
 		
 		timer.leave_subsection();
 
@@ -243,7 +245,12 @@ template<int dim>
                         const std::vector<int> &nEqn,
                         const std::vector<int> &nBC);
 
-			void run();
+			// different ways to adapt
+			// in the following routine we compute the deviation of the distribution function from
+			// the distribution function of the previous moment theory. For e.g. for the lowest moment theory
+			// we compute the deviation from the the maxwellian, for higher moment theory we compute the deviation from
+			// the previous one.
+			void run_distribution_deviation();
 
 	};
 
@@ -263,7 +270,7 @@ template<int dim>
 
 	template<int dim>
 	void 
-	Run_Problem_hp_FE<dim>::run()
+	Run_Problem_hp_FE<dim>::run_distribution_deviation()
 	{
 					// total number of refinement cycles in the physical space
 			const int refine_cycles_h = this->constants.refine_cycles;
@@ -279,6 +286,11 @@ template<int dim>
                 	   TimerOutput::wall_times);
 
 			this->hp_fe_data_structure.print_mesh_info();
+
+			// we only allow for one refinement cycle in the space dimension
+			AssertDimension(refine_cycles_h,1);
+			AssertDimension(refine_cycles_c,(int)this->nEqn.size());
+
 			// we first do h-refinement
 			for (int cycle_h = 0 ; cycle_h < refine_cycles_h ; cycle_h ++)
 			{
@@ -287,7 +299,7 @@ template<int dim>
 					// allocate the index for every cell
 					timer.enter_subsection("Dof Distribution");
 					std::cout << "Dof distirubtion" << std::endl;
-					this->hp_fe_data_structure.allocate_fe_index_distance_center(cycle_c,refine_cycles_c);
+					this->hp_fe_data_structure.allocate_fe_index_distribution_deviation(cycle_c);
 
 					// distribute the degrees of freedom for the different fe indices which have been distributed
 					this->distribute_dof_allocate_matrix(this->hp_fe_data_structure.dof_handler,
@@ -318,16 +330,15 @@ template<int dim>
 					timer.enter_subsection("post processing");
 
 
-					this->hp_fe_data_structure.compute_equilibrium_deviation(this->ngp,
+					this->hp_fe_data_structure.compute_distribution_deviation(this->ngp,
                                                 				this->nEqn,
                                                 				this->hp_fe_data_structure.triangulation,
                                                 				this->solution,
-                                                				cycle_h);
+                                                				cycle_c);
 
 
 					PostProc::Base_PostProc<dim> postproc(this->constants,
-														 this->base_exactsolution,
-														this->nEqn,this->nBC);
+														 this->base_exactsolution);
 
 					postproc.reinit(this->hp_fe_data_structure.dof_handler);
 
@@ -340,14 +351,16 @@ template<int dim>
 													this->convergence_table,
 													this->residual.l2_norm(),
 													this->hp_fe_data_structure.mapping,
-													this->hp_fe_data_structure.dof_handler);
+													this->hp_fe_data_structure.dof_handler,
+													this->nEqn);
 
 
 					postproc.print_options(this->hp_fe_data_structure.triangulation,this->solution,cycle_c,refine_cycles_c,
 										   this->convergence_table,
 										  this->system_info[this->hp_fe_data_structure.max_fe_index].base_tensorinfo.S_half_inv,
 										  this->hp_fe_data_structure.dof_handler,
-										  this->hp_fe_data_structure.VelocitySpace_error_per_cell);
+										  this->hp_fe_data_structure.VelocitySpace_error_per_cell,
+										  this->nEqn);
 
 
 
@@ -530,8 +543,7 @@ template<int dim>
    	// counts the number of time steps
    	unsigned int counter = 0;
 
-   	PostProc::Base_PostProc<dim> postproc(this->constants,this->base_exactsolution,
-											 this->nEqn,this->nBC);
+   	PostProc::Base_PostProc<dim> postproc(this->constants,this->base_exactsolution);
 
 	postproc.reinit(this->fe_data_structure.dof_handler);
 
@@ -553,9 +565,9 @@ template<int dim>
    		// new_solution = delta_t * system_rhs
    		if (counter%100 == 0 )
    			initial_energy = postproc.compute_energy(this->solution,
-   															this->fe_data_structure.triangulation.n_active_cells(),
-															this->fe_data_structure.mapping, 
-															this->fe_data_structure.dof_handler);
+   													 this->fe_data_structure.triangulation.n_active_cells(),
+													 this->fe_data_structure.mapping, 
+													 this->fe_data_structure.dof_handler,this->nEqn);
 
    		// update with the solution rhs
    		new_solution.equ(delta_t,this->system_rhs);
@@ -576,7 +588,8 @@ template<int dim>
    			final_energy = postproc.compute_energy(new_solution2,
    															this->fe_data_structure.triangulation.n_active_cells(),
 															this->fe_data_structure.mapping, 
-															this->fe_data_structure.dof_handler);
+															this->fe_data_structure.dof_handler,
+															this->nEqn);
 
    		residual_steady_state = matrix_opt.Sparse_matrix_dot_Vector(this->global_matrix,new_solution2);
    		residual_steady_state -= this->system_rhs;
@@ -608,7 +621,8 @@ template<int dim>
 										this->convergence_table,
 										this->residual.l2_norm(),
 										this->fe_data_structure.mapping,
-										this->fe_data_structure.dof_handler);
+										this->fe_data_structure.dof_handler,
+										this->nEqn);
 
 		fclose(energy_growth);
 
@@ -623,14 +637,14 @@ template<int dim>
 		Tensor<1,1> normal_vector;
 		Tensor<1,1> boundary_point;
 		unsigned int b_id;
-		Vector<double> bc_rhs(this->system_info[0].nBC);
+		Vector<double> bc_rhs(this->nBC);
 
 		// boundary at the left hand side
 		b_id = 101;
 		normal_vector[0] = -1.0;
 		boundary_point[0] = -0.5;
 
-		this->system_info[0].bcrhs_inflow.BCrhs(boundary_point,
+		this->system_info.bcrhs_inflow.BCrhs(boundary_point,
 						  			normal_vector,
 						  			bc_rhs,
 						  			b_id);
@@ -642,7 +656,7 @@ template<int dim>
 		normal_vector[0] = 1.0;
 		boundary_point[0] = 0.5;
 
-		this->system_info[0].bcrhs_inflow.BCrhs(boundary_point,
+		this->system_info.bcrhs_inflow.BCrhs(boundary_point,
 						  			normal_vector,
 						  			bc_rhs,
 						  			b_id);		

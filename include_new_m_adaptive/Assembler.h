@@ -19,18 +19,19 @@ namespace FEM_Solver
                         << "Dof-1 " << arg1 << " Dof-2 " << arg2 << " Entry does not exist in sparsity pattern");
 
 		Assembly_Manager_FE(const std::string &output_file_name,
-						const constant_numerics &constants,
-						std::vector<Develop_System::System<dim>> &equation_info,
+						            const constant_numerics &constants,
+						            std::vector<Develop_System::System<dim>> &equation_info,
                         const std::vector<int> &nEqn,
-                        const std::vector<int> &nBC);
+                        const std::vector<int> &nBC,
+                        const unsigned int system_to_solve);
 		     // finite element data structure 
      fe_data<dim> fe_data_structure;
 
-			const std::vector<int> nEqn;
-			const std::vector<int> nBC;
+			const int nEqn;
+			const int nBC;
 			const constant_numerics constants;
 
-			std::vector<Develop_System::System<dim>> system_info;
+			Develop_System::System<dim> system_info;
 
 			// A matrix in the final Ax = b
 			TrilinosWrappers::SparseMatrix global_matrix;
@@ -78,17 +79,20 @@ namespace FEM_Solver
 											const constant_numerics &constants,
 											std::vector<Develop_System::System<dim>> &equation_info,
                         					const std::vector<int> &nEqn,
-                        					const std::vector<int> &nBC)
+                        					const std::vector<int> &nBC,          
+                                  const unsigned int system_to_solve)
 	:
 	fe_data_structure(output_file_name,
-					constants,nEqn),
-	nEqn(nEqn),
-	nBC(nBC),
+					         constants,nEqn[system_to_solve]),
+  // we only save data corresponding to that system which is needed to be solved
+	nEqn(nEqn[system_to_solve]),
+	nBC(nBC[system_to_solve]),
 	constants(constants),
-	system_info(equation_info),
+	system_info(equation_info[system_to_solve]),
 	ngp(constants.p + 1),
 	ngp_face(constants.p + 1)
-	{}
+	{
+  }
 
 
     // assembly the system using a meshworker
@@ -97,7 +101,7 @@ namespace FEM_Solver
   Assembly_Manager_FE<dim>::assemble_system_meshworker()
   {
   // meshworker can only be used for a single system
-  AssertDimension(nEqn.size(),1);
+  //AssertDimension(nEqn.size(),1);
 
   // first we will assemble the right hand side 
   Threads::Task<> rhs_task = Threads::new_task (&Assembly_Manager_FE<dim>::assemble_rhs,
@@ -203,7 +207,7 @@ namespace FEM_Solver
     std::vector<types::global_dof_index> local_dof_indices(dofs_per_cell);
     Vector<double> cell_rhs(dofs_per_cell);
     std::vector<double> Jacobians_interior(total_ngp);
-    std::vector<Vector<double>> source_term_value(total_ngp,Vector<double>(nEqn[0]));
+    std::vector<Vector<double>> source_term_value(total_ngp,Vector<double>(nEqn));
     Vector<double> component(dofs_per_cell);
 
     for (unsigned int i = 0 ; i < dofs_per_cell ; i++)
@@ -214,7 +218,7 @@ namespace FEM_Solver
       cell_rhs = 0;
       fe_v.reinit(cell);
       Jacobians_interior = fe_v.get_JxW_values();       
-      system_info[0].source_term(fe_v.get_quadrature_points(),source_term_value);
+      system_info.source_term(fe_v.get_quadrature_points(),source_term_value);
 
       for (unsigned int q = 0 ; q < total_ngp ; q++)
         for (unsigned int i = 0 ; i < dofs_per_cell ; i ++)
@@ -255,13 +259,14 @@ namespace FEM_Solver
       Mass = this->Compute_Mass_shape_value(fe_v, indices_per_cell, Jacobians_interior);
 
         // this is for initializing the matrix, it is necessary since we have not put cell_matrix to zero
-      cell_matrix = this->matrix_opt.compute_A_outer_B(this->system_info[0].system_data.P.matrix,Mass);
+      cell_matrix = this->matrix_opt.compute_A_outer_B(system_info.system_data.P.matrix,Mass);
 
       for (int space = 0 ;space < dim ; space ++ )
-        cell_matrix.add(0,cell_matrix,1,this->matrix_opt.compute_A_outer_B(this->system_info[0].system_data.A[space].matrix,Mass_grad[space]));
+        cell_matrix.add(0,cell_matrix,1,this->matrix_opt.compute_A_outer_B(system_info.system_data.A[space].matrix,Mass_grad[space]));
 
   }
 
+  // boundary implelmentaion using odd splitting 
   template<int dim> 
   void 
   Assembly_Manager_FE<dim>
@@ -284,10 +289,11 @@ namespace FEM_Solver
       component[i] = fe_in_cell.system_to_component_index(i).first;
 
     Vector<double> boundary_rhs_value;
-    boundary_rhs_value.reinit(nBC[0]);
+    boundary_rhs_value.reinit(nBC);
     const unsigned int b_id = face_itr->boundary_id();
 
-    Assert(system_info[0].system_data.B.matrix.rows() == system_info[0].system_data.Sigma.matrix.cols() ,ExcMessage("Incorrect dimension"));
+    Assert(system_info.system_data.B.matrix.rows() == system_info.system_data.Sigma.matrix.cols(),
+            ExcMessage("Incorrect dimension"));
 
 // we use a temporary matrix to determine whether inflow or outflow
     Sparse_matrix B_temp;
@@ -295,17 +301,17 @@ namespace FEM_Solver
     if(b_id == 101 || b_id == 102)
     {
       integrate_inflow++;
-      B_temp = this->system_info[0].system_data.Binflow.matrix;
+      B_temp = system_info.system_data.Binflow.matrix;
     }
     else
     {
     // B matrix for specular reflection
       if (b_id == 50)
-        B_temp = this->system_info[0].system_data.B_specular.matrix;
+        B_temp = system_info.system_data.B_specular.matrix;
 
     // B matrix for full accmmodation
       else
-        B_temp = this->system_info[0].system_data.B.matrix;
+        B_temp = system_info.system_data.B.matrix;
     }
 
     for (unsigned int q = 0 ; q < fe_v.n_quadrature_points ; q++)
@@ -317,27 +323,27 @@ namespace FEM_Solver
   // check for inflow or outflow
   // Incase of inflow provide the inflow rhs
       if(face_itr->boundary_id() == 101 || face_itr->boundary_id() == 102)
-        system_info[0].bcrhs_inflow.BCrhs(fe_v.quadrature_point(q),fe_v.normal_vector(q),
+        system_info.bcrhs_inflow.BCrhs(fe_v.quadrature_point(q),fe_v.normal_vector(q),
           boundary_rhs_value,face_itr->boundary_id());
 
       else
-        system_info[0].bcrhs_wall.BCrhs(fe_v.quadrature_point(q),fe_v.normal_vector(q),
+        system_info.bcrhs_wall.BCrhs(fe_v.quadrature_point(q),fe_v.normal_vector(q),
           boundary_rhs_value,face_itr->boundary_id());
 
 
-      Sparse_matrix Projector = system_info[0].build_Projector(fe_v.normal_vector(q));
+      Sparse_matrix Projector = system_info.build_Projector(fe_v.normal_vector(q));
 
 
 
   // Simga(as given in PDF) * B * Projector
   // Sigma in the PDF = Projector.transpose * Sigma(In the code)
       Full_matrix Sigma_B_P =       Projector.transpose()
-      * system_info[0].system_data.Sigma.matrix 
+      * system_info.system_data.Sigma.matrix 
       * B_temp
       * Projector;
 
       Full_matrix Sigma = Projector.transpose()
-      * system_info[0].system_data.Sigma.matrix ;
+      * system_info.system_data.Sigma.matrix ;
 
       for (unsigned int i = 0 ; i < dofs_per_cell ; i ++)
       {
@@ -386,10 +392,11 @@ namespace FEM_Solver
       component[i] = fe_in_cell.system_to_component_index(i).first;
 
     Vector<double> boundary_rhs_value;
-    boundary_rhs_value.reinit(nBC[0]);
+    boundary_rhs_value.reinit(nBC);
     const unsigned int b_id = face_itr->boundary_id();
 
-    Assert(system_info[0].system_data.B.matrix.rows() == system_info[0].system_data.Sigma.matrix.cols() ,ExcMessage("Incorrect dimension"));
+    Assert(system_info.system_data.B.matrix.rows() == system_info.system_data.Sigma.matrix.cols() ,
+            ExcMessage("Incorrect dimension"));
 
 // we use a temporary matrix to determine whether inflow or outflow
     Sparse_matrix B_temp;
@@ -398,20 +405,20 @@ namespace FEM_Solver
     if(b_id == 101 || b_id == 102)
     {
       integrate_inflow++;
-      B_temp = this->system_info[0].system_data.Binflow.matrix;
-      penalty_temp = this->system_info[0].penalty_char_inflow;
+      B_temp = system_info.system_data.Binflow.matrix;
+      penalty_temp = system_info.penalty_char_inflow;
     }
     else
     {
     // B matrix for specular reflection
       if (b_id == 50)
-        B_temp = this->system_info[0].system_data.B_specular.matrix;
+        B_temp = system_info.system_data.B_specular.matrix;
 
     // B matrix for full accmmodation
       else
       {
-        B_temp = this->system_info[0].system_data.B.matrix;
-        penalty_temp = this->system_info[0].penalty_char_wall;
+        B_temp = system_info.system_data.B.matrix;
+        penalty_temp = system_info.penalty_char_wall;
       }
       
     }
@@ -427,17 +434,17 @@ namespace FEM_Solver
   // check for inflow or outflow
   // Incase of inflow provide the inflow rhs
       if(face_itr->boundary_id() == 101 || face_itr->boundary_id() == 102)
-        system_info[0].bcrhs_inflow.BCrhs(fe_v.quadrature_point(q),outward_normal,
+        system_info.bcrhs_inflow.BCrhs(fe_v.quadrature_point(q),outward_normal,
           boundary_rhs_value,face_itr->boundary_id());
 
       else
-        system_info[0].base_bcrhs->BCrhs(fe_v.quadrature_point(q),outward_normal,
+        system_info.base_bcrhs->BCrhs(fe_v.quadrature_point(q),outward_normal,
                                       boundary_rhs_value,face_itr->boundary_id());
 
 
-      Sparse_matrix Projector = system_info[0].build_Projector(outward_normal);
-      Sparse_matrix Inv_Projector = system_info[0].build_InvProjector(outward_normal);
-      Eigen::MatrixXd Am = system_info[0].build_Aminus(outward_normal);
+      Sparse_matrix Projector = system_info.build_Projector(outward_normal);
+      Sparse_matrix Inv_Projector = system_info.build_InvProjector(outward_normal);
+      Eigen::MatrixXd Am = system_info.build_Aminus(outward_normal);
 
 
       // the projector was not included in the development of the penalty matrix
@@ -508,8 +515,8 @@ namespace FEM_Solver
 
     //CAUTION: ASSUMPTION OF STRAIGHT EDGES IN THE INTERIOR
     Tensor<1,dim> outward_normal = fe_v.normal_vector(0);
-    Eigen::MatrixXd Am = system_info[0].build_Aminus(outward_normal);
-    Eigen::MatrixXd Am_neighbor = system_info[0].build_Aminus(-outward_normal);
+    Eigen::MatrixXd Am = system_info.build_Aminus(outward_normal);
+    Eigen::MatrixXd Am_neighbor = system_info.build_Aminus(-outward_normal);
 
 
     FullMatrix<double> Mass_u1_v1(dofs_per_component1,dofs_per_component1);

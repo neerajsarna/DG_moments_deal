@@ -95,6 +95,8 @@ namespace MatrixOpt
 			// finds the minimum of a dealii vector
 			double min_Vector(Vector<double> &vector);
 			double max_Vector(Vector<double> &vector);
+			double min_Vector(std::vector<double> &vector);
+			double max_Vector(std::vector<double> &vector);
 
 			// a dot product between sparse matrix and a vector
 			Vector<double> Sparse_matrix_dot_Vector(const Sparse_matrix &matrix,const Vector<double> &vec);
@@ -788,6 +790,33 @@ namespace MatrixOpt
 	  	return(max_value);
 	  }
 
+	  double Base_MatrixOpt::min_Vector(std::vector<double> &vector)
+	  {
+	  	Assert(vector.size() != 0,ExcNotInitialized());
+
+	  	double min_value = vector[0];
+
+	  	for (unsigned long int i = 0 ; i < vector.size(); i++)
+	  		if (vector[i] < min_value)
+	  			min_value = vector[i];
+
+	  	return(min_value);
+	  }
+
+	  double Base_MatrixOpt::max_Vector(std::vector<double> &vector)
+	  {
+	  	Assert(vector.size() != 0,ExcNotInitialized());
+
+	  	double max_value = vector[0];
+
+	  	for (unsigned long int i = 0 ; i < vector.size(); i++)
+	  		if (vector[i] > max_value)
+	  			max_value = vector[i];
+
+	  	return(max_value);
+	  }
+
+
 	  Vector<double> Base_MatrixOpt::add_Vector(const Vector<double> &a,const Vector<double> &b)
 	  {
 	  	// the dimension of both the vectors should be the same
@@ -796,7 +825,7 @@ namespace MatrixOpt
 
 	  	Vector<double> result(num_entries);
 
-	  	for (unsigned int i = 0 ; i < num_entries ; i++)
+	  	for (int i = 0 ; i < num_entries ; i++)
 	  		result(i) =a(i) + b(i);
 
 	  	return(result);

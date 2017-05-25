@@ -100,9 +100,17 @@ TEST(DISABLED_SolverSingleSystem,HandlesSolverSingleSystem)
 				AssertDimension(constants.constants_num.part_y,10);
 			}
 
+			int system_to_solve = 0;
+
+			// in case of hp fe method we initialize with the highest possible moment system
+			if (constants.constants_num.assembly_type == manuel)
+				system_to_solve = constants.constants_sys.total_systems-1;
+
 					// the exact solution can only be created for one of the systems
-			ExactSolution::ExactSolution_Dummy<dim>  exactsolution_dummy(constants.constants_num,System[constants.constants_sys.total_systems-1].base_tensorinfo.S_half,
-																			 constants.constants_sys.nEqn[constants.constants_sys.total_systems-1],constants.constants_sys.Ntensors[constants.constants_sys.total_systems-1]);
+			ExactSolution::ExactSolution_Dummy<dim>  exactsolution_dummy(constants.constants_num,
+																		 System[system_to_solve].base_tensorinfo.S_half,
+																		 constants.constants_sys.nEqn[system_to_solve],
+																		 constants.constants_sys.Ntensors[system_to_solve]);
 
 			// finite element solver for a single system
 			FEM_Solver::Run_Problem_FE<dim> fe_solver("grid",
@@ -110,7 +118,8 @@ TEST(DISABLED_SolverSingleSystem,HandlesSolverSingleSystem)
 											 	 System,
 											 	 &exactsolution_dummy,
 											 	 constants.constants_sys.nEqn,
-											 	 constants.constants_sys.nBC);
+											 	 constants.constants_sys.nBC,
+											 	 system_to_solve);
 
 		// finite element solver for hp data structures, used for m adaptivity
 		FEM_Solver::Run_Problem_hp_FE<dim> hp_solver("grid",
@@ -135,7 +144,7 @@ TEST(DISABLED_SolverSingleSystem,HandlesSolverSingleSystem)
 
 		if (constants.constants_num.assembly_type == manuel)
 		{
-			hp_solver.run();
+			hp_solver.run_distribution_deviation();
 			EXPECT_NEAR(hp_solver.error_per_itr[0],error_manuel,1e-10);	
 
 		}
@@ -145,13 +154,20 @@ TEST(DISABLED_SolverSingleSystem,HandlesSolverSingleSystem)
 
 		if (dim == 1) 
 		{
-			Assert(constants.constants_num.mesh_type == line , ExcMessage("Violates the only possible geometry in the 1D case."));
+			Assert(constants.constants_num.mesh_type == line ,
+				  ExcMessage("Violates the only possible geometry in the 1D case."));
+
 			AssertDimension(constants.constants_num.refine_cycles,3);
 			AssertDimension(constants.constants_num.initial_refinement,1);
+			// only add boundary
+			AssertDimension(constants.constants_num.bc_type,1);
+
+			const int system_to_solve = 0;
 
 			// we take the solution of the Boltzmann equation as the reference
-			ExactSolution::PoissonHeat<dim>  PoissonHeat(constants.constants_num,System[constants.constants_sys.total_systems-1].base_tensorinfo.S_half,
-																			 constants.constants_sys.nEqn[constants.constants_sys.total_systems-1],constants.constants_sys.Ntensors[constants.constants_sys.total_systems-1]);
+			ExactSolution::PoissonHeat<dim>  PoissonHeat(constants.constants_num,System[system_to_solve].base_tensorinfo.S_half,
+																			 constants.constants_sys.nEqn[system_to_solve],
+																			 constants.constants_sys.Ntensors[system_to_solve]);
 
 			// finite element solver for a single system
 			FEM_Solver::Run_Problem_FE<dim> fe_solver("grid",
@@ -159,7 +175,8 @@ TEST(DISABLED_SolverSingleSystem,HandlesSolverSingleSystem)
 											 	 System,
 											 	 &PoissonHeat,
 											 	 constants.constants_sys.nEqn,
-											 	 constants.constants_sys.nBC);
+											 	 constants.constants_sys.nBC,
+											 	 system_to_solve);
 
 		// finite element solver for hp data structures, used for m adaptivity
 		FEM_Solver::Run_Problem_hp_FE<dim> hp_solver("grid",
@@ -188,7 +205,7 @@ TEST(DISABLED_SolverSingleSystem,HandlesSolverSingleSystem)
 
 		if (constants.constants_num.assembly_type == manuel)
 		{
-			hp_solver.run();
+			hp_solver.run_distribution_deviation();
 			
 			for (int i = 0 ; i < constants.constants_num.refine_cycles ; i++)
 				{
@@ -230,23 +247,24 @@ TEST(DISABLED_RunSystemA,HandlesSystemA)
 		// 											constants.constants_sys.nEqn[constants.constants_sys.total_systems-1],constants.constants_sys.Ntensors[constants.constants_sys.total_systems-1]);
 
 
+		const int system_to_solve = 0;
 		ExactSolution::ExactSolution_SystemA_ring<dim>  exact_solution_systemA(constants.constants_num,
-																			System[constants.constants_sys.total_systems-1].base_tensorinfo.S_half,
-																			constants.constants_sys.nEqn[constants.constants_sys.total_systems-1],
-																			constants.constants_sys.Ntensors[constants.constants_sys.total_systems-1]);
+																			System[system_to_solve].base_tensorinfo.S_half,
+																			constants.constants_sys.nEqn[system_to_solve],
+																			constants.constants_sys.Ntensors[system_to_solve]);
 
-			// finite element solver for a single system
+		
+		// finite element solver for a single system
 		FEM_Solver::Run_Problem_FE<dim> fe_solver("grid",
 											constants.constants_num,
 											System,
 											&exact_solution_systemA,
 											constants.constants_sys.nEqn,
-											constants.constants_sys.nBC);
+											constants.constants_sys.nBC,
+											system_to_solve);
 
 
 		fe_solver.run();
-
-
 
 		AssertThrow(constants.constants_num.refine_cycles == 2,ExcMessage("The refine cycles requested for have not been implemented"));
 		AssertThrow(constants.constants_num.p == 1,ExcNotImplemented());
@@ -296,23 +314,35 @@ TEST(RunSystem,HandlesRunSystem)
 			System[i].initialize_system();
 
 
+
 		
-		ExactSolution::ExactSolution_Dummy<dim>  dummy(constants.constants_num,
-														System[constants.constants_sys.total_systems-1].base_tensorinfo.S_half,
-														constants.constants_sys.nEqn[constants.constants_sys.total_systems-1],
-														constants.constants_sys.Ntensors[constants.constants_sys.total_systems-1]);
+		// We initialize the exact solution with the system we wish to solve.
+		// Incase of hp this can be changed to the system with 	
+		// we change the system which we wish to solve
+		const int system_to_solve = constants.constants_sys.total_systems-1;
+		
+		Assert(system_to_solve < System.size(),
+			ExcMessage("You have asked for a system which has not been loaded"));
+
+		ExactSolution::PoissonHeat<dim>  dummy(constants.constants_num,
+												System[system_to_solve].base_tensorinfo.S_half,
+												constants.constants_sys.nEqn[system_to_solve],
+												constants.constants_sys.Ntensors[system_to_solve]);
 
 
 			// finite element solver for a single system
-		FEM_Solver::Run_Problem_FE_Time_Stepping<dim> fe_solver("grid",
-											constants.constants_num,
-											System,
-											&dummy,
-											constants.constants_sys.nEqn,
-											constants.constants_sys.nBC);
+		FEM_Solver::Run_Problem_hp_FE<dim> fe_solver("grid",
+			constants.constants_num,
+			System,
+			&dummy,
+			constants.constants_sys.nEqn,
+			constants.constants_sys.nBC);
 
 
-		fe_solver.run();
+		fe_solver.run_distribution_deviation();
+
+		
+
 
 }
 
