@@ -699,7 +699,7 @@ namespace Constants
 
 
 			// we check the total number of systems we are loading into our program
-			AssertThrow(constants_sys.total_systems == 3,
+			AssertThrow(constants_sys.total_systems == 4,
 						ExcMessage("Incorrect number of systems being loaded"));
 
 

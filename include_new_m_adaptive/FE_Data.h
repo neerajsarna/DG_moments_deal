@@ -331,8 +331,6 @@ hp_fe_data<dim>::compute_distribution_deviation(const int ngp,
                                       VectorTools::L2_norm,
                                       &weight);  
 
-    std::cout << "Start ID: " << ID_start << std::endl;
-    std::cout << "End ID: " << ID_end << std::endl; 
 
     // we now convert from the l2 norm to the l1 norm. We would like to compute the l1 norm of the deviation and therefore
     // we simply square the value obtained above. The reason for this is that since we have already taken the square 
@@ -380,7 +378,7 @@ hp_fe_data<dim>::set_tolerance_distribution_deviation(const unsigned int cycle)
 
         // all the cells which have a deviation > min + frac(max - min) will be refined
 
-        const double frac = 0.3;
+        const double frac = 0.04;
         const double max_error = matrix_opt.max_Vector(error_VelocitySpace_max_theory);
         const double min_error = matrix_opt.min_Vector(error_VelocitySpace_max_theory);
         const double tolerance = min_error + frac * (max_error - min_error) ;
@@ -415,11 +413,8 @@ hp_fe_data<dim>::allocate_fe_index_distribution_deviation(const unsigned int pre
             {
 
             if (cell->active_fe_index()  == present_cycle - 1) // only increase the fe index if we are on a lower order moment theory
-                if ((VelocitySpace_error_per_cell(counter) - tolerance) > 10e-16 )
+                if ((VelocitySpace_error_per_cell(counter) - tolerance) >= 10e-100 )
                 {
-                    std::cout << "Actual error: " << VelocitySpace_error_per_cell(counter) << std::endl;
-                    std::cout << "Tolerance: " << tolerance << std::endl;
-                    
                     cell->set_active_fe_index(present_cycle);   // increase the fe index if the residual is too high
                 }
 

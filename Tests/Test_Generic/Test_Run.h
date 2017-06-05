@@ -292,12 +292,13 @@ TEST(DISABLED_RunSystemA,HandlesSystemA)
 // run without any restrictions
 TEST(RunSystem,HandlesRunSystem)
 {
-		const unsigned int dim =1;
+		const unsigned int dim = 2;
 
 		std::string folder_name = "../system_matrices/";
 		Constants::Base_Constants constants(input_file);
 
 
+		std::cout << "Creating Systems....." << std::endl;
 	// 	// we construct a vector of all the system data being considered 
 		std::vector<Develop_System::System<dim>> System;
 
@@ -314,17 +315,18 @@ TEST(RunSystem,HandlesRunSystem)
 			System[i].initialize_system();
 
 
+		std::cout << "Done creating systems....." << std::endl;
 
 		
 		// We initialize the exact solution with the system we wish to solve.
 		// Incase of hp this can be changed to the system with 	
 		// we change the system which we wish to solve
 		const int system_to_solve = constants.constants_sys.total_systems-1;
-		
+
 		Assert(system_to_solve < System.size(),
 			ExcMessage("You have asked for a system which has not been loaded"));
 
-		ExactSolution::PoissonHeat<dim>  dummy(constants.constants_num,
+		ExactSolution::ExactSolution_Dummy<dim>  dummy(constants.constants_num,
 												System[system_to_solve].base_tensorinfo.S_half,
 												constants.constants_sys.nEqn[system_to_solve],
 												constants.constants_sys.Ntensors[system_to_solve]);
