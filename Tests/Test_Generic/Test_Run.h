@@ -333,15 +333,16 @@ TEST(RunSystem,HandlesRunSystem)
 
 
 			// finite element solver for a single system
-		FEM_Solver::Run_Problem_hp_FE<dim> fe_solver("grid",
+		FEM_Solver::Run_Problem_FE<dim> fe_solver("grid",
 			constants.constants_num,
 			System,
 			&dummy,
 			constants.constants_sys.nEqn,
-			constants.constants_sys.nBC);
+			constants.constants_sys.nBC,
+			system_to_solve);
 
 
-		fe_solver.run_distribution_deviation();
+		fe_solver.run();
 
 		
 
