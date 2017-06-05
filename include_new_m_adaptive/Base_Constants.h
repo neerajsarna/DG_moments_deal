@@ -111,6 +111,7 @@ namespace Constants
 			constants_num.refine_cycles_c = prm.get_integer("refine_cycles_c");
 			constants_num.refinement = (Refinement)prm.get_integer("type of refinement");
 			constants_num.assembly_type = (Assembly_Type)prm.get_integer("assembly type");
+			constants_num.fraction_refine = prm.get_double("fraction_refine");
 		}
 		prm.leave_subsection();
 
@@ -318,7 +319,12 @@ namespace Constants
 			// total number of refinement cycles in the velocity space
 			prm.declare_entry("refine_cycles_c",
 							"1",Patterns::Integer(0,100),
-							"total number of refinement cycles in the velocity space");
+								"total number of refinement cycles in the velocity space");
+
+
+			prm.declare_entry("fraction_refine",
+					  "0",Patterns::Double(0,1),
+						"the fraction used for setting up the tolerance");
 
 			prm.declare_entry("type of refinement",
 				"0",

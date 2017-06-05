@@ -58,6 +58,7 @@ struct tensor_data
 		int mapping_order;
 		int refine_cycles;
 		int refine_cycles_c;
+		double fraction_refine;
 		Refinement refinement;
 		Assembly_Type assembly_type;
 	

@@ -378,7 +378,7 @@ hp_fe_data<dim>::set_tolerance_distribution_deviation(const unsigned int cycle)
 
         // all the cells which have a deviation > min + frac(max - min) will be refined
 
-        const double frac = 0.04;
+        const double frac = this->constants.fraction_refine;
         const double max_error = matrix_opt.max_Vector(error_VelocitySpace_max_theory);
         const double min_error = matrix_opt.min_Vector(error_VelocitySpace_max_theory);
         const double tolerance = min_error + frac * (max_error - min_error) ;
