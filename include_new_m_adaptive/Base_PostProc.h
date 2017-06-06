@@ -740,7 +740,7 @@ namespace PostProc
     	int variables_to_print;
 
     	if (dim == 2)
-		variables_to_print = 9;	// we print all the moments till the heat flux
+		variables_to_print = max_equations;	// we print all the moments till the heat flux
 
 	if (dim == 1)
 		variables_to_print = 5; // we print all the moments till the heat flux
@@ -795,7 +795,7 @@ namespace PostProc
     	int variables_to_print;
 
     	if (dim == 2)
-		variables_to_print = 9;	// we print all the moments till the heat flux
+		variables_to_print = nEqn;	// we print all the moments till the heat flux
 
 	if (dim == 1)
 		variables_to_print = 5; // we print all the moments till the heat flux
@@ -856,7 +856,7 @@ namespace PostProc
     	int variables_to_print;
 
     	if (dim == 2)
-		variables_to_print = 9;	// we print all the moments till the heat flux
+		variables_to_print = nEqn;	// we print all the moments till the heat flux
 
 	if (dim == 1)
 		variables_to_print = 5; // we print all the moments till the heat flux
