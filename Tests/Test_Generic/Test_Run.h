@@ -67,6 +67,9 @@ TEST(DISABLED_SolverSingleSystem,HandlesSolverSingleSystem)
 
 		AssertDimension(constants.constants_sys.total_systems,1);
 
+		MeshGenerator::Base_MeshGenerator<dim>	Mesh_Info("grid",constants.constants_num.mesh_filename,constants.constants_num.mesh_type,
+							   							  constants.constants_num.problem_type,constants.constants_num.part_x,constants.constants_num.part_y,
+							   							  constants.constants_num.initial_refinement);
 
 	// 	// we construct a vector of all the system data being considered 
 		std::vector<Develop_System::System<dim>> System;
@@ -119,7 +122,8 @@ TEST(DISABLED_SolverSingleSystem,HandlesSolverSingleSystem)
 											 	 &exactsolution_dummy,
 											 	 constants.constants_sys.nEqn,
 											 	 constants.constants_sys.nBC,
-											 	 system_to_solve);
+											 	 system_to_solve,
+											 	 Mesh_Info.triangulation);
 
 		// finite element solver for hp data structures, used for m adaptivity
 		FEM_Solver::Run_Problem_hp_FE<dim> hp_solver("grid",
@@ -127,9 +131,11 @@ TEST(DISABLED_SolverSingleSystem,HandlesSolverSingleSystem)
 											 	 System,
 											 	 &exactsolution_dummy,
 											 	 constants.constants_sys.nEqn,
-											 	 constants.constants_sys.nBC);
+											 	 constants.constants_sys.nBC,
+											 	 Mesh_Info.triangulation);
 
-		check_active_cells(fe_solver.constants.mesh_type,fe_solver.constants.problem_type,fe_solver.fe_data_structure.triangulation.n_active_cells());
+		check_active_cells(fe_solver.constants.mesh_type,fe_solver.constants.problem_type,
+				Mesh_Info.triangulation.n_active_cells());
 
 
 			double error_manuel;
@@ -138,13 +144,13 @@ TEST(DISABLED_SolverSingleSystem,HandlesSolverSingleSystem)
 
 		if (constants.constants_num.assembly_type == meshworker)
 		{
-			fe_solver.run();
+			fe_solver.run(Mesh_Info);
 			EXPECT_NEAR(fe_solver.error_per_itr[0],error_manuel,1e-10);	
 		}
 
 		if (constants.constants_num.assembly_type == manuel)
 		{
-			hp_solver.run_distribution_deviation();
+			hp_solver.run_distribution_deviation(Mesh_Info);
 			EXPECT_NEAR(hp_solver.error_per_itr[0],error_manuel,1e-10);	
 
 		}
@@ -176,7 +182,8 @@ TEST(DISABLED_SolverSingleSystem,HandlesSolverSingleSystem)
 											 	 &PoissonHeat,
 											 	 constants.constants_sys.nEqn,
 											 	 constants.constants_sys.nBC,
-											 	 system_to_solve);
+											 	 system_to_solve,
+											 	 Mesh_Info.triangulation);
 
 		// finite element solver for hp data structures, used for m adaptivity
 		FEM_Solver::Run_Problem_hp_FE<dim> hp_solver("grid",
@@ -184,7 +191,8 @@ TEST(DISABLED_SolverSingleSystem,HandlesSolverSingleSystem)
 											 	 System,
 											 	 &PoissonHeat,
 											 	 constants.constants_sys.nEqn,
-											 	 constants.constants_sys.nBC);
+											 	 constants.constants_sys.nBC,
+											 	 Mesh_Info.triangulation);
 
 
 			std::vector<double> error_manuel(constants.constants_num.refine_cycles);
@@ -193,7 +201,7 @@ TEST(DISABLED_SolverSingleSystem,HandlesSolverSingleSystem)
 
 		if (constants.constants_num.assembly_type == meshworker)
 		{
-			fe_solver.run();
+			fe_solver.run(Mesh_Info);
 			
 
 			for (int i = 0 ; i < constants.constants_num.refine_cycles ; i++)
@@ -205,7 +213,7 @@ TEST(DISABLED_SolverSingleSystem,HandlesSolverSingleSystem)
 
 		if (constants.constants_num.assembly_type == manuel)
 		{
-			hp_solver.run_distribution_deviation();
+			hp_solver.run_distribution_deviation(Mesh_Info);
 			
 			for (int i = 0 ; i < constants.constants_num.refine_cycles ; i++)
 				{
@@ -225,6 +233,9 @@ TEST(DISABLED_RunSystemA,HandlesSystemA)
 		std::string folder_name = "../system_matrices/";
 		Constants::Base_Constants constants(input_file);
 
+		MeshGenerator::Base_MeshGenerator<dim>	Mesh_Info("grid",constants.constants_num.mesh_filename,constants.constants_num.mesh_type,
+							   							  constants.constants_num.problem_type,constants.constants_num.part_x,constants.constants_num.part_y,
+							   							  constants.constants_num.initial_refinement);
 
 	// 	// we construct a vector of all the system data being considered 
 		std::vector<Develop_System::System<dim>> System;
@@ -261,10 +272,10 @@ TEST(DISABLED_RunSystemA,HandlesSystemA)
 											&exact_solution_systemA,
 											constants.constants_sys.nEqn,
 											constants.constants_sys.nBC,
-											system_to_solve);
+											system_to_solve,Mesh_Info.triangulation);
 
 
-		fe_solver.run();
+		fe_solver.run(Mesh_Info);
 
 		AssertThrow(constants.constants_num.refine_cycles == 2,ExcMessage("The refine cycles requested for have not been implemented"));
 		AssertThrow(constants.constants_num.p == 1,ExcNotImplemented());
@@ -296,6 +307,11 @@ TEST(RunSystem,HandlesRunSystem)
 
 		std::string folder_name = "../system_matrices/";
 		Constants::Base_Constants constants(input_file);
+
+
+		MeshGenerator::Base_MeshGenerator<dim>	Mesh_Info("grid",constants.constants_num.mesh_filename,constants.constants_num.mesh_type,
+							   							  constants.constants_num.problem_type,constants.constants_num.part_x,constants.constants_num.part_y,
+							   							  constants.constants_num.initial_refinement);
 
 
 		std::cout << "Creating Systems....." << std::endl;
@@ -341,10 +357,10 @@ TEST(RunSystem,HandlesRunSystem)
 			&dummy,
 			constants.constants_sys.nEqn,
 			constants.constants_sys.nBC,
-			system_to_solve);
+			system_to_solve,Mesh_Info.triangulation);
 
 
-		fe_solver.run();
+		fe_solver.run(Mesh_Info);
 
 		
 

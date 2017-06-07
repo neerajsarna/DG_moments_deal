@@ -4,17 +4,16 @@
 	MeshGenerator::Base_MeshGenerator<dim>::mesh_internal_square_circular_cavity()
 	{
             triangulation.clear();
-            const double inner_radius = constants.inner_radius;
-            double outer_radius = constants.outer_radius;
+            const double inner_radius = 0.5;
+            double outer_radius = 2.0;
             const double length_in_z = 0.0;
             const int repetitions_in_z = 0;
             std::vector<unsigned int > repetitions(dim);
-            const unsigned int refinement_level = constants.initial_refinement;
 
 
 
-            repetitions[0] = constants.part_x;
-            repetitions[1] = constants.part_y;
+            repetitions[0] = part_x;
+            repetitions[1] = part_y;
 
             //The diagonal of the rectangle is the line joining p1 and p2
             GridGenerator::hyper_cube_with_cylindrical_hole (triangulation,
@@ -23,13 +22,13 @@
                                                             length_in_z, 
                                                             repetitions_in_z);
 
-            switch(constants.problem_type)
+            switch(problem_type)
                 {
                     case heat_conduction:
                     {
                         set_square_circular_cavity_bid();
                         triangulation.set_manifold(100,boundary);
-                        triangulation.refine_global(refinement_level);
+                        triangulation.refine_global(initial_refinement);
                         break;
                     }
                     case inflow_outflow:
@@ -67,6 +66,9 @@
         typename Triangulation<dim>::cell_iterator cell = triangulation.begin(),
                                                     endc = triangulation.end();
 
+        const double left_edge = -0.5;
+        const double right_edge = 0.5;
+
         for (; cell != endc ; cell++)
         {
                 for (unsigned int face = 0 ; face < GeometryInfo<dim>::faces_per_cell ; face++)
@@ -84,28 +86,28 @@
                     // the periodic faces get the id 100 and 101
                     // right edge
                     
-                    if (x_cord == constants.xr)
+                    if (x_cord == right_edge)
                     {
                       cell->face(face)->set_boundary_id(2);
                       square_edge = true;
                     }
 
                     // left edge
-                    if (x_cord == constants.xl)
+                    if (x_cord == left_edge)
                     {
                       square_edge = true;  
                       cell->face(face)->set_boundary_id(0);
                     }
 
                     // this is the bottom wall
-                    if (y_cord == constants.yb)
+                    if (y_cord == left_edge)
                     {
                         square_edge = true;
                       cell->face(face)->set_boundary_id(1);
                     }
 
                     // top edge, This is the second wall
-                     if (y_cord == constants.yt)
+                     if (y_cord == right_edge)
                      {
                          square_edge = true;
                         cell->face(face)->set_boundary_id(3);

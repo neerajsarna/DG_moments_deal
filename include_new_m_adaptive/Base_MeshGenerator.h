@@ -10,15 +10,25 @@ namespace MeshGenerator
 		public:
 			Base_MeshGenerator(
 							   const std::string &output_file_name,
-							   const constant_numerics &constants);
+							   const std::string &mesh_filename,
+							   const Mesh_type mesh_type,
+							   const Problem_type problem_type,
+							   const double part_x,
+							   const double part_y,
+							   const int initial_refinement);
         
+        	const Mesh_type mesh_type;
+        	const Problem_type problem_type;
+        	const double part_x;
+        	const double part_y;
+        	const int initial_refinement;
+
         	SphericalManifold<dim> boundary;
         	Triangulation<dim> triangulation;
         	GridIn<dim> gridin;
 
-			const constant_numerics constants;
-
 			const std::string output_file_name;
+			const std::string mesh_filename;
 			// print the info contained in the input triangulation
 			void print_mesh_info() const;
 
@@ -52,10 +62,20 @@ namespace MeshGenerator
 	template<int dim>
 	Base_MeshGenerator<dim>::Base_MeshGenerator(
 											    const std::string &output_file_name,
-											    const constant_numerics &constants)
+											    const std::string &mesh_filename,
+							   					const Mesh_type mesh_type,
+							   					const Problem_type problem_type,
+							   					const double part_x,
+							   					const double part_y,
+							   					const int initial_refinement)
 	:
-	constants(constants),
-	output_file_name(output_file_name)
+	mesh_type(mesh_type),
+	problem_type(problem_type),
+	part_x(part_x),
+	part_y(part_y),
+	initial_refinement(initial_refinement),
+	output_file_name(output_file_name),
+	mesh_filename(mesh_filename)
 	{
 		// first we develop the mesh
 		develop_mesh();
@@ -121,11 +141,11 @@ namespace MeshGenerator
 	{
 		// we do not refine if we are on the last cycle 
 	   if (present_cycle != total_cycles - 1)
-		switch (constants.mesh_type)
+		switch (mesh_type)
 		{
 			case ring:
 			{
-				switch(constants.problem_type)
+				switch(problem_type)
 				{
 					// heat conduction between the outer and the inner ring
 					case heat_conduction:
@@ -160,13 +180,13 @@ namespace MeshGenerator
 			case square_domain:
 			{
 
-				switch(constants.problem_type)
+				switch(problem_type)
 				{
 					case periodic:
 					{
                 	// Since for this case the boundary ids have to be prescribed again therefore we need
                 	// to generate the triangulation again.
-						mesh_internal_square(constants.part_x,constants.part_y + 100 * (present_cycle + 1));
+						mesh_internal_square(part_x,part_y + 100 * (present_cycle + 1));
 						break;
 					}
 
@@ -191,7 +211,7 @@ namespace MeshGenerator
 
 			case square_circular_cavity:
 			{
-				switch(constants.problem_type)
+				switch(problem_type)
 			    {
 				    case heat_conduction:
                     {
@@ -241,7 +261,7 @@ namespace MeshGenerator
 		bool loaded_mesh = false;
 
 		// if a problem involves inflow and outflow, we will simply use gmsh for meshing
-		if (constants.problem_type == inflow_outflow)
+		if (problem_type == inflow_outflow)
 		{
 			loaded_mesh = true;
 			read_gmsh();
@@ -249,7 +269,7 @@ namespace MeshGenerator
 
 		else 
 		{
-			if (constants.mesh_type == ring)
+			if (mesh_type == ring)
 			{
 				fflush(stdout);
 				std::cout << "Developing a ring " << std::endl;
@@ -257,13 +277,13 @@ namespace MeshGenerator
 				mesh_internal_ring();
 			}
 
-			if (constants.mesh_type == square_domain)
+			if (mesh_type == square_domain)
 			{
 				loaded_mesh = true;
-				mesh_internal_square(constants.part_x,constants.part_y);
+				mesh_internal_square(part_x,part_y);
 			}
 
-			if (constants.mesh_type == square_circular_cavity)
+			if (mesh_type == square_circular_cavity)
 			{
 				loaded_mesh = true;
 				mesh_internal_square_circular_cavity();
@@ -289,7 +309,7 @@ namespace MeshGenerator
 	{
 		    triangulation.clear();
   			gridin.attach_triangulation(triangulation);
-  			std::ifstream f(constants.mesh_filename);
+  			std::ifstream f(mesh_filename);
   			gridin.read_msh(f);
 	}
 

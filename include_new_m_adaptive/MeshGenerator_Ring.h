@@ -5,10 +5,10 @@
 	{
 		
 		Point<dim> center;
-		const double inner_radius = constants.inner_radius;	// default values 0.5
-		const double outer_radius = constants.outer_radius;	// default values 2.0
+		const double inner_radius = 0.5;	// default values 0.5
+		const double outer_radius = 2.0;	// default values 2.0
 		const unsigned int parts = 10;
-		const unsigned int refinement_level = constants.initial_refinement; // default value is 1
+		const unsigned int refinement_level = initial_refinement; // default value is 1
 
 		center(0) = 0.0;
 		center(1) = 0.0;
@@ -20,7 +20,7 @@
               						parts);
 
 
-		switch(constants.problem_type)
+		switch(problem_type)
 		{
 			// heat conduction between the outer and the inner ring
 			case heat_conduction:

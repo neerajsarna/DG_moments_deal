@@ -111,10 +111,11 @@ template<int dim>
                         ExactSolution::Base_ExactSolution<dim> *exact_solution,
                         const std::vector<int> &nEqn,
                         const std::vector<int> &nBC,
-                        const unsigned int system_to_solve);
+                        const unsigned int system_to_solve,
+                        Triangulation<dim> &triangulation);
 
 
-			void run();
+			void run(MeshGenerator::Base_MeshGenerator<dim> &Mesh_Info);
 
 	};
 
@@ -125,17 +126,18 @@ template<int dim>
                         ExactSolution::Base_ExactSolution<dim> *exact_solution,
                         const std::vector<int> &nEqn,
                         const std::vector<int> &nBC,
-                        const unsigned int system_to_solve)
+                        const unsigned int system_to_solve,
+                        Triangulation<dim> &triangulation)
 	:
 	Assembly_Manager_FE<dim>(output_file_name,
 					constants,equation_info,
-                	nEqn,nBC,system_to_solve),
+                	nEqn,nBC,system_to_solve,triangulation),
 	Run_Problem<dim>(exact_solution)
 	{}
 
 	template<int dim>
 	void 
-	Run_Problem_FE<dim>::run()
+	Run_Problem_FE<dim>::run(MeshGenerator::Base_MeshGenerator<dim> &Mesh_Info)
 	{
 			//
 	const unsigned int refine_cycles = this->constants.refine_cycles;
@@ -147,7 +149,7 @@ template<int dim>
 
 	for (unsigned int cycle = 0 ; cycle < refine_cycles ; cycle ++)
 	{
-		this->fe_data_structure.print_mesh_info();
+		Mesh_Info.print_mesh_info();
 
 
 	
@@ -162,10 +164,6 @@ template<int dim>
 		this->allocate_vectors(this->fe_data_structure.dof_handler,this->solution,this->system_rhs,this->residual);
 		timer.leave_subsection();
 
-		std::cout << "#CELLS " << this->fe_data_structure.triangulation.n_active_cells() << std::endl;
-		std::cout << "#DOFS " << this->fe_data_structure.dof_handler.n_dofs() << std::endl;
-		std::cout << "Memory by dof handler(Gb) " << 
-					this->fe_data_structure.dof_handler.memory_consumption()/pow(10,9)<< std::endl;	
 
 		// the following routine assembles
 		std::cout << "Assembling" << std::endl;
@@ -197,9 +195,9 @@ template<int dim>
 
 		// // now we compute the error due to computation
 		postproc.error_evaluation_QGauss(this->solution,
-										 this->fe_data_structure.triangulation.n_active_cells(),
+										 Mesh_Info.triangulation.n_active_cells(),
 										  this->error_per_itr[cycle],
-										GridTools::maximal_cell_diameter(this->fe_data_structure.triangulation),
+										GridTools::maximal_cell_diameter(Mesh_Info.triangulation),
 										this->convergence_table,
 										this->residual.l2_norm(),
 										this->fe_data_structure.mapping,
@@ -218,7 +216,7 @@ template<int dim>
 		// we sent the symmetrizer corresponding to the maximum moment system which we are solving for
 		// In this case, since we are only considering a single moment system therefore this value corresponds to zero.
 		
-		postproc.print_options(this->fe_data_structure.triangulation,this->solution,cycle,refine_cycles,
+		postproc.print_options(Mesh_Info.triangulation,this->solution,cycle,refine_cycles,
 							  this->convergence_table,
 							this->system_info.base_tensorinfo.S_half_inv,
 								this->fe_data_structure.dof_handler,this->nEqn);		
@@ -226,7 +224,7 @@ template<int dim>
 		timer.leave_subsection();
 
 		// Grid refinement should be done in the end.
-		this->fe_data_structure.refinement_handling(cycle,refine_cycles);
+		Mesh_Info.refinement_handling(cycle,refine_cycles);
 
 	}
 	}
@@ -243,18 +241,20 @@ template<int dim>
 						std::vector<Develop_System::System<dim>> &equation_info,
                         ExactSolution::Base_ExactSolution<dim> *exact_solution,
                         const std::vector<int> &nEqn,
-                        const std::vector<int> &nBC);
+                        const std::vector<int> &nBC,
+                        Triangulation<dim> &triangulation);
 
 			// different ways to adapt
 			// in the following routine we compute the deviation of the distribution function from
 			// the distribution function of the previous moment theory. For e.g. for the lowest moment theory
 			// we compute the deviation from the the maxwellian, for higher moment theory we compute the deviation from
 			// the previous one.
-			void run_distribution_deviation();
+			void run_distribution_deviation(MeshGenerator::Base_MeshGenerator<dim> &Mesh_Info);
 
 			// compare the solution obtained with a higher order reference solution and then refine
 			void run_higher_order_reference(DoFHandler<dim> &dof_handler_reference,
-											const Vector<double> &solution_reference);
+											const Vector<double> &solution_reference,
+											MeshGenerator::Base_MeshGenerator<dim> &Mesh_Info);
 
 	};
 
@@ -264,17 +264,18 @@ template<int dim>
 						std::vector<Develop_System::System<dim>> &equation_info,
                         ExactSolution::Base_ExactSolution<dim> *exact_solution,
                         const std::vector<int> &nEqn,
-                        const std::vector<int> &nBC)
+                        const std::vector<int> &nBC,
+                        Triangulation<dim> &triangulation)
 	:
 	Assembly_Manager_hp_FE<dim>(output_file_name,
 					constants,equation_info,
-                	nEqn,nBC),
+                	nEqn,nBC,triangulation),
 	Run_Problem<dim>(exact_solution)
 	{}
 
 	template<int dim>
 	void 
-	Run_Problem_hp_FE<dim>::run_distribution_deviation()
+	Run_Problem_hp_FE<dim>::run_distribution_deviation(MeshGenerator::Base_MeshGenerator<dim> &Mesh_Info)
 	{
 					// total number of refinement cycles in the physical space
 			const int refine_cycles_h = this->constants.refine_cycles;
@@ -289,7 +290,7 @@ template<int dim>
 			TimerOutput timer (std::cout, TimerOutput::summary,
                 	   TimerOutput::wall_times);
 
-			this->hp_fe_data_structure.print_mesh_info();
+			Mesh_Info.print_mesh_info();
 
 			// we only allow for one refinement cycle in the space dimension
 			AssertDimension(refine_cycles_h,1);
@@ -336,7 +337,7 @@ template<int dim>
 
 					this->hp_fe_data_structure.compute_distribution_deviation(this->ngp,
                                                 				this->nEqn,
-                                                				this->hp_fe_data_structure.triangulation,
+                                                				Mesh_Info.triangulation,
                                                 				this->solution,
                                                 				cycle_c);
 
@@ -349,9 +350,9 @@ template<int dim>
 
 					// // now we compute the error due to computation
 					postproc.error_evaluation_QGauss(this->solution,
-										 			this->hp_fe_data_structure.triangulation.n_active_cells(),
+										 			Mesh_Info.triangulation.n_active_cells(),
 										   			this->error_per_itr[cycle_h *(refine_cycles_c) + cycle_c],
-													GridTools::maximal_cell_diameter(this->hp_fe_data_structure.triangulation),
+													GridTools::maximal_cell_diameter(Mesh_Info.triangulation),
 													this->convergence_table,
 													this->residual.l2_norm(),
 													this->hp_fe_data_structure.mapping,
@@ -359,7 +360,7 @@ template<int dim>
 													this->nEqn);
 
 
-					postproc.print_options(this->hp_fe_data_structure.triangulation,this->solution,cycle_c,refine_cycles_c,
+					postproc.print_options(Mesh_Info.triangulation,this->solution,cycle_c,refine_cycles_c,
 										   this->convergence_table,
 										  this->system_info[this->hp_fe_data_structure.max_fe_index].base_tensorinfo.S_half_inv,
 										  this->hp_fe_data_structure.dof_handler,
@@ -382,7 +383,8 @@ template<int dim>
 	template<int dim>
 	void 
 	Run_Problem_hp_FE<dim>::run_higher_order_reference(DoFHandler<dim> &dof_handler_reference,
-													   const Vector<double> &solution_reference)
+													   const Vector<double> &solution_reference,
+													   MeshGenerator::Base_MeshGenerator<dim> &Mesh_Info)
 	{
 			// total number of refinement cycles in the physical space
 			const int refine_cycles_h = this->constants.refine_cycles;
@@ -458,9 +460,9 @@ template<int dim>
 
 					// // now we compute the error due to computation
 					postproc.error_evaluation_QGauss(this->solution,
-										 			this->hp_fe_data_structure.triangulation.n_active_cells(),
+										 			Mesh_Info.triangulation.n_active_cells(),
 										   			this->error_per_itr[cycle_h *(refine_cycles_c) + cycle_c],
-													GridTools::maximal_cell_diameter(this->hp_fe_data_structure.triangulation),
+													GridTools::maximal_cell_diameter(Mesh_Info.triangulation),
 													this->convergence_table,
 													this->residual.l2_norm(),
 													this->hp_fe_data_structure.mapping,
@@ -468,7 +470,7 @@ template<int dim>
 													this->nEqn);
 
 
-					postproc.print_options(this->hp_fe_data_structure.triangulation,this->solution,cycle_c,refine_cycles_c,
+					postproc.print_options(Mesh_Info.triangulation,this->solution,cycle_c,refine_cycles_c,
 										   this->convergence_table,
 										  this->system_info[this->hp_fe_data_structure.max_fe_index].base_tensorinfo.S_half_inv,
 										  this->hp_fe_data_structure.dof_handler,
@@ -499,7 +501,8 @@ template<int dim>
 						std::vector<Develop_System::System<dim>> &equation_info,
                         ExactSolution::Base_ExactSolution<dim> *exact_solution,
                         const std::vector<int> &nEqn,
-                        const std::vector<int> &nBC);
+                        const std::vector<int> &nBC,
+                        Triangulation<dim> &triangulation);
 
 
 			// the following function prescribes the initial conditions
@@ -512,7 +515,7 @@ template<int dim>
 			};
 
 			const double delta_t = 0.1;
-			void run();
+			void run(MeshGenerator::Base_MeshGenerator<dim> &Mesh_Info);
 			void compute_energy_bound();
 
 	};
@@ -523,11 +526,12 @@ template<int dim>
 						std::vector<Develop_System::System<dim>> &equation_info,
                         ExactSolution::Base_ExactSolution<dim> *exact_solution,
                         const std::vector<int> &nEqn,
-                        const std::vector<int> &nBC)
+                        const std::vector<int> &nBC,
+                        Triangulation<dim> &triangulation)
 	:
 	Assembly_Manager_FE<dim>(output_file_name,
 					constants,equation_info,
-                	nEqn,nBC),
+                	nEqn,nBC,triangulation),
 	Run_Problem<dim>(exact_solution)
 	{
 		// only works for finite volume scheme, does not have higher order time stepping scheme
@@ -587,7 +591,7 @@ template<int dim>
 
 	template<int dim>
 	void 
-	Run_Problem_FE_Time_Stepping<dim>::run()
+	Run_Problem_FE_Time_Stepping<dim>::run(MeshGenerator::Base_MeshGenerator<dim> &Mesh_Info)
 	{
 			//
 	const unsigned int refine_cycles = this->constants.refine_cycles;
@@ -602,7 +606,7 @@ template<int dim>
 
 
    	// we first assemble the differential operator
-   	this->fe_data_structure.print_mesh_info();
+   	Mesh_Info.print_mesh_info();
 
 
 
@@ -617,13 +621,6 @@ template<int dim>
    	this->allocate_vectors(this->fe_data_structure.dof_handler,this->solution,this->system_rhs,this->residual);
    	timer.leave_subsection();
 
-
-
-
-   	std::cout << "#CELLS " << this->fe_data_structure.triangulation.n_active_cells() << std::endl;
-   	std::cout << "#DOFS " << this->fe_data_structure.dof_handler.n_dofs() << std::endl;
-   	std::cout << "Memory by dof handler(Gb) " << 
-   	this->fe_data_structure.dof_handler.memory_consumption()/pow(10,9)<< std::endl;	
 
 		// the following routine assembles
    	std::cout << "Assembling" << std::endl;
@@ -676,7 +673,7 @@ template<int dim>
    		// new_solution = delta_t * system_rhs
    		if (counter%100 == 0 )
    			initial_energy = postproc.compute_energy(this->solution,
-   													 this->fe_data_structure.triangulation.n_active_cells(),
+   													 Mesh_Info.triangulation.n_active_cells(),
 													 this->fe_data_structure.mapping, 
 													 this->fe_data_structure.dof_handler,this->nEqn);
 
@@ -697,7 +694,7 @@ template<int dim>
 
    		if (counter %100 == 0)
    			final_energy = postproc.compute_energy(new_solution2,
-   															this->fe_data_structure.triangulation.n_active_cells(),
+   													Mesh_Info.triangulation.n_active_cells(),
 															this->fe_data_structure.mapping, 
 															this->fe_data_structure.dof_handler,
 															this->nEqn);
@@ -726,9 +723,9 @@ template<int dim>
 
 		// // now we compute the error due to computation
 		postproc.error_evaluation_QGauss(this->solution,
-										 this->fe_data_structure.triangulation.n_active_cells(),
+										 Mesh_Info.triangulation.n_active_cells(),
 										  this->error_per_itr[0],
-										GridTools::maximal_cell_diameter(this->fe_data_structure.triangulation),
+										GridTools::maximal_cell_diameter(Mesh_Info.triangulation),
 										this->convergence_table,
 										this->residual.l2_norm(),
 										this->fe_data_structure.mapping,
@@ -791,7 +788,8 @@ template<int dim>
                         ExactSolution::Base_ExactSolution<dim> *exact_solution,
                         const std::vector<int> &nEqn,
                         const std::vector<int> &nBC,
-                        const unsigned int system_to_solve);
+                        const unsigned int system_to_solve,
+                        Triangulation<dim> &triangulation);
 
 
 			void run();
@@ -805,11 +803,12 @@ template<int dim>
                         ExactSolution::Base_ExactSolution<dim> *exact_solution,
                         const std::vector<int> &nEqn,
                         const std::vector<int> &nBC,
-                        const unsigned int system_to_solve)
+                        const unsigned int system_to_solve,
+                        Triangulation<dim> &triangulation)
 	:
 	Assembly_Manager_FE<dim>(output_file_name,
 					constants,equation_info,
-                	nEqn,nBC,system_to_solve),
+                	nEqn,nBC,system_to_solve,triangulation),
 	Run_Problem<dim>(exact_solution)
 	{}
 
@@ -819,7 +818,7 @@ template<int dim>
 	{
 		TimerOutput timer (std::cout, TimerOutput::summary,
                 	   TimerOutput::wall_times);
-		
+
 		std::cout << "Developing reference solution........" << std::endl;
 		std::cout << "Distributing dof " << std::endl;
 		timer.enter_subsection("Dof Distribution");

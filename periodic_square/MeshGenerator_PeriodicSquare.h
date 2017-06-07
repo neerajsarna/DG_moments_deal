@@ -5,7 +5,10 @@
 	{
         typename Triangulation<dim>::cell_iterator cell = triangulation.begin(),
    						                            endc = triangulation.end();
-                                          
+                                 
+        const double left_edge = -0.5;
+        const double right_edge = 0.5;         
+
         for (; cell != endc ; cell++)
         {
                 for (unsigned int face = 0 ; face < GeometryInfo<dim>::faces_per_cell ; face++)
@@ -16,19 +19,19 @@
 
                     // the periodic faces get the id 100 and 101
                     // right edge
-                    if (x_cord == constants.xr)
+                    if (x_cord == right_edge)
                       cell->face(face)->set_boundary_id(100);
 
                     // left edge
-                    if (x_cord == constants.xl)
+                    if (x_cord == left_edge)
                       cell->face(face)->set_boundary_id(101);
 
                     // This is the first wall
-                    if (y_cord == constants.yb)
+                    if (y_cord == left_edge)
                       cell->face(face)->set_boundary_id(0);
 
                     // top edge, This is the second wall
-                    if (y_cord == constants.yt)
+                    if (y_cord == right_edge)
                       cell->face(face)->set_boundary_id(1);
                    }
         }

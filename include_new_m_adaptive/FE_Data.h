@@ -6,13 +6,13 @@ namespace FEM_Solver
     // the data structures needed for finite element computation
 	template<int dim>
 	class
-	fe_data:public MeshGenerator::Base_MeshGenerator<dim>
+	fe_data
 	{
 		public:
-			fe_data(
-							const std::string &output_file_name,
-							const constant_numerics &constants,
-						  const int nEqn);
+			fe_data(const std::string &output_file_name,
+					const constant_numerics &constants,
+					const int nEqn,
+                    Triangulation<dim> &triangulation);
 
 			FESystem<dim> finite_element;
             DoFHandler<dim> dof_handler;
@@ -20,27 +20,26 @@ namespace FEM_Solver
 	};
 
 	template<int dim>
-	fe_data<dim>::fe_data(
-							const std::string &output_file_name,
+	fe_data<dim>::fe_data(const std::string &output_file_name,
 							const constant_numerics &constants,
-						  const int nEqn)
+						  const int nEqn,
+                          Triangulation<dim> &triangulation)
 	:
-	MeshGenerator::Base_MeshGenerator<dim>(output_file_name,constants),
 	finite_element(FE_DGQ<dim>(constants.p),nEqn),
-	dof_handler(this->triangulation),
+	dof_handler(triangulation),
 	mapping(constants.mapping_order)
 	{
 	}
 
 	template<int dim>
 	class
-	hp_fe_data:public MeshGenerator::Base_MeshGenerator<dim>
+	hp_fe_data
 	{
 		public:
-			hp_fe_data(
-							const std::string &output_file_name,
-							const constant_numerics &constants,
-						  const std::vector<int> &nEqn);
+			hp_fe_data(const std::string &output_file_name,
+					   const constant_numerics &constants,
+					   const std::vector<int> &nEqn,
+                       Triangulation<dim> &triangulation);
 
 			    FE_DGQ<dim> fe_dg;
 
@@ -62,6 +61,7 @@ namespace FEM_Solver
                 // fe_index of the maximum moment system which has to be solved in the computation
                 const unsigned int max_fe_index;
                 const unsigned int max_equations;
+                const int fraction_refine;
 
 
                 void construct_block_structure(std::vector<int> &block_structure,const std::vector<int> &nEqn);
@@ -112,14 +112,15 @@ namespace FEM_Solver
 	hp_fe_data<dim>::hp_fe_data(
 							const std::string &output_file_name,
 							const constant_numerics &constants,
-						  const std::vector<int> &nEqn)
+						  const std::vector<int> &nEqn,
+                          Triangulation<dim> &triangulation)
 	:
-	MeshGenerator::Base_MeshGenerator<dim>(output_file_name,constants),
 	fe_dg(constants.p),
-	dof_handler(this->triangulation),
+	dof_handler(triangulation),
 	mapping_basic(constants.mapping_order),
     max_fe_index(nEqn.size()-1),
-    max_equations(nEqn[max_fe_index])
+    max_equations(nEqn[max_fe_index]),
+    fraction_refine(constants.fraction_refine)
     {
     		// construct the finite element collection for the present class
     	     construct_fe_collection(nEqn);
@@ -467,7 +468,7 @@ hp_fe_data<dim>::set_tolerance_distribution_deviation(const unsigned int cycle)
 
         // all the cells which have a deviation > min + frac(max - min) will be refined
 
-        const double frac = this->constants.fraction_refine;
+        const double frac = fraction_refine;
         const double max_error = matrix_opt.max_Vector(error_VelocitySpace_max_theory);
         const double min_error = matrix_opt.min_Vector(error_VelocitySpace_max_theory);
         const double tolerance = min_error + frac * (max_error - min_error) ;

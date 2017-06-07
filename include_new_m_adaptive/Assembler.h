@@ -23,7 +23,8 @@ namespace FEM_Solver
 						            std::vector<Develop_System::System<dim>> &equation_info,
                         const std::vector<int> &nEqn,
                         const std::vector<int> &nBC,
-                        const unsigned int system_to_solve);
+                        const unsigned int system_to_solve,
+                        Triangulation<dim> &triangulation);
 		     // finite element data structure 
      fe_data<dim> fe_data_structure;
 
@@ -80,10 +81,11 @@ namespace FEM_Solver
 											std::vector<Develop_System::System<dim>> &equation_info,
                         					const std::vector<int> &nEqn,
                         					const std::vector<int> &nBC,          
-                                  const unsigned int system_to_solve)
+                                  const unsigned int system_to_solve,
+                                  Triangulation<dim> &triangulation)
 	:
 	fe_data_structure(output_file_name,
-					         constants,nEqn[system_to_solve]),
+					         constants,nEqn[system_to_solve],triangulation),
   // we only save data corresponding to that system which is needed to be solved
 	nEqn(nEqn[system_to_solve]),
 	nBC(nBC[system_to_solve]),
@@ -568,7 +570,8 @@ namespace FEM_Solver
 						const constant_numerics &constants,
 						std::vector<Develop_System::System<dim>> &equation_info,
                         const std::vector<int> &nEqn,
-                        const std::vector<int> &nBC);
+                        const std::vector<int> &nBC,
+                        Triangulation<dim> &triangulation);
 
      		hp_fe_data<dim> hp_fe_data_structure;
 			const std::vector<int> nEqn;
@@ -641,10 +644,11 @@ namespace FEM_Solver
 											const constant_numerics &constants,
 											std::vector<Develop_System::System<dim>> &equation_info,
                         					const std::vector<int> &nEqn,
-                        					const std::vector<int> &nBC)
+                        					const std::vector<int> &nBC,
+                                  Triangulation<dim> &triangulation)
 	:
 	hp_fe_data_structure(output_file_name,
-					constants,nEqn),
+					constants,nEqn,triangulation),
 	nEqn(nEqn),
 	nBC(nBC),
 	constants(constants),

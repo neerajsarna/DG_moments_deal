@@ -8,11 +8,15 @@
             Point<dim> p2;
             std::vector<unsigned int > repetitions(dim);
 
-            p1(0) = constants.xl;
-            p1(1) = constants.yb;
+            const double left_edge = -0.5;
+            const double right_edge = 0.5;
 
-            p2(0) = constants.xr;
-            p2(1) = constants.yt;
+            // corners of the diagonal
+            p1(0) = left_edge;
+            p1(1) = left_edge;
+
+            p2(0) = right_edge;
+            p2(1) = right_edge;
 
             repetitions[0] = parts_x;
             repetitions[1] = parts_y;
@@ -23,9 +27,9 @@
                                                        p1,p2);
 
 
-            AssertThrow(constants.mesh_type == square_domain,ExcMessage("Incorrect mesh type"));
+            AssertThrow(mesh_type == square_domain,ExcMessage("Incorrect mesh type"));
 
-            switch(constants.problem_type)
+            switch(problem_type)
             {
                 case periodic:
                 {
@@ -70,6 +74,9 @@
         typename Triangulation<dim>::cell_iterator cell = triangulation.begin(),
                                                     endc = triangulation.end();
 
+        const double left_edge = -0.5;
+        const double right_edge = 0.5;
+
         for (; cell != endc ; cell++)
         {
                 for (unsigned int face = 0 ; face < GeometryInfo<dim>::faces_per_cell ; face++)
@@ -87,19 +94,19 @@
                     // the periodic faces get the id 100 and 101
                     // right edge
                     
-                    if (x_cord == constants.xr)
+                    if (x_cord == right_edge)
                       cell->face(face)->set_boundary_id(2);
 
                     // left edge
-                    if (x_cord == constants.xl)
+                    if (x_cord == left_edge)
                       cell->face(face)->set_boundary_id(0);
 
                     // this is the bottom wall
-                    if (y_cord == constants.yb)
+                    if (y_cord == left_edge)
                       cell->face(face)->set_boundary_id(1);
 
                     // top edge, This is the second wall
-                    if (y_cord == constants.yt)
+                    if (y_cord == right_edge)
                       cell->face(face)->set_boundary_id(3);
                    }
         }
