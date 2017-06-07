@@ -252,6 +252,10 @@ template<int dim>
 			// the previous one.
 			void run_distribution_deviation();
 
+			// compare the solution obtained with a higher order reference solution and then refine
+			void run_higher_order_reference(DoFHandler<dim> &dof_handler_reference,
+											const Vector<double> &solution_reference);
+
 	};
 
 	template<int dim>
@@ -375,6 +379,113 @@ template<int dim>
 
 	}
 
+	template<int dim>
+	void 
+	Run_Problem_hp_FE<dim>::run_higher_order_reference(DoFHandler<dim> &dof_handler_reference,
+													   const Vector<double> &solution_reference)
+	{
+			// total number of refinement cycles in the physical space
+			const int refine_cycles_h = this->constants.refine_cycles;
+			const int refine_cycles_c = this->constants.refine_cycles_c;
+
+			// total number of refinement cycles in the velocity space
+			// should be equal to one since we have implemented for any other.
+			// In the first cycle we solve for the lowest order moment method and in the next one we refine.
+			AssertDimension(this->constants.refine_cycles_c,2);
+
+			this->error_per_itr.resize(refine_cycles_c * refine_cycles_h);
+
+			Assert(this->constants.problem_type != periodic , ExcMessage("Use different routine for periodic boudnary conditions"));
+
+			TimerOutput timer (std::cout, TimerOutput::summary,
+                	   TimerOutput::wall_times);
+
+			this->hp_fe_data_structure.print_mesh_info();
+
+			// we only allow for one refinement cycle in the space dimension
+			AssertDimension(refine_cycles_h,1);
+
+			// we first do h-refinement
+			for (int cycle_h = 0 ; cycle_h < refine_cycles_h ; cycle_h ++)
+			{
+				for (int cycle_c = 0 ; cycle_c < refine_cycles_c ; cycle_c ++)
+				{
+					// allocate the index for every cell
+					timer.enter_subsection("Dof Distribution");
+					std::cout << "Dof distirubtion" << std::endl;
+					this->hp_fe_data_structure.allocate_fe_index_distribution_deviation(cycle_c);
+
+					// distribute the degrees of freedom for the different fe indices which have been distributed
+					this->distribute_dof_allocate_matrix(this->hp_fe_data_structure.dof_handler,
+														 this->hp_fe_data_structure.finite_element,
+														 this->global_matrix);
+
+
+					this->allocate_vectors(this->hp_fe_data_structure.dof_handler,this->solution,this->system_rhs,
+										   this->residual);
+
+					timer.leave_subsection();
+					Assert(this->constants.assembly_type == manuel,ExcMessage("Only manuel assembly allowed"));
+					
+					timer.enter_subsection("Assembly");
+					std::cout << "Assembly " << std::endl;
+					this->assemble_system_manuel();
+					timer.leave_subsection();
+
+					LinearSolver::LinearSolver linear_solver;
+					std::cout << "Linear Solver" << std::endl;
+					timer.enter_subsection("Linear Solver");
+					linear_solver.develop_pardiso_data(this->global_matrix);
+					this->residual = linear_solver.solve_with_pardiso(this->system_rhs,this->solution);
+
+					timer.leave_subsection();
+
+					std::cout << "post processing " << std::endl;
+					timer.enter_subsection("post processing");
+
+
+					this->hp_fe_data_structure.compute_error_comparitive(this->solution,
+                                          								 this->constants,
+                                          								dof_handler_reference,
+                                          								solution_reference);
+
+
+					PostProc::Base_PostProc<dim> postproc(this->constants,
+														 this->base_exactsolution);
+
+					postproc.reinit(this->hp_fe_data_structure.dof_handler);
+
+
+					// // now we compute the error due to computation
+					postproc.error_evaluation_QGauss(this->solution,
+										 			this->hp_fe_data_structure.triangulation.n_active_cells(),
+										   			this->error_per_itr[cycle_h *(refine_cycles_c) + cycle_c],
+													GridTools::maximal_cell_diameter(this->hp_fe_data_structure.triangulation),
+													this->convergence_table,
+													this->residual.l2_norm(),
+													this->hp_fe_data_structure.mapping,
+													this->hp_fe_data_structure.dof_handler,
+													this->nEqn);
+
+
+					postproc.print_options(this->hp_fe_data_structure.triangulation,this->solution,cycle_c,refine_cycles_c,
+										   this->convergence_table,
+										  this->system_info[this->hp_fe_data_structure.max_fe_index].base_tensorinfo.S_half_inv,
+										  this->hp_fe_data_structure.dof_handler,
+										  this->hp_fe_data_structure.VelocitySpace_error_per_cell,
+										  this->nEqn);
+
+
+
+
+				  timer.leave_subsection();
+
+				}	
+				
+				// Grid refinement should be done in the end.
+				//this->hp_fe_data_structure.refinement_handling(cycle_h,refine_cycles_h);			
+			}
+	}
 
 	// time stepping using meshworker
 	template<int dim>
@@ -666,5 +777,80 @@ template<int dim>
 
 	}
 
+
+	// through the following class we develop a reference solution 
+template<int dim>
+	class
+	Develop_Reference:public Assembly_Manager_FE<dim>,
+					public Run_Problem<dim>
+	{
+		public:
+			Develop_Reference(const std::string &output_file_name,
+						const constant_numerics &constants,
+						std::vector<Develop_System::System<dim>> &equation_info,
+                        ExactSolution::Base_ExactSolution<dim> *exact_solution,
+                        const std::vector<int> &nEqn,
+                        const std::vector<int> &nBC,
+                        const unsigned int system_to_solve);
+
+
+			void run();
+
+	};
+
+	template<int dim>
+	Develop_Reference<dim>::Develop_Reference(const std::string &output_file_name,
+						const constant_numerics &constants,
+						std::vector<Develop_System::System<dim>> &equation_info,
+                        ExactSolution::Base_ExactSolution<dim> *exact_solution,
+                        const std::vector<int> &nEqn,
+                        const std::vector<int> &nBC,
+                        const unsigned int system_to_solve)
+	:
+	Assembly_Manager_FE<dim>(output_file_name,
+					constants,equation_info,
+                	nEqn,nBC,system_to_solve),
+	Run_Problem<dim>(exact_solution)
+	{}
+
+	template<int dim>
+	void 
+	Develop_Reference<dim>::run()
+	{
+		TimerOutput timer (std::cout, TimerOutput::summary,
+                	   TimerOutput::wall_times);
+		
+		std::cout << "Developing reference solution........" << std::endl;
+		std::cout << "Distributing dof " << std::endl;
+		timer.enter_subsection("Dof Distribution");
+		this->distribute_dof_allocate_matrix(this->fe_data_structure.dof_handler,this->fe_data_structure.finite_element,this->global_matrix);
+		this->allocate_vectors(this->fe_data_structure.dof_handler,this->solution,this->system_rhs,this->residual);
+		timer.leave_subsection();
+
+		std::cout << "#CELLS " << this->fe_data_structure.triangulation.n_active_cells() << std::endl;
+		std::cout << "#DOFS " << this->fe_data_structure.dof_handler.n_dofs() << std::endl;
+		std::cout << "Memory by dof handler(Gb) " << 
+					this->fe_data_structure.dof_handler.memory_consumption()/pow(10,9)<< std::endl;	
+
+		// the following routine assembles
+		std::cout << "Assembling" << std::endl;
+		timer.enter_subsection("Assembly");
+		Assert(this->constants.assembly_type!= manuel,ExcMessage("Manuel Assembly not supported for this problem."));
+		this->assemble_system_meshworker();
+		timer.leave_subsection();
+
+		
+		// we initialize the object which will solve our system
+		// We do int the following way so as to keep the solver independent of all the other implementations.
+		// This makes the code highly reusable. So one can directly copy the following class and use it somewhere
+		// else if one wants to.
+
+		timer.enter_subsection("Linear Solver");
+		LinearSolver::LinearSolver linear_solver;
+		std::cout << "Preparing data for pardiso " << std::endl;
+		linear_solver.develop_pardiso_data(this->global_matrix);
+		this->residual = linear_solver.solve_with_pardiso(this->system_rhs,this->solution);
+		timer.leave_subsection();
+	}
 
 }

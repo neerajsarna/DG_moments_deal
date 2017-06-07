@@ -76,11 +76,21 @@ namespace FEM_Solver
                                                 Vector<double> &solution,
                                                 const int cycle);
 
+                void compute_error_comparitive(const Vector<double> &solution,
+                                               const constant_numerics &constants,
+                                               const DoFHandler<dim> &dof_handler_reference,
+                                               const Vector<double> &solution_reference);
+
               // we set the tolerance depending upon which moment theory has to be adapted
                 double set_tolerance_distribution_deviation(const unsigned int cycle);
 
-                
+                std::vector<double> set_tolerance_error_comparison();
+
                 void allocate_fe_index_distribution_deviation(const unsigned int present_cycle);
+
+                // allocation of fe index based upon the error obtained by comparision with a higher
+                // order moment method
+                void allocate_fe_index_error_comparison(const unsigned int present_cycle);
 
                 // compute the norm of the deviation of the distribution function from the local Maxwellian
                 Vector<double> VelocitySpace_error_per_cell;
@@ -90,11 +100,6 @@ namespace FEM_Solver
                 // of all the moment system are solved with the same polynomial degree.
                 std::vector<unsigned int> dofs_per_cell;
 
-
-
-            // tolerance for the residual, if we find that the residual in a particular cell is greater than this value
-            // then we refine it. 
-                std::vector<double> VelocitySpace_error_tolerance;
 
             // the total number of degrees of freedom per component will remain the same for every cell since we do not
             // have p-adaptivity presently
@@ -351,6 +356,90 @@ hp_fe_data<dim>::compute_distribution_deviation(const int ngp,
             
 }
 
+template<int dim>
+void 
+hp_fe_data<dim>::compute_error_comparitive(const Vector<double> &solution,
+                                          const constant_numerics &constants,
+                                          const DoFHandler<dim> &dof_handler_reference,
+                                          const Vector<double> &solution_reference)
+{
+      const QGauss<dim> quadrature_basic(constants.p + 1);
+
+      // integration on the volume
+      hp::QCollection<dim> quadrature;
+
+      for (unsigned long int i = 0 ; i <= max_fe_index ; i++)
+        quadrature.push_back(quadrature_basic);
+
+
+      const UpdateFlags update_flags               =  update_gradients
+                                                     | update_q_points
+                                                     | update_JxW_values
+                                                     | update_values,
+
+      face_update_flags          = update_values
+      | update_q_points
+      | update_JxW_values
+      | update_normal_vectors,
+      neighbor_face_update_flags = update_values;
+
+      hp::FEValues<dim>  hp_fe_v(this->mapping,
+                                 this->finite_element,
+                                 quadrature,
+                                 update_flags);
+
+
+      typename hp::DoFHandler<dim>::active_cell_iterator cell = this->dof_handler.begin_active(),
+                                                         endc = this->dof_handler.end();
+
+
+      const int total_ngp = quadrature_basic.size();
+      std::vector<double> Jacobians_interior(total_ngp);
+      std::vector<Point<dim>> Quad_points(total_ngp);
+      unsigned int counter = 0;
+
+      unsigned int component;
+        if (dim == 1)
+            component = constants.variable_map_1D.find(constants.error_variable)->second;
+
+        if (dim == 2)
+            component = constants.variable_map.find(constants.error_variable)->second;
+
+
+      for (; cell != endc ; cell++)
+      {
+                hp_fe_v.reinit(cell);
+                const FEValues<dim> &fe_v = hp_fe_v.get_present_fe_values();
+
+                // we now extract the quadrature points and the quadrature weights
+                Jacobians_interior = fe_v.get_JxW_values();
+                Quad_points = fe_v.get_quadrature_points();
+
+                // we now loop over all the quadrature points
+                for (unsigned int q = 0 ; q < total_ngp ; q++)
+                {
+                    Vector<double> solution_value(max_equations);
+                    Vector<double> reference_value(max_equations);
+
+                    VectorTools::point_value(this->dof_handler, solution, Quad_points[q],solution_value); 
+                    VectorTools::point_value(dof_handler_reference,
+                                            solution_reference, Quad_points[q],reference_value); 
+
+
+                    const double error_value = fabs(solution_value(component)-reference_value(component));
+
+                    // value of the function multiplied by the jacobian and the weights
+                    VelocitySpace_error_per_cell(counter) += pow(error_value,2) * Jacobians_interior[q];
+                }
+
+                // convert back into the L2 norm
+                VelocitySpace_error_per_cell(counter) = sqrt(VelocitySpace_error_per_cell(counter));
+
+                counter ++;
+
+      }
+}
+
 
 
 template<int dim>
@@ -388,6 +477,28 @@ hp_fe_data<dim>::set_tolerance_distribution_deviation(const unsigned int cycle)
 }
 
 template<int dim>
+std::vector<double>
+hp_fe_data<dim>::set_tolerance_error_comparison()
+{
+
+        const double max_error = matrix_opt.max_Vector(VelocitySpace_error_per_cell);
+        const double min_error = matrix_opt.min_Vector(VelocitySpace_error_per_cell);
+
+        // size is total number of systems + 1
+        std::vector<double> tolerance(max_fe_index+2);
+
+        tolerance[0] = min_error;
+        tolerance[max_fe_index + 1] = max_error;
+
+        // equipartition the error while creating tolerance bands
+        for (unsigned int i = 1 ; i < max_fe_index + 1 ; i++)
+            tolerance[i] = tolerance[i - 1] + (max_error-min_error)/(max_fe_index+1);
+
+        return(tolerance);
+}
+
+
+template<int dim>
 void 
 hp_fe_data<dim>::allocate_fe_index_distribution_deviation(const unsigned int present_cycle)
 {
@@ -421,6 +532,52 @@ hp_fe_data<dim>::allocate_fe_index_distribution_deviation(const unsigned int pre
                 fe_index_count[cell->active_fe_index()]++;      // keep a count of the number of systems in the domain
                 counter ++;
             }
+
+        }
+
+
+
+    for (unsigned long int i = 0 ; i < fe_index_count.size() ; i++)
+        std::cout << "Fe Index: " << i << " Times: " << fe_index_count[i] << std::endl;
+
+}
+
+template<int dim>
+void 
+hp_fe_data<dim>::allocate_fe_index_error_comparison(const unsigned int present_cycle)
+{
+        typename hp::DoFHandler<dim>::active_cell_iterator cell = dof_handler.begin_active(), 
+                                                           endc = dof_handler.end();   
+
+
+        int counter = 0;
+        std::vector<int> fe_index_count(max_fe_index+1);
+
+        if (present_cycle == 0)
+            for(; cell != endc ; cell++)
+            {
+                cell->set_active_fe_index(0);
+                fe_index_count[cell->active_fe_index()]++;
+            }
+
+        else
+        {
+            const std::vector<double> tolerance = set_tolerance_error_comparison();
+
+            AssertDimension(tolerance.size(),max_equations);
+            for(; cell != endc ; cell++)
+             for (unsigned int i = 0 ; i < tolerance.size() - 1 ; i++)
+                if ( fabs(VelocitySpace_error_per_cell(counter) - tolerance[i]) >= 1e-16 &&
+                     fabs(VelocitySpace_error_per_cell(counter) - tolerance[i + 1]) <= 1e-16)
+                {
+                    AssertIndexRange(i,max_fe_index);
+                    cell->set_active_fe_index(i);
+                    fe_index_count[cell->active_fe_index()]++;      // keep a count of the number of systems in the domain
+                    counter ++;
+                }
+
+
+            
 
         }
 
