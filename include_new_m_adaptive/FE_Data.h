@@ -364,6 +364,10 @@ hp_fe_data<dim>::compute_error_comparitive(const Vector<double> &solution,
                                           const DoFHandler<dim> &dof_handler_reference,
                                           const Vector<double> &solution_reference)
 {
+      std::cout << "Computing error from a higher order moment theory" << std::endl;
+      fflush(stdout);
+      VelocitySpace_error_per_cell.reinit(dof_handler.get_triangulation().n_active_cells());
+
       const QGauss<dim> quadrature_basic(constants.p + 1);
 
       // integration on the volume
@@ -384,8 +388,8 @@ hp_fe_data<dim>::compute_error_comparitive(const Vector<double> &solution,
       | update_normal_vectors,
       neighbor_face_update_flags = update_values;
 
-      hp::FEValues<dim>  hp_fe_v(this->mapping,
-                                 this->finite_element,
+      hp::FEValues<dim>  hp_fe_v(mapping,
+                                 finite_element,
                                  quadrature,
                                  update_flags);
 
@@ -406,6 +410,8 @@ hp_fe_data<dim>::compute_error_comparitive(const Vector<double> &solution,
         if (dim == 2)
             component = constants.variable_map.find(constants.error_variable)->second;
 
+      FILE *fp;
+      fp = fopen("error_velocity_space","w+");
 
       for (; cell != endc ; cell++)
       {
@@ -417,7 +423,7 @@ hp_fe_data<dim>::compute_error_comparitive(const Vector<double> &solution,
                 Quad_points = fe_v.get_quadrature_points();
 
                 // we now loop over all the quadrature points
-                for (unsigned int q = 0 ; q < total_ngp ; q++)
+                for (int q = 0 ; q < 1 ; q++)
                 {
                     Vector<double> solution_value(max_equations);
                     Vector<double> reference_value(max_equations);
@@ -430,15 +436,23 @@ hp_fe_data<dim>::compute_error_comparitive(const Vector<double> &solution,
                     const double error_value = fabs(solution_value(component)-reference_value(component));
 
                     // value of the function multiplied by the jacobian and the weights
-                    VelocitySpace_error_per_cell(counter) += pow(error_value,2) * Jacobians_interior[q];
+                    //VelocitySpace_error_per_cell(counter) += pow(error_value,2) * Jacobians_interior[q];
+                    VelocitySpace_error_per_cell(counter) = error_value;
                 }
 
                 // convert back into the L2 norm
-                VelocitySpace_error_per_cell(counter) = sqrt(VelocitySpace_error_per_cell(counter));
+                //VelocitySpace_error_per_cell(counter) = sqrt(VelocitySpace_error_per_cell(counter));
 
+                fprintf(fp, "%f %f %f\n",cell->center()(0),cell->center()(1),
+                                        VelocitySpace_error_per_cell(counter));
                 counter ++;
 
       }
+
+
+
+      fclose(fp);
+
 }
 
 

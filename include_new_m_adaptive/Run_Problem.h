@@ -390,10 +390,6 @@ template<int dim>
 			const int refine_cycles_h = this->constants.refine_cycles;
 			const int refine_cycles_c = this->constants.refine_cycles_c;
 
-			// total number of refinement cycles in the velocity space
-			// should be equal to one since we have implemented for any other.
-			// In the first cycle we solve for the lowest order moment method and in the next one we refine.
-			AssertDimension(this->constants.refine_cycles_c,2);
 
 			this->error_per_itr.resize(refine_cycles_c * refine_cycles_h);
 
@@ -402,7 +398,7 @@ template<int dim>
 			TimerOutput timer (std::cout, TimerOutput::summary,
                 	   TimerOutput::wall_times);
 
-			this->hp_fe_data_structure.print_mesh_info();
+			Mesh_Info.print_mesh_info();
 
 			// we only allow for one refinement cycle in the space dimension
 			AssertDimension(refine_cycles_h,1);
@@ -412,6 +408,8 @@ template<int dim>
 			{
 				for (int cycle_c = 0 ; cycle_c < refine_cycles_c ; cycle_c ++)
 				{
+					std::cout << "M refinement Cycle.." << cycle_c <<  std::endl;
+
 					// allocate the index for every cell
 					timer.enter_subsection("Dof Distribution");
 					std::cout << "Dof distirubtion" << std::endl;
@@ -792,7 +790,7 @@ template<int dim>
                         Triangulation<dim> &triangulation);
 
 
-			void run();
+			void run(MeshGenerator::Base_MeshGenerator<dim> &Mesh_Info);
 
 	};
 
@@ -814,27 +812,28 @@ template<int dim>
 
 	template<int dim>
 	void 
-	Develop_Reference<dim>::run()
+	Develop_Reference<dim>::run(MeshGenerator::Base_MeshGenerator<dim> &Mesh_Info)
 	{
 		TimerOutput timer (std::cout, TimerOutput::summary,
                 	   TimerOutput::wall_times);
 
+
 		std::cout << "Developing reference solution........" << std::endl;
+		Mesh_Info.print_mesh_info();
+
 		std::cout << "Distributing dof " << std::endl;
 		timer.enter_subsection("Dof Distribution");
 		this->distribute_dof_allocate_matrix(this->fe_data_structure.dof_handler,this->fe_data_structure.finite_element,this->global_matrix);
 		this->allocate_vectors(this->fe_data_structure.dof_handler,this->solution,this->system_rhs,this->residual);
 		timer.leave_subsection();
 
-		std::cout << "#CELLS " << this->fe_data_structure.triangulation.n_active_cells() << std::endl;
-		std::cout << "#DOFS " << this->fe_data_structure.dof_handler.n_dofs() << std::endl;
-		std::cout << "Memory by dof handler(Gb) " << 
-					this->fe_data_structure.dof_handler.memory_consumption()/pow(10,9)<< std::endl;	
+		std::cout << "#Dofs " << this->fe_data_structure.dof_handler.n_dofs() << std::endl;
 
 		// the following routine assembles
 		std::cout << "Assembling" << std::endl;
 		timer.enter_subsection("Assembly");
-		Assert(this->constants.assembly_type!= manuel,ExcMessage("Manuel Assembly not supported for this problem."));
+
+		//The main assembly type can be any but we only use meshworker
 		this->assemble_system_meshworker();
 		timer.leave_subsection();
 
