@@ -506,15 +506,13 @@ namespace EquationGenerator
 	::build_Projector(const Tensor<1,2> &normal_vector)
 	{
 
-		const double nx = normal_vector[0];
-		const double ny = normal_vector[1];
 
 		Assert(base_tensorinfo.varIdx.rows() != 0 || base_tensorinfo.varIdx.cols() !=0 ,
 				ExcMessage("Base tensor info not initialized"));
 
 		Assert(initialized_system,ExcMessage("You are trying to access Projector development without initializing the system. Please initialize the system first."));
 
-		return(base_tensorinfo.reinit_global_2D(nx,ny));
+		return(base_tensorinfo.reinit_global(normal_vector));
 	}
 
 	// specialization for the 1D case
@@ -524,9 +522,8 @@ namespace EquationGenerator
 	::build_Projector(const Tensor<1,1> &normal_vector)
 	{
 
-		const double nx = normal_vector[0];
 
-		return(base_tensorinfo.reinit_global_1D(nx));
+		return(base_tensorinfo.reinit_global(normal_vector));
 	}
 
 
@@ -543,7 +540,7 @@ namespace EquationGenerator
 		Assert(base_tensorinfo.varIdx.rows() != 0 || base_tensorinfo.varIdx.cols() !=0 ,
 				ExcMessage("Base tensor info not initialized"));
 
-		return(base_tensorinfo.reinit_Invglobal_2D(nx,ny));
+		return(base_tensorinfo.reinit_Invglobal(normal_vector));
 	}
 
 	// specialization for the 1D case
@@ -554,7 +551,7 @@ namespace EquationGenerator
 	{
 
 		const double nx = normal_vector[0];
-		return(base_tensorinfo.reinit_Invglobal_1D(nx));
+		return(base_tensorinfo.reinit_Invglobal(normal_vector));
 	}
 
 
@@ -568,8 +565,6 @@ namespace EquationGenerator
 		Full_matrix Aminus;
 		Aminus.resize(this->nEqn,this->nEqn);
 
-		const double nx = normal_vector[0];
-		const double ny = normal_vector[1];
 
 		Assert(this->Aminus_1D.rows() != 0 || this->Aminus_1D.cols() != 0,
 			  ExcMessage("Aminus_1D has not been built yet"));
@@ -577,9 +572,9 @@ namespace EquationGenerator
 		Assert(base_tensorinfo.varIdx.rows() != 0 || base_tensorinfo.varIdx.cols() !=0 ,
 				ExcMessage("Base tensor info not initialized"));
 
-		return(base_tensorinfo.reinit_Invglobal_2D(nx,ny) 
+		return(base_tensorinfo.reinit_Invglobal(normal_vector) 
 			   * this->Aminus_1D 
-			   * base_tensorinfo.reinit_global_2D(nx,ny));
+			   * base_tensorinfo.reinit_global(normal_vector));
 	}
 
 	// specialization for the 1D case
@@ -598,9 +593,9 @@ namespace EquationGenerator
 		// the numerical flux matrix is computed with the help of the matrix 
 		// of the original system. The symmetrizer has been multiplied to the projector itself therefore 
 		// we do not see an explicit multiplication by the symmetrizer. 
-		return(base_tensorinfo.reinit_Invglobal_1D(nx) 
+		return(base_tensorinfo.reinit_Invglobal(normal_vector) 
 			   * this->Aminus_1D 
-			   * base_tensorinfo.reinit_global_1D(nx));
+			   * base_tensorinfo.reinit_global(normal_vector));
 	}
 
 

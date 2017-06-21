@@ -8,10 +8,16 @@ set(CMAKE_DEPENDS_CHECK_CXX
   )
 set(CMAKE_CXX_COMPILER_ID "Clang")
 
+# Preprocessor definitions for this target.
+set(CMAKE_TARGET_DEFINITIONS_CXX
+  "DEBUG"
+  "TBB_DO_ASSERT=1"
+  "TBB_USE_DEBUG"
+  )
+
 # The include file search paths:
 set(CMAKE_CXX_TARGET_INCLUDE_PATH
   "../../include_new_m_adaptive"
-  "../include_tests_G20"
   "../Test_Generic"
   "../../periodic_square"
   "/usr/local/include/eigen"

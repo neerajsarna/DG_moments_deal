@@ -1,41 +1,17 @@
-#include "include_deal.h"
 #include "gtest/gtest.h"
+
+#include "include_deal.h"
 #include "EigenSetup.h"
 #include "basic_data_structures.h"
-#include "basic_routines.h"
 #include "parse_command_line.h"
 #include "mkl.h"
+#include "basic_routines.h"
 
+// The input file containing the computational parameters
+// One file for the computational parameters and the other for the details regarding the system
 std::vector<std::string> input_file;
 
-// core routines
-#include "Base_Constants.h"
-#include "Base_TensorInfo.h"
-#include "Base_ForceType.h"
-#include "Base_MatrixOpt.h"
-
-#include "Base_BCrhs.h"
-#include "BCrhs_systemA.h"
-
-#include "Base_BoundaryHandler.h"
-#include "Base_EquationGenerator.h"
-#include "Develop_System.h"
-
-
-#include "Base_ExactSolution.h"
-#include "ExactSolution_Dummy.h"
-#include "ExactSolution_SystemA.h"
-
-#include "LinearSolver.h"
-#include "Base_MeshGenerator.h"
-#include "Base_PeriodicityHandler.h"
-#include "Base_PostProc.h"
-#include "Base_NumericalIntegration.h"
-#include "FE_Data.h"
-#include "Assembler.h"
-#include "Run_Problem.h"
-
-#include "ExactSolution_PoissonHeat.h"
+#include "include_files.h"
 //#include "SystemA.h"
 
 // certain generic tests which have to be performed independent of the system
@@ -48,7 +24,7 @@ std::vector<std::string> input_file;
 //#include "Test_Solver_m_adaptive.h"
 //#include "Test_Assembly.h"
 //#include "Test_Assembly_MAdaptive.h"
-#include "Test_Run.h"
+//#include "Test_Run.h"
 //#include "Test_ResidualCompution.h"
 //#include "Test_Projection.h"
 
@@ -66,7 +42,7 @@ std::vector<std::string> input_file;
 //#include "Test_SquareGrid.h"
 //  #include "Test_CrsFormat.h"
  //#include "Test_Production.h"
-// #include "Test_ProjectorData.h"
+ #include "Test_ProjectorData.h"
 // #include "Test_SymmetrizerData.h"
 
 int main(int argc,char **argv)

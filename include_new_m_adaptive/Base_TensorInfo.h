@@ -45,10 +45,8 @@ namespace TensorInfo
 			unsigned int compute_max_tensorial_degree();
 
 			// computes the number of 2D components for a particular tensorial degree
-			unsigned int components_2D(const unsigned int tensorial_degree);
+			unsigned int components(const unsigned int tensorial_degree);
 
-			// computes the number of 3D components for a particular tensorial degree
-			unsigned int components_3D(const unsigned int tensor_degree);
 
 			// computes the total number of equations for a given Ntensors
 			unsigned int compute_nEqn(MatrixUI &free_indices);
@@ -63,23 +61,19 @@ namespace TensorInfo
 			// idx is the diagonal position at which P has to be placed at Sp
 			void SpBlock(const unsigned int idx,const Full_matrix &P,Sparse_matrix &Sp);
 
-			void reinit_local_2D(const double nx,const double ny,
+			void reinit_local(const double nx,const double ny,const double nz,
+							  const double tx,const double ty,const double tz,
+							  const double rx,const double ry,const double rz,
 							  std::vector<projector_data> &tensor_project);
 
-			// same as above but for inverse projector
-			void reinit_Invlocal_2D(const double nx,const double ny,
-				   				std::vector<projector_data> &tensor_project);
-
 			// development of projector matrix for the 2D case
-			Sparse_matrix reinit_global_2D(const double nx,const double ny);
-			Sparse_matrix reinit_global_1D(const double nx);
-
+			Sparse_matrix reinit_global(const Tensor<1,dim> &normal_vector);
+			
 			// inverse of the projector matrix
-			Sparse_matrix reinit_Invglobal_2D(const double nx,const double ny);
-			Sparse_matrix reinit_Invglobal_1D(const double nx);
-
-			// develops the mirror of a normal vector
-			Tensor<1,dim> mirror(const Tensor<1,dim,double> normal_vector) const;
+			Sparse_matrix reinit_Invglobal(const Tensor<1,dim> &normal_vector);
+			
+			// computes the tangential vectors for a particular given normal vector
+			std::vector<Tensor<1,dim>> reinit_tangential_vectors(const Tensor<1,dim> &normal_vector);
 
 			// routines to generate the symmetrizer
 			Sparse_matrix S_half;
@@ -87,31 +81,17 @@ namespace TensorInfo
 			Sparse_matrix S_half_inv;
 
 			// create symmetrizer for the system in the 2D setting
-			void create_Symmetrizer_2D();
-			void reinit_symmetrizer_2D(std::vector<projector_data> &tensor_Invsymmetrizer);
+			void create_Symmetrizer();
+			void reinit_symmetrizer(std::vector<projector_data> &tensor_symmetrizer);
 
 			// create inverse symmetrizer for the system in the 2D setting
-			void create_InvSymmetrizer_2D();
-			void reinit_Invsymmetrizer_2D(std::vector<projector_data> &tensor_Invsymmetrizer);
-			
-			// create symmetrizer for the system in the 2D setting
-			void create_Symmetrizer_1D();
-		
-			// create inverse symmetrizer for the system in the 2D setting
-			void create_InvSymmetrizer_1D();
-			
+			void create_InvSymmetrizer();
+			void reinit_Invsymmetrizer(std::vector<projector_data> &tensor_Invsymmetrizer);
 
-			// compute the number of equations with the help of Ntensors
-			// // functions not presently needed
-			// std::vector<unsigned int> odd_id_global;
-			// Full_matrix IDXtrf(const unsigned int tensor_degree);
-			// bool is_Odd(const unsigned int value);
-			// bool is_Odd(const double value);
-
-			// void odd_id_local(const Full_matrix &IDXtrf,std::vector<unsigned int> &odd_id_local);
-			// std::vector<unsigned int>  generate_ID_odd();
+			// symmetrizer for a particular tensor
+			std::vector<projector_data> tensor_symmetrizer;
+			std::vector<projector_data> tensor_Invsymmetrizer;
 			
-
 	};
 
 	template<int dim>
@@ -129,14 +109,15 @@ namespace TensorInfo
 
 	// initialize the class depending upon the system
 	// specialization for the 2D case.
-	template<>
+	template<int dim>
 	void
-	Base_TensorInfo<2>::reinit()
+	Base_TensorInfo<dim>::reinit()
 	{
 	
-		// this variable is similar to the mathematica file
+		// this variable is similar to the mathematica file and is computed in a similar way
 		varIdx.resize(Ntensors,2);
 		free_indices.resize(Ntensors,1);
+
 		Assert(max_tensorial_degree == 11,ExcNotImplemented());
 
 		// generate the varIdx, similar to the Mathematica file
@@ -146,34 +127,17 @@ namespace TensorInfo
 		else
 			varIdx = generate_varIdx();
 
-		Assert(compute_max_tensorial_degree() <= max_tensorial_degree,ExcMessage("Projector and Symmetrizer data not available for this tensorial degree"));
+		//Assert(compute_max_tensorial_degree() <= max_tensorial_degree,ExcMessage("Projector and Symmetrizer data not available for this tensorial degree"));
 
 		// now we generate the number of components corresponding to all the free indices
 		free_indices = generate_num_free_indices(varIdx);
 
 		// we also generate the cumilative free indices for the development of projector
 		free_indices_cumilative = generate_cumilative_index(free_indices);
-		// id_odd_global = generate_ID_odd();
-
-
-		create_Symmetrizer_2D();
-		create_InvSymmetrizer_2D();
+		
+		create_Symmetrizer();
+		create_InvSymmetrizer();
 	}
-
-	// specialization for the 1D case
-	template<>
-	void
-	Base_TensorInfo<1>::reinit()
-	{
-		// we now create the symmetrizers for the 1D system which are simply identity matrices since the 
-		// system in by default symmetric
-		create_Symmetrizer_1D();
-
-		// creation of the inverse of the symmetrizer matrix
-		create_InvSymmetrizer_1D();
-	}
-
-
 
 
 	template<int dim>
@@ -259,20 +223,10 @@ namespace TensorInfo
 	template<int dim>
 	unsigned int 
 	Base_TensorInfo<dim>
-	::components_2D(const unsigned int tensor_degree)
+	::components(const unsigned int tensor_degree)
 	{
-		return(tensor_degree + 1);
+		return((dim-1) * tensor_degree + 1);
 	}
-
-	// computes the number of free components of a tensor of a particular degree in 3D
-	template<int dim>
-	unsigned int
-	Base_TensorInfo<dim>
-	::components_3D(const unsigned int tensor_degree)
-	{
-		return(2 * tensor_degree + 1);
-	}
-
 
 	template<int dim>
 	unsigned int 
@@ -282,115 +236,7 @@ namespace TensorInfo
 		Assert(dim > 1,ExcMessage("Incorrect dimension"));
 		return(free_indices.sum());
 	}
-	// template<int dim>
-	// Full_matrix
-	// Base_TensorInfo<dim>
-	// ::IDXtrf(const unsigned int tensor_degree)
-	// {
-	// 	// total number of components in a trace free tensor of tensor_degree
-	// 	const unsigned int num_components = components_3D(tensor_degree);
 
-	// 	// we store the indices of the tensor
-	// 	Full_matrix result(num_components,3);
-
-	// 	// the loop is from o to tensor_degree
-	// 	unsigned int count = 0;
-
-	// 	for (unsigned int i = 0 ; i <= tensor_degree  ; i ++)
-	// 		for (unsigned int j = 0 ; j <= std::min(i,1) ; j++ )
-	// 		{
-	// 			result(count) << tensor_degree - i, i - j, j ;
-	// 			count ++;
-	// 		}
-	// }
-
-	// // check whether a number is even or odd
-	// template<int dim>
-	// bool
-	// Base_TensorInfo<dim>
-	// ::is_Odd(const unsigned int value)
-	// {
-	// 	if (value %2.0 == 0)
-	// 		return(false);
-
-	// 	if ( value %2.0 != 0)
-	// 		return(true);
-	// }
-
-	// // check whether a double is even or odd
-	// template<int dim>
-	// bool
-	// Base_TensorInfo<dim>
-	// ::is_Odd(const double value)
-	// {
-	// 	if (value %2 == 0)
-	// 		return(false);
-
-	// 	if ( value %2 != 0)
-	// 		return(true);
-	// }
-	// // the following function accepts the IDXtrf corresponding to a particular tensorial degree
-	// // and then return the id of local odd variables
-	// // Description of the input parameters:
-	// // 1. IDXtrf
-	// // 2. vector to be assigned
-	// template<int dim>
-	// void 
-	// Base_TensorInfo<dim>
-	// ::odd_id_local(const Full_matrix &IDXtrf,std::vector<unsigned int> &odd_id_local)
-	// {
-	// 	const unsigned int num_components = IDXtrf.rows();
-
-	// 	for (unsigned int i = 0 ; i < num_components ; i ++)
-	// 		if(is_Odd(IDXtrf(i,0)))
-	// 			odd_id_local.push_back(i);
-
-	// }
-
-	// // we compute the indices of the odd variables for 3D
-	// template<3>
-	// std::vector<unsigned int> 
-	// Base_TensorInfo<3>
-	// ::generate_ID_odd()
-	// {
-	// 	// is dependent upon the vaule of varIdx therefore need the following assertion
-	// 	Assert(varIdx.rows() != 0,ExcNotInitialized());
-	// 	Assert(varIdx.cols() != 0,ExcNotInitialized());
-		
-	// 	// in the following variable we store the global id of the odd variables
-	// 	std::vector<unsigned int> odd_id_global;
-	// 	// since we always need the total number of components which have been computed in the past 
-	// 	const unsigned int cumilative_component = 0;
-
-	// 	// now we loop over all the tensors we have in the system
-	// 	for (unsigned int i = 0 ; i < Ntensors ; i ++)
-	// 	{
-	// 		// the tensorial degree of the present tensor being considered.
-	// 		const unsigned int tensorial_degree = varIdx(i,1);
-
-	// 		// the total number of components of the present tensor
-	// 		const unsigned int num_components_local = components_3D(tensor_degree);
-
-	// 		// the local id of the odd variables i.e. id of the odd variables in the present tensor
-	// 		std::vector<unsigned int> odd_id_local;
-
-	// 		// computation of the present local odd id
-	// 		odd_id_local(IDXtrf(tensorial_degree),odd_id_local);
-
-	// 		// loop over all the components of odd_id_local
-	// 		for (unsigned int j = 0 ; j < odd_id_local.size() ; j++)
-	// 			odd_id_global.push_back(cumilative_component + odd_id_global[j]);
-
-	// 		// update the cumilative component
-	// 		cumilative_component += num_components_local;
-	// 	}
-
-	// 	return(odd_id_global);
-
-	// }
-
-	// computes the total number of free indices corresponding to a tensorial degree.
-	// components = (dim - 1) * n + 1
 	template<int dim>
 	MatrixUI
 	Base_TensorInfo<dim>
@@ -430,6 +276,8 @@ namespace TensorInfo
 		return(result);
 	}
 
+	// give a location defined by idx, Place the full matrix P at the location 
+	// (idx,idx) in the sparse matrix Sp
 	template<int dim>
 	void
 	Base_TensorInfo<dim>
@@ -442,86 +290,109 @@ namespace TensorInfo
 	}
 
 	// allocate memory for individual tensors
-	template<>
+	template<int dim>
 	void 
-	Base_TensorInfo<2>
+	Base_TensorInfo<dim>
 	::allocate_tensor_memory(std::vector<projector_data> &tensor_project)
 	{
 		// to make sure that tensor project has been initialized
 		AssertDimension(tensor_project.size(),max_tensorial_degree + 1);
 
+		// for every tensorial degree we allocate the memory
 		for (unsigned int i = 0 ; i < max_tensorial_degree + 1 ; i ++)
-			tensor_project[i].P.resize(components_2D(i),components_2D(i));
+			tensor_project[i].P.resize(components(i),components(i));
 	}
-
-	// now we allocate values to the various tensor project depending upon the normal vector
-
-// same as above but for the inverse of the projector
-
-
 
 	template<>
-	Tensor<1,2>
-	Base_TensorInfo<2>
-	::mirror(const Tensor<1,2,double> normal_vector)const
+	std::vector<Tensor<1,1>>
+	Base_TensorInfo<1>
+	::reinit_tangential_vectors(const Tensor<1,1,double> &normal_vector )
 	{
-		double nx = normal_vector[0], ny = normal_vector[1];
-		Tensor<1,2,double> mirrored_vector;
-		mirrored_vector[0] = nx;
-		mirrored_vector[1] = -ny;
+		// for any given situation there are two tangential vectors
+		std::vector<Tensor<1,1>> tangential_vectors(2);
 
-		return mirrored_vector;
+		// for the 1D case there is no sense of a tangential direction
+		for (int i = 0 ; i < 2 ; i ++)
+			tangential_vectors[i][0] = 0.0;
+
+		return(tangential_vectors);
 	}
+
+	template<>
+	std::vector<Tensor<1,2>>
+	Base_TensorInfo<2>
+	::reinit_tangential_vectors(const Tensor<1,2,double> &normal_vector)
+	{
+		const double nx = normal_vector[0];
+		const double ny = normal_vector[1];
+		const double tx = -ny;
+		const double ty = nx;
+
+		std::vector<Tensor<1,2>> tangential_vectors(2);
+
+		tangential_vectors[0][0] = tx;
+		tangential_vectors[0][1] = ty;
+
+		// for the 2D case, there is no notion of a third normal direction
+		tangential_vectors[1][0] = 0.0;
+		tangential_vectors[1][1] = 0.0;
+
+		return(tangential_vectors);
+	}
+
+	template<>
+	std::vector<Tensor<1,3>>
+	Base_TensorInfo<3>
+	::reinit_tangential_vectors(const Tensor<1,3,double> &normal_vector)
+	{
+		const double nx = normal_vector[0];
+		const double ny = normal_vector[1];
+		const double nz = normal_vector[2];
+
+		const double tx = -ny;
+		const double ty = nx-nz;
+		const double tz = ny;
+
+		Tensor<1,3,double> t;
+
+		t[0] = tx;
+		t[1] = ty;
+		t[2] = tz;
+
+		t /= t.norm();
+
+		// the third orthogonal vector
+		Tensor<1,3,double> r = cross_product_3d(t,normal_vector);
+
+		r /= r.norm();
+
+		std::vector<Tensor<1,3>> tangential_vectors(2);
+
+		tangential_vectors[0] = t;
+		tangential_vectors[1] = r;
+
+		return(tangential_vectors);
+
+	}
+
 
 	// constains the projector data for particular symmetrizers
 	#include "Tensorial_Projector.h"
-	#include "Tensorial_InvProjector.h"
+	//#include "Tensorial_InvProjector.h"
 	#include "Tensorial_Symmetrizer.h"
 	#include "Tensorial_InvSymmetrizer.h"
 
-
-	// development of the Projector matrix for the 2D case
-	template<int dim>
-	Sparse_matrix
-	Base_TensorInfo<dim>
-	::reinit_global_2D(const double nx,const double ny)
-	{
-
-		// the block matrices to be used in the global projector
-		std::vector<projector_data> tensor_project;
-
-		//the global projector for the equations
-		Sparse_matrix global_Projector;
-		global_Projector.resize(nEqn,nEqn);
-
-		// initialize the projector for individual tensors
-		reinit_local_2D(nx,ny,tensor_project);
-
-		Assert(global_Projector.rows() != 0,ExcNotInitialized());
-		Assert(global_Projector.cols() != 0,ExcNotInitialized());
-
-		// then using the tensorial projectors we initialize the global projector
-		for (unsigned int i = 0 ; i < Ntensors ; i++)
-		{
-
-			SpBlock(free_indices_cumilative(i),tensor_project[varIdx(i,1)].P,global_Projector);
-		}
-
-		global_Projector.makeCompressed();
-
-		return(global_Projector);
-	}
-
 	// development of the Projector matrix for the 1D case
-	template<int dim>
+	template<>
 	Sparse_matrix
-	Base_TensorInfo<dim>
-	::reinit_global_1D(const double nx)
+	Base_TensorInfo<1>
+	::reinit_global(const Tensor<1,1> &normal_vector)
 	{
 
 		//the global projector for the equations
 		Sparse_matrix global_Projector;
 		global_Projector.resize(nEqn,nEqn);
+		const double nx = normal_vector[0];
 
 		// in the 1D case, the normal vector can either be plus or minus one
 		Assert(fabs(nx - 1.0) < 1e-10 || fabs(nx + 1.0) < 1e-10,ExcMessage("Incorrect normal vector"));
@@ -543,11 +414,129 @@ namespace TensorInfo
 	}
 
 
-	// same as above but for the inverse of projector, specialization for the 2D case
-	template<int dim>
+
+	// development of the Projector matrix for the 2D case
+	template<>
 	Sparse_matrix
-	Base_TensorInfo<dim>
-	::reinit_Invglobal_2D(const double nx,const double ny)
+	Base_TensorInfo<2>
+	::reinit_global(const Tensor<1,2> &normal_vector)
+	{
+
+		// the block matrices to be used in the global projector
+		std::vector<projector_data> tensor_project;
+
+		//the global projector for the equations
+		Sparse_matrix global_Projector;
+		global_Projector.resize(nEqn,nEqn);
+
+		std::vector<Tensor<1,2,double>> tangential_vectors = reinit_tangential_vectors(normal_vector);
+
+		const double nx = normal_vector[0];
+		const double ny = normal_vector[1];
+		const double nz = 0;
+
+		const double tx = tangential_vectors[0][0];
+		const double ty = tangential_vectors[0][1];
+		const double tz = 0;
+
+		const double rx = 0;
+		const double ry = 0;
+		const double rz = 0;
+
+		// initialize the projector for individual tensors
+		// all the other components have been set to zero
+		reinit_local(nx,ny,nz,
+					 tx,ty,tz,
+					 rx,ry,rz,
+					tensor_project);
+
+		for (unsigned int degree = 0 ; degree <= max_tensorial_degree ; degree++)
+			tensor_project[degree].P = tensor_project[degree].P * tensor_Invsymmetrizer[degree].P;
+
+		Assert(global_Projector.rows() != 0,ExcNotInitialized());
+		Assert(global_Projector.cols() != 0,ExcNotInitialized());
+
+		// then using the tensorial projectors we initialize the global projector
+		for (unsigned int i = 0 ; i < Ntensors ; i++)
+			SpBlock(free_indices_cumilative(i),tensor_project[varIdx(i,1)].P,global_Projector);
+		
+
+		global_Projector.makeCompressed();
+
+		return(global_Projector);
+	}
+
+	// same as above but for the 3D case
+	template<>
+	Sparse_matrix
+	Base_TensorInfo<3>
+	::reinit_global(const Tensor<1,3> &normal_vector)
+	{
+
+		// the block matrices to be used in the global projector
+		std::vector<projector_data> tensor_project;
+
+		//the global projector for the equations
+		Sparse_matrix global_Projector;
+		global_Projector.resize(nEqn,nEqn);
+
+		// the first entry of the vector contains the perpendicular vector t and the second 
+		// entry contains the perpendicular entry r
+		std::vector<Tensor<1,3,double>> tangential_vectors = reinit_tangential_vectors(normal_vector);
+
+		const double nx = normal_vector[0];
+		const double ny = normal_vector[1];
+		const double nz = normal_vector[2];
+
+		const double tx = tangential_vectors[0][0];
+		const double ty = tangential_vectors[0][1];
+		const double tz = tangential_vectors[0][2];
+
+		const double rx = tangential_vectors[1][0];
+		const double ry = tangential_vectors[1][1];
+		const double rz = tangential_vectors[1][2];
+
+		// initialize the projector for individual tensors
+		// all the other components have been set to zero
+		reinit_local(nx,ny,nz,
+					 tx,ty,tz,
+					 rx,ry,rz,
+					tensor_project);
+
+		// now we multiply by the symmetrizer
+		for (unsigned int degree = 0 ; degree <= max_tensorial_degree ; degree++)
+			tensor_project[degree].P = tensor_project[degree].P * tensor_Invsymmetrizer[degree].P;
+
+		Assert(global_Projector.rows() != 0,ExcNotInitialized());
+		Assert(global_Projector.cols() != 0,ExcNotInitialized());
+
+		// then using the tensorial projectors we initialize the global projector
+		for (unsigned int i = 0 ; i < Ntensors ; i++)
+			SpBlock(free_indices_cumilative(i),tensor_project[varIdx(i,1)].P,global_Projector);
+		
+
+		global_Projector.makeCompressed();
+
+		return(global_Projector);
+	}
+
+
+
+	template<>
+	Sparse_matrix
+	Base_TensorInfo<1>
+	::reinit_Invglobal(const Tensor<1,1,double> &normal_vector)
+	{
+		// in the 1D case, the Projector and the Inv projector are the same.
+		return(reinit_global(normal_vector));
+	}
+
+
+	// same as above but for the inverse of projector, specialization for the 2D case
+	template<>
+	Sparse_matrix
+	Base_TensorInfo<2>
+	::reinit_Invglobal(const Tensor<1,2,double> &normal_vector)
 	{
 
 		// the block matrices to be used in the global projector
@@ -557,78 +546,192 @@ namespace TensorInfo
 		Sparse_matrix global_Projector;
 		global_Projector.resize(nEqn,nEqn);
 
+		std::vector<Tensor<1,2,double>> tangential_vectors = reinit_tangential_vectors(normal_vector);
+
+		const double nx = normal_vector[0];
+		const double ny = normal_vector[1];
+		const double nz = 0;
+
+		const double tx = tangential_vectors[0][0];
+		const double ty = tangential_vectors[0][1];
+		const double tz = 0;
+
+		const double rx = 0;
+		const double ry = 0;
+		const double rz = 0;
+		
+
 		// so we first initialize the tensorial projectors
-		reinit_Invlocal_2D(nx,ny,tensor_Invproject);
+		reinit_local(nx,tx,rx,
+						ny,ty,ry,
+						nz,tz,rz,
+						tensor_Invproject);
+
+		// now we multiply with appropriate powers of the symmetrizer
+		for (unsigned int degree = 0 ; degree <= max_tensorial_degree ; degree++)
+			tensor_Invproject[degree].P = tensor_symmetrizer[degree].P * tensor_Invproject[degree].P ;
 
 		Assert(global_Projector.rows() != 0,ExcNotInitialized());
 		Assert(global_Projector.cols() != 0,ExcNotInitialized());
 
 		// then using the tensorial projectors we initialize the global projector
 		for (unsigned int i = 0 ; i < Ntensors ; i++)
-		{
-
 			SpBlock(free_indices_cumilative(i),tensor_Invproject[varIdx(i,1)].P,global_Projector);
-		}
+		
 
 		global_Projector.makeCompressed();
 
 		return(global_Projector);
 	}
 
-	// specialization for the 1D case. Develops the inverse of the Projector
-	template<int dim>
+	template<>
 	Sparse_matrix
-	Base_TensorInfo<dim>
-	::reinit_Invglobal_1D(const double nx)
+	Base_TensorInfo<3>
+	::reinit_Invglobal(const Tensor<1,3,double> &normal_vector)
 	{
 
-		// in the 1D case, the Projector and the Inv projector are the same i.e. they are both diagonal matrices
-		return(reinit_global_1D(nx));
+		// the block matrices to be used in the global projector
+		// Caution: since the assembly could be done in a parallel way, it is necessary
+		// to make the following entry local
+		std::vector<projector_data> tensor_Invproject;
+
+		//the global projector for the equations
+		Sparse_matrix global_Projector;
+		global_Projector.resize(nEqn,nEqn);
+
+		std::vector<Tensor<1,3,double>> tangential_vectors = reinit_tangential_vectors(normal_vector);
+
+		const double nx = normal_vector[0];
+		const double ny = normal_vector[1];
+		const double nz = normal_vector[2];
+
+		const double tx = tangential_vectors[0][0];
+		const double ty = tangential_vectors[0][1];
+		const double tz = tangential_vectors[0][2];
+
+		const double rx = tangential_vectors[1][0];
+		const double ry = tangential_vectors[1][1];
+		const double rz = tangential_vectors[1][2];
+		
+
+		// so we first initialize the tensorial projectors
+		reinit_local(nx,tx,rx,
+						ny,ty,ry,
+						nz,tz,rz,
+						tensor_Invproject);
+
+		// now we multiply with appropriate powers of the symmetrizer
+		for (unsigned int degree = 0 ; degree <= max_tensorial_degree ; degree++)
+			tensor_Invproject[degree].P = tensor_symmetrizer[degree].P * tensor_Invproject[degree].P ;
+
+		Assert(global_Projector.rows() != 0,ExcNotInitialized());
+		Assert(global_Projector.cols() != 0,ExcNotInitialized());
+
+		// then using the tensorial projectors we initialize the global projector
+		for (unsigned int i = 0 ; i < Ntensors ; i++)
+			SpBlock(free_indices_cumilative(i),tensor_Invproject[varIdx(i,1)].P,global_Projector);
+		
+
+		global_Projector.makeCompressed();
+
+		return(global_Projector);
 	}
 
-	template<int dim>
+
+	// specialization for the 1D case. Develops the inverse of the Projector
+
+
+	template<>
 	void 
-	Base_TensorInfo<dim>
-	::create_Symmetrizer_2D()
+	Base_TensorInfo<1>
+	::create_Symmetrizer()
 	{
 		S_half.resize(nEqn,nEqn);
 
-		// symmetrizer for a particular tensor
-		std::vector<projector_data> tensor_symmetrizer;
+
+		// the moment system is already symmetric
+		for (unsigned int i =0 ; i < nEqn ; i++)
+			S_half.coeffRef(i,i) = 1.0;
+
+		S_half.makeCompressed();
+	}
+
+
+	template<>
+	void 
+	Base_TensorInfo<2>
+	::create_Symmetrizer()
+	{
+		S_half.resize(nEqn,nEqn);
+
 
 		tensor_symmetrizer.resize(max_tensorial_degree + 1);
 
 		AssertDimension(tensor_symmetrizer.size(),max_tensorial_degree + 1);
 		allocate_tensor_memory(tensor_symmetrizer);
 
-		reinit_symmetrizer_2D(tensor_symmetrizer);
+		reinit_symmetrizer(tensor_symmetrizer);
 
 		// then using the tensorial projectors we initialize the global projector
 		for (unsigned int i = 0 ; i < Ntensors ; i++)
-		{
-
 			SpBlock(free_indices_cumilative(i),tensor_symmetrizer[varIdx(i,1)].P,S_half);
-		}
 
 		S_half.makeCompressed();
 	}
 
-	template<int dim>
+	template<>
+	void 
+	Base_TensorInfo<3>
+	::create_Symmetrizer()
+	{
+		S_half.resize(nEqn,nEqn);
+
+
+		tensor_symmetrizer.resize(max_tensorial_degree + 1);
+
+		AssertDimension(tensor_symmetrizer.size(),max_tensorial_degree + 1);
+		allocate_tensor_memory(tensor_symmetrizer);
+
+		reinit_symmetrizer(tensor_symmetrizer);
+
+		// then using the tensorial projectors we initialize the global projector
+		for (unsigned int i = 0 ; i < Ntensors ; i++)
+			SpBlock(free_indices_cumilative(i),tensor_symmetrizer[varIdx(i,1)].P,S_half);
+
+		S_half.makeCompressed();
+	}
+
+
+	template<>
 	void
-	Base_TensorInfo<dim>
-	::create_InvSymmetrizer_2D()
+	Base_TensorInfo<1>
+	::create_InvSymmetrizer()
 	{
 		S_half_inv.resize(nEqn,nEqn);
 
-		// symmetrizer for a particular tensor
-		std::vector<projector_data> tensor_Invsymmetrizer;
+		
+		// the symmetrizer is an identity matrix
+		for (unsigned int i = 0 ; i < nEqn ; i++)
+			S_half_inv.coeffRef(i,i) = 1;
+
+		S_half_inv.makeCompressed();
+
+	}
+
+
+	template<int dim>
+	void
+	Base_TensorInfo<dim>
+	::create_InvSymmetrizer()
+	{
+		S_half_inv.resize(nEqn,nEqn);
 
 		tensor_Invsymmetrizer.resize(max_tensorial_degree + 1);
 
 		AssertDimension(tensor_Invsymmetrizer.size(),max_tensorial_degree + 1);
 		allocate_tensor_memory(tensor_Invsymmetrizer);
 
-		reinit_Invsymmetrizer_2D(tensor_Invsymmetrizer);
+		reinit_Invsymmetrizer(tensor_Invsymmetrizer);
 
 		// then using the tensorial projectors we initialize the global projector
 		for (unsigned int i = 0 ; i < Ntensors ; i++)
@@ -638,38 +741,5 @@ namespace TensorInfo
 		S_half_inv.makeCompressed();
 
 	}
-
-
-	template<int dim>
-	void 
-	Base_TensorInfo<dim>
-	::create_Symmetrizer_1D()
-	{
-		S_half.resize(nEqn,nEqn);
-
-		// the number of equations are equal to the number of tensors.
-		// The 1d moment system is already symmetric and therefore we just need to initialize the matrix with an identity matrix
-		for (unsigned int i = 0 ; i < nEqn ; i++)
-			S_half.coeffRef(i,i) = 1;
-
-		
-		S_half.makeCompressed();
-	}
-
-	template<int dim>
-	void
-	Base_TensorInfo<dim>
-	::create_InvSymmetrizer_1D()
-	{
-		S_half_inv.resize(nEqn,nEqn);
-
-		// inverse of an identity matrix
-		for (unsigned int i = 0 ; i < nEqn ; i++)
-			S_half_inv.coeffRef(i,i) = 1;
-
-		S_half_inv.makeCompressed();
-
-	}
-
 
 }

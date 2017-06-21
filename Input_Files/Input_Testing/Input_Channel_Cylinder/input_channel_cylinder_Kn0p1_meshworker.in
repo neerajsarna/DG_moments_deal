@@ -60,8 +60,8 @@ subsection Physical Constants
 	set vy4 = 0.0
 
  # conditions for inflow
- 	set rho101 = 2.0
- 	set theta101 = 1.0
+ 	set rho101 = 1.0
+ 	set theta101 = 2.0
  	set vx101 = 0
  	set vy101 = 0
 
@@ -75,7 +75,7 @@ subsection Physical Constants
  	set force type = 2
 
  	# 0 for characteristic and 1 for odd
- 	set BC type = 0
+ 	set BC type = 1
 
  	# 0 for BGK
  	# 1 for Boltzmann_MM
@@ -83,7 +83,7 @@ subsection Physical Constants
 end
 
 subsection Mesh Info
-	set mesh_filename = ../../Meshes/Testing_Meshes/square_circular_cavity.msh
+	set mesh_filename = ../../Meshes/Channel_Cylinder/square_circular_cavity_cells_476.msh
 
 	# ring
 	# square_domain 

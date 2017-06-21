@@ -8,20 +8,18 @@
 #include "Base_EquationGenerator.h"
 #include "LinearSolver.h"
 #include "Base_MeshGenerator.h"
-//#include "Base_PeriodicityHandler.h"
+
 #include "Base_PostProc.h"
 #include "Base_NumericalIntegration.h"
-#include "Base_Solver.h"
-#include "Develop_System.h"
-
-
 #include "BCrhs_systemA.h"
+#include "Develop_System.h"
 
 #include "ExactSolution_Dummy.h"
 #include "ExactSolution_PoissonHeat.h"
-
 #include "SystemA.h"
-#include "Run.h"
+#include "FE_Data.h"
+#include "Assembler.h"
+#include "Run_Problem.h"
 
 
 

@@ -12,12 +12,8 @@ void check_active_cells(const enum Mesh_type &mesh_type,
 		if (mesh_type == square_domain && problem_type == inflow_outflow)				
 			AssertDimension(n_cells,61);
 
-
 		if (mesh_type == square_circular_cavity && problem_type == inflow_outflow)
 			AssertDimension(n_cells,476);
-
-
-
 
 }
 
@@ -31,7 +27,7 @@ void set_error_values(const enum Mesh_type &mesh_type,
 {
 
 		if (mesh_type == square_domain && problem_type == heat_conduction)
-			error_value =  1.8584849033516051;
+			error_value = 1.8584849033516051;
 
 		if (mesh_type == square_domain && problem_type == lid_driven_cavity)
 			error_value =  1.2248747382201992;
@@ -57,7 +53,7 @@ void set_error_values(const enum Mesh_type &mesh_type,
 }
 
 
-TEST(DISABLED_SolverSingleSystem,HandlesSolverSingleSystem)
+TEST(SolverSingleSystem,HandlesSolverSingleSystem)
 {
 		const unsigned int dim = 1;
 
@@ -96,8 +92,10 @@ TEST(DISABLED_SolverSingleSystem,HandlesSolverSingleSystem)
 			Assert(constants.constants_num.mesh_type == square_domain || constants.constants_num.mesh_type == NACA5012 || 
 				constants.constants_num.mesh_type == square_circular_cavity ,ExcNotImplemented());
 			AssertDimension(constants.constants_num.initial_refinement,1);
+			AssertDimension(constants.constants_num.refine_cycles,1);
 
-			if (constants.constants_num.mesh_type == square_domain && constants.constants_num.problem_type != inflow_outflow)
+			if (constants.constants_num.mesh_type == square_domain && 
+				constants.constants_num.problem_type != inflow_outflow)
 			{
 				AssertDimension(constants.constants_num.part_x,10);
 				AssertDimension(constants.constants_num.part_y,10);
@@ -145,11 +143,13 @@ TEST(DISABLED_SolverSingleSystem,HandlesSolverSingleSystem)
 		if (constants.constants_num.assembly_type == meshworker)
 		{
 			fe_solver.run(Mesh_Info);
+			std::cout << "Difference in Error " << fabs(fe_solver.error_per_itr[0]-error_manuel) << std::endl;
 			EXPECT_NEAR(fe_solver.error_per_itr[0],error_manuel,1e-10);	
 		}
 
 		if (constants.constants_num.assembly_type == manuel)
 		{
+			std::cout << "Difference in Error " << fabs(fe_solver.error_per_itr[0]-error_manuel) << std::endl;
 			hp_solver.run_distribution_deviation(Mesh_Info);
 			EXPECT_NEAR(hp_solver.error_per_itr[0],error_manuel,1e-10);	
 
@@ -301,7 +301,7 @@ TEST(DISABLED_RunSystemA,HandlesSystemA)
 
 
 // run without any restrictions
-TEST(RunSystem,HandlesRunSystem)
+TEST(DISABLED_RunSystem,HandlesRunSystem)
 {
 		const unsigned int dim = 2;
 

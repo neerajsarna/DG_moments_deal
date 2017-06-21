@@ -1,3 +1,4 @@
+using namespace dealii;
 // we define certain basic routines which are needed everywhere
 // compare tow flow matrices
 void Compare_Float_Mat(Full_matrix &A,Full_matrix &B)
@@ -69,4 +70,21 @@ void Compare_Float_Vec(dealii::Vector<double> &vec1,dealii::Vector<double> &vec2
 		EXPECT_NEAR(vec1(i),vec2(i),1e-5);
 }
 
+// check whether a matrix is symmetric or not
+void Check_Symmetricity(Full_matrix &A)
+{
+	Full_matrix B = A.transpose();
 
+	for (unsigned int i = 0 ; i < A.rows(); i ++)
+		for (unsigned int j =0 ; j < A.cols() ; j++)
+			EXPECT_NEAR(A.coeffRef(i,j),B.coeffRef(i,j),1e-10);
+}
+
+void Check_Symmetricity(Sparse_matrix &A)
+{
+	Sparse_matrix B = A.transpose();
+
+	for (unsigned int i = 0 ; i < A.rows(); i ++)
+		for (unsigned int j =0 ; j < A.cols() ; j++)
+			EXPECT_NEAR(A.coeffRef(i,j),B.coeffRef(i,j),1e-10);
+}

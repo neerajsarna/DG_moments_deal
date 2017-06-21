@@ -6,8 +6,6 @@
 
 #IncludeRegexTransform: 
 
-../../Projector_Data/Tensorial_InvProjector.h
-
 ../../Projector_Data/Tensorial_Projector.h
 
 ../../Symmetrizer_Data/Tensorial_InvSymmetrizer.h
@@ -49,8 +47,6 @@ MeshGenerator_Line.h
 ../../include_new_m_adaptive/Base_TensorInfo.h
 Tensorial_Projector.h
 ../../include_new_m_adaptive/Tensorial_Projector.h
-Tensorial_InvProjector.h
-../../include_new_m_adaptive/Tensorial_InvProjector.h
 Tensorial_Symmetrizer.h
 ../../include_new_m_adaptive/Tensorial_Symmetrizer.h
 Tensorial_InvSymmetrizer.h
@@ -216,21 +212,61 @@ list
 algorithm
 -
 
-../../include_new_m_adaptive/parse_command_line.h
+../../include_new_m_adaptive/include_files.h
+Base_Constants.h
+../../include_new_m_adaptive/Base_Constants.h
+Base_TensorInfo.h
+../../include_new_m_adaptive/Base_TensorInfo.h
+Base_ForceType.h
+../../include_new_m_adaptive/Base_ForceType.h
+Base_MatrixOpt.h
+../../include_new_m_adaptive/Base_MatrixOpt.h
+Base_BoundaryHandler.h
+../../include_new_m_adaptive/Base_BoundaryHandler.h
+Base_BCrhs.h
+../../include_new_m_adaptive/Base_BCrhs.h
+Base_ExactSolution.h
+../../include_new_m_adaptive/Base_ExactSolution.h
+Base_EquationGenerator.h
+../../include_new_m_adaptive/Base_EquationGenerator.h
+LinearSolver.h
+../../include_new_m_adaptive/LinearSolver.h
+Base_MeshGenerator.h
+../../include_new_m_adaptive/Base_MeshGenerator.h
+Base_PostProc.h
+../../include_new_m_adaptive/Base_PostProc.h
+Base_NumericalIntegration.h
+../../include_new_m_adaptive/Base_NumericalIntegration.h
+BCrhs_systemA.h
+../../include_new_m_adaptive/BCrhs_systemA.h
+Develop_System.h
+../../include_new_m_adaptive/Develop_System.h
+ExactSolution_Dummy.h
+../../include_new_m_adaptive/ExactSolution_Dummy.h
+ExactSolution_PoissonHeat.h
+../../include_new_m_adaptive/ExactSolution_PoissonHeat.h
+SystemA.h
+../../include_new_m_adaptive/SystemA.h
+FE_Data.h
+../../include_new_m_adaptive/FE_Data.h
+Assembler.h
+../../include_new_m_adaptive/Assembler.h
+Run_Problem.h
+../../include_new_m_adaptive/Run_Problem.h
 
-../../periodic_square/Base_PeriodicityHandler.h
+../../include_new_m_adaptive/parse_command_line.h
 
 ../../periodic_square/ExactSolution_PoissonHeat.h
 
 ../../periodic_square/MeshGenerator_PeriodicSquare.h
 
-../../ring/ExactSolution_SystemA.h
-
 ../../systems/BCrhs_systemA.h
 
-../Test_Generic/Test_Run.h
+../../systems/SystemA.h
 
-../include_tests_G20/basic_routines.h
+../Test_Generic/Test_ProjectorData.h
+
+../Test_Generic/basic_routines.h
 
 /Applications/deal.II.app/Contents/Resources/include/deal.II/algorithms/any_data.h
 deal.II/base/config.h
@@ -4575,64 +4611,24 @@ fortran.h
 -
 
 /Users/neerajsarna/sciebo/DG_moments_deal/Tests/main.cc
-include_deal.h
-/Users/neerajsarna/sciebo/DG_moments_deal/Tests/include_deal.h
 gtest/gtest.h
 /Users/neerajsarna/sciebo/DG_moments_deal/Tests/gtest/gtest.h
+include_deal.h
+/Users/neerajsarna/sciebo/DG_moments_deal/Tests/include_deal.h
 EigenSetup.h
 /Users/neerajsarna/sciebo/DG_moments_deal/Tests/EigenSetup.h
 basic_data_structures.h
 /Users/neerajsarna/sciebo/DG_moments_deal/Tests/basic_data_structures.h
-basic_routines.h
-/Users/neerajsarna/sciebo/DG_moments_deal/Tests/basic_routines.h
 parse_command_line.h
 /Users/neerajsarna/sciebo/DG_moments_deal/Tests/parse_command_line.h
 mkl.h
 /Users/neerajsarna/sciebo/DG_moments_deal/Tests/mkl.h
-Base_Constants.h
-/Users/neerajsarna/sciebo/DG_moments_deal/Tests/Base_Constants.h
-Base_TensorInfo.h
-/Users/neerajsarna/sciebo/DG_moments_deal/Tests/Base_TensorInfo.h
-Base_ForceType.h
-/Users/neerajsarna/sciebo/DG_moments_deal/Tests/Base_ForceType.h
-Base_MatrixOpt.h
-/Users/neerajsarna/sciebo/DG_moments_deal/Tests/Base_MatrixOpt.h
-Base_BCrhs.h
-/Users/neerajsarna/sciebo/DG_moments_deal/Tests/Base_BCrhs.h
-BCrhs_systemA.h
-/Users/neerajsarna/sciebo/DG_moments_deal/Tests/BCrhs_systemA.h
-Base_BoundaryHandler.h
-/Users/neerajsarna/sciebo/DG_moments_deal/Tests/Base_BoundaryHandler.h
-Base_EquationGenerator.h
-/Users/neerajsarna/sciebo/DG_moments_deal/Tests/Base_EquationGenerator.h
-Develop_System.h
-/Users/neerajsarna/sciebo/DG_moments_deal/Tests/Develop_System.h
-Base_ExactSolution.h
-/Users/neerajsarna/sciebo/DG_moments_deal/Tests/Base_ExactSolution.h
-ExactSolution_Dummy.h
-/Users/neerajsarna/sciebo/DG_moments_deal/Tests/ExactSolution_Dummy.h
-ExactSolution_SystemA.h
-/Users/neerajsarna/sciebo/DG_moments_deal/Tests/ExactSolution_SystemA.h
-LinearSolver.h
-/Users/neerajsarna/sciebo/DG_moments_deal/Tests/LinearSolver.h
-Base_MeshGenerator.h
-/Users/neerajsarna/sciebo/DG_moments_deal/Tests/Base_MeshGenerator.h
-Base_PeriodicityHandler.h
-/Users/neerajsarna/sciebo/DG_moments_deal/Tests/Base_PeriodicityHandler.h
-Base_PostProc.h
-/Users/neerajsarna/sciebo/DG_moments_deal/Tests/Base_PostProc.h
-Base_NumericalIntegration.h
-/Users/neerajsarna/sciebo/DG_moments_deal/Tests/Base_NumericalIntegration.h
-FE_Data.h
-/Users/neerajsarna/sciebo/DG_moments_deal/Tests/FE_Data.h
-Assembler.h
-/Users/neerajsarna/sciebo/DG_moments_deal/Tests/Assembler.h
-Run_Problem.h
-/Users/neerajsarna/sciebo/DG_moments_deal/Tests/Run_Problem.h
-ExactSolution_PoissonHeat.h
-/Users/neerajsarna/sciebo/DG_moments_deal/Tests/ExactSolution_PoissonHeat.h
-Test_Run.h
-/Users/neerajsarna/sciebo/DG_moments_deal/Tests/Test_Run.h
+basic_routines.h
+/Users/neerajsarna/sciebo/DG_moments_deal/Tests/basic_routines.h
+include_files.h
+/Users/neerajsarna/sciebo/DG_moments_deal/Tests/include_files.h
+Test_ProjectorData.h
+/Users/neerajsarna/sciebo/DG_moments_deal/Tests/Test_ProjectorData.h
 
 /opt/intel/compilers_and_libraries_2016.3.170/mac/mkl/include/mkl.h
 mkl_version.h

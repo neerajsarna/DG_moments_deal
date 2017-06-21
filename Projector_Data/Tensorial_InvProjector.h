@@ -2,8 +2,10 @@
 	template<>
 	void 
 	Base_TensorInfo<2>
-	::reinit_Invlocal_2D(const double nx,const double ny,
-				   std::vector<projector_data> &tensor_project)
+	::reinit_Invlocal(const double nx,const double ny,const double nz,
+                        const double tx,const double ty,const double tz,
+                        const double rx,const double ry,const double rz,
+				              std::vector<projector_data> &tensor_project)
 	{
 		// first we allocate the required memory
 		tensor_project.resize(max_tensorial_degree + 1);
