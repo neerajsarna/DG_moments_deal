@@ -92,39 +92,46 @@ struct tensor_data
 		double theta0;
 		double vx0;
 		double vy0;
+		double vz0;
 
 
 	// data for the second wall
 		double theta1;
 		double vx1;
 		double vy1;
+		double vz1;
 
 	// data for the third wall
 		double theta2;
 		double vx2;
 		double vy2;
+		double vz2;
 
 	// data for the fourth wall
 		double theta3;
 		double vx3;
 		double vy3;
+		double vz3;
 
 	// data for the fourth wall
 		double theta4;
 		double vx4;
 		double vy4;
+		double vz4;
 
 	// first inflow boundary
 		double rho101;
 		double theta101;
 		double vx101;
 		double vy101;
+		double vz101;
 
 	// second inflow boundary
 		double rho102;
 		double theta102;
 		double vx102;
 		double vy102;
+		double vz102;
 	
 		// the type of mesh to be used
 		Mesh_type mesh_type;

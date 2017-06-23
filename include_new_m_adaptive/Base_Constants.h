@@ -439,6 +439,11 @@ namespace Constants
 				Patterns::Double(-100.0,100.0),
 				"tangential velocity");
 
+			prm.declare_entry("vz0",
+				"0",
+				Patterns::Double(-100.0,100.0),
+				"tangential velocity");
+
 			prm.declare_entry("theta1",
 				"0",
 				Patterns::Double(-100.0,100.0),
@@ -450,6 +455,11 @@ namespace Constants
 				"normal velocity");
 
 			prm.declare_entry("vy1",
+				"0",
+				Patterns::Double(-100.0,100.0),
+				"tangential velocity");
+
+			prm.declare_entry("vz1",
 				"0",
 				Patterns::Double(-100.0,100.0),
 				"tangential velocity");
@@ -470,6 +480,12 @@ namespace Constants
 				Patterns::Double(-100.0,100.0),
 				"tangential velocity");
 
+			prm.declare_entry("vz2",
+				"0",
+				Patterns::Double(-100.0,100.0),
+				"tangential velocity");
+
+
 			prm.declare_entry("theta3",
 				"0",
 				Patterns::Double(0,100.0),
@@ -486,6 +502,12 @@ namespace Constants
 				"tangential velocity");
 
 
+			prm.declare_entry("vz3",
+				"0",
+				Patterns::Double(-100.0,100.0),
+				"tangential velocity");
+
+
 			prm.declare_entry("theta4",
 				"0",
 				Patterns::Double(0,100.0),
@@ -497,6 +519,11 @@ namespace Constants
 				"normal velocity");
 
 			prm.declare_entry("vy4",
+				"0",
+				Patterns::Double(-100.0,100.0),
+				"tangential velocity");
+
+			prm.declare_entry("vz4",
 				"0",
 				Patterns::Double(-100.0,100.0),
 				"tangential velocity");
@@ -521,6 +548,11 @@ namespace Constants
 				Patterns::Double(-100.0,100.0),
 				"tangential velocity");
 
+			prm.declare_entry("vz101",
+				"0",
+				Patterns::Double(-100.0,100.0),
+				"tangential velocity");
+
 
 			prm.declare_entry("rho102",
 				"0",
@@ -538,6 +570,11 @@ namespace Constants
 				"normal velocity");
 
 			prm.declare_entry("vy102",
+				"0",
+				Patterns::Double(-100.0,100.0),
+				"tangential velocity");
+
+			prm.declare_entry("vz102",
 				"0",
 				Patterns::Double(-100.0,100.0),
 				"tangential velocity");

@@ -33,6 +33,7 @@ namespace BCrhs_systemA
 							   			const unsigned int b_id)
 	{
 			AssertDimension((int)bc_rhs.size(),nBC);
+			AssertDimension(dim,2);
 
 			// the implementation is only for a 2D setting
 			AssertDimension(dim,2);
@@ -90,7 +91,7 @@ namespace BCrhs_systemA
 							   			Vector<double> &bc_rhs,
 							   			const unsigned int b_id)
 	{
-			Assert(dim > 1,ExcNotImplemented());
+			AssertDimension(dim,2);
 
 			double x_cord = p[0];
 			double y_cord = p[1];
