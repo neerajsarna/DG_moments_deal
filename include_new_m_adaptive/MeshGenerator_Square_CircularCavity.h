@@ -66,8 +66,8 @@
         typename Triangulation<dim>::cell_iterator cell = triangulation.begin(),
                                                     endc = triangulation.end();
 
-        const double left_edge = -0.5;
-        const double right_edge = 0.5;
+        const double left_edge = -2.0;
+        const double right_edge = 2.0;
 
         for (; cell != endc ; cell++)
         {

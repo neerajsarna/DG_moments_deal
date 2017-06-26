@@ -44,7 +44,7 @@ namespace BCrhs
 	{;}
 
 	// reinitiliaze the tangential vectors for the 3D case 
-	template<int dim>
+	template<>
 	std::vector<Tensor<1,3>>
 	Base_BCrhs<3>
 	::reinit_tangential_vectors(const Tensor<1,3,double> &normal_vector)
@@ -425,7 +425,7 @@ namespace BCrhs
 	{
 
 		bool assigned_properties = false;
-		const vz_default = 0;
+		const double vz_default = 0;
 
 		AssertDimension(proj_vector.m(),proj_vector.n());
 		AssertDimension(proj_vector.m(),2);
@@ -473,10 +473,10 @@ namespace BCrhs
 	{
 
 		bool assigned_properties = false;
-		const vz_default = 0;
+		const double vz_default = 0;
 
 		AssertDimension(proj_vector.m(),proj_vector.n());
-		AssertDimension(proj_vector.m(),2);
+		AssertDimension(proj_vector.m(),3);
 
 		Assert(b_id==101 || b_id == 102 ,ExcNotImplemented());
 
@@ -655,8 +655,8 @@ namespace BCrhs
 
 		this->assign_wall_properties(thetaW,vn,vt,vr_default,proj_vector,b_id);
 
-		const unsigned int ID_theta = this->constants.variable_map.find("theta")->second;
-		const unsigned int ID_vy = this->constants.variable_map.find("vy")->second;
+		const unsigned int ID_theta = this->constants.variable_map[1].find("theta")->second;
+		const unsigned int ID_vy = this->constants.variable_map[1].find("vy")->second;
 	
 		AssertDimension(ID_theta,3);
 		AssertDimension(ID_vy,2);
@@ -694,7 +694,7 @@ namespace BCrhs
 	{
 		bc_rhs = 0;
 
-		std::vector<Tensor<1,3,double>> tangential_vectors = reinit_tangential_vectors(normal_vector);
+		std::vector<Tensor<1,3,double>> tangential_vectors = this->reinit_tangential_vectors(normal_vector);
 
 		const double nx = normal_vector[0];
 		const double ny = normal_vector[1];
@@ -709,7 +709,7 @@ namespace BCrhs
 		const double rz = tangential_vectors[1][2];
 
 		Assert(p.norm() >=0 ,ExcMessage("Incorrect point"));
-		Assert(b_id == 0 || b_id == 1 || b_id == 2 || b_id ==3 || b_id == 50,ExcMessage("Incorrect boundary id"));
+		Assert(b_id == 0 || b_id == 1 || b_id == 2 || b_id ==3 || b_id == 4 || b_id == 50,ExcMessage("Incorrect boundary id"));
 				// we only compute the rhs in case of a non-specular wall
 		if (b_id != 50)
 		{
@@ -749,9 +749,9 @@ namespace BCrhs
 
 		this->assign_wall_properties(thetaW,vn,vt,vr,proj_vector,b_id);
 
-		const unsigned int ID_theta = this->constants.variable_map_3D.find("theta")->second;
-		const unsigned int ID_vy = this->constants.variable_map_3D.find("vy")->second;
-		const unsigned int ID_vz = this->constants.variable_map_3D.find("vz")->second;
+		const unsigned int ID_theta = this->constants.variable_map[2].find("theta")->second;
+		const unsigned int ID_vy = this->constants.variable_map[2].find("vy")->second;
+		const unsigned int ID_vz = this->constants.variable_map[2].find("vz")->second;
 	
 
 		AssertDimension(ID_vy,2);
@@ -924,10 +924,10 @@ namespace BCrhs
 
 		this->assign_inflow_properties(thetaW,vn,vt,vr_default,rho,proj_vector,b_id);
 
-		const unsigned int ID_rho = this->constants.variable_map.find("rho")->second;
-		const unsigned int ID_vx = this->constants.variable_map.find("vx")->second;
-		const unsigned int ID_vy = this->constants.variable_map.find("vy")->second;
-		const unsigned int ID_theta = this->constants.variable_map.find("theta")->second;
+		const unsigned int ID_rho = this->constants.variable_map[1].find("rho")->second;
+		const unsigned int ID_vx = this->constants.variable_map[1].find("vx")->second;
+		const unsigned int ID_vy = this->constants.variable_map[1].find("vy")->second;
+		const unsigned int ID_theta = this->constants.variable_map[1].find("theta")->second;
 	
 		AssertDimension(ID_rho,0);
 		AssertDimension(ID_vx,1);
@@ -983,7 +983,7 @@ namespace BCrhs
 	{
 
 
-		std::vector<Tensor<1,3,double>> tangential_vectors = reinit_tangential_vectors(normal_vector);
+		std::vector<Tensor<1,3,double>> tangential_vectors = this->reinit_tangential_vectors(normal_vector);
 
 		const double nx = normal_vector[0];
 		const double ny = normal_vector[1];
@@ -1035,11 +1035,11 @@ namespace BCrhs
 
 		this->assign_inflow_properties(thetaW,vn,vt,vr,rho,proj_vector,b_id);
 
-		const unsigned int ID_rho = this->constants.variable_map_3D.find("rho")->second;
-		const unsigned int ID_vx = this->constants.variable_map_3D.find("vx")->second;
-		const unsigned int ID_vy = this->constants.variable_map_3D.find("vy")->second;
-		const unsigned int ID_vz = this->constants.variable_map_3D.find("vz")->second;
-		const unsigned int ID_theta = this->constants.variable_map_3D.find("theta")->second;
+		const unsigned int ID_rho = this->constants.variable_map[2].find("rho")->second;
+		const unsigned int ID_vx = this->constants.variable_map[2].find("vx")->second;
+		const unsigned int ID_vy = this->constants.variable_map[2].find("vy")->second;
+		const unsigned int ID_vz = this->constants.variable_map[2].find("vz")->second;
+		const unsigned int ID_theta = this->constants.variable_map[2].find("theta")->second;
 	
 		AssertDimension(ID_rho,0);
 		AssertDimension(ID_vx,1);

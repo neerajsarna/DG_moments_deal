@@ -512,16 +512,11 @@ namespace PostProc
 		// we wish to find the error.
         		// error variable comes from Basics. The following is the component in which
 		// we wish to find the error.
-		Assert(constants.variable_map.size() != 0,ExcMessage("Variable map not initialized"));
-		Assert(constants.variable_map_1D.size() != 0,ExcMessage("Variable map not initialized"));
+		// Assert(constants.variable_map.size() != 0,ExcMessage("Variable map not initialized"));
+		// Assert(constants.variable_map_1D.size() != 0,ExcMessage("Variable map not initialized"));
 
-		unsigned int component;
+		unsigned int component = constants.variable_map[dim-1].find(constants.error_variable)->second;;
 		
-		if (dim == 1)
-			component = constants.variable_map_1D.find(constants.error_variable)->second;
-
-		if (dim == 2)
-			component = constants.variable_map.find(constants.error_variable)->second;
 
         // error per cell of the domain
 		Vector<double> error_per_cell(active_cells);    
@@ -595,20 +590,9 @@ namespace PostProc
 		used_qgauss = true;
 		Assert(class_initialized == true,ExcMessage("Please initialize the post proc class"));
 
-		// error variable comes from Basics. The following is the component in which
-		// we wish to find the error.
-        		// error variable comes from Basics. The following is the component in which
-		// we wish to find the error.
-		Assert(constants.variable_map.size() != 0,ExcMessage("Variable map not initialized"));
-		Assert(constants.variable_map_1D.size() != 0,ExcMessage("Variable map not initialized"));
 
-		unsigned int component;
+		unsigned int component= constants.variable_map[dim-1].find(constants.error_variable)->second;
 		
-		if (dim == 1)
-			component = constants.variable_map_1D.find(constants.error_variable)->second;
-
-		if (dim == 2)
-			component = constants.variable_map.find(constants.error_variable)->second;
 
 		const unsigned int ngp = constants.p + 1;
         // error per cell of the domain
@@ -675,19 +659,11 @@ namespace PostProc
     void 
     Base_PostProc<dim>::print_convergence_table_to_file(ConvergenceTable &convergence_table)
     {
-           		// error variable comes from Basics. The following is the component in which
-		// we wish to find the error.
-    	Assert(constants.variable_map.size() != 0,ExcMessage("Variable map not initialized"));
-    	Assert(constants.variable_map_1D.size() != 0,ExcMessage("Variable map not initialized"));
+
 		Assert(class_initialized == true,ExcMessage("Please initialize the post proc class"));
 
-    	unsigned int component;
+    	unsigned int component= constants.variable_map[dim-1].find(constants.error_variable)->second;
     	
-    	if (dim == 1)
-    		component = constants.variable_map_1D.find(constants.error_variable)->second;
-
-    	if (dim == 2)
-    		component = constants.variable_map.find(constants.error_variable)->second;
     	
     	std::string column_name_L2;
     	std::string column_name_Linfty;
@@ -1276,20 +1252,9 @@ print_fe_index(const hp::DoFHandler<dim> &dof_handler)
 		used_qgauss = true;
 		Assert(class_initialized == true,ExcMessage("Please initialize the post proc class"));
 
-		// error variable comes from Basics. The following is the component in which
-		// we wish to find the error.
-        		// error variable comes from Basics. The following is the component in which
-		// we wish to find the error.
-		Assert(constants.variable_map.size() != 0,ExcMessage("Variable map not initialized"));
-		Assert(constants.variable_map_1D.size() != 0,ExcMessage("Variable map not initialized"));
 
-		unsigned int component;
+		unsigned int component= constants.variable_map[dim-1].find(constants.error_variable)->second;
 		
-		if (dim == 1)
-			component = constants.variable_map_1D.find(constants.error_variable)->second;
-
-		if (dim == 2)
-			component = constants.variable_map.find(constants.error_variable)->second;
 
         // error per cell of the domain
 		Vector<double> error_per_cell(active_cells);      
@@ -1325,11 +1290,11 @@ print_fe_index(const hp::DoFHandler<dim> &dof_handler)
     	Assert(class_initialized == true,ExcMessage("Please initialize the post proc class"));
 
     	// location of the needed variables and the corresponding conversion factors
-    	const unsigned int id_rho = this->constants.variable_map.find("rho")->second; 
-    	const unsigned int id_theta = this->constants.variable_map.find("theta")->second;
-    	const unsigned int id_sigmaxx = this->constants.variable_map.find("sigmaxx")->second;
-    	const unsigned int id_sigmayy = this->constants.variable_map.find("sigmayy")->second;
-    	const unsigned int id_sigmaxy = this->constants.variable_map.find("sigmaxy")->second;
+    	const unsigned int id_rho = this->constants.variable_map[dim-1].find("rho")->second; 
+    	const unsigned int id_theta = this->constants.variable_map[dim-1].find("theta")->second;
+    	const unsigned int id_sigmaxx = this->constants.variable_map[dim-1].find("sigmaxx")->second;
+    	const unsigned int id_sigmayy = this->constants.variable_map[dim-1].find("sigmayy")->second;
+    	const unsigned int id_sigmaxy = this->constants.variable_map[dim-1].find("sigmaxy")->second;
 
     	double rho;					// value of density
     	double theta;				// value of temperature
@@ -1398,13 +1363,7 @@ print_fe_index(const hp::DoFHandler<dim> &dof_handler)
 
     					// traction in the y-direction
     					Ty = fac_sigma * (solution_value(id_sigmaxy) * nx + solution_value(id_sigmayy) * ny);
-
-    					// std::cout << "Solution value: " << solution_value << std::endl;
-    					// std::cout << "Qudrature point: " << quad_points[q] << std::endl;
-    					// std::cout << "nx: " << nx << " ny: " << ny << std::endl;
-    					// std::cout << "pressure_x: " << pressure_x << " pressure_y: " << pressure_y << std::endl;
-    					// std::cout << "Tx: " << Tx << " Ty: " << Ty << std::endl;
-
+    					
     					// we now integrate over the surface
     					// drag on the force, i.e the force in the x-direction
     					lift_drag(0) += (pressure_x + Tx) * Jacobian_face[q];

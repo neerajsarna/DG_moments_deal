@@ -43,7 +43,6 @@ namespace Constants
 		private:
 			void declare_parameters();
 			void allocate_variable_map();
-			void allocate_variable_map_1D();
 			void allocate_subdirector_names();
 	};
 
@@ -81,8 +80,6 @@ namespace Constants
 		// we create a map between the id of the variable and it's name,
 		// proves to be helpful during error computation
 		allocate_variable_map();
-
-		allocate_variable_map_1D();
 
 		allocate_subdirector_names();
 	}
@@ -614,7 +611,7 @@ namespace Constants
 
 			prm.declare_entry("mesh type",
 				"0",
-				Patterns::Integer(0,4),
+				Patterns::Integer(0,5),
 				"type of mesh");
 
 			/*0 heat_conduction,
@@ -1045,16 +1042,24 @@ namespace Constants
 		 	constants_num.vx101 = prm.get_double("vx101");
 		 	constants_num.vx102 = prm.get_double("vx102");
 
-
 		 	constants_num.vy0 =  prm.get_double("vy0");
 		 	constants_num.vy1  = prm.get_double("vy1");
 		 	constants_num.vy2  = prm.get_double("vy2");
 		 	constants_num.vy3  = prm.get_double("vy3");
 		 	constants_num.vy4  = prm.get_double("vy4");
 
+		 	constants_num.vz0 =  prm.get_double("vz0");
+		 	constants_num.vz1  = prm.get_double("vz1");
+		 	constants_num.vz2  = prm.get_double("vz2");
+		 	constants_num.vz3  = prm.get_double("vz3");
+		 	constants_num.vz4  = prm.get_double("vz4");
+
 		 	// tangential velocity of the incoming distribution
 		 	constants_num.vy101 = prm.get_double("vy101");
 		 	constants_num.vy102 = prm.get_double("vy102");
+
+		 	constants_num.vz101 = prm.get_double("vz101");
+		 	constants_num.vz102 = prm.get_double("vz102");
 
 		 	constants_num.coll_op = (Collision_Operator)prm.get_integer("Collision_Operator");
 
@@ -1125,25 +1130,33 @@ namespace Constants
 	{
 
 	  	
-	  	std::vector<std::string> var_names = {"rho","vx","vy","theta","sigmaxx","sigmaxy","sigmayy","qx","qy","mxxx","mxxy","mxyy","myyy",
-	  								"Delta","Rxx","Rxy","Ryy"};
+	  	std::vector<std::string> var_names_1D = {"rho","vx","theta","qx"};
+	  	std::vector<std::string> var_names_2D = {"rho","vx","vy","theta","sigmaxx","sigmaxy","sigmayy","qx","qy"};
+	  	std::vector<std::string> var_names_3D = {"rho","vx","vy","vz","theta","sigmaxx","sigmaxy",
+	  											"sigmaxz","sigmayy","sigmayz","qx","qy","qz"};
 
-	  	for (unsigned int i = 0 ; i < var_names.size() ; i++)
-	  		constants_num.variable_map[var_names[i]] = i;
-	  
+
+	  	// a variable map for 1D
+	  	std::map<std::string,unsigned int> map_1D;
+	  	std::map<std::string,unsigned int> map_2D;
+		std::map<std::string,unsigned int> map_3D;
+
+	  	for (unsigned int i = 0 ; i < var_names_1D.size() ; i++)
+	  		map_1D[var_names_1D[i]] = i;		
+
+	  	for (unsigned int i = 0 ; i < var_names_2D.size() ; i++)
+	  		map_2D[var_names_2D[i]] = i;		
+
+	  	for (unsigned int i = 0 ; i < var_names_3D.size() ; i++)
+	  		map_3D[var_names_3D[i]] = i;		
+
+
+	  	constants_num.variable_map.push_back(map_1D);
+	  	constants_num.variable_map.push_back(map_2D);
+	  	constants_num.variable_map.push_back(map_3D);
+
 	}
 
-	void Base_Constants
-	::allocate_variable_map_1D()
-	{
-
-	  	
-	  	std::vector<std::string> var_names = {"rho","vx","theta","qx","mxxx","Delta","Rxx"};
-
-	  	for (unsigned int i = 0 ; i < var_names.size() ; i++)
-	  		constants_num.variable_map_1D[var_names[i]] = i;
-	  
-	}
 
 	void Base_Constants
 	::allocate_subdirector_names()

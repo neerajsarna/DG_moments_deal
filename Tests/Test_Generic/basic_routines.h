@@ -67,7 +67,7 @@ void Compare_Float_Vec(dealii::Vector<double> &vec1,dealii::Vector<double> &vec2
 	AssertDimension(vec1.size(),vec2.size());
 
 	for (unsigned int i = 0 ; i < vec1.size() ; i++)
-		EXPECT_NEAR(vec1(i),vec2(i),1e-5);
+		EXPECT_NEAR(vec1(i),vec2(i),1e-5) << "failed at: " << i;
 }
 
 // check whether a matrix is symmetric or not

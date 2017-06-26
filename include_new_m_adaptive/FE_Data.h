@@ -338,7 +338,8 @@ hp_fe_data<dim>::compute_distribution_deviation(const int ngp,
                                       &weight);  
 
 
-    // we now convert from the l2 norm to the l1 norm. We would like to compute the l1 norm of the deviation and therefore
+    // we now convert from the l2 norm to the l1 norm.
+    // We would like to compute the l1 norm of the deviation and therefore
     // we simply square the value obtained above. The reason for this is that since we have already taken the square 
     // therefore the function is anyhow positive. Therefore to compute the l1 norm we just need to square the expression 
     // obtained from the above expression. 
@@ -403,12 +404,8 @@ hp_fe_data<dim>::compute_error_comparitive(const Vector<double> &solution,
       std::vector<Point<dim>> Quad_points(total_ngp);
       unsigned int counter = 0;
 
-      unsigned int component;
-        if (dim == 1)
-            component = constants.variable_map_1D.find(constants.error_variable)->second;
+      unsigned int component = constants.variable_map[dim-1].find(constants.error_variable)->second;
 
-        if (dim == 2)
-            component = constants.variable_map.find(constants.error_variable)->second;
 
       FILE *fp;
       fp = fopen("error_velocity_space","w+");

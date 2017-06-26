@@ -16,7 +16,7 @@ enum BC_Type
 
 // types of mesh which will be generated 
 enum Mesh_type
-{ring,square_domain,square_circular_cavity,NACA5012,line};
+{ring,square_domain,square_circular_cavity,NACA5012,line,box_cylinder};
 
 // types of test cases
 enum Problem_type
@@ -197,8 +197,9 @@ struct tensor_data
 
 
 	// we create a map between the id of the variable and it's name
-		std::map<std::string,unsigned int> variable_map;
-		std::map<std::string,unsigned int> variable_map_1D;
+	// for every dimension we have a different variable map
+		std::vector<std::map<std::string,unsigned int>> variable_map;
+	//std::map<std::string,unsigned int> variable_map_1D;
 
 		Collision_Operator coll_op;
 

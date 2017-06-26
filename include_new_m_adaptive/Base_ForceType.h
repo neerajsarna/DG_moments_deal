@@ -156,6 +156,37 @@ namespace ForceType
 	Base_ForceType<dim>(constants,nEqn)
 	{;}
 
+	// specialization for 1D
+	template<>
+	void 
+	ForceType3<1>
+	::source_term(const std::vector<Point<1>> &p,
+				 std::vector<Vector<double>> &value,
+				 const double factor)
+	{
+		Assert(p.size()!=0,ExcNotInitialized());
+		Assert(value.size()!=0,ExcNotInitialized());
+		AssertDimension(p.size(),value.size());
+		var_theta = 2;
+		
+
+		// now we need to check whether we captured the correct variable or not for the poisson heat conduction problem
+		Assert(var_theta == 2,ExcMessage("Forcing not being applied to the energy equation"));
+
+		for (unsigned int i = 0 ; i < value.size() ; i++)
+			{
+				const double x_cord = p[i][0];
+				// initialize the variable
+				value[i] = 0;
+				AssertDimension((int)value[i].size(),this->nEqn);
+
+				// the source term for the energy equation. The factor appears from the symmetrizer
+				value[i](var_theta) = -factor * this->constants.alpha * pow(x_cord,2);
+			}
+
+	}
+
+	
 	// specialization for 2D
 	template<>
 	void 
@@ -186,22 +217,24 @@ namespace ForceType
 
 	}
 
-	// specialization for 1D
+
+
+	// same as above but for the 3D case
 	template<>
 	void 
-	ForceType3<1>
-	::source_term(const std::vector<Point<1>> &p,
+	ForceType3<3>
+	::source_term(const std::vector<Point<3>> &p,
 				 std::vector<Vector<double>> &value,
 				 const double factor)
 	{
 		Assert(p.size()!=0,ExcNotInitialized());
 		Assert(value.size()!=0,ExcNotInitialized());
 		AssertDimension(p.size(),value.size());
-		var_theta = 2;
+		var_theta = 4;
 		
 
 		// now we need to check whether we captured the correct variable or not for the poisson heat conduction problem
-		Assert(var_theta == 2,ExcMessage("Forcing not being applied to the energy equation"));
+		Assert(var_theta == 4,ExcMessage("Forcing not being applied to the energy equation"));
 
 		for (unsigned int i = 0 ; i < value.size() ; i++)
 			{

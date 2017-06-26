@@ -42,7 +42,9 @@ std::vector<std::string> input_file;
 //#include "Test_SquareGrid.h"
 //  #include "Test_CrsFormat.h"
  //#include "Test_Production.h"
- #include "Test_ProjectorData.h"
+//  #include "Test_ProjectorData.h"
+// #include "Test_BCrhs.h"
+#include "Test_MeshGenerator.h"
 // #include "Test_SymmetrizerData.h"
 
 int main(int argc,char **argv)

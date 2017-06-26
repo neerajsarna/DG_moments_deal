@@ -3,26 +3,25 @@
 #include <math.h>
 #include <iostream>
 #include <vector>
+#include <map>
 
 using namespace std;
 
 
-struct test
-{	
-	double a;
-	void print();
-};
-
-void test::print()
+void allocate_map(	std::vector<std::map<std::string,unsigned int> > &variable_map)
 {
-	std::cout << "value of a is " << a << std::endl;
+	std::map<std::string,unsigned int> map_1;
+
+	map_1["neeraj"] = 0;
+	variable_map.push_back(map_1);	
+	std::cout << "size " << variable_map.size() << std::endl;
 }
 
 int main(int argc,char **argv)
 {
-	test neeraj;
-	neeraj.a = 10;
-	
-	neeraj.print();
+	std::vector<std::map<std::string,unsigned int> > variable_map;
 
+	allocate_map(variable_map);
+
+	std::cout << variable_map[0].find("neeraj")->second << std::endl;
 }

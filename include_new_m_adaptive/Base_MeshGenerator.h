@@ -47,12 +47,14 @@ namespace MeshGenerator
 			void mesh_internal_square(const unsigned int parts_x,const unsigned int parts_y);
 			void mesh_internal_square_circular_cavity();
 			void mesh_internal_line();
+			void mesh_internal_box_cylinder();
 			
 			void set_periodic_bid()const;
 			void set_square_bid()const;
 			void set_square_circular_cavity_bid()const;
 			void set_bid_line_inflow_outflow();
 			void set_bid_line_heat_conduction();
+			void set_bid_box_cylinder();
 
 			// the following routine handles the refinement of the grid
 			void refinement_handling(const unsigned int present_cycle,
@@ -102,7 +104,8 @@ namespace MeshGenerator
       for (unsigned int face=0; face<GeometryInfo<dim>::faces_per_cell; ++face)
       {
         if (cell->face(face)->at_boundary())
-          boundary_count[cell->face(face)->boundary_id()]++;
+          	boundary_count[cell->face(face)->boundary_id()]++;
+        
       }
     }
     mesh_info += ", boundary indicators: ";
@@ -295,6 +298,21 @@ namespace MeshGenerator
 
 	}
 
+	template<>
+	void 
+	Base_MeshGenerator<3>::develop_mesh()
+	{
+		bool loaded_mesh = false;
+
+		if (mesh_type == box_cylinder)
+		{
+			loaded_mesh = true;
+			mesh_internal_box_cylinder();
+		}
+
+		AssertThrow(loaded_mesh,ExcMessage("Mesh not loaded"));
+	}
+
 		// specialization for the 2D case
 	template<>
 	void 
@@ -327,5 +345,9 @@ namespace MeshGenerator
 
 	// mesh generator line
 	#include "MeshGenerator_Line.h"
+
+
+	// develops a box over a sphere
+	#include "MeshGenerator_BoxCylinder.h"
 
 }

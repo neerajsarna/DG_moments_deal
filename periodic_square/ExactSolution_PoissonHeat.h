@@ -40,9 +40,10 @@ namespace ExactSolution
 		Assert(fabs(this->constants.alpha - 0.816496580927726) < 1e-5,ExcMessage("Exact Solution does not correspond to the given value of alpha"));
 
 		// variables for which we need the 
-		const unsigned int ID_theta = this->constants.variable_map.find("theta")->second;
-		const unsigned int ID_heat = this->constants.variable_map.find("qy")->second;
-		const unsigned int ID_stress = this->constants.variable_map.find("sigmayy")->second;
+		const unsigned int ID_theta = this->constants.variable_map[1].find("theta")->second;
+		const unsigned int ID_heat = this->constants.variable_map[1].find("qy")->second;
+		const unsigned int ID_stress = this->constants.variable_map[1].find("sigmayy")->second;
+
 		const double y = p(1);
 		bool developed_exact_solution = false;
 
@@ -501,7 +502,7 @@ namespace ExactSolution
 		bool developed_exact_solution = false;
 
 		// variables for which we need the exact solution
-		const unsigned int ID_theta = this->constants.variable_map_1D.find("theta")->second;
+		const unsigned int ID_theta = this->constants.variable_map[0].find("theta")->second;
 
 		AssertDimension(ID_theta,2);
 		const double x = p(0);
@@ -746,7 +747,7 @@ namespace ExactSolution
 		bool developed_exact_solution = false;
 
 		// variables for which we need the exact solution
-		const unsigned int ID_theta = this->constants.variable_map_1D.find("theta")->second;
+		const unsigned int ID_theta = this->constants.variable_map[1].find("theta")->second;
 
 		AssertDimension(ID_theta,2);
 		const double x = p(0);

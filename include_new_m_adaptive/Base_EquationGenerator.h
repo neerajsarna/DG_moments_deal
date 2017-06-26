@@ -155,70 +155,8 @@ namespace EquationGenerator
 
 	};
 
-	// specialization for the 1D case 
-	template<>
-	Base_EquationGenerator<1>
-	::Base_EquationGenerator(const constant_numerics &constants,
-							 const int nEqn,
-							 const int nBC,
-							 const int Ntensors)
-	:
-	constants(constants),
-	nEqn(nEqn),
-	nBC(nBC),
-	Ntensors(Ntensors),
-	force1(constants,nEqn),
-	force2(constants,nEqn),
-	force3(constants,nEqn),
-	base_tensorinfo(nEqn,Ntensors)
-	{
-		const unsigned int dim = 1;
-
-		// the maximum number of matrices in the system
-		const int max_matrices = dim + 4;
-
-		// the base file names, to be updated with the equation number later on
-		basefile.resize(max_matrices);
-
-		Assert(basefile.size() == max_matrices,ExcMessage("incorrect vector size"));
-
-		unsigned int entry;
-
-	
-		basefile[0] = "A1_1D_";
-
-		entry = dim;
-		Assert(entry < max_matrices,ExcNotInitialized());
-		basefile[entry] = "B_1D_";
-
-		entry = dim + 1;
-		Assert(entry < max_matrices,ExcNotInitialized());
-		basefile[entry] = "odd_ID_1D_";
-
-		entry = dim + 2;
-		Assert(entry < max_matrices,ExcNotInitialized());
-		basefile[entry] = "Sigma_1D_";
-
-		entry = dim + 3;
-		Assert(entry < max_matrices,ExcNotInitialized());
-		basefile[entry] = "Binflow_1D_";
-
-
-		// now we check the number of boundary conditions 
-		// if we have even number of variables in the system
-		if (nEqn %2 == 0)
-			Assert(nBC == (nEqn / 2),ExcMessage("Incorrect number of boundary conditions"));
-
-		// if we have odd number of variables in the system
-		if (nEqn %2 != 0)
-			Assert(nBC == (nEqn - 1)  / 2,ExcMessage("Incorrect number of boundary conditions"));			
-
-	}
-
-
-	// specialization for the 2d case 
-	template<>
-	Base_EquationGenerator<2>
+	template<int dim>
+	Base_EquationGenerator<dim>
 	::Base_EquationGenerator(const constant_numerics &constants,
 				 			 const int nEqn,
 							 const int nBC,
@@ -233,10 +171,15 @@ namespace EquationGenerator
 	force3(constants,nEqn),
 	base_tensorinfo(nEqn,Ntensors)
 	{
-		const unsigned int dim = 2;
-
 		// the maximum number of matrices in the system
+		// 3 flux matrices (Ax,Ay and Az)
+		// 2 boundary matrix (B and B_inflow)
+		// 1 sigma (Penalty matrix Sigma)
+		// 1 odd variables (Vector containing all the odd variables)
 		const int max_matrices = dim + 4;
+
+		// ending for the name of different matrices
+		std::string name_ending = + "_" + std::to_string(dim)+"D_";
 
 		// the base file names, to be updated with the equation number later on
 		basefile.resize(max_matrices);
@@ -246,23 +189,37 @@ namespace EquationGenerator
 		unsigned int entry;
 
 		for (unsigned int i = 0 ; i < dim ; i ++)
-			basefile[i] = "A" + std::to_string(i + 1) + "_";
+			basefile[i] = "A" + std::to_string(i + 1) + name_ending;
 
 		entry = dim;
 		Assert(entry < max_matrices,ExcNotInitialized());
-		basefile[entry] = "B_";
+		basefile[entry] = "B"+name_ending;
 
 		entry = dim + 1;
 		Assert(entry < max_matrices,ExcNotInitialized());
-		basefile[entry] = "odd_ID_";
+		basefile[entry] = "odd_ID"+name_ending;
 
 		entry = dim + 2;
 		Assert(entry < max_matrices,ExcNotInitialized());
-		basefile[entry] = "Sigma_";
+		basefile[entry] = "Sigma" + name_ending;
 
 		entry = dim + 3;
 		Assert(entry < max_matrices,ExcNotInitialized());
-		basefile[entry] = "Binflow_";
+		basefile[entry] = "Binflow" + name_ending;
+
+
+		// we can check the number of equations and the number of boundary conditions for the 1D case
+		if (dim == 1)
+		{
+					// now we check the number of boundary conditions 
+		// if we have even number of variables in the system
+		if (nEqn %2 == 0)
+			Assert(nBC == (nEqn / 2),ExcMessage("Incorrect number of boundary conditions"));
+
+		// if we have odd number of variables in the system
+		if (nEqn %2 != 0)
+			Assert(nBC == (nEqn - 1)  / 2,ExcMessage("Incorrect number of boundary conditions"));	
+		}
 	}
 
 
@@ -437,7 +394,7 @@ namespace EquationGenerator
 		// system we are dealing with
 		std::vector<std::string> basefile_system;
 
-		// Shout out no basefile names have been allocated
+		// Shout out if no basefile names have been allocated
 		Assert(basefile.size() !=0,ExcMessage("basefile names not allocated"));
 
 		// allocate basefile_system in case 
@@ -479,6 +436,7 @@ namespace EquationGenerator
 			this->build_matrix_from_triplet(system_data.A[i].matrix,system_data.A[i].Row_Col_Value);
 		}
 
+			// we store the unsymmetrized flux matrix for numerical flux generation
 			system_data.Ax = system_data.A[0];
 
 			// develop the B matrix
@@ -500,10 +458,10 @@ namespace EquationGenerator
 	}
 
 	// builds the Projector matrix to be used during computation. Specialization for the 2D case
-	template<>
+	template<int dim>
 	Sparse_matrix
-	Base_EquationGenerator<2>
-	::build_Projector(const Tensor<1,2> &normal_vector)
+	Base_EquationGenerator<dim>
+	::build_Projector(const Tensor<1,dim> &normal_vector)
 	{
 
 
@@ -515,52 +473,27 @@ namespace EquationGenerator
 		return(base_tensorinfo.reinit_global(normal_vector));
 	}
 
-	// specialization for the 1D case
-	template<>
-	Sparse_matrix
-	Base_EquationGenerator<1>
-	::build_Projector(const Tensor<1,1> &normal_vector)
-	{
-
-
-		return(base_tensorinfo.reinit_global(normal_vector));
-	}
-
 
 	// specialization for the 2D case
-	template<>
+	template<int dim>
 	Sparse_matrix
-	Base_EquationGenerator<2>
-	::build_InvProjector(const Tensor<1,2> &normal_vector)
+	Base_EquationGenerator<dim>
+	::build_InvProjector(const Tensor<1,dim> &normal_vector)
 	{
 
-		const double nx = normal_vector[0];
-		const double ny = normal_vector[1];
 
 		Assert(base_tensorinfo.varIdx.rows() != 0 || base_tensorinfo.varIdx.cols() !=0 ,
 				ExcMessage("Base tensor info not initialized"));
 
 		return(base_tensorinfo.reinit_Invglobal(normal_vector));
 	}
-
-	// specialization for the 1D case
-	template<>
-	Sparse_matrix
-	Base_EquationGenerator<1>
-	::build_InvProjector(const Tensor<1,1> &normal_vector)
-	{
-
-		const double nx = normal_vector[0];
-		return(base_tensorinfo.reinit_Invglobal(normal_vector));
-	}
-
 
 	
 	// specialization for the 2D case
-	template<>
+	template<int dim>
 	Full_matrix 
-	Base_EquationGenerator<2>::
-	build_Aminus(const Tensor<1,2,double> normal_vector)
+	Base_EquationGenerator<dim>::
+	build_Aminus(const Tensor<1,dim,double> normal_vector)
 	{
 		Full_matrix Aminus;
 		Aminus.resize(this->nEqn,this->nEqn);
@@ -573,31 +506,9 @@ namespace EquationGenerator
 				ExcMessage("Base tensor info not initialized"));
 
 		return(base_tensorinfo.reinit_Invglobal(normal_vector) 
-			   * this->Aminus_1D 
-			   * base_tensorinfo.reinit_global(normal_vector));
+			   	* this->Aminus_1D 
+			   	* base_tensorinfo.reinit_global(normal_vector));
 	}
-
-	// specialization for the 1D case
-	template<>
-	Full_matrix 
-	Base_EquationGenerator<1>::
-	build_Aminus(const Tensor<1,1,double> normal_vector)
-	{
-		Full_matrix Aminus;
-		const double nx = normal_vector[0];
-		Aminus.resize(this->nEqn,this->nEqn);
-
-		Assert(this->Aminus_1D.rows() != 0 || this->Aminus_1D.cols() != 0,
-			  ExcMessage("Aminus_1D has not been built yet"));
-
-		// the numerical flux matrix is computed with the help of the matrix 
-		// of the original system. The symmetrizer has been multiplied to the projector itself therefore 
-		// we do not see an explicit multiplication by the symmetrizer. 
-		return(base_tensorinfo.reinit_Invglobal(normal_vector) 
-			   * this->Aminus_1D 
-			   * base_tensorinfo.reinit_global(normal_vector));
-	}
-
 
 	// Convert a matrix to a symmetric matrix. The following function returns 
 	// S_half * matrix * S_half_inv. So it symmetrizes the system under a similarity transform
@@ -646,13 +557,13 @@ namespace EquationGenerator
 		create_symmetric_matrix(system_data.P.matrix,base_tensorinfo.S_half,base_tensorinfo.S_half_inv);
 	}
 
-	// The following routine computes S_half.f where f is the external forcing into the system
+	
 	template<int dim>
 	double
 	Base_EquationGenerator<dim>
 	::forcing_factor()
 	{
-		const unsigned int var_force = constants.variable_map.find(constants.force_variable)->second;
+		const unsigned int var_force = constants.variable_map[dim-1].find(constants.force_variable)->second;
 
 		Assert(base_tensorinfo.S_half.rows() != 0 || base_tensorinfo.S_half.cols() != 0,ExcNotInitialized());
 		const double force_factor = base_tensorinfo.S_half.coeffRef(var_force,var_force);
@@ -661,6 +572,7 @@ namespace EquationGenerator
 
 		return(force_factor);
 	}
+
 
 	template<int dim>
 	void
@@ -738,7 +650,7 @@ namespace EquationGenerator
 				break;
 			}
 
-			// picking up the odd variables
+			// the penalty matrix for the odd implementation is read from a file
 			case odd:
 			{
 				break;
@@ -766,26 +678,30 @@ namespace EquationGenerator
 		force->source_term(p,value,force_factor);
 	}
 
+
 	// specialization for the 2D case
-	template<>
+	template<int dim>
 	void
-	Base_EquationGenerator<2>
+	Base_EquationGenerator<dim>
 	::reinit_P(const std::string &folder_name)
 	{
 		AssertDimension(system_data.P.matrix.rows(),nEqn);
 		AssertDimension(system_data.P.matrix.cols(),nEqn);
 
-		if (nEqn == 6)
+
+		// the total number of conserved variables
+		const unsigned int num_conserved = dim + 2;
+
+		// system A
+		if (nEqn == 6 && dim == 2)
 		{
 			for (int i = 1 ; i < nEqn ; i ++)
 				system_data.P.matrix.coeffRef(i,i) = 1/constants.tau;
 
-			
+
 		}
 		else
 		{
-			const unsigned int num_conserved = 4;
-
 			switch(constants.coll_op)
 			{
 				case BGK:
@@ -797,7 +713,8 @@ namespace EquationGenerator
 				}
 				case Boltzmann_MM:
 				{
-					std::string file_for_P = folder_name + "MM_P_"+std::to_string(nEqn)+".txt";
+					Assert(dim != 1,ExcMessage("Not implemented for 1D systems"));
+					std::string file_for_P = folder_name + "MM_P_3D_"+std::to_string(nEqn)+".txt";
 					this->build_triplet(system_data.P.Row_Col_Value,file_for_P);
 
 					// develop the matrix 
@@ -812,57 +729,19 @@ namespace EquationGenerator
 					Assert(1 == 0,ExcMessage("Should not have reached here"));
 					break;
 				}
-			}
-			
+			}			
 		}
 
-		system_data.P.matrix.makeCompressed();
-	}
 
-	// specialization for the 1D case
-	template<>
-	void
-	Base_EquationGenerator<1>
-	::reinit_P(const std::string &folder_name)
-	{
-		AssertDimension(system_data.P.matrix.rows(),nEqn);
-		AssertDimension(system_data.P.matrix.cols(),nEqn);
-
-		// the conserved variables are rho, vx and theta
-		const unsigned int num_conserved = 3;
-
-			switch(constants.coll_op)
-			{
-				case BGK:
-				{
-					for (int i =  num_conserved; i < nEqn ; i++)
-						system_data.P.matrix.coeffRef(i,i) = 1/constants.tau;					
-
-					break;
-				}
-				case Boltzmann_MM:
-				{
-					AssertThrow(1 ==0 ,ExcNotImplemented());
-					break;
-				}
-				default:
-				{
-					AssertThrow(1 == 0,ExcMessage("Should not have reached here"));
-					break;
-				}
-			}
-		
 
 		system_data.P.matrix.makeCompressed();
 	}
-
-
 
 	// initialize the system_data corresponding to a particular moment system
 	// Specialization for the 2D case
-	template<>
+	template<int dim>
 	void 
-	Base_EquationGenerator<2>
+	Base_EquationGenerator<dim>
 	::reinit_system(const std::string &folder_name)
 	{
 		this->generate_matrices(this->system_data,this->nEqn,this->nBC,folder_name);
@@ -870,21 +749,27 @@ namespace EquationGenerator
 		// we now develop the P matrix
 		reinit_P(folder_name);	
 
-
-		// if the number of equations are not equal to 6 then we fix the normal relaxation velocity
-		if (nEqn != 6)
+		//don't fix the boundary conditions for the A system
+		if (nEqn == 6 && dim ==2)
 		{
-				const bool fix_B = true;
-				const bool check_B = true;
+				// do nothing
+		}
+		else
+		{
 
-				BoundaryHandler::Base_BoundaryHandler_Char::fix_B_vx(constants.epsilon,fix_B,system_data.B.matrix);
+			const bool fix_B = true;
+			const bool check_B = true;
+
+			BoundaryHandler::Base_BoundaryHandler_Char::fix_B_vx(constants.epsilon,fix_B,system_data.B.matrix);
 
 				// check whether B has been fixed or not
-				if(check_B)
-					for (unsigned int i = 0 ; i < system_data.B.matrix.cols() ; i++)
-					// in both the cases, 1D or 2D the ID of vx does not change
-					 if(i != constants.variable_map.find("vx")->second)			
-						Assert(fabs(system_data.B.matrix.coeffRef(0,i)) < 1e-3,ExcMessage("relaxational normal velocity not accommodated in B"));
+			if(check_B)
+				for (unsigned int i = 0 ; i < system_data.B.matrix.cols() ; i++)
+					// in both the cases, 1D, 2D or 3D the index for vx does not changed and remains at one
+					if(i != constants.variable_map[dim-1].find("vx")->second)	
+						Assert(fabs(system_data.B.matrix.coeffRef(0,i)) < 1e-3,
+								ExcMessage("relaxational normal velocity not accommodated in B"));						
+				
 		}
 
 
@@ -893,40 +778,13 @@ namespace EquationGenerator
 		// now we can initialize the boundary matrix for specular reflection
 		reinit_Bspecular();
 
-		// we need to compres B again
+
+
+		// we need to compress B again so that it consumes less
 		system_data.B.matrix.makeCompressed();
+
 	}
 
-	// specialization of the above routine for the 1D case
-	template<>
-	void 
-	Base_EquationGenerator<1>
-	::reinit_system(const std::string &folder_name)
-	{
-		this->generate_matrices(this->system_data,this->nEqn,this->nBC,folder_name);
-
-		// we now develop the P matrix
-		reinit_P(folder_name);	
-		
-		const bool fix_B = true;
-		const bool check_B = true;
-
-		BoundaryHandler::Base_BoundaryHandler_Char::fix_B_vx(constants.epsilon,fix_B,system_data.B.matrix);
-
-				// check whether B has been fixed or not
-		if(check_B)
-			for (unsigned int i = 0 ; i < system_data.B.matrix.cols() ; i++)
-					// in both the cases, 1D or 2D the ID of vx does not change
-				if(i != constants.variable_map.find("vx")->second)			
-					Assert(fabs(system_data.B.matrix.coeffRef(0,i)) < 1e-3,ExcMessage("relaxational normal velocity not accommodated in B"));
-
-
-		// now we can initialize the boundary matrix for specular reflection
-				reinit_Bspecular();
-
-		// we need to compres B again
-		system_data.B.matrix.makeCompressed();
-	}
 
 
 	template<int dim>
