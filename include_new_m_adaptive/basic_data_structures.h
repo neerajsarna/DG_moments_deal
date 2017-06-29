@@ -16,7 +16,7 @@ enum BC_Type
 
 // types of mesh which will be generated 
 enum Mesh_type
-{ring,square_domain,square_circular_cavity,NACA5012,line,box_cylinder};
+{ring,square_domain,square_circular_cavity,NACA5012,line,box_cylinder,box};
 
 // types of test cases
 enum Problem_type

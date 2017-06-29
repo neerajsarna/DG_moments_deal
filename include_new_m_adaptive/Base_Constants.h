@@ -611,7 +611,7 @@ namespace Constants
 
 			prm.declare_entry("mesh type",
 				"0",
-				Patterns::Integer(0,5),
+				Patterns::Integer(0,6),
 				"type of mesh");
 
 			/*0 heat_conduction,

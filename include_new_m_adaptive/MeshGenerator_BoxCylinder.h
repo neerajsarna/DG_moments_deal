@@ -4,16 +4,36 @@ void
 Base_MeshGenerator<dim>::set_bid_box_cylinder()
 {
 	AssertDimension(dim,3);
-	const double left_plane = -2.0;		//x coordinate, yz plane 
-	const double right_plane = 2.0;		// x coordinate, yz plane
-	const double bottom_plane = -2.0; 	// y coordinate, xz plane
-	const double top_plane = 2.0;		// y coordinate, xz plane
-	const double front_plane = 1.0;		// z coordinate, xy plane
-	const double back_plane = 0.0; 		// z coordinate, xy plane
+	const double inner_radius  = 0.5;
 
-
+	// first we specify the boundary indicators for the cylindrical surface. 
 	// we only iterate over the active cells
-	typename Triangulation<dim>::active_cell_iterator cell = triangulation.begin_active(),endc = triangulation.end();
+	typename Triangulation<dim>::active_cell_iterator cell = triangulation.begin_active(),
+													  endc = triangulation.end();
+
+	for (; cell != endc ; cell++)
+		for (unsigned int face = 0 ; face < GeometryInfo<dim>::faces_per_cell ; face++)
+			if (cell->face(face)->at_boundary())
+				for (unsigned int v = 0 ; v < GeometryInfo<dim>::vertices_per_face ; v++)
+				{
+					Point<dim> projection(0,0,cell->face(face)->vertex(v)(2));
+
+					if (fabs(projection.distance(cell->face(face)->vertex(v))-inner_radius) < 1e-16)
+						cell->face(face)->set_boundary_id(2);
+				}
+
+
+	const double half_edge = 4.0;				// edge length of half of the cube
+	const double left_plane = -half_edge;		//x coordinate, yz plane 
+	const double right_plane = half_edge;		// x coordinate, yz plane
+	const double bottom_plane = -half_edge; 	// y coordinate, xz plane
+	const double top_plane = half_edge;			// y coordinate, xz plane
+	const double front_plane = 3.0;				// z coordinate, xy plane
+	const double back_plane = 0.0; 				// z coordinate, xy plane
+
+
+
+	cell = triangulation.begin_active();
 
 
 	for (; cell != endc ; cell++)
@@ -29,54 +49,34 @@ Base_MeshGenerator<dim>::set_bid_box_cylinder()
 				double z_cord = cell->face(face)->center()(2);
 
 				if (fabs(x_cord - left_plane) < 1e-16)
-				{
-					// inflow surface
 					cell->face(face)->set_boundary_id(101);
-					square_edge = true;
-				}
+
 
 				if (fabs(y_cord - bottom_plane) < 1e-16)
-				{
-					cell->face(face)->set_boundary_id(0);
-					square_edge = true;
-				}
+					cell->face(face)->set_boundary_id(50);
+					
 
 				if (fabs(x_cord - right_plane) < 1e-16)
-				{
 					cell->face(face)->set_boundary_id(102);
-					square_edge = true;
-				}
+
 
 				if (fabs(y_cord - top_plane) < 1e-16)
-				{
-					cell->face(face)->set_boundary_id(1);
-					square_edge = true;
-				}
+					cell->face(face)->set_boundary_id(50);
+
 
 				// specular walls on the front and on the back
 				if (fabs(z_cord - back_plane) < 1e-16)
-				{
 					cell->face(face)->set_boundary_id(50);
-					square_edge = true;
-				}
+					
 
 				if (fabs(z_cord - front_plane) < 1e-16)
-				{
 					cell->face(face)->set_boundary_id(50);
-					square_edge = true;
-				}
+					
 
-				if (square_edge == false)
-				{
-					cell->face(face)->set_boundary_id(4);
-					square_edge = true;
-				}
 			}
 
 	}
 
-	// now we set the spherical manifold
-	triangulation.set_manifold(4,boundary);
 }
 
 
@@ -118,5 +118,4 @@ Base_MeshGenerator<dim>::mesh_internal_box_cylinder()
 
             }
 
-            //triangulation.refine_global(initial_refinement);
 }

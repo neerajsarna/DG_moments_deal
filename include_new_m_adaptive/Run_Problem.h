@@ -160,7 +160,10 @@ template<int dim>
 
 		std::cout << "Distributing dof " << std::endl;
 		timer.enter_subsection("Dof Distribution");
-		this->distribute_dof_allocate_matrix(this->fe_data_structure.dof_handler,this->fe_data_structure.finite_element,this->global_matrix);
+		this->distribute_dof_allocate_matrix(this->fe_data_structure.dof_handler,
+											this->fe_data_structure.finite_element,this->global_matrix);
+
+		std::cout << "#Dofs " << this->fe_data_structure.dof_handler.n_dofs() << std::endl;
 		this->allocate_vectors(this->fe_data_structure.dof_handler,this->solution,this->system_rhs,this->residual);
 		timer.leave_subsection();
 

@@ -31,6 +31,7 @@ namespace MeshGenerator
 			const std::string mesh_filename;
 			// print the info contained in the input triangulation
 			void print_mesh_info() const;
+			void print_grid_points() const;
 
 			// print the grid to an eps file
 			// The index is just used to manipulate the name of the file
@@ -48,6 +49,8 @@ namespace MeshGenerator
 			void mesh_internal_square_circular_cavity();
 			void mesh_internal_line();
 			void mesh_internal_box_cylinder();
+			void mesh_internal_box();
+			void set_bid_cube_inflow();
 			
 			void set_periodic_bid()const;
 			void set_square_bid()const;
@@ -61,6 +64,129 @@ namespace MeshGenerator
 									 const unsigned int total_cycles);
 	};
 
+		// specialization for the 2D case
+	template<>
+	void 
+	Base_MeshGenerator<1>::develop_mesh()
+	{
+		mesh_internal_line();
+	}
+
+	
+	// specialization for the 2D case
+	template<>
+	void 
+	Base_MeshGenerator<2>::develop_mesh()
+	{
+		bool loaded_mesh = false;
+
+		// if a problem involves inflow and outflow, we will simply use gmsh for meshing
+		if (problem_type == inflow_outflow)
+		{
+			loaded_mesh = true;
+			read_gmsh();
+		}
+
+		else 
+		{
+			if (mesh_type == ring)
+			{
+				fflush(stdout);
+				std::cout << "Developing a ring " << std::endl;
+				loaded_mesh = true;
+				mesh_internal_ring();
+			}
+
+			if (mesh_type == square_domain)
+			{
+				loaded_mesh = true;
+				mesh_internal_square(part_x,part_y);
+			}
+
+			if (mesh_type == square_circular_cavity)
+			{
+				loaded_mesh = true;
+				mesh_internal_square_circular_cavity();
+			}
+
+		}
+
+		AssertThrow(loaded_mesh,ExcMessage("Mesh not loaded"));
+
+	}
+
+	template<>
+	void 
+	Base_MeshGenerator<3>::develop_mesh()
+	{
+
+		switch(mesh_type)
+		{
+			case box_cylinder:
+			{
+				read_gmsh();
+
+				switch(problem_type)
+				{
+					case inflow_outflow:
+					{
+						set_bid_box_cylinder();
+						break;
+					}
+
+					case heat_conduction:
+					case lid_driven_cavity:
+					case periodic:
+					default:
+					{
+						Assert(1 == 0 ,ExcMessage("Test Case not implemented for this boundary"));
+						break;
+					}
+
+				}
+				break;
+			}
+
+			case box:
+			{
+				read_gmsh();
+				switch(problem_type)
+				{
+					case inflow_outflow:
+					{
+						set_bid_cube_inflow();
+						break;
+					}
+
+					case heat_conduction:
+					case lid_driven_cavity:
+					case periodic:
+					default:
+					{
+						Assert(1 == 0 ,ExcMessage("Test Case not implemented for this boundary"));
+						break;
+					}
+
+				}
+				break;
+			}
+
+			case ring:
+			case square_domain:
+			case square_circular_cavity:
+			case NACA5012:
+			case line:
+			default:
+			{
+				Assert(1 == 0 , ExcMessage("Should not have reached here"));
+				break;
+			}
+		}
+
+		//triangulation.refine_global(initial_refinement);
+	}
+
+	
 	template<int dim>
 	Base_MeshGenerator<dim>::Base_MeshGenerator(
 											    const std::string &output_file_name,
@@ -83,6 +209,7 @@ namespace MeshGenerator
 		develop_mesh();
 		
 	}
+
 
 	// the following routine prints the mesh info on the screen
 	template<int dim>
@@ -241,9 +368,12 @@ namespace MeshGenerator
 				break;
 			}
 
+			// we do not generate such geometries internalies
+			case box_cylinder:
 			case NACA5012:
+			case box:
 			{
-				AssertThrow(total_cycles == 1,ExcMessage("Could not perform grid refinement"));
+				AssertThrow(total_cycles == 1,ExcMessage("Perform the Grid Refinement in Gmsh"));
 				break;
 			}
 
@@ -256,79 +386,43 @@ namespace MeshGenerator
 
 	}
 
-	// specialization for the 2D case
-	template<>
-	void 
-	Base_MeshGenerator<2>::develop_mesh()
-	{
-		bool loaded_mesh = false;
-
-		// if a problem involves inflow and outflow, we will simply use gmsh for meshing
-		if (problem_type == inflow_outflow)
-		{
-			loaded_mesh = true;
-			read_gmsh();
-		}
-
-		else 
-		{
-			if (mesh_type == ring)
-			{
-				fflush(stdout);
-				std::cout << "Developing a ring " << std::endl;
-				loaded_mesh = true;
-				mesh_internal_ring();
-			}
-
-			if (mesh_type == square_domain)
-			{
-				loaded_mesh = true;
-				mesh_internal_square(part_x,part_y);
-			}
-
-			if (mesh_type == square_circular_cavity)
-			{
-				loaded_mesh = true;
-				mesh_internal_square_circular_cavity();
-			}
-
-		}
-
-		AssertThrow(loaded_mesh,ExcMessage("Mesh not loaded"));
-
-	}
-
-	template<>
-	void 
-	Base_MeshGenerator<3>::develop_mesh()
-	{
-		bool loaded_mesh = false;
-
-		if (mesh_type == box_cylinder)
-		{
-			loaded_mesh = true;
-			mesh_internal_box_cylinder();
-		}
-
-		AssertThrow(loaded_mesh,ExcMessage("Mesh not loaded"));
-	}
-
-		// specialization for the 2D case
-	template<>
-	void 
-	Base_MeshGenerator<1>::develop_mesh()
-	{
-		mesh_internal_line();
-	}
 
 	template<int dim>
 	void 
 	Base_MeshGenerator<dim>::read_gmsh()
 	{
+			std::cout << "Reading Gmsh file from: " << mesh_filename << std::endl;
 		    triangulation.clear();
   			gridin.attach_triangulation(triangulation);
   			std::ifstream f(mesh_filename);
   			gridin.read_msh(f);
+	}
+
+	template<>
+	void
+	Base_MeshGenerator<3>::print_grid_points()const
+	{
+		typename Triangulation<3>::active_cell_iterator cell = triangulation.begin_active(), 
+														endc = triangulation.end();
+
+		FILE *fp;
+		fp = fopen("grid_points","w+");
+
+		// print all the points corresponding to a particular plane
+		for (; cell != endc ; cell++)
+			for (unsigned int vertex = 0 ; vertex  < GeometryInfo<3>::vertices_per_cell ; vertex++)
+			{
+				Point<3> coords_vertex = cell->vertex(vertex);
+				// if the cells lie on the z plane then we print the coordinates
+				const double z_coord = coords_vertex(2);
+				if (fabs(z_coord) < 1e-16)
+					fprintf(fp, "%f %f \n",coords_vertex(0),coords_vertex(1));
+
+			}
+
+		fclose(fp);
+			
+		
 	}
 
 	// mesh generator for a ring shaped geometry
@@ -349,5 +443,8 @@ namespace MeshGenerator
 
 	// develops a box over a sphere
 	#include "MeshGenerator_BoxCylinder.h"
+
+	// develops a cube
+	#include "MeshGenerator_Box.h"
 
 }

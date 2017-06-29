@@ -713,13 +713,8 @@ namespace PostProc
     	const int max_equations = return_max_entry(nEqn);
     	Vector<double> solution_value(max_equations);
     	    	
-    	int variables_to_print;
+    	int variables_to_print = max_equations;
 
-    	if (dim == 2)
-		variables_to_print = max_equations;	// we print all the moments till the heat flux
-
-	if (dim == 1)
-		variables_to_print = 5; // we print all the moments till the heat flux
 
 	for (; cell != endc ; cell++)
 	{
@@ -768,15 +763,8 @@ namespace PostProc
     	fprintf(fp_solution, "#%s\n","x y at the midpoint of each cell all the solution components");
     	Vector<double> solution_value(nEqn);
     	
-    	int variables_to_print;
+    	int variables_to_print = nEqn;
 
-    	if (dim == 2)
-		variables_to_print = nEqn;	// we print all the moments till the heat flux
-
-	if (dim == 1)
-		variables_to_print = 5; // we print all the moments till the heat flux
-
-    	//variables_to_print = 6;
 
     	Assert(variables_to_print<=nEqn,ExcMessage("to many variables to print"));
 	for (; cell != endc ; cell++)
@@ -829,13 +817,8 @@ namespace PostProc
     	fprintf(fp_solution, "#%s\n","x y at the midpoint of each cell all the solution components");
     	Vector<double> solution_value(nEqn);
     	
-    	int variables_to_print;
+    	int variables_to_print = nEqn;
 
-    	if (dim == 2)
-		variables_to_print = nEqn;	// we print all the moments till the heat flux
-
-	if (dim == 1)
-		variables_to_print = 5; // we print all the moments till the heat flux
 
 	for (; cell != endc ; cell++)
 	{

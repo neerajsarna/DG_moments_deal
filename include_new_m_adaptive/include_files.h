@@ -16,6 +16,7 @@
 
 #include "ExactSolution_Dummy.h"
 #include "ExactSolution_PoissonHeat.h"
+#include "ExactSolution_SystemA.h"
 #include "SystemA.h"
 #include "FE_Data.h"
 #include "Assembler.h"

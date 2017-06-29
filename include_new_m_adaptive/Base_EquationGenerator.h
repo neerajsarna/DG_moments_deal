@@ -714,7 +714,8 @@ namespace EquationGenerator
 				case Boltzmann_MM:
 				{
 					Assert(dim != 1,ExcMessage("Not implemented for 1D systems"));
-					std::string file_for_P = folder_name + "MM_P_3D_"+std::to_string(nEqn)+".txt";
+					std::string file_for_P = folder_name + "MM_P"+"_"+std::to_string(dim) + "D_"
+											+std::to_string(nEqn)+".txt";
 					this->build_triplet(system_data.P.Row_Col_Value,file_for_P);
 
 					// develop the matrix 

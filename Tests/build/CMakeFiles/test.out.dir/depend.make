@@ -21,6 +21,7 @@ CMakeFiles/test.out.dir/main.cc.o: ../../include_new_m_adaptive/EigenSetup.h
 CMakeFiles/test.out.dir/main.cc.o: ../../include_new_m_adaptive/ExactSolution_Dummy.h
 CMakeFiles/test.out.dir/main.cc.o: ../../include_new_m_adaptive/FE_Data.h
 CMakeFiles/test.out.dir/main.cc.o: ../../include_new_m_adaptive/LinearSolver.h
+CMakeFiles/test.out.dir/main.cc.o: ../../include_new_m_adaptive/MeshGenerator_Box.h
 CMakeFiles/test.out.dir/main.cc.o: ../../include_new_m_adaptive/MeshGenerator_BoxCylinder.h
 CMakeFiles/test.out.dir/main.cc.o: ../../include_new_m_adaptive/MeshGenerator_Line.h
 CMakeFiles/test.out.dir/main.cc.o: ../../include_new_m_adaptive/MeshGenerator_Ring.h
@@ -33,9 +34,10 @@ CMakeFiles/test.out.dir/main.cc.o: ../../include_new_m_adaptive/include_files.h
 CMakeFiles/test.out.dir/main.cc.o: ../../include_new_m_adaptive/parse_command_line.h
 CMakeFiles/test.out.dir/main.cc.o: ../../periodic_square/ExactSolution_PoissonHeat.h
 CMakeFiles/test.out.dir/main.cc.o: ../../periodic_square/MeshGenerator_PeriodicSquare.h
+CMakeFiles/test.out.dir/main.cc.o: ../../ring/ExactSolution_SystemA.h
 CMakeFiles/test.out.dir/main.cc.o: ../../systems/BCrhs_systemA.h
 CMakeFiles/test.out.dir/main.cc.o: ../../systems/SystemA.h
-CMakeFiles/test.out.dir/main.cc.o: ../Test_Generic/Test_MeshGenerator.h
+CMakeFiles/test.out.dir/main.cc.o: ../Test_Generic/Test_Run.h
 CMakeFiles/test.out.dir/main.cc.o: ../Test_Generic/basic_routines.h
 CMakeFiles/test.out.dir/main.cc.o: /Applications/deal.II.app/Contents/Resources/include/deal.II/algorithms/any_data.h
 CMakeFiles/test.out.dir/main.cc.o: /Applications/deal.II.app/Contents/Resources/include/deal.II/algorithms/named_selection.h
