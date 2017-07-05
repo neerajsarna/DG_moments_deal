@@ -15,6 +15,14 @@ namespace BCrhs_systemA
 							   Vector<double> &bc_rhs,
 							   const unsigned int b_id);
 
+
+			virtual void BCrhs_kinetic(const Tensor<1,dim,double> p,
+							  const Tensor<1,dim,double> normal_vector,
+							   Vector<double> &bc_rhs,
+							   const unsigned int b_id);
+
+
+
 			const int nBC;
 	};
 
@@ -61,6 +69,16 @@ namespace BCrhs_systemA
 
 	}
 
+	template<int dim>
+	void 
+	BCrhs_ring_char_systemA<dim>::BCrhs_kinetic(const Tensor<1,dim,double> p,
+							  			const Tensor<1,dim,double> normal_vector,
+							   			Vector<double> &bc_rhs,
+							   			const unsigned int b_id)
+	{
+		Assert(1==0,ExcNotImplemented());
+	}
+
 	// BCrhs with odd variables
 	template<int dim>
 	class
@@ -70,6 +88,11 @@ namespace BCrhs_systemA
 			BCrhs_ring_odd_systemA(const constant_numerics &constants,const int nBC);
 
 			virtual void BCrhs(const Tensor<1,dim,double> p,
+							  const Tensor<1,dim,double> normal_vector,
+							   Vector<double> &bc_rhs,
+							   const unsigned int b_id);
+
+			virtual void BCrhs_kinetic(const Tensor<1,dim,double> p,
 							  const Tensor<1,dim,double> normal_vector,
 							   Vector<double> &bc_rhs,
 							   const unsigned int b_id);
@@ -108,6 +131,16 @@ namespace BCrhs_systemA
  		   		}; 
 
 
+	}
+
+	template<int dim>
+	void
+	BCrhs_ring_odd_systemA<dim>::BCrhs_kinetic(const Tensor<1,dim,double> p,
+								  			   const Tensor<1,dim,double> normal_vector,
+							   				   Vector<double> &bc_rhs,
+							   				   const unsigned int b_id)
+	{
+		Assert(1==0,ExcNotImplemented());		
 	}
 
 }

@@ -67,6 +67,9 @@ namespace FEM_Solver
         						CellInfo &info1,
         						CellInfo &info2);
 
+     void integrate_boundary_kinetic_flux(DoFInfo &dinfo,
+                                    CellInfo &info);
+
      void assemble_rhs();
 
      MatrixOpt::Base_MatrixOpt matrix_opt;
@@ -473,6 +476,80 @@ namespace FEM_Solver
                           * Am_Penalty(component[i],j) 
                           * boundary_rhs_value[j] 
                           * jacobian_value;
+
+      }
+
+
+    }
+
+  }
+
+
+  template<int dim> 
+  void 
+  Assembly_Manager_FE<dim>
+  ::integrate_boundary_kinetic_flux(DoFInfo &dinfo,
+    CellInfo &info)
+  {
+
+    AssertDimension(dim,1);
+
+    const FEValuesBase<dim> &fe_v = info.fe_values();
+    typename Triangulation<dim>::face_iterator face_itr= dinfo.face;
+    FullMatrix<double> &cell_matrix = dinfo.matrix(0).matrix;
+    Vector<double> &cell_rhs = dinfo.vector(0).block(0);
+    const std::vector<double> &Jacobian_face = fe_v.get_JxW_values ();
+
+    const FiniteElement<dim> &fe_in_cell = info.finite_element();
+
+    const unsigned int dofs_per_cell = fe_v.dofs_per_cell;
+    std::vector<unsigned int> component(dofs_per_cell);
+
+    for (unsigned int i = 0 ; i < dofs_per_cell ; i ++)
+      component[i] = fe_in_cell.system_to_component_index(i).first;
+
+    Vector<double> boundary_rhs_value;
+    boundary_rhs_value.reinit(nEqn);
+    const unsigned int b_id = face_itr->boundary_id();
+
+
+    // We have not implemented the maxwell boundary conditions with the kinetic flux
+    Assert(b_id == 101 || b_id == 102,ExcMessage("Only inflow has been implemented"));
+
+    for (unsigned int q = 0 ; q < fe_v.n_quadrature_points ; q++)
+    {
+      const double jacobian_value = Jacobian_face[q];
+
+      boundary_rhs_value = 0;                 
+
+  // check for inflow or outflow
+  // Incase of inflow provide the inflow rhs
+      if(face_itr->boundary_id() == 101 || face_itr->boundary_id() == 102)
+        system_info.bcrhs_inflow.BCrhs_kinetic(fe_v.quadrature_point(q),fe_v.normal_vector(q),
+                                                boundary_rhs_value,face_itr->boundary_id());
+
+      else
+        AssertDimension(1,0);
+
+  // Simga(as given in PDF) * B * Projector
+  // Sigma in the PDF = Projector.transpose * Sigma(In the code)
+      Eigen::MatrixXd Am = system_info.build_Aminus(fe_v.normal_vector(q));
+
+      for (unsigned int i = 0 ; i < dofs_per_cell ; i ++)
+      {
+        const double shape_value_test = fe_v.shape_value(i,q);
+        for (unsigned int j = 0 ; j < dofs_per_cell ; j ++)
+          cell_matrix(i,j) += 0.5 * shape_value_test
+                              * Am(component[i],component[j])
+                              * fe_v.shape_value(j,q) 
+                              * jacobian_value;                                    
+
+
+        for (unsigned int j = 0 ; j < boundary_rhs_value.size() ; j++)
+          cell_rhs(i) += 0.5 * shape_value_test 
+                        * Am(component[i],j) 
+                        * boundary_rhs_value[j] 
+                        * jacobian_value;
 
       }
 

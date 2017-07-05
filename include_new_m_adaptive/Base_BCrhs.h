@@ -16,6 +16,11 @@ namespace BCrhs
 						   Vector<double> &bc_rhs,
 						   const unsigned int b_id) = 0;
 
+		virtual void BCrhs_kinetic(const Tensor<1,dim,double> p,
+              					   const Tensor<1,dim,double> normal_vector,
+              					   Vector<double> &bc_rhs,
+              					   const unsigned int b_id) = 0;
+
 		// prescribe the attributes of the wall. The projector matrix projects a vector into local coordinates
 		// the following function is a specialization for the 2D case
 		void assign_wall_properties(double &thetaW,double &vn,double &vt,double &vr,const FullMatrix<double> &proj_vector,
@@ -533,6 +538,11 @@ namespace BCrhs
 			const Tensor<1,dim,double> normal_vector,
 			Vector<double> &bc_rhs,
 			const unsigned int b_id);
+
+		virtual void BCrhs_kinetic(const Tensor<1,dim,double> p,
+              					   const Tensor<1,dim,double> normal_vector,
+              					   Vector<double> &bc_rhs,
+              					   const unsigned int b_id);
 	};
 
 	template<int dim>
@@ -544,6 +554,17 @@ namespace BCrhs
 	B(B),
 	nBC(nBC)
 	{;}
+
+
+	template<int dim>
+	void 
+	BCrhs_wall<dim>::BCrhs_kinetic(const Tensor<1,dim,double> p,
+              		const Tensor<1,dim,double> normal_vector,
+              		Vector<double> &bc_rhs,
+              		const unsigned int b_id)
+	{
+		Assert(1 == 0 ,ExcNotImplemented());
+	}
 
 
 	// specialization for the 1D case
@@ -802,6 +823,11 @@ namespace BCrhs
 			const Tensor<1,dim,double> normal_vector,
 			Vector<double> &bc_rhs,
 			const unsigned int b_id);
+
+		virtual void BCrhs_kinetic(const Tensor<1,dim,double> p,
+              					   const Tensor<1,dim,double> normal_vector,
+              					   Vector<double> &bc_rhs,
+              					   const unsigned int b_id);
 	};
 
 	template<int dim>
@@ -813,6 +839,71 @@ namespace BCrhs
 	Binflow(Binflow),
 	nBC(nBC)
 	{;}
+
+
+  template<>
+  void
+  BCrhs_inflow<2>::BCrhs_kinetic(const Tensor<1,2,double> p,
+              					const Tensor<1,2,double> normal_vector,
+              					Vector<double> &bc_rhs,
+              					const unsigned int b_id)
+  {}
+
+  template<>
+  void
+  BCrhs_inflow<3>::BCrhs_kinetic(const Tensor<1,3,double> p,
+              					const Tensor<1,3,double> normal_vector,
+              					Vector<double> &bc_rhs,
+              					const unsigned int b_id)
+  {}
+
+  template<>
+  void
+  BCrhs_inflow<1>::BCrhs_kinetic(const Tensor<1,1,double> p,
+              const Tensor<1,1,double> normal_vector,
+              Vector<double> &bc_rhs,
+              const unsigned int b_id)
+  {
+    const unsigned int ID_rho = 0;
+    const unsigned int ID_vx = 1;
+    const unsigned int ID_theta = 2;
+
+    //temprature of the incoming distribution function
+    double thetaW;
+
+    // normal velocity of the incoming distribution function
+    double vx;
+
+    // density of the wall
+    double rho;
+
+    if (b_id == 101)
+    {
+    
+      thetaW = constants.theta101;
+      vx = constants.vx101;
+      rho = constants.rho101;
+      
+    }
+
+
+    if (b_id == 102)
+    {
+      // the wall velocity vector in local coordinates
+      thetaW = constants.theta102;
+      vx = constants.vx102;
+      rho = constants.rho102;
+    }
+
+    // the right hand side based upon the kinetic flux
+    bc_rhs(ID_rho) = rho;
+    bc_rhs(ID_vx) = vx;
+    bc_rhs(ID_theta)= thetaW/sqrt(2);
+
+
+
+  }
+
 
 
 	// specialization for the 1D case
