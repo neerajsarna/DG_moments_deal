@@ -53,6 +53,8 @@ namespace Develop_System
 			// a member of the base class.
 			BCrhs::BCrhs_wall<dim> bcrhs_wall;
 			BCrhs::BCrhs_inflow<dim> bcrhs_inflow;
+			BCrhs::BCrhs_wall_kinetic<dim> bcrhs_wall_kinetic;
+			BCrhs::BCrhs_inflow_kinetic<dim> bcrhs_inflow_kinetic;
 			BCrhs_systemA::BCrhs_ring_char_systemA<dim> bcrhs_ring_char_systemA;
 
 
@@ -73,6 +75,8 @@ namespace Develop_System
 	// CAUTION sending B without relaxational normal velocity
 	bcrhs_wall(constants,nBC,this->system_data.B.matrix),
 	bcrhs_inflow(constants,nBC,this->system_data.Binflow.matrix),
+	bcrhs_wall_kinetic(constants,nEqn,this->system_data.rhoW.matrix),
+	bcrhs_inflow_kinetic(constants,nEqn,this->system_data.rhoInflow.matrix),
 	bcrhs_ring_char_systemA(constants,nBC)
 	{
 		// if system A then no odd boundary implementation

@@ -49,6 +49,10 @@ namespace EquationGenerator
 			// matrix which models the inflow
 				system_matrix Binflow;
 
+			// matrix containing the rhoW and rhoInflow
+				system_matrix rhoW;
+				system_matrix rhoInflow;
+
 			};
 
 			bool initialized_system = false;
@@ -152,6 +156,7 @@ namespace EquationGenerator
 
 			double force_factor;
 			void reinit_P(const std::string &folder_name);
+			void reinit_rhoInflow();
 
 	};
 
@@ -176,7 +181,7 @@ namespace EquationGenerator
 		// 2 boundary matrix (B and B_inflow)
 		// 1 sigma (Penalty matrix Sigma)
 		// 1 odd variables (Vector containing all the odd variables)
-		const int max_matrices = dim + 4;
+		const int max_matrices = dim + 6;
 
 		// ending for the name of different matrices
 		std::string name_ending = + "_" + std::to_string(dim)+"D_";
@@ -206,6 +211,12 @@ namespace EquationGenerator
 		entry = dim + 3;
 		Assert(entry < max_matrices,ExcNotInitialized());
 		basefile[entry] = "Binflow" + name_ending;
+
+		entry = dim + 4;
+		basefile[entry] = "rhoW" + name_ending;
+
+		entry = dim + 5;
+		basefile[entry] = "rhoInflow" + name_ending;
 
 
 		// we can check the number of equations and the number of boundary conditions for the 1D case
@@ -412,6 +423,9 @@ namespace EquationGenerator
 		system_data.Sigma.matrix.resize(nEqn,nBC);
 		system_data.Binflow.matrix.resize(nBC,nEqn);
 
+		system_data.rhoW.matrix.resize(nEqn,nEqn);
+		system_data.rhoInflow.matrix.resize(nEqn,nEqn);
+
 		// now we loop over all the names in the basefile vector
 		// by default at the system information is expected to be stored in a folder
 		// labeled system_matrices
@@ -455,6 +469,11 @@ namespace EquationGenerator
 			this->build_triplet(system_data.Binflow.Row_Col_Value,basefile_system[dim+3]);
 			this->build_matrix_from_triplet(system_data.Binflow.matrix,system_data.Binflow.Row_Col_Value);
 
+			this->build_triplet(system_data.rhoW.Row_Col_Value,basefile_system[dim+4]);
+			this->build_matrix_from_triplet(system_data.rhoW.matrix,system_data.rhoW.Row_Col_Value);
+	
+
+			
 	}
 
 	// builds the Projector matrix to be used during computation. Specialization for the 2D case
@@ -498,16 +517,145 @@ namespace EquationGenerator
 		Full_matrix Aminus;
 		Aminus.resize(this->nEqn,this->nEqn);
 
+		if (dim == 1)
+		{
+			const double nx = normal_vector[0];
+			Full_matrix An = system_data.Ax.matrix * nx;
+			Full_matrix Amod;
 
-		Assert(this->Aminus_1D.rows() != 0 || this->Aminus_1D.cols() != 0,
-			  ExcMessage("Aminus_1D has not been built yet"));
+			Amod.resize(nEqn,nEqn);
 
-		Assert(base_tensorinfo.varIdx.rows() != 0 || base_tensorinfo.varIdx.cols() !=0 ,
-				ExcMessage("Base tensor info not initialized"));
+			switch (Ntensors)
+			{
+				case 5:
+				{
+					Amod << 0.8145928689006051,0.,0.5512870116700129,0.,-0.15065936743492336,0.,1.594230437564472,0.,
+   0.6535383788954321,0.,0.5512870116700129,0.,2.0048294310422925,0.,0.7964230669016901,0.,
+   0.6535383788954321,0.,2.3908477232981595,0.,-0.15065936743492336,0.,0.7964230669016901,0.,
+   2.7023784959241945;
+					break;
+				}
 
-		return(base_tensorinfo.reinit_Invglobal(normal_vector) 
-			   	* this->Aminus_1D 
-			   	* base_tensorinfo.reinit_global(normal_vector));
+				case 6:
+				{
+					Amod << 0.8145928689006051,0.,0.5512870116700129,0.,-0.15065936743492336,0.,0.,1.594230437564472,
+   0.,0.6535383788954321,0.,-0.14821723935120085,0.5512870116700129,0.,2.0048294310422925,0.,
+   0.7964230669016901,0.,0.,0.6535383788954321,0.,2.3908477232981595,0.,0.8955482487990762,
+   -0.15065936743492336,0.,0.7964230669016901,0.,2.7023784959241945,0.,0.,-0.14821723935120085,
+   0.,0.8955482487990762,0.,2.987687372420121;
+
+					break;
+				}
+
+				case 7:
+				{
+					Amod << 0.8145928689006051,0.,0.5512870116700129,0.,-0.15065936743492336,0.,0.07702312215687647,
+   0.,1.594230437564472,0.,0.6535383788954321,0.,-0.14821723935120085,0.,0.5512870116700129,0.,
+   2.0048294310422925,0.,0.7964230669016901,0.,-0.17935648853156594,0.,0.6535383788954321,0.,
+   2.3908477232981595,0.,0.8955482487990762,0.,-0.15065936743492336,0.,0.7964230669016901,0.,
+   2.7023784959241945,0.,0.9916622623890463,0.,-0.14821723935120085,0.,0.8955482487990762,0.,
+   2.987687372420121,0.,0.07702312215687647,0.,-0.17935648853156594,0.,0.9916622623890463,0.,
+   3.251778578544947;
+
+   					break;
+				}
+
+				case 8:
+				{
+					Amod <<0.8145928689006051,0.,0.5512870116700129,0.,-0.15065936743492336,0.,0.07702312215687647,
+   0.,0.,1.594230437564472,0.,0.6535383788954321,0.,-0.14821723935120085,0.,
+   0.07046442735969516,0.5512870116700129,0.,2.0048294310422925,0.,0.7964230669016901,0.,
+   -0.17935648853156594,0.,0.,0.6535383788954321,0.,2.3908477232981595,0.,0.8955482487990762,
+   0.,-0.19690674382274861,-0.15065936743492336,0.,0.7964230669016901,0.,2.7023784959241945,0.,
+   0.9916622623890463,0.,0.,-0.14821723935120085,0.,0.8955482487990762,0.,2.987687372420121,0.,
+   1.0826085271153485,0.07702312215687647,0.,-0.17935648853156594,0.,0.9916622623890463,0.,
+   3.251778578544947,0.,0.,0.07046442735969516,0.,-0.19690674382274861,0.,1.0826085271153485,
+   0.,3.4841398104762176;
+
+					break;
+				}
+
+				case 9:
+				{
+					Amod << 0.8145928689006051,0.,0.5512870116700129,0.,-0.15065936743492336,0.,0.07702312215687647,
+   0.,-0.04713559628343335,0.,1.594230437564472,0.,0.6535383788954321,0.,-0.14821723935120085,
+   0.,0.07046442735969516,0.,0.5512870116700129,0.,2.0048294310422925,0.,0.7964230669016901,0.,
+   -0.17935648853156594,0.,0.0824245839051752,0.,0.6535383788954321,0.,2.3908477232981595,0.,
+   0.8955482487990762,0.,-0.19690674382274861,0.,-0.15065936743492336,0.,0.7964230669016901,0.,
+   2.7023784959241945,0.,0.9916622623890463,0.,-0.2109720111304944,0.,-0.14821723935120085,0.,
+   0.8955482487990762,0.,2.987687372420121,0.,1.0826085271153485,0.,0.07702312215687647,0.,
+   -0.17935648853156594,0.,0.9916622623890463,0.,3.251778578544947,0.,1.154920516799435,0.,
+   0.07046442735969516,0.,-0.19690674382274861,0.,1.0826085271153485,0.,3.4841398104762176,0.,
+   -0.04713559628343335,0.,0.0824245839051752,0.,-0.2109720111304944,0.,1.154920516799435,0.,
+   3.7214090054905706;
+
+   					break;
+				}
+
+				case 10:
+				{
+					Amod << 0.8145928689006051,0.,0.5512870116700129,0.,-0.15065936743492336,0.,0.07702312215687647,0.,
+   -0.04713559628343335,0.,0.,1.594230437564472,0.,0.6535383788954321,0.,-0.14821723935120085,
+   0.,0.07046442735969516,0.,-0.04329104317521246,0.5512870116700129,0.,2.0048294310422925,0.,
+   0.7964230669016901,0.,-0.17935648853156594,0.,0.0824245839051752,0.,0.,0.6535383788954321,0.,
+   2.3908477232981595,0.,0.8955482487990762,0.,-0.19690674382274861,0.,0.092585306709741,
+   -0.15065936743492336,0.,0.7964230669016901,0.,2.7023784959241945,0.,0.9916622623890463,0.,
+   -0.2109720111304944,0.,0.,-0.14821723935120085,0.,0.8955482487990762,0.,2.987687372420121,0.,
+   1.0826085271153485,0.,-0.23495370739404708,0.07702312215687647,0.,-0.17935648853156594,0.,
+   0.9916622623890463,0.,3.251778578544947,0.,1.154920516799435,0.,0.,0.07046442735969516,0.,
+   -0.19690674382274861,0.,1.0826085271153485,0.,3.4841398104762176,0.,1.2422436995142618,
+   -0.04713559628343335,0.,0.0824245839051752,0.,-0.2109720111304944,0.,1.154920516799435,0.,
+   3.7214090054905706,0.,0.,-0.04329104317521246,0.,0.092585306709741,0.,-0.23495370739404708,
+   0.,1.2422436995142618,0.,3.917025174981421;
+
+   					break;
+				}
+
+				case 11:
+				{
+					Amod << 0.8145928689006051,0.,0.5512870116700129,0.,-0.15065936743492336,0.,0.07702312215687647,
+   0.,-0.04713559628343335,0.,0.03102692306590807,0.,1.594230437564472,0.,0.6535383788954321,
+   0.,-0.14821723935120085,0.,0.07046442735969516,0.,-0.04329104317521246,0.,
+   0.5512870116700129,0.,2.0048294310422925,0.,0.7964230669016901,0.,-0.17935648853156594,0.,
+   0.0824245839051752,0.,-0.04684410819247821,0.,0.6535383788954321,0.,2.3908477232981595,0.,
+   0.8955482487990762,0.,-0.19690674382274861,0.,0.092585306709741,0.,-0.15065936743492336,0.,
+   0.7964230669016901,0.,2.7023784959241945,0.,0.9916622623890463,0.,-0.2109720111304944,0.,
+   0.09256435296598309,0.,-0.14821723935120085,0.,0.8955482487990762,0.,2.987687372420121,0.,
+   1.0826085271153485,0.,-0.23495370739404708,0.,0.07702312215687647,0.,-0.17935648853156594,
+   0.,0.9916622623890463,0.,3.251778578544947,0.,1.154920516799435,0.,-0.23831251743947215,0.,
+   0.07046442735969516,0.,-0.19690674382274861,0.,1.0826085271153485,0.,3.4841398104762176,0.,
+   1.2422436995142618,0.,-0.04713559628343335,0.,0.0824245839051752,0.,-0.2109720111304944,0.,
+   1.154920516799435,0.,3.7214090054905706,0.,1.2966743355184691,0.,-0.04329104317521246,0.,
+   0.092585306709741,0.,-0.23495370739404708,0.,1.2422436995142618,0.,3.917025174981421,0.,
+   0.03102692306590807,0.,-0.04684410819247821,0.,0.09256435296598309,0.,-0.23831251743947215,
+   0.,1.2966743355184691,0.,4.139969876855134;
+   
+					break;
+				}
+
+				default:
+				{
+					Assert(1 == 0 ,ExcNotImplemented());
+					break;
+				}
+			}
+
+			Aminus = Amod-An;
+
+		}
+
+
+		// Assert(this->Aminus_1D.rows() != 0 || this->Aminus_1D.cols() != 0,
+		// 	  ExcMessage("Aminus_1D has not been built yet"));
+
+		// Assert(base_tensorinfo.varIdx.rows() != 0 || base_tensorinfo.varIdx.cols() !=0 ,
+		// 		ExcMessage("Base tensor info not initialized"));
+
+		// return(base_tensorinfo.reinit_Invglobal(normal_vector) 
+		// 	   	* this->Aminus_1D 
+		// 	   	* base_tensorinfo.reinit_global(normal_vector));
+
+		return Aminus;
 	}
 
 	// Convert a matrix to a symmetric matrix. The following function returns 
@@ -656,6 +804,12 @@ namespace EquationGenerator
 				break;
 			}
 
+			// we don't need to do anything for the kinetic boundary implementation
+			case kinetic:
+			{
+				break;
+			}
+
 			default:
 			{
 				Assert(1 == 0,ExcMessage("Should not have reached here"));
@@ -738,6 +892,19 @@ namespace EquationGenerator
 		system_data.P.matrix.makeCompressed();
 	}
 
+	template<int dim>
+	void
+	Base_EquationGenerator<dim>
+	::reinit_rhoInflow()
+	{
+
+		for (int i = 0 ; i < nEqn ; i++)
+			system_data.rhoInflow.matrix.coeffRef(i,i) = 0;
+
+		system_data.rhoInflow.matrix.makeCompressed();
+	}
+
+
 	// initialize the system_data corresponding to a particular moment system
 	// Specialization for the 2D case
 	template<int dim>
@@ -749,6 +916,9 @@ namespace EquationGenerator
 
 		// we now develop the P matrix
 		reinit_P(folder_name);	
+
+		// we now develop the rhoInflow matrix, which has nothin but zeros on the diagonal
+		reinit_rhoInflow();
 
 		//don't fix the boundary conditions for the A system
 		if (nEqn == 6 && dim ==2)
@@ -781,7 +951,7 @@ namespace EquationGenerator
 
 
 
-		// we need to compress B again so that it consumes less
+		// we need to compress B again so that it consumes less memory
 		system_data.B.matrix.makeCompressed();
 
 	}

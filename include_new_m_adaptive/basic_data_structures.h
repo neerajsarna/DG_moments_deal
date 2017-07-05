@@ -12,7 +12,7 @@ enum Refinement
 {global,adaptive,adaptive_kelly};
 
 enum BC_Type
-{characteristic,odd};
+{characteristic,odd,kinetic};
 
 // types of mesh which will be generated 
 enum Mesh_type

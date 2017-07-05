@@ -1,4 +1,4 @@
-TEST(BCrhsWallG20,HandlesBCrhsWallG20)
+TEST(DISABLED_BCrhsWallG20,HandlesBCrhsWallG20)
 {
 	const unsigned int dim = 3;
 
@@ -204,7 +204,7 @@ TEST(BCrhsWallG20,HandlesBCrhsWallG20)
 }
 
 
-TEST(BCrhsInflowG20,HandlesBCrhsInflowG20)
+TEST(DISABLED_BCrhsInflowG20,HandlesBCrhsInflowG20)
 {
 	const unsigned int dim = 3;
 
@@ -330,5 +330,37 @@ TEST(BCrhsInflowG20,HandlesBCrhsInflowG20)
 
 	Compare_Float_Vec(bcrhs_manuel,bcrhs);
 
+
+}
+
+TEST(BCrhsWallKineticG20,HandlesKineticFluxG20)
+{
+		const unsigned int dim = 1;
+
+	std::string folder_name = "../system_matrices/";
+	Constants::Base_Constants constants(input_file);
+	std::vector<Develop_System::System<dim>> System;
+
+	for(int i = 0 ; i < constants.constants_sys.total_systems ; i++)
+		System.push_back(Develop_System::System<dim>(constants.constants_num,constants.constants_sys.nEqn[i],
+			constants.constants_sys.nBC[i],constants.constants_sys.Ntensors[i],folder_name));
+
+
+	
+	for (int i = 0 ; i < constants.constants_sys.total_systems ; i++)
+		System[i].initialize_system();
+
+
+	Tensor<1,dim> p;
+	Tensor<1,dim> normal_vector;
+
+	p[0] = 0.5;
+	normal_vector[0] = 1.0;
+
+	Vector<double> boundary_value(System[0].nEqn);
+
+	System[0].bcrhs_wall_kinetic.BCrhs(p,normal_vector,boundary_value,0);
+
+	std::cout << "Value at boundary " << boundary_value << std::endl;
 
 }

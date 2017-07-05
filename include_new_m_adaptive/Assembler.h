@@ -140,6 +140,7 @@ namespace FEM_Solver
   // the values remain the same even for all the other cells.
   this->Compute_Shape_Value(fe_data_structure.mapping,ngp,cell);
 
+  
   switch(this->constants.bc_type)
   {
     case odd:
@@ -184,6 +185,33 @@ namespace FEM_Solver
                             std_cxx11::_4),
                            assembler);
       break;
+    }
+
+    case kinetic:
+    {
+      std::cout << "************ Using Kinetic Flux *********" << std::endl;
+
+
+      MeshWorker::loop<dim, dim, MeshWorker::DoFInfo<dim>, MeshWorker::IntegrationInfoBox<dim> >
+        (cell, endc,
+       dof_info, info_box,
+       std_cxx11::bind(&Assembly_Manager_FE<dim>::integrate_cell_term,
+        this,
+        std_cxx11::_1,std_cxx11::_2),
+       std_cxx11::bind(&Assembly_Manager_FE<dim>::integrate_boundary_kinetic_flux,
+        this,
+        std_cxx11::_1,
+        std_cxx11::_2),
+       std_cxx11::bind(&Assembly_Manager_FE<dim>::integrate_face_term,
+        this,
+        std_cxx11::_1,
+        std_cxx11::_2,
+        std_cxx11::_3,
+        std_cxx11::_4),
+       assembler);
+
+
+                  break;
     }
 
     }
@@ -489,7 +517,7 @@ namespace FEM_Solver
   void 
   Assembly_Manager_FE<dim>
   ::integrate_boundary_kinetic_flux(DoFInfo &dinfo,
-    CellInfo &info)
+                                    CellInfo &info)
   {
 
     AssertDimension(dim,1);
@@ -512,35 +540,54 @@ namespace FEM_Solver
     boundary_rhs_value.reinit(nEqn);
     const unsigned int b_id = face_itr->boundary_id();
 
+    Sparse_matrix rho_temp;
 
-    // We have not implemented the maxwell boundary conditions with the kinetic flux
-    Assert(b_id == 101 || b_id == 102,ExcMessage("Only inflow has been implemented"));
+    if(b_id == 101 || b_id == 102)
+    {
+      integrate_inflow++;
+      rho_temp = system_info.system_data.rhoInflow.matrix;
+    }
+    else
+    {
+
+
+      Assert(b_id != 50,ExcNotImplemented());
+
+    // B matrix for full accmmodation
+      if (b_id != 50)
+        rho_temp = system_info.system_data.rhoW.matrix;
+    }
 
     for (unsigned int q = 0 ; q < fe_v.n_quadrature_points ; q++)
     {
       const double jacobian_value = Jacobian_face[q];
+      Tensor<1,dim> outward_normal = fe_v.normal_vector(q);
+      Sparse_matrix Projector = system_info.build_Projector(outward_normal);
 
       boundary_rhs_value = 0;                 
 
   // check for inflow or outflow
   // Incase of inflow provide the inflow rhs
       if(face_itr->boundary_id() == 101 || face_itr->boundary_id() == 102)
-        system_info.bcrhs_inflow.BCrhs_kinetic(fe_v.quadrature_point(q),fe_v.normal_vector(q),
+        system_info.bcrhs_inflow_kinetic.BCrhs(fe_v.quadrature_point(q),fe_v.normal_vector(q),
                                                 boundary_rhs_value,face_itr->boundary_id());
 
       else
-        AssertDimension(1,0);
+        system_info.bcrhs_wall_kinetic.BCrhs(fe_v.quadrature_point(q),fe_v.normal_vector(q),
+                                                boundary_rhs_value,face_itr->boundary_id());
 
   // Simga(as given in PDF) * B * Projector
   // Sigma in the PDF = Projector.transpose * Sigma(In the code)
       Eigen::MatrixXd Am = system_info.build_Aminus(fe_v.normal_vector(q));
+
+      Eigen::MatrixXd Am_rho = Am * rho_temp * Projector;
 
       for (unsigned int i = 0 ; i < dofs_per_cell ; i ++)
       {
         const double shape_value_test = fe_v.shape_value(i,q);
         for (unsigned int j = 0 ; j < dofs_per_cell ; j ++)
           cell_matrix(i,j) += 0.5 * shape_value_test
-                              * Am(component[i],component[j])
+                              * (Am(component[i],component[j]) - Am_rho(component[i],component[j]))
                               * fe_v.shape_value(j,q) 
                               * jacobian_value;                                    
 

@@ -350,10 +350,10 @@ namespace Constants
 				Patterns::Integer(0,4),
 				"Type of force on the system");
 
-				/*0 for characteristic and 1 for odd*/
+				/*0 for characteristic and 1 for odd, 2 for kinetic*/
 			prm.declare_entry("BC type",
 				"0",
-				Patterns::Integer(0,1),
+				Patterns::Integer(0,2),
 				"Type of BC");
 
 
