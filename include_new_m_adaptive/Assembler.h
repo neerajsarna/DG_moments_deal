@@ -55,6 +55,7 @@ namespace FEM_Solver
       //Routines for meshworker assembly. 
       void integrate_cell_term (DoFInfo &dinfo,
         		CellInfo &info);
+
       void integrate_boundary_term_odd (DoFInfo &dinfo,
         									CellInfo &info);
 
@@ -62,13 +63,20 @@ namespace FEM_Solver
       void integrate_boundary_term_char(DoFInfo &dinfo,
         								CellInfo &info);
 
-     void integrate_face_term (DoFInfo &dinfo1,
+     void integrate_face_term(DoFInfo &dinfo1,
      			        		DoFInfo &dinfo2,
         						CellInfo &info1,
         						CellInfo &info2);
 
      void integrate_boundary_kinetic_flux(DoFInfo &dinfo,
                                     CellInfo &info);
+
+     // integrate the face term using the kinetic flux
+     void integrate_face_term_kinetic_flux(DoFInfo &dinfo1,
+                                        DoFInfo &dinfo2,
+                    CellInfo &info1,
+                    CellInfo &info2);
+
 
      void assemble_rhs();
 
@@ -198,11 +206,11 @@ namespace FEM_Solver
        std_cxx11::bind(&Assembly_Manager_FE<dim>::integrate_cell_term,
         this,
         std_cxx11::_1,std_cxx11::_2),
-       std_cxx11::bind(&Assembly_Manager_FE<dim>::integrate_boundary_kinetic_flux,
+       std_cxx11::bind(&Assembly_Manager_FE<dim>::integrate_boundary_term_odd,
         this,
         std_cxx11::_1,
         std_cxx11::_2),
-       std_cxx11::bind(&Assembly_Manager_FE<dim>::integrate_face_term,
+       std_cxx11::bind(&Assembly_Manager_FE<dim>::integrate_face_term_kinetic_flux,
         this,
         std_cxx11::_1,
         std_cxx11::_2,
@@ -672,6 +680,73 @@ namespace FEM_Solver
     u2_v2 = matrix_opt.multiply_scalar(0.5,matrix_opt.compute_A_outer_B(Am_neighbor,Mass_u2_v2));
 
   }
+
+  template<int dim>
+  void 
+  Assembly_Manager_FE<dim>
+  ::integrate_face_term_kinetic_flux(DoFInfo &dinfo1,
+            DoFInfo &dinfo2,
+            CellInfo &info1,
+            CellInfo &info2)
+  {
+
+    const FEValuesBase<dim> &fe_v = info1.fe_values();
+    const FEValuesBase<dim> &fe_v_neighbor = info2.fe_values();
+
+  // jacobian values for the face of the current cell
+    const std::vector<double> &J = fe_v.get_JxW_values ();
+
+    const FiniteElement<dim> &fe_in_cell1 = fe_v.get_fe();
+    const FiniteElement<dim> &fe_in_cell2 = fe_v_neighbor.get_fe();
+
+    FullMatrix<double> &u1_v1 = dinfo1.matrix(0,false).matrix;
+    FullMatrix<double> &u2_v1 = dinfo1.matrix(0,true).matrix;
+    FullMatrix<double> &u1_v2 = dinfo2.matrix(0,true).matrix;
+    FullMatrix<double> &u2_v2 = dinfo2.matrix(0,false).matrix;
+
+    const unsigned int dofs_per_cell1 = fe_in_cell1.dofs_per_cell;
+    const unsigned int n_components1 = fe_in_cell1.n_components();
+    const unsigned int dofs_per_component1 = dofs_per_cell1/n_components1;
+
+    const unsigned int dofs_per_cell2 = fe_in_cell2.dofs_per_cell;
+    const unsigned int n_components2 = fe_in_cell2.n_components();
+    const unsigned int dofs_per_component2 = dofs_per_cell2/n_components2;
+
+
+    //CAUTION: ASSUMPTION OF STRAIGHT EDGES IN THE INTERIOR
+    Tensor<1,dim> outward_normal = fe_v.normal_vector(0);
+    Eigen::MatrixXd Am = system_info.build_Aminus_kinetic(outward_normal);
+    Eigen::MatrixXd Am_neighbor = system_info.build_Aminus_kinetic(-outward_normal);
+
+
+    FullMatrix<double> Mass_u1_v1(dofs_per_component1,dofs_per_component1);
+    FullMatrix<double> Mass_u2_v1(dofs_per_component1,dofs_per_component2);
+    FullMatrix<double> Mass_u2_v2(dofs_per_component2,dofs_per_component2);
+    FullMatrix<double> Mass_u1_v2(dofs_per_component2,dofs_per_component1);
+
+    Mass_u1_v1 = this->Compute_Mass_cell_neighbor(fe_v,
+      fe_v,dofs_per_component1,
+      dofs_per_component1,J);
+
+    Mass_u2_v1 = this->Compute_Mass_cell_neighbor(fe_v,
+      fe_v_neighbor,dofs_per_component1,
+      dofs_per_component2,J);
+
+    Mass_u2_v2 =  this->Compute_Mass_cell_neighbor(fe_v_neighbor,
+      fe_v_neighbor,dofs_per_component2,
+      dofs_per_component2,J);
+
+    Mass_u1_v2 =  this->Compute_Mass_cell_neighbor(fe_v_neighbor,
+      fe_v,dofs_per_component2,
+      dofs_per_component1,J);
+
+    u1_v1 = matrix_opt.multiply_scalar(0.5,matrix_opt.compute_A_outer_B(Am,Mass_u1_v1));
+    u2_v1 = matrix_opt.multiply_scalar(-0.5,matrix_opt.compute_A_outer_B(Am,Mass_u2_v1));
+    u1_v2 = matrix_opt.multiply_scalar(-0.5,matrix_opt.compute_A_outer_B(Am_neighbor,Mass_u1_v2));
+    u2_v2 = matrix_opt.multiply_scalar(0.5,matrix_opt.compute_A_outer_B(Am_neighbor,Mass_u2_v2));
+
+  }
+
 
 
 	template<int dim>
