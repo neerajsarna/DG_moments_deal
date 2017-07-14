@@ -5,6 +5,7 @@ CMakeFiles/test.out.dir/main.cc.o: ../../Projector_Data/Tensorial_Projector.h
 CMakeFiles/test.out.dir/main.cc.o: ../../Symmetrizer_Data/Tensorial_InvSymmetrizer.h
 CMakeFiles/test.out.dir/main.cc.o: ../../Symmetrizer_Data/Tensorial_Symmetrizer.h
 CMakeFiles/test.out.dir/main.cc.o: ../../include_new_m_adaptive/Assembler.h
+CMakeFiles/test.out.dir/main.cc.o: ../../include_new_m_adaptive/Assembler_Periodic.h
 CMakeFiles/test.out.dir/main.cc.o: ../../include_new_m_adaptive/Base_BCrhs.h
 CMakeFiles/test.out.dir/main.cc.o: ../../include_new_m_adaptive/Base_BoundaryHandler.h
 CMakeFiles/test.out.dir/main.cc.o: ../../include_new_m_adaptive/Base_Constants.h
@@ -14,6 +15,7 @@ CMakeFiles/test.out.dir/main.cc.o: ../../include_new_m_adaptive/Base_ForceType.h
 CMakeFiles/test.out.dir/main.cc.o: ../../include_new_m_adaptive/Base_MatrixOpt.h
 CMakeFiles/test.out.dir/main.cc.o: ../../include_new_m_adaptive/Base_MeshGenerator.h
 CMakeFiles/test.out.dir/main.cc.o: ../../include_new_m_adaptive/Base_NumericalIntegration.h
+CMakeFiles/test.out.dir/main.cc.o: ../../include_new_m_adaptive/Base_PeriodicityHandler.h
 CMakeFiles/test.out.dir/main.cc.o: ../../include_new_m_adaptive/Base_PostProc.h
 CMakeFiles/test.out.dir/main.cc.o: ../../include_new_m_adaptive/Base_TensorInfo.h
 CMakeFiles/test.out.dir/main.cc.o: ../../include_new_m_adaptive/Develop_System.h

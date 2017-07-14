@@ -303,7 +303,7 @@ TEST(DISABLED_RunSystemA,HandlesSystemA)
 // run without any restrictions
 TEST(RunSystem,HandlesRunSystem)
 {
-		const unsigned int dim = 1;
+		const unsigned int dim = 2;
 
 		std::string folder_name = "../system_matrices/";
 		Constants::Base_Constants constants(input_file);
@@ -349,7 +349,7 @@ TEST(RunSystem,HandlesRunSystem)
 		Assert((unsigned int)system_to_solve < System.size(),
 			ExcMessage("You have asked for a system which has not been loaded"));
 
-		ExactSolution::ExactSolution_Dummy<dim>  dummy(constants.constants_num,
+		ExactSolution::PoissonHeat<dim>  dummy(constants.constants_num,
 												System[system_to_solve].base_tensorinfo.S_half,
 												constants.constants_sys.nEqn[system_to_solve],
 												constants.constants_sys.Ntensors[system_to_solve]);
@@ -368,7 +368,7 @@ TEST(RunSystem,HandlesRunSystem)
 		// fe_solver_reference.run(Mesh_Info_Reference);
 
 			// finite element solver for a single system
-		FEM_Solver::Run_Problem_FE<dim> fe_solver("grid",
+		FEM_Solver::Run_Problem_Periodic<dim> fe_solver("grid",
 													constants.constants_num,
 													System,
 													&dummy,

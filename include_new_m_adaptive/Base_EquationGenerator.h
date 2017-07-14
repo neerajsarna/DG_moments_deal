@@ -435,6 +435,7 @@ namespace EquationGenerator
 
 		system_data.rhoW.matrix.resize(nEqn,nEqn);
 		system_data.rhoInflow.matrix.resize(nEqn,nEqn);
+		system_data.Amod_kinetic.matrix.resize(nEqn,nEqn);
 
 		// now we loop over all the names in the basefile vector
 		// by default at the system information is expected to be stored in a folder

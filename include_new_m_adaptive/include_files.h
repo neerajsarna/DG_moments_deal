@@ -19,7 +19,10 @@
 #include "ExactSolution_SystemA.h"
 #include "SystemA.h"
 #include "FE_Data.h"
+
+#include "Base_PeriodicityHandler.h"
 #include "Assembler.h"
+#include "Assembler_Periodic.h"
 #include "Run_Problem.h"
 
 

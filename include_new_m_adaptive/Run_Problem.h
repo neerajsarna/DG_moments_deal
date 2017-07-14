@@ -99,7 +99,7 @@ template<int dim>
 		residual.reinit(dof_handler.n_dofs());
 	}
 
-template<int dim>
+	template<int dim>
 	class
 	Run_Problem_FE:public Assembly_Manager_FE<dim>,
 					public Run_Problem<dim>
@@ -853,5 +853,154 @@ template<int dim>
 		this->residual = linear_solver.solve_with_pardiso(this->system_rhs,this->solution);
 		timer.leave_subsection();
 	}
+
+
+	template<int dim>
+	class
+	Run_Problem_Periodic:public Assembly_Manager_Periodic<dim>,
+						 public Run_Problem<dim>
+
+	{
+		public:
+			Run_Problem_Periodic(const std::string &output_file_name,
+						const constant_numerics &constants,
+						std::vector<Develop_System::System<dim>> &equation_info,
+                        ExactSolution::Base_ExactSolution<dim> *exact_solution,
+                        const std::vector<int> &nEqn,
+                        const std::vector<int> &nBC,
+                        const unsigned int system_to_solve,
+                        Triangulation<dim> &triangulation);
+
+
+			void run(MeshGenerator::Base_MeshGenerator<dim> &Mesh_Info);
+			void distribute_dof_allocate_matrix_periodic_box();
+
+	};
+
+	template<int dim>
+	Run_Problem_Periodic<dim>::Run_Problem_Periodic(const std::string &output_file_name,
+						const constant_numerics &constants,
+						std::vector<Develop_System::System<dim>> &equation_info,
+                        ExactSolution::Base_ExactSolution<dim> *exact_solution,
+                        const std::vector<int> &nEqn,
+                        const std::vector<int> &nBC,
+                        const unsigned int system_to_solve,
+                        Triangulation<dim> &triangulation)
+	:
+	Assembly_Manager_Periodic<dim>(output_file_name,
+					constants,equation_info,
+                	nEqn,nBC,system_to_solve,triangulation),
+	Run_Problem<dim>(exact_solution)
+	{}
+
+	template<int dim>
+	void 
+	Run_Problem_Periodic<dim>::distribute_dof_allocate_matrix_periodic_box()
+	{
+		this->fe_data_structure.dof_handler.distribute_dofs(this->fe_data_structure.finite_element);
+
+		DynamicSparsityPattern dsp(this->fe_data_structure.dof_handler.n_dofs(),
+								  this->fe_data_structure.dof_handler.n_dofs());
+
+
+		DoFTools::make_flux_sparsity_pattern (this->fe_data_structure.dof_handler, dsp);
+
+		this->add_periodic_sparsity(dsp);
+		this->global_matrix.reinit(dsp);  
+	}
+
+	template<int dim>
+	void 
+	Run_Problem_Periodic<dim>::run(MeshGenerator::Base_MeshGenerator<dim> &Mesh_Info)
+	{
+
+	this->error_per_itr.resize(this->constants.refine_cycles);
+
+	TimerOutput timer (std::cout, TimerOutput::summary,
+                   TimerOutput::wall_times);
+	
+	Assert(this->constants.mesh_type == square_domain 
+			&& this->constants.problem_type == periodic,ExcMessage("Incorrect mesh"));
+	
+	for (int cycle = 0 ; cycle < this->constants.refine_cycles ; cycle++)
+	{
+
+		AssertDimension((int)this->error_per_itr.size(),this->constants.refine_cycles);
+
+		timer.enter_subsection("Develop Periodicity");
+		fflush(stdout);
+		// first we develop the periodic faces using internal functions of dealii
+		this->develop_periodic_faces(this->fe_data_structure.dof_handler);
+
+		// now we construct the required data structure
+		this->divide_periodicity();
+
+		timer.leave_subsection();
+
+		//now we distribute the dofs and allocate the memory for the global matrix. We have 
+		// already created the mesh so we can directly distribute the degrees of freedom now.
+		timer.enter_subsection("Distribute Dof");
+		fflush(stdout);
+		this->distribute_dof_allocate_matrix_periodic_box();
+		this->allocate_vectors(this->fe_data_structure.dof_handler,
+								this->solution,this->system_rhs,
+								this->residual);
+
+		timer.leave_subsection();
+
+		std::cout << "#Cells " << Mesh_Info.triangulation.n_active_cells() << std::endl;
+		std::cout << "#Dofs " << this->fe_data_structure.dof_handler.n_dofs() << std::endl;
+		fflush(stdout);
+
+		// cannot use meshworker for the present problem
+		timer.enter_subsection("Assemble");
+		this->assemble_system_manuel();
+
+		timer.leave_subsection();
+        
+		// we initialize the object which will solve our system
+		// We do int the following way so as to keep the solver independent of all the other implementations.
+		// This makes the code highly reusable. So one can directly copy the following class and use it somewhere
+		// else is one wants to.
+		
+		timer.enter_subsection("Linear Solver");
+		LinearSolver::LinearSolver linear_solver;
+		linear_solver.develop_pardiso_data(this->global_matrix);
+		this->residual = linear_solver.solve_with_pardiso(this->system_rhs,this->solution);
+		timer.leave_subsection();
+
+		timer.enter_subsection("Post Proc");
+		PostProc::Base_PostProc<dim> postproc(this->constants,this->base_exactsolution);
+
+		postproc.reinit(this->fe_data_structure.dof_handler);
+
+		// // now we compute the error due to computation
+		postproc.error_evaluation_QGauss(this->solution,
+										 Mesh_Info.triangulation.n_active_cells(),
+										  this->error_per_itr[cycle],
+										GridTools::maximal_cell_diameter(Mesh_Info.triangulation),
+										this->convergence_table,
+										this->residual.l2_norm(),
+										this->fe_data_structure.mapping,
+										this->fe_data_structure.dof_handler,
+										this->nEqn);
+
+
+		// we sent the symmetrizer corresponding to the maximum moment system which we are solving for
+		// In this case, since we are only considering a single moment system therefore this value corresponds to zero.
+		
+		postproc.print_options(Mesh_Info.triangulation,this->solution,cycle,this->constants.refine_cycles,
+							  this->convergence_table,
+							this->system_info.base_tensorinfo.S_half_inv,
+								this->fe_data_structure.dof_handler,this->nEqn);		
+		
+		timer.leave_subsection();
+
+		// Grid refinement should be done in the end.
+		Mesh_Info.refinement_handling(cycle,this->constants.refine_cycles);
+		
+	}
+	}
+
 
 }

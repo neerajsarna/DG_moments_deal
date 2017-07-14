@@ -748,7 +748,6 @@ namespace FEM_Solver
   }
 
 
-
 	template<int dim>
 	class
 	Assembly_Manager_hp_FE:public NumericalIntegration::Base_NumericalIntegration<dim>
