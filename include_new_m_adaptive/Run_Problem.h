@@ -33,6 +33,7 @@ namespace FEM_Solver
 		void allocate_vectors(hp::DoFHandler<dim> &dof_handler,Vector<double> &solution,Vector<double> &system_rhs,
 							  Vector<double> &residual);
 
+		MatrixOpt::Base_MatrixOpt matrix_opt;
 
 
 	};
@@ -503,6 +504,7 @@ template<int dim>
                         ExactSolution::Base_ExactSolution<dim> *exact_solution,
                         const std::vector<int> &nEqn,
                         const std::vector<int> &nBC,
+                        const unsigned int system_to_solve,
                         Triangulation<dim> &triangulation);
 
 
@@ -515,6 +517,8 @@ template<int dim>
 					virtual void vector_value(const Point<dim> &p,Vector<double> &value) const ;
 			};
 
+			// in the following routine we check mass conservation
+			double mean_value(const unsigned int active_cells,const unsigned int comp);
 			const double delta_t = 0.1;
 			void run(MeshGenerator::Base_MeshGenerator<dim> &Mesh_Info);
 			void compute_energy_bound();
@@ -528,11 +532,12 @@ template<int dim>
                         ExactSolution::Base_ExactSolution<dim> *exact_solution,
                         const std::vector<int> &nEqn,
                         const std::vector<int> &nBC,
+                        const unsigned int system_to_solve,
                         Triangulation<dim> &triangulation)
 	:
 	Assembly_Manager_FE<dim>(output_file_name,
 					constants,equation_info,
-                	nEqn,nBC,triangulation),
+                	nEqn,nBC,system_to_solve,triangulation),
 	Run_Problem<dim>(exact_solution)
 	{
 		// only works for finite volume scheme, does not have higher order time stepping scheme
@@ -548,6 +553,41 @@ template<int dim>
 	Function<dim>(nEqn)
 	{;};
 
+	//returns the mean of the comp component of the solution
+	template<int dim>
+	double 
+	Run_Problem_FE_Time_Stepping<dim>::mean_value(const unsigned int active_cells,const unsigned int comp)
+	{
+
+		AssertIndexRange(comp,(unsigned int)this->nEqn);
+		// we select the component corresponding to density
+		unsigned int component= comp;
+		
+
+		const unsigned int ngp = this->constants.p + 1;
+        // error per cell of the domain
+		Vector<double> density_per_cell(active_cells);      
+
+
+        ComponentSelectFunction<dim> weight(component,this->nEqn);       
+        // used to compute only the error in theta
+
+        // computation of L2 error
+        VectorTools::integrate_difference (this->fe_data_structure.mapping,this->fe_data_structure.dof_handler,
+        									this->solution,
+        								   ZeroFunction<dim>(this->nEqn),
+        									density_per_cell,
+        									QGauss<dim>(ngp),
+        									VectorTools::mean,
+        									&weight); 
+
+        // the above routine computes the negative of the mean therefore we multiply by a negative
+        density_per_cell *= -1;
+
+
+        return(density_per_cell.mean_value() * density_per_cell.size());
+	}
+
 	template<int dim>
 	void
 	Run_Problem_FE_Time_Stepping<dim>::initial_conditions::vector_value(const Point<dim> &p,Vector<double> &value) const
@@ -560,32 +600,34 @@ template<int dim>
 		unsigned int ID_vy;
 		unsigned int ID_theta;
 
-		if (dim == 2)
-		{
-			ID_rho = 0;
-			ID_vx = 1;
-			ID_vy = 2;
-			ID_theta = 3;			
-		}
-
-		if (dim == 1)
-		{
-			ID_rho = 0;
-			ID_vx = 1;
-			ID_theta = 2;			
-		}
-
-
 		value = 0;
 
-		if (dim == 2)
-		{
-		// rho of one of the walls
-		value(ID_rho) = -1.0 * x / 4.0 + 3.0 / 2.0;
+		// if (dim == 2)
+		// {
+		// 	ID_rho = 0;
+		// 	ID_vx = 1;
+		// 	ID_vy = 2;
+		// 	ID_theta = 3;			
+		// }
 
-		// theta of the inflow
-		value(ID_theta) = -sqrt(3.0/2.0) * 1.0 ;			
-		}
+		// if (dim == 1)
+		// {
+		// 	ID_rho = 0;
+		// 	ID_vx = 1;
+		// 	ID_theta = 2;			
+		// }
+
+
+		// value = 0;
+
+		// if (dim == 2)
+		// {
+		// // // rho of one of the walls
+		// // value(ID_rho) = -1.0 * x / 4.0 + 3.0 / 2.0;
+
+		// // // theta of the inflow
+		// // value(ID_theta) = -sqrt(3.0/2.0) * 1.0 ;			
+		// }
 
 	}
 
@@ -594,7 +636,7 @@ template<int dim>
 	void 
 	Run_Problem_FE_Time_Stepping<dim>::run(MeshGenerator::Base_MeshGenerator<dim> &Mesh_Info)
 	{
-			//
+	// the total number of refinement cycles 
 	const unsigned int refine_cycles = this->constants.refine_cycles;
 
 	// does not support grid refinement right now
@@ -631,15 +673,15 @@ template<int dim>
    	timer.leave_subsection();
 
    	std::cout << "Computing intial conditions " << std::endl;
-   	initial_conditions initial_data(this->nEqn[0]);
+   	initial_conditions initial_data(this->nEqn);
 
    	VectorTools::interpolate(this->fe_data_structure.mapping,
 						     this->fe_data_structure.dof_handler,
 							  initial_data,
 							 this->solution);
 
-   	MatrixOpt::Base_MatrixOpt matrix_opt;
-
+   	// we compute the initial density
+   	const double initial_density = mean_value(Mesh_Info.triangulation.n_active_cells(),0);
    	// deviation from the steady state value
    	Vector<double> residual_steady_state(this->solution.size());
    	Vector<double> new_solution(this->solution.size());
@@ -663,7 +705,7 @@ template<int dim>
 
 	compute_energy_bound();
 
-   	while (residual_steady_state.l2_norm() > 1e-6)
+   	while (residual_steady_state.l2_norm() > 1e-8)
    	{
    		counter++;
 
@@ -672,16 +714,16 @@ template<int dim>
 
    		// forward euler step
    		// new_solution = delta_t * system_rhs
-   		if (counter%100 == 0 )
-   			initial_energy = postproc.compute_energy(this->solution,
-   													 Mesh_Info.triangulation.n_active_cells(),
-													 this->fe_data_structure.mapping, 
-													 this->fe_data_structure.dof_handler,this->nEqn);
+   		// if (counter%100 == 0 )
+   		// 	initial_energy = postproc.compute_energy(this->solution,
+   		// 											 Mesh_Info.triangulation.n_active_cells(),
+					// 								 this->fe_data_structure.mapping, 
+					// 								 this->fe_data_structure.dof_handler,this->nEqn);
 
    		// update with the solution rhs
    		new_solution.equ(delta_t,this->system_rhs);
    		// update with the spatial derivative
-   		new_solution.add(-delta_t,matrix_opt.Sparse_matrix_dot_Vector(this->global_matrix,this->solution));
+   		new_solution.add(-delta_t,Run_Problem<dim>::matrix_opt.Sparse_matrix_dot_Vector(this->global_matrix,this->solution));
    		// update with the previous solution
    		new_solution += this->solution;
 
@@ -690,17 +732,17 @@ template<int dim>
    		new_solution2.equ(3.0/4.0,this->solution);
    		new_solution2.add(1.0/4.0,new_solution);
    		new_solution2.add(delta_t * 1.0/4.0,this->system_rhs);
-   		new_solution2.add(-delta_t * 1.0/4,matrix_opt.Sparse_matrix_dot_Vector(this->global_matrix,new_solution));
+   		new_solution2.add(-delta_t * 1.0/4,Run_Problem<dim>::matrix_opt.Sparse_matrix_dot_Vector(this->global_matrix,new_solution));
    
 
-   		if (counter %100 == 0)
-   			final_energy = postproc.compute_energy(new_solution2,
-   													Mesh_Info.triangulation.n_active_cells(),
-															this->fe_data_structure.mapping, 
-															this->fe_data_structure.dof_handler,
-															this->nEqn);
+   		// if (counter %100 == 0)
+   		// 	final_energy = postproc.compute_energy(new_solution2,
+   		// 											Mesh_Info.triangulation.n_active_cells(),
+					// 										this->fe_data_structure.mapping, 
+					// 										this->fe_data_structure.dof_handler,
+					// 										this->nEqn);
 
-   		residual_steady_state = matrix_opt.Sparse_matrix_dot_Vector(this->global_matrix,new_solution2);
+   		residual_steady_state = Run_Problem<dim>::matrix_opt.Sparse_matrix_dot_Vector(this->global_matrix,new_solution2);
    		residual_steady_state -= this->system_rhs;
 
    		// update the old solution
@@ -710,11 +752,14 @@ template<int dim>
 
    		if (counter % 100 == 0)
    		{
-   			std::cout << "residual_steady_state " << residual_steady_state.l2_norm() << 
-   					" Solution Norm " << new_solution2.l2_norm() << std::endl;
+   			const double current_density = mean_value(Mesh_Info.triangulation.n_active_cells(),0);
 
-   			printf("energy growth rate: %e \n",(final_energy-initial_energy)/delta_t);
-   			fprintf(energy_growth, "%f %0.15f\n",present_time,(final_energy-initial_energy)/delta_t);
+   			std::cout << "Residual " << residual_steady_state.l2_norm() << 
+   					" Solution Norm " << new_solution2.l2_norm() <<
+   					" Deviation in mass " << fabs(initial_density-current_density) <<  std::endl;
+
+   			// printf("energy growth rate: %e \n",(final_energy-initial_energy)/delta_t);
+   			// fprintf(energy_growth, "%f %0.15f\n",present_time,(final_energy-initial_energy)/delta_t);
 
    		}
 
@@ -732,6 +777,12 @@ template<int dim>
 										this->fe_data_structure.mapping,
 										this->fe_data_structure.dof_handler,
 										this->nEqn);
+
+		postproc.print_options(Mesh_Info.triangulation,this->solution,0,1,
+							  this->convergence_table,
+							this->system_info.base_tensorinfo.S_half_inv,
+								this->fe_data_structure.dof_handler,this->nEqn);		
+
 
 		fclose(energy_growth);
 
@@ -758,7 +809,6 @@ template<int dim>
 						  			bc_rhs,
 						  			b_id);
 
-		std::cout << "b_id 101:" << bc_rhs << std::endl;
 
 		// boundary at the right hand side
 		b_id = 102;
@@ -770,8 +820,6 @@ template<int dim>
 						  			bc_rhs,
 						  			b_id);		
 
-
-		std::cout << "b_id 102:" << bc_rhs << std::endl;
 
 	}
 
@@ -873,7 +921,11 @@ template<int dim>
 
 
 			void run(MeshGenerator::Base_MeshGenerator<dim> &Mesh_Info);
+			void run_time_step(MeshGenerator::Base_MeshGenerator<dim> &Mesh_Info);
+			// in the following routine we check mass conservation
+			double mean_value(const unsigned int active_cells,const unsigned int comp);
 			void distribute_dof_allocate_matrix_periodic_box();
+			const double delta_t = 0.1;
 
 	};
 
@@ -957,6 +1009,9 @@ template<int dim>
 		this->assemble_system_manuel();
 
 		timer.leave_subsection();
+
+		// this->matrix_opt.print_dealii_sparse(this->global_matrix,"global_matrix_odd");
+		// this->matrix_opt.print_dealii_vector(this->system_rhs,"rhs_odd");
         
 		// we initialize the object which will solve our system
 		// We do int the following way so as to keep the solver independent of all the other implementations.
@@ -989,10 +1044,12 @@ template<int dim>
 		// we sent the symmetrizer corresponding to the maximum moment system which we are solving for
 		// In this case, since we are only considering a single moment system therefore this value corresponds to zero.
 		
-		postproc.print_options(Mesh_Info.triangulation,this->solution,cycle,this->constants.refine_cycles,
+		postproc.print_options_quad_points(Mesh_Info.triangulation,this->solution,cycle,this->constants.refine_cycles,
 							  this->convergence_table,
-							this->system_info.base_tensorinfo.S_half_inv,
-								this->fe_data_structure.dof_handler,this->nEqn);		
+							  this->system_info.base_tensorinfo.S_half_inv,
+							  this->fe_data_structure.dof_handler,
+							  this->fe_data_structure.mapping,
+							  this->nEqn);		
 		
 		timer.leave_subsection();
 
@@ -1001,6 +1058,191 @@ template<int dim>
 		
 	}
 	}
+
+	//returns the mean of the comp component of the solution
+	template<int dim>
+	double 
+	Run_Problem_Periodic<dim>::mean_value(const unsigned int active_cells,const unsigned int comp)
+	{
+
+		AssertIndexRange(comp,(unsigned int)this->nEqn);
+		// we select the component corresponding to density
+		unsigned int component= comp;
+		
+
+		const unsigned int ngp = this->constants.p + 1;
+        // error per cell of the domain
+		Vector<double> density_per_cell(active_cells);      
+
+
+        ComponentSelectFunction<dim> weight(component,this->nEqn);       
+        // used to compute only the error in theta
+
+        // computation of L2 error
+        VectorTools::integrate_difference (this->fe_data_structure.mapping,this->fe_data_structure.dof_handler,
+        									this->solution,
+        								   ZeroFunction<dim>(this->nEqn),
+        									density_per_cell,
+        									QGauss<dim>(ngp),
+        									VectorTools::mean,
+        									&weight); 
+
+        // the above routine computes the negative of the mean therefore we multiply by a negative
+        density_per_cell *= -1;
+
+
+        return(density_per_cell.mean_value() * density_per_cell.size());
+	}
+
+
+	template<int dim>
+	void 
+	Run_Problem_Periodic<dim>::run_time_step(MeshGenerator::Base_MeshGenerator<dim> &Mesh_Info)
+	{
+
+	this->error_per_itr.resize(this->constants.refine_cycles);
+
+	TimerOutput timer (std::cout, TimerOutput::summary,
+                   TimerOutput::wall_times);
+	
+	Assert(this->constants.mesh_type == square_domain 
+			&& this->constants.problem_type == periodic,ExcMessage("Incorrect mesh"));
+	
+	for (int cycle = 0 ; cycle < 1 ; cycle++)
+	{
+
+		AssertDimension((int)this->error_per_itr.size(),this->constants.refine_cycles);
+
+		timer.enter_subsection("Develop Periodicity");
+		fflush(stdout);
+		// first we develop the periodic faces using internal functions of dealii
+		this->develop_periodic_faces(this->fe_data_structure.dof_handler);
+
+		// now we construct the required data structure
+		this->divide_periodicity();
+
+		timer.leave_subsection();
+
+		//now we distribute the dofs and allocate the memory for the global matrix. We have 
+		// already created the mesh so we can directly distribute the degrees of freedom now.
+		timer.enter_subsection("Distribute Dof");
+		fflush(stdout);
+		this->distribute_dof_allocate_matrix_periodic_box();
+		this->allocate_vectors(this->fe_data_structure.dof_handler,
+								this->solution,this->system_rhs,
+								this->residual);
+
+		timer.leave_subsection();
+
+		std::cout << "#Cells " << Mesh_Info.triangulation.n_active_cells() << std::endl;
+		std::cout << "#Dofs " << this->fe_data_structure.dof_handler.n_dofs() << std::endl;
+		fflush(stdout);
+
+		// cannot use meshworker for the present problem
+		timer.enter_subsection("Assemble");
+		this->assemble_system_manuel();
+
+		timer.leave_subsection();
+
+		// this->matrix_opt.print_dealii_sparse(this->global_matrix,"global_matrix_odd");
+		// this->matrix_opt.print_dealii_vector(this->system_rhs,"rhs_odd");
+        
+		// we initialize the object which will solve our system
+		// We do int the following way so as to keep the solver independent of all the other implementations.
+		// This makes the code highly reusable. So one can directly copy the following class and use it somewhere
+		// else is one wants to.
+		
+
+		timer.enter_subsection("Time Stepping");
+		this->solution = 1;
+		Vector<double> residual_steady_state(this->solution.size());
+		Vector<double> new_solution(this->solution.size());
+		Vector<double> new_solution2(this->solution.size());
+		residual_steady_state = 100;
+
+		const double initial_density = mean_value(Mesh_Info.triangulation.n_active_cells(),0);
+		std::cout << "Time stepping " << std::endl;
+		fflush(stdout);
+
+   	// counts the number of time steps
+		unsigned int counter = 0;
+
+
+		while (residual_steady_state.l2_norm() > 1e-6)
+		{
+			counter++;
+
+   		// update with the solution rhs
+			new_solution.equ(delta_t,this->system_rhs);
+   		// update with the spatial derivative
+			new_solution.add(-delta_t,Run_Problem<dim>::matrix_opt.Sparse_matrix_dot_Vector(this->global_matrix,this->solution));
+   		// update with the previous solution
+			new_solution += this->solution;
+
+   		// second update
+   		// update with the previous solution
+			// new_solution2.equ(3.0/4.0,this->solution);
+			// new_solution2.add(1.0/4.0,new_solution);
+			// new_solution2.add(delta_t * 1.0/4.0,this->system_rhs);
+			// new_solution2.add(-delta_t * 1.0/4,Run_Problem<dim>::matrix_opt.Sparse_matrix_dot_Vector(this->global_matrix,new_solution));
+
+			this->solution = new_solution;
+
+			residual_steady_state = Run_Problem<dim>::matrix_opt.Sparse_matrix_dot_Vector(this->global_matrix,this->solution);
+			residual_steady_state -= this->system_rhs;
+
+   		// update the old solution
+			
+
+
+			if (counter % 10 == 0)
+			{
+				const double current_density = mean_value(Mesh_Info.triangulation.n_active_cells(),0);
+
+				std::cout << "residual_steady_state " << residual_steady_state.l2_norm() << 
+							 " Solution Norm " << this->solution.l2_norm() <<
+							 " Deviation in mass" << fabs(initial_density-current_density) <<  std::endl;
+
+			}
+
+		}
+		timer.leave_subsection();
+
+		timer.enter_subsection("Post Proc");
+		PostProc::Base_PostProc<dim> postproc(this->constants,this->base_exactsolution);
+
+		postproc.reinit(this->fe_data_structure.dof_handler);
+
+		// // now we compute the error due to computation
+		postproc.error_evaluation_QGauss(this->solution,
+			Mesh_Info.triangulation.n_active_cells(),
+			this->error_per_itr[cycle],
+			GridTools::maximal_cell_diameter(Mesh_Info.triangulation),
+			this->convergence_table,
+			this->residual.l2_norm(),
+			this->fe_data_structure.mapping,
+			this->fe_data_structure.dof_handler,
+			this->nEqn);
+
+
+		// we sent the symmetrizer corresponding to the maximum moment system which we are solving for
+		// In this case, since we are only considering a single moment system therefore this value corresponds to zero.
+		
+		postproc.print_options_quad_points(Mesh_Info.triangulation,this->solution,cycle,this->constants.refine_cycles,
+			this->convergence_table,
+			this->system_info.base_tensorinfo.S_half_inv,
+			this->fe_data_structure.dof_handler,
+			this->fe_data_structure.mapping,
+			this->nEqn);		
+		
+		timer.leave_subsection();
+
+		// Grid refinement should be done in the end.
+		Mesh_Info.refinement_handling(cycle,this->constants.refine_cycles);
+		
+	}
+}
+
 
 
 }

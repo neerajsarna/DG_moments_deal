@@ -21,6 +21,8 @@ namespace BCrhs
 		void assign_wall_properties(double &thetaW,double &vn,double &vt,double &vr,const FullMatrix<double> &proj_vector,
 									const unsigned int b_id);
 
+		void assign_wall_properties_kinetic(double &thetaW,double &vx,double &vy,const unsigned int b_id);
+
 		// prescribe the attributes of the inflow
 		// the following function is a specialization for the 2D case
 		void assign_inflow_properties(double &thetaW,double &vn,double &vt,double &vr, double &rho,const FullMatrix<double> &proj_vector,
@@ -363,6 +365,56 @@ namespace BCrhs
 
 
 		Assert(assigned_properties==true,ExcMessage("Wall properties not assigned, check the implementation"));
+
+	}
+
+	template<>
+	void 
+	Base_BCrhs<2>
+	::assign_wall_properties_kinetic(double &thetaW,double &vx,double &vy,const unsigned int b_id)
+	{
+		Assert(b_id <= 4,ExcNotImplemented());
+
+		if (b_id == 0)
+		{
+	
+			thetaW = constants.theta0;
+			vx = constants.vx0;
+			vy = constants.vy0;	
+	
+		}
+
+
+		if (b_id == 1)
+		{
+
+			thetaW = constants.theta1;
+			vx = constants.vx1;
+			vy = constants.vy1;	
+			
+		}
+
+		if (b_id == 2)
+		{
+
+			thetaW = constants.theta2;
+			vx = constants.vx2;
+			vy = constants.vy2;	
+		}
+
+		if (b_id == 3)
+		{
+			thetaW = constants.theta3;
+			vx = constants.vx3;
+			vy = constants.vy3;	
+		}
+
+		if (b_id == 4)
+		{
+			thetaW = constants.theta4;
+			vx = constants.vx4;
+			vy = constants.vy4;	
+		}
 
 	}
 
@@ -1123,26 +1175,6 @@ namespace BCrhs
 		nEqn(nEqn)
 		{;}
 
-		template<>
-		void
-		BCrhs_wall_kinetic<2>::BCrhs(const Tensor<1,2,double> p,
-										const Tensor<1,2,double> normal_vector,
-										Vector<double> &bc_rhs,
-										const unsigned int b_id)
-		{
-			Assert(1 == 0, ExcNotImplemented());
-		}
-
-		template<>
-		void
-		BCrhs_wall_kinetic<3>::BCrhs(const Tensor<1,3,double> p,
-										const Tensor<1,3,double> normal_vector,
-										Vector<double> &bc_rhs,
-										const unsigned int b_id)
-		{
-			Assert(1 == 0, ExcNotImplemented());
-		}
-
 
 		template<>
 		void 
@@ -1212,6 +1244,64 @@ namespace BCrhs
 		}
 
 
+		template<>
+		void
+		BCrhs_wall_kinetic<2>::BCrhs(const Tensor<1,2,double> p,
+										const Tensor<1,2,double> normal_vector,
+										Vector<double> &bc_rhs,
+										const unsigned int b_id)
+		{
+			bc_rhs = 0;
+
+			Assert(b_id <= 4 ,ExcNotImplemented());
+			if (b_id != 50)
+			{
+				const unsigned int ID_rho = this->constants.variable_map[1].find("rho")->second;
+				const unsigned int ID_vx = this->constants.variable_map[1].find("vx")->second;
+				const unsigned int ID_vy = this->constants.variable_map[1].find("vy")->second;
+				const unsigned int ID_theta = this->constants.variable_map[1].find("theta")->second;
+
+
+				double thetaW;
+				double vxW;
+				double vyW;
+
+				this->assign_wall_properties_kinetic(thetaW,vxW,vyW,b_id);
+
+				Assert(vxW == 0 , ExcNotImplemented());
+				bc_rhs(ID_vx) = vxW;
+				bc_rhs(ID_vy) = vyW;
+				bc_rhs(ID_theta) = (-sqrt(3.0/2.0))*thetaW;
+
+				// now we account for the density of the fluid
+				for (unsigned int m = 0 ; m < rhoW.outerSize() ; m++)
+					for (Sparse_matrix::InnerIterator n(rhoW,m); n ; ++n)
+						if (n.row() == ID_rho)
+						{
+							if (n.col() == ID_vx)
+								bc_rhs(ID_rho) -= n.value() *  vxW;
+
+							if (n.col() == ID_vy)
+								bc_rhs(ID_rho) -= n.value() * vyW;
+
+							if (n.col() == ID_theta)
+								bc_rhs(ID_rho) -= n.value() * (-sqrt(3.0/2.0))*thetaW;
+						}
+			}
+		}
+
+		template<>
+		void
+		BCrhs_wall_kinetic<3>::BCrhs(const Tensor<1,3,double> p,
+										const Tensor<1,3,double> normal_vector,
+										Vector<double> &bc_rhs,
+										const unsigned int b_id)
+		{
+			Assert(1 == 0, ExcNotImplemented());
+		}
+
+
+
 		template<int dim>
 		class
 		BCrhs_inflow_kinetic:public Base_BCrhs<dim>
@@ -1257,10 +1347,10 @@ namespace BCrhs
     		//temprature of the incoming distribution function
 			double thetaW;
 
-    // normal velocity of the incoming distribution function
+    		// normal velocity of the incoming distribution function
 			double vx;
 
-    // density of the wall
+    		// density of the wall
 			double rho;
 
 			if (b_id == 101)
@@ -1284,7 +1374,7 @@ namespace BCrhs
 			// we can't handle a vx right now
 			Assert(fabs(vx) < 1e-16,ExcNotImplemented());
 
-    // the right hand side based upon the kinetic flux
+		    // the right hand side based upon the kinetic flux
 			bc_rhs(ID_rho) = rho;
 			bc_rhs(ID_vx) = vx;
 			bc_rhs(ID_theta)= thetaW/sqrt(2);
@@ -1292,17 +1382,65 @@ namespace BCrhs
 
 		}
 
-
 		template<>
 		void
 		BCrhs_inflow_kinetic<2>::BCrhs(const Tensor<1,2,double> p,
 										const Tensor<1,2,double> normal_vector,
 										Vector<double> &bc_rhs,
 										const unsigned int b_id)
-
 		{
-			Assert(1 == 0 ,ExcNotImplemented());
+
+			const unsigned int ID_rho = this->constants.variable_map[1].find("rho")->second;
+			const unsigned int ID_vx = this->constants.variable_map[1].find("vx")->second;
+			const unsigned int ID_vy = this->constants.variable_map[1].find("vy")->second;
+			const unsigned int ID_theta = this->constants.variable_map[1].find("theta")->second;
+
+			AssertDimension((int)bc_rhs.size(),nEqn);
+
+    		//temprature of the incoming distribution function
+			double thetaW;
+
+    		// normal velocity of the incoming distribution function
+			double vxW;
+
+			// tangential velocity of the incoming distribution 
+			double vyW;
+
+    		// density of the wall
+			double rho;
+
+			// we do not need to care about the local coordinates because we anyhow have the projector 
+			// multiplied from the left and the right.
+
+			if (b_id == 101)
+			{
+
+				thetaW = constants.theta101;
+				vxW = constants.vx101;
+				vyW = constants.vy101;
+				rho = constants.rho101;
+
+			}
+
+
+			if (b_id == 102)
+			{
+      			// the wall velocity vector in local coordinates
+				thetaW = constants.theta102;
+				vxW = constants.vx102;
+				vyW = constants.vy102;
+				rho = constants.rho102;
+			}
+
+    // the right hand side based upon the kinetic flux
+			bc_rhs(ID_rho) = rho;
+			bc_rhs(ID_vx) = vxW;
+			bc_rhs(ID_vy) = vyW;
+			bc_rhs(ID_theta)= -sqrt(3.0/2.0) * thetaW ;
+
+
 		}
+
 
 		template<>
 		void

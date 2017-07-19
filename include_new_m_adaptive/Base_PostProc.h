@@ -120,6 +120,21 @@ namespace PostProc
 									const DoFHandler<dim> &dof_handler,
 									const int nEqn);
 
+		void print_solution_to_file_cell_centers(const Triangulation<dim> &triangulation,
+									const Vector<double> &solution,
+									const Sparse_matrix &S_half_inv,
+									const DoFHandler<dim> &dof_handler,
+									const int nEqn);
+
+
+		void print_solution_to_file_quad_points(const Triangulation<dim> &triangulation,
+												const Vector<double> &solution,
+												const Sparse_matrix &S_half_inv,
+												const MappingQ<dim> &mapping,
+												const DoFHandler<dim> &dof_handler,
+												const int nEqn);
+
+
 		void print_solution_to_file(const Triangulation<dim> &triangulation,
 									const Vector<double> &solution,
 									const Sparse_matrix &S_half_inv,
@@ -155,15 +170,25 @@ namespace PostProc
 		void print_fe_index(const hp::DoFHandler<dim> &dof_handler);
 
 
-			// print the solution depending upon printing options
-		void print_options(const Triangulation<dim> &triangulation,
+		// print the solution depending upon printing options
+		void print_options_quad_points(const Triangulation<dim> &triangulation,
 						   const Vector<double> &solution,
 						   const unsigned int present_cycle,
 						   const unsigned int refine_cycle,
 					       ConvergenceTable &convergence_table,
 						   const Sparse_matrix &S_half_inv,
 						   const DoFHandler<dim> &dof_handler,
+						   const MappingQ<dim> &mapping,
 						   const int nEqn);
+
+		void print_options(const Triangulation<dim> &triangulation,
+					  const Vector<double> &solution,
+					  const unsigned int present_cycle,
+					  const unsigned int total_cycles,
+					  ConvergenceTable &convergence_table,
+					 const Sparse_matrix &S_half_inv,
+					 const DoFHandler<dim> &dof_handler,
+						const int nEqn);
 
 		// same as above but for hp finite element objects
 		void print_options(const Triangulation<dim> &triangulation,
@@ -769,6 +794,7 @@ namespace PostProc
     	Assert(variables_to_print<=nEqn,ExcMessage("to many variables to print"));
 	for (; cell != endc ; cell++)
 	{
+
 		for (unsigned int vertex = 0 ; vertex < GeometryInfo<dim>::vertices_per_cell ; vertex++)
 		{
 			solution_value = 0;
@@ -791,6 +817,115 @@ namespace PostProc
 
 	fclose(fp_solution);
 }
+
+    template<int dim>
+    void 
+    Base_PostProc<dim>::
+    print_solution_to_file_cell_centers(
+    					const Triangulation<dim> &triangulation,
+    					const Vector<double> &solution,
+    					const Sparse_matrix &S_half_inv,
+    					const DoFHandler<dim> &dof_handler,
+    					const int nEqn)
+    {
+    	typename Triangulation<dim>::active_cell_iterator cell = triangulation.begin_active(), endc = triangulation.end();
+    	Assert(class_initialized == true,ExcMessage("Please initialize the post proc class"));
+
+    	FILE *fp_solution;
+
+    	fp_solution = fopen(output_file_names.file_for_num_solution.c_str(),"w+");
+
+    	AssertThrow(fp_solution != NULL,ExcMessage("file not open"));
+
+    	fprintf(fp_solution, "#%s\n","x y at the midpoint of each cell all the solution components");
+    	Vector<double> solution_value(nEqn);
+    	
+    	int variables_to_print = nEqn;
+
+
+    	Assert(variables_to_print<=nEqn,ExcMessage("to many variables to print"));
+	for (; cell != endc ; cell++)
+	{
+		solution_value = 0;
+		VectorTools::point_value(dof_handler, solution, cell->center(),solution_value);	
+
+		for (unsigned int space = 0 ; space < dim ; space ++)
+			fprintf(fp_solution, "%f ",cell->center()(space));
+
+		// we only print variables uptill heat flux
+		for (int i = 0 ; i < variables_to_print ; i++)
+			fprintf(fp_solution, "%f ",solution_value(i));
+
+		fprintf(fp_solution, "\n");
+	}
+
+
+	fclose(fp_solution);
+}
+
+
+    template<int dim>
+    void 
+    Base_PostProc<dim>::
+    print_solution_to_file_quad_points(
+    					const Triangulation<dim> &triangulation,
+    					const Vector<double> &solution,
+    					const Sparse_matrix &S_half_inv,
+    					const MappingQ<dim> &mapping,
+    					const DoFHandler<dim> &dof_handler,
+    					const int nEqn)
+    {
+    	typename Triangulation<dim>::active_cell_iterator cell = triangulation.begin_active(), endc = triangulation.end();
+    	Assert(class_initialized == true,ExcMessage("Please initialize the post proc class"));
+
+    	FILE *fp_solution;
+    	QGauss<dim> quadrature(4);
+    	UpdateFlags update_flags = update_q_points;
+
+    	FEValues<dim>  fe_v(mapping,dof_handler.get_fe(),
+      						quadrature, update_flags);
+
+    	const unsigned int total_ngp = quadrature.size();
+
+    	fp_solution = fopen(output_file_names.file_for_num_solution.c_str(),"w+");
+
+    	AssertThrow(fp_solution != NULL,ExcMessage("file not open"));
+
+    	fprintf(fp_solution, "#%s\n","x y at the midpoint of each cell all the solution components");
+    	Vector<double> solution_value(nEqn);
+    	
+    	int variables_to_print = nEqn;
+
+
+    	Assert(variables_to_print<=nEqn,ExcMessage("to many variables to print"));
+	for (; cell != endc ; cell++)
+	{
+		fe_v.reinit(cell);
+
+		for (unsigned int q = 0 ; q < total_ngp ; q++)
+		{
+			solution_value = 0 ;
+			Point<dim> gauss_point = fe_v.quadrature_point(q);
+
+			VectorTools::point_value(dof_handler, solution, gauss_point,solution_value);				
+
+			for (unsigned int space = 0 ; space < dim ; space ++)
+				fprintf(fp_solution, "%f ",gauss_point(space));
+
+		// we only print variables uptill heat flux
+			for (int i = 0 ; i < variables_to_print ; i++)
+				fprintf(fp_solution, "%f ",solution_value(i));
+
+			fprintf(fp_solution, "\n");
+		}
+
+	}
+
+
+	fclose(fp_solution);
+}
+
+
 
 
 	// same as above but can take a user defined input filename
@@ -1110,6 +1245,58 @@ print_fe_index(const hp::DoFHandler<dim> &dof_handler)
    	template<int dim>
 	void 
 	Base_PostProc<dim>::
+	print_options_quad_points(const Triangulation<dim> &triangulation,
+		const Vector<double> &solution,
+		const unsigned int present_cycle,
+		const unsigned int total_cycles,
+		ConvergenceTable &convergence_table,
+		const Sparse_matrix &S_half_inv,
+		const DoFHandler<dim> &dof_handler,
+		const MappingQ<dim> &mapping,
+		const int nEqn)
+	{
+		Assert(class_initialized == true,ExcMessage("Please initialize the post proc class"));
+		// if we would like to print for all the refinement cycles
+		if (constants.print_all)
+		{
+			if (constants.print_solution)
+				print_solution_to_file_quad_points(triangulation,solution,
+												   S_half_inv,mapping,dof_handler,nEqn);
+
+			if(constants.print_error)
+				print_error_to_file(triangulation,solution,dof_handler,nEqn);
+
+			if(constants.print_exactsolution)
+				print_exactsolution_to_file(triangulation,S_half_inv,nEqn);
+
+		}
+
+		else
+		{
+   			// only print in the final cycle
+			if (present_cycle == total_cycles - 1)
+			{
+			if (constants.print_solution)
+				print_solution_to_file_quad_points(triangulation,solution,S_half_inv,mapping,dof_handler,nEqn);
+
+			if(constants.print_error)
+				print_error_to_file(triangulation,solution,dof_handler,nEqn);
+
+			if(constants.print_exactsolution)
+				print_exactsolution_to_file(triangulation,S_half_inv,nEqn);
+
+			}
+		}
+
+		if (constants.print_convergence_table)
+			print_convergence_table_to_file(convergence_table);
+
+	}
+
+
+	template<int dim>
+	void 
+	Base_PostProc<dim>::
 	print_options(const Triangulation<dim> &triangulation,
 		const Vector<double> &solution,
 		const unsigned int present_cycle,
@@ -1124,7 +1311,8 @@ print_fe_index(const hp::DoFHandler<dim> &dof_handler)
 		if (constants.print_all)
 		{
 			if (constants.print_solution)
-				print_solution_to_file(triangulation,solution,S_half_inv,dof_handler,nEqn);
+				print_solution_to_file(triangulation,solution,
+										S_half_inv,dof_handler,nEqn);
 
 			if(constants.print_error)
 				print_error_to_file(triangulation,solution,dof_handler,nEqn);
@@ -1155,6 +1343,8 @@ print_fe_index(const hp::DoFHandler<dim> &dof_handler)
 			print_convergence_table_to_file(convergence_table);
 
 	}
+
+
 
    	template<int dim>
 	void 

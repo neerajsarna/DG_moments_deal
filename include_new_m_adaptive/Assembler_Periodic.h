@@ -72,6 +72,12 @@ namespace FEM_Solver
                                           const FEValuesBase<dim> &fe_v,
                                           std::vector<double> &J,
                                           const unsigned int b_id);
+
+       void integrate_boundary_manuel_kinetic(FullMatrix<double> &cell_matrix,
+                                          Vector<double> &cell_rhs,
+                                          const FEValuesBase<dim> &fe_v,
+                                          std::vector<double> &J,
+                                          const unsigned int b_id);
         	
       void integrate_face_manuel(FullMatrix<double> &u1_v1,
                         FullMatrix<double> &u1_v2,
@@ -259,7 +265,7 @@ namespace FEM_Solver
               		}
               	else
               	{
-                integrate_boundary_manuel_odd(boundary_matrix, 
+                integrate_boundary_manuel_kinetic(boundary_matrix, 
                                               cell_rhs,
                                               fe_v_face, 
                                               Jacobian_face,
@@ -503,6 +509,72 @@ namespace FEM_Solver
 
 	}
 
+  template<int dim>
+  void 
+  Assembly_Manager_Periodic<dim>
+  ::integrate_boundary_manuel_kinetic(FullMatrix<double> &cell_matrix,
+                                  Vector<double> &cell_rhs,
+                                  const FEValuesBase<dim> &fe_v,
+                                  std::vector<double> &J,
+                                  const unsigned int b_id)
+  {
+      std::vector<unsigned int> component(dofs_per_cell);
+
+    for (unsigned int i = 0 ; i < dofs_per_cell ; i ++)
+      component[i] = this->fe_data_structure.finite_element.system_to_component_index(i).first;
+
+    Vector<double> boundary_rhs_value;
+    boundary_rhs_value.reinit(nEqn);
+    
+    Assert(system_info.system_data.B.matrix.rows() == system_info.system_data.Sigma.matrix.cols(),
+      ExcMessage("Incorrect dimension"));
+
+    // we use a temporary matrix to determine whether inflow or outflow
+    Sparse_matrix rho_temp;
+
+    Assert(b_id == 0 || b_id == 1,ExcMessage("The poisson problem cannot have any other boundary ids"));
+
+    rho_temp = system_info.system_data.rhoW.matrix;
+
+    for (unsigned int q = 0 ; q < fe_v.n_quadrature_points ; q++)
+    {
+      const double jacobian_value = J[q];
+
+      boundary_rhs_value = 0;                 
+      Tensor<1,dim> outward_normal = fe_v.normal_vector(q);
+
+      system_info.bcrhs_wall_kinetic.BCrhs(fe_v.quadrature_point(q),outward_normal,
+                                            boundary_rhs_value,b_id);
+
+      Sparse_matrix Projector = system_info.build_Projector(outward_normal);
+
+      Eigen::MatrixXd Am = system_info.build_Aminus_kinetic(outward_normal);
+
+      Eigen::MatrixXd Am_rho = Am * rho_temp * Projector;
+
+      for (unsigned int i = 0 ; i < dofs_per_cell ; i ++)
+      {
+        const double shape_value_test = fe_v.shape_value(i,q);
+        for (unsigned int j = 0 ; j < dofs_per_cell ; j ++)
+          cell_matrix(i,j) += 0.5 * shape_value_test
+                              * (Am(component[i],component[j]) - Am_rho(component[i],component[j]))
+                              * fe_v.shape_value(j,q) 
+                              * jacobian_value;                                    
+
+
+        for (unsigned int j = 0 ; j < boundary_rhs_value.size() ; j++)
+          cell_rhs(i) += 0.5 * shape_value_test 
+                        * Am(component[i],j) 
+                        * boundary_rhs_value[j] 
+                        * jacobian_value;
+
+      }
+
+
+      }
+
+  }
+
 			// integrate the face term using manuel computation
 	template<int dim>
 	void 
@@ -532,8 +604,8 @@ namespace FEM_Solver
 
     //CAUTION: ASSUMPTION OF STRAIGHT EDGES IN THE INTERIOR
 		Tensor<1,dim> outward_normal = fe_v.normal_vector(0);
-		Eigen::MatrixXd Am = system_info.build_Aminus_kinetic(outward_normal);
-		Eigen::MatrixXd Am_neighbor = system_info.build_Aminus_kinetic(-outward_normal);
+		Eigen::MatrixXd Am = system_info.build_Aminus(outward_normal);
+		Eigen::MatrixXd Am_neighbor = system_info.build_Aminus(-outward_normal);
 
 
 		FullMatrix<double> Mass_u1_v1(dofs_per_component1,dofs_per_component1);

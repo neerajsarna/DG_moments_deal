@@ -197,7 +197,7 @@ namespace FEM_Solver
 
     case kinetic:
     {
-      std::cout << "************ Using Kinetic Flux *********" << std::endl;
+      std::cout << "************ Using Kinetic Flux For Boundary *********" << std::endl;
 
 
       MeshWorker::loop<dim, dim, MeshWorker::DoFInfo<dim>, MeshWorker::IntegrationInfoBox<dim> >
@@ -206,11 +206,11 @@ namespace FEM_Solver
        std_cxx11::bind(&Assembly_Manager_FE<dim>::integrate_cell_term,
         this,
         std_cxx11::_1,std_cxx11::_2),
-       std_cxx11::bind(&Assembly_Manager_FE<dim>::integrate_boundary_term_odd,
+       std_cxx11::bind(&Assembly_Manager_FE<dim>::integrate_boundary_kinetic_flux,
         this,
         std_cxx11::_1,
         std_cxx11::_2),
-       std_cxx11::bind(&Assembly_Manager_FE<dim>::integrate_face_term_kinetic_flux,
+       std_cxx11::bind(&Assembly_Manager_FE<dim>::integrate_face_term,
         this,
         std_cxx11::_1,
         std_cxx11::_2,
