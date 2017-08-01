@@ -24,7 +24,7 @@ std::vector<std::string> input_file;
 //#include "Test_Solver_m_adaptive.h"
 //#include "Test_Assembly.h"
 //#include "Test_Assembly_MAdaptive.h"
-#include "Test_Run.h"
+//#include "Test_Run.h"
 //#include "Test_ResidualCompution.h"
 //#include "Test_Projection.h"
 
@@ -43,7 +43,7 @@ std::vector<std::string> input_file;
 //  #include "Test_CrsFormat.h"
  //#include "Test_Production.h"
 //  #include "Test_ProjectorData.h"
- //#include "Test_BCrhs.h"
+ #include "Test_BCrhs.h"
 //#include "Test_MeshGenerator.h"
 // #include "Test_SymmetrizerData.h"
 

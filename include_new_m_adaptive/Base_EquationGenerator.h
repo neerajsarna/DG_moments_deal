@@ -136,6 +136,8 @@ namespace EquationGenerator
 			// build the Aminus matrix using a kinetic flux
 			Full_matrix build_Aminus_kinetic(const Tensor<1,dim,double> normal_vector);
 
+			Full_matrix build_An(const Tensor<1,dim,double> normal_vector);
+
 			// Matrices for the flux
 			Full_matrix Aminus_1D;
 
@@ -565,6 +567,17 @@ namespace EquationGenerator
 		// the factor of half is taken care of separately. The symmetrizer is taken care of by the projector itself
 		return(base_tensorinfo.reinit_Invglobal(normal_vector) 
 			   	* (system_data.Amod_kinetic.matrix - system_data.Ax.matrix)
+			   	* base_tensorinfo.reinit_global(normal_vector));
+	}
+
+	// the following matrix returns the flux in a particular direction
+	template<int dim>
+	Full_matrix
+	Base_EquationGenerator<dim>::
+	build_An(const Tensor<1,dim,double> normal_vector)
+	{
+		return(base_tensorinfo.reinit_Invglobal(normal_vector) 
+			   	* system_data.Ax.matrix
 			   	* base_tensorinfo.reinit_global(normal_vector));
 	}
 

@@ -1,3 +1,11 @@
+// prescribe some default values to the moment variables. The conservation of mass should hold true for any arbitrary values 
+// of the moments
+void prescribe_moments(Vector<double> &moments, const int nEqn)
+{
+	for (int i = 0 ; i < nEqn ; i ++)
+		moments(i) = 2 * i + log(i+3)+ 2;
+}
+
 TEST(DISABLED_BCrhsWallG20,HandlesBCrhsWallG20)
 {
 	const unsigned int dim = 3;
@@ -333,7 +341,7 @@ TEST(DISABLED_BCrhsInflowG20,HandlesBCrhsInflowG20)
 
 }
 
-TEST(BCrhsWallKineticG20,HandlesKineticFluxG20)
+TEST(DISABLED_BCrhsWallKineticG20,HandlesKineticFluxG20)
 {
 		const unsigned int dim = 1;
 
@@ -362,5 +370,64 @@ TEST(BCrhsWallKineticG20,HandlesKineticFluxG20)
 	System[0].bcrhs_wall_kinetic.BCrhs(p,normal_vector,boundary_value,0);
 
 	std::cout << "Value at boundary " << boundary_value << std::endl;
+
+}
+
+// checks the no penetration condition for kinetic fluxes
+TEST(BoundaryNoPenetration,HandlesNoPenetration)
+{
+		const unsigned int dim = 2;
+
+		std::string folder_name = "../system_matrices/";
+		Constants::Base_Constants constants(input_file);
+
+
+		Develop_System::System<dim> System(constants.constants_num,constants.constants_sys.nEqn[0],
+									constants.constants_sys.nBC[0],constants.constants_sys.Ntensors[0],folder_name);
+
+		System.initialize_system();
+
+		MatrixOpt::Base_MatrixOpt matrix_opt;
+
+		Vector<double> solution(System.nEqn);
+		Vector<double> bcrhs(System.nEqn);
+		
+		prescribe_moments(solution,System.nEqn);
+
+		// // net flux at the boundary
+		Vector<double> flux_boundary(System.nEqn);
+		Tensor<1,dim,double> normal_vector;
+		Tensor<1,dim,double> p;
+		int b_id;
+
+		p[0] = -0.5;
+		p[1] = 0.25;
+
+		normal_vector[0] = -1;
+		normal_vector[1] = 0;
+
+		b_id = 0;
+
+		// // we build the Aminus from the kinetic flux
+		Full_matrix Aminus = System.build_Aminus_kinetic(normal_vector);
+		Full_matrix An = System.build_An(normal_vector);
+		Sparse_matrix rhoWall = System.system_data.rhoW.matrix;
+		Full_matrix Aminus_rhoWall = Aminus * rhoWall * System.build_Projector(normal_vector);
+
+
+		System.bcrhs_wall_kinetic.BCrhs(p,normal_vector,bcrhs,b_id);
+
+		flux_boundary = matrix_opt.Sparse_matrix_dot_Vector(Aminus,solution);
+		flux_boundary.add(-1,matrix_opt.Sparse_matrix_dot_Vector(Aminus,bcrhs));
+		flux_boundary.add(-1,matrix_opt.Sparse_matrix_dot_Vector(Aminus_rhoWall,solution));
+
+		flux_boundary *= 0.5;
+		flux_boundary.add(1,matrix_opt.Sparse_matrix_dot_Vector(An,solution));
+
+		std::cout << "Flux at the boundary " << std::endl;
+		std::cout << flux_boundary << std::endl;
+
+		EXPECT_NEAR(flux_boundary(0),0,1e-10);
+
 
 }
