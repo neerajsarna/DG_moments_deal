@@ -903,6 +903,8 @@ template<int dim>
 	}
 
 
+	// Runs the periodic problem in 2D
+
 	template<int dim>
 	class
 	Run_Problem_Periodic:public Assembly_Manager_Periodic<dim>,
@@ -922,10 +924,12 @@ template<int dim>
 
 			void run(MeshGenerator::Base_MeshGenerator<dim> &Mesh_Info);
 			void run_time_step(MeshGenerator::Base_MeshGenerator<dim> &Mesh_Info);
+
 			// in the following routine we check mass conservation
 			double mean_value(const unsigned int active_cells,const unsigned int comp);
 			void distribute_dof_allocate_matrix_periodic_box();
 			const double delta_t = 0.1;
+			double compute_entropy(const unsigned int active_cells);
 
 	};
 
@@ -1095,6 +1099,33 @@ template<int dim>
 	}
 
 
+	// we compute the entropy with respect to the present solution
+	template<int dim>
+	double
+	Run_Problem_Periodic<dim>::compute_entropy(const unsigned int active_cells)
+	{
+		AssertIndexRange(comp,(unsigned int)this->nEqn);
+		
+
+		const unsigned int ngp = this->constants.p + 1;
+        // error per cell of the domain
+		Vector<double> entropy_per_cell(active_cells);      
+
+
+
+        // we compute the entropy which is the square of the L2 norm of the solution (we are using symmetric variables)
+        VectorTools::integrate_difference (this->fe_data_structure.mapping,this->fe_data_structure.dof_handler,
+        									this->solution,
+        								   ZeroFunction<dim>(this->nEqn),
+        									entropy_per_cell,
+        									QGauss<dim>(ngp),
+        									VectorTools::L1_norm); 
+
+        return(pow(entropy_per_cell.l2_norm(),2));
+
+	}
+
+
 	template<int dim>
 	void 
 	Run_Problem_Periodic<dim>::run_time_step(MeshGenerator::Base_MeshGenerator<dim> &Mesh_Info)
@@ -1108,7 +1139,7 @@ template<int dim>
 	Assert(this->constants.mesh_type == square_domain 
 			&& this->constants.problem_type == periodic,ExcMessage("Incorrect mesh"));
 	
-	for (int cycle = 0 ; cycle < 1 ; cycle++)
+	for (int cycle = 0 ; cycle < this->constants.refine_cycles ; cycle++)
 	{
 
 		AssertDimension((int)this->error_per_itr.size(),this->constants.refine_cycles);
@@ -1160,7 +1191,7 @@ template<int dim>
 		Vector<double> new_solution2(this->solution.size());
 		residual_steady_state = 100;
 
-		const double initial_density = mean_value(Mesh_Info.triangulation.n_active_cells(),0);
+		const double initial_entropy = compute_entropy(Mesh_Info.triangulation.n_active_cells());
 		std::cout << "Time stepping " << std::endl;
 		fflush(stdout);
 
@@ -1168,14 +1199,15 @@ template<int dim>
 		unsigned int counter = 0;
 
 
-		while (residual_steady_state.l2_norm() > 1e-6)
+		while (residual_steady_state.l2_norm() > 1e-7)
 		{
 			counter++;
 
    		// update with the solution rhs
 			new_solution.equ(delta_t,this->system_rhs);
    		// update with the spatial derivative
-			new_solution.add(-delta_t,Run_Problem<dim>::matrix_opt.Sparse_matrix_dot_Vector(this->global_matrix,this->solution));
+			new_solution.add(-delta_t,
+				Run_Problem<dim>::matrix_opt.Sparse_matrix_dot_Vector(this->global_matrix,this->solution));
    		// update with the previous solution
 			new_solution += this->solution;
 
@@ -1197,11 +1229,11 @@ template<int dim>
 
 			if (counter % 10 == 0)
 			{
-				const double current_density = mean_value(Mesh_Info.triangulation.n_active_cells(),0);
+				const double current_entropy = compute_entropy(Mesh_Info.triangulation.n_active_cells());
 
 				std::cout << "residual_steady_state " << residual_steady_state.l2_norm() << 
 							 " Solution Norm " << this->solution.l2_norm() <<
-							 " Deviation in mass" << fabs(initial_density-current_density) <<  std::endl;
+							 "Rate of entropy dissipation" << (current_entropy-initial_entropy)/delta_t <<  std::endl;
 
 			}
 

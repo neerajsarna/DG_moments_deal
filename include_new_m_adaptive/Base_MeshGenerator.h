@@ -316,7 +316,7 @@ namespace MeshGenerator
 					{
                 	// Since for this case the boundary ids have to be prescribed again therefore we need
                 	// to generate the triangulation again.
-						mesh_internal_square(part_x,part_y + 100 * (present_cycle + 1));
+						mesh_internal_square(part_x,part_y + 50 * (present_cycle + 1));
 						break;
 					}
 

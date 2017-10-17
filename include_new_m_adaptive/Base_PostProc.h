@@ -522,7 +522,7 @@ namespace PostProc
 		const hp::DoFHandler<dim> &dof_handler,
 		const std::vector<int> &nEqn)
 	{
-		const unsigned int ngp = constants.p + 1;
+		const unsigned int ngp = constants.p + 2;
 		QGauss<dim> quadrature_basic(ngp);			
 		hp::QCollection<dim> hp_quadrature;
 		
@@ -619,7 +619,7 @@ namespace PostProc
 		unsigned int component= constants.variable_map[dim-1].find(constants.error_variable)->second;
 		
 
-		const unsigned int ngp = constants.p + 1;
+		const unsigned int ngp = constants.p + 2;
         // error per cell of the domain
 		Vector<double> error_per_cell(active_cells);      
 

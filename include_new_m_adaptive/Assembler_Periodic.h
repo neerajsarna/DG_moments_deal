@@ -73,6 +73,14 @@ namespace FEM_Solver
                                           std::vector<double> &J,
                                           const unsigned int b_id);
 
+       // integrate the boundary term using characteristic implementation
+      void integrate_boundary_manuel_char(FullMatrix<double> &cell_matrix,
+                                          Vector<double> &cell_rhs,
+                                          const FEValuesBase<dim> &fe_v,
+                                          std::vector<double> &J,
+                                          const unsigned int b_id);
+
+
        void integrate_boundary_manuel_kinetic(FullMatrix<double> &cell_matrix,
                                           Vector<double> &cell_rhs,
                                           const FEValuesBase<dim> &fe_v,
@@ -265,7 +273,8 @@ namespace FEM_Solver
               		}
               	else
               	{
-                integrate_boundary_manuel_kinetic(boundary_matrix, 
+
+                integrate_boundary_manuel_char(boundary_matrix, 
                                               cell_rhs,
                                               fe_v_face, 
                                               Jacobian_face,
@@ -508,6 +517,90 @@ namespace FEM_Solver
 
 
 	}
+
+
+
+template<int dim>
+  void 
+  Assembly_Manager_Periodic<dim>
+  ::integrate_boundary_manuel_char(FullMatrix<double> &cell_matrix,
+                Vector<double> &cell_rhs,
+                const FEValuesBase<dim> &fe_v,
+                std::vector<double> &J,
+                const unsigned int b_id)
+  {
+
+    std::vector<unsigned int> component(dofs_per_cell);
+
+    for (unsigned int i = 0 ; i < dofs_per_cell ; i ++)
+      component[i] = this->fe_data_structure.finite_element.system_to_component_index(i).first;
+
+    Vector<double> boundary_rhs_value;
+    boundary_rhs_value.reinit(nBC);
+    
+    Assert(system_info.system_data.B.matrix.rows() == system_info.system_data.Sigma.matrix.cols(),
+      ExcMessage("Incorrect dimension"));
+
+// we use a temporary matrix to determine whether inflow or outflow
+    Sparse_matrix B_temp;
+    Full_matrix penalty_temp;
+
+    Assert(b_id == 0 || b_id == 1,ExcMessage("The poisson problem cannot have any other boundary ids"));
+
+    B_temp = system_info.system_data.B.matrix;
+    penalty_temp = system_info.penalty_char_wall;
+
+    for (unsigned int q = 0 ; q < fe_v.n_quadrature_points ; q++)
+    {
+      const double jacobian_value = J[q];
+      Tensor<1,dim> outward_normal = fe_v.normal_vector(q);
+
+      boundary_rhs_value = 0;                 
+
+
+      system_info.bcrhs_wall.BCrhs(fe_v.quadrature_point(q),outward_normal,
+          boundary_rhs_value,b_id);
+
+
+      Sparse_matrix Projector = system_info.build_Projector(outward_normal);
+      Sparse_matrix Inv_Projector = system_info.build_InvProjector(outward_normal);
+      Eigen::MatrixXd Am = system_info.build_Aminus(outward_normal);
+
+
+      // the projector was not included in the development of the penalty matrix
+      Full_matrix Am_Penalty_B = 0.5 * Am * Inv_Projector * 
+                                 penalty_temp * B_temp * Projector;
+
+      Full_matrix Am_Penalty = 0.5 * Am * Inv_Projector * 
+                                          penalty_temp;
+
+      // boundary condition has been implemented in the form BU-g. Therefore the right hand side 
+      // gets a plus sign
+      for (unsigned int i = 0 ; i < dofs_per_cell ; i ++)
+      {
+        const double shape_value_test = fe_v.shape_value(i,q);
+        for (unsigned int j = 0 ; j < dofs_per_cell ; j ++)
+          cell_matrix(i,j) += shape_value_test
+                              * Am_Penalty_B(component[i],component[j])
+                              * fe_v.shape_value(j,q) 
+                              * jacobian_value;                                    
+
+
+        for (unsigned int j = 0 ; j < boundary_rhs_value.size() ; j++)
+          cell_rhs(i) += shape_value_test 
+                          * Am_Penalty(component[i],j) 
+                          * boundary_rhs_value[j] 
+                          * jacobian_value;
+
+       }
+
+
+    }
+
+
+
+  }
+
 
   template<int dim>
   void 

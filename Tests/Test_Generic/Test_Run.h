@@ -303,15 +303,17 @@ TEST(DISABLED_RunSystemA,HandlesSystemA)
 // run without any restrictions
 TEST(RunSystem,HandlesRunSystem)
 {
-		const unsigned int dim = 1;
+		const unsigned int dim = 2;
 
 		std::string folder_name = "../system_matrices/";
 		Constants::Base_Constants constants(input_file);
 
 
-		MeshGenerator::Base_MeshGenerator<dim>	Mesh_Info("grid",constants.constants_num.mesh_filename,constants.constants_num.mesh_type,
+		MeshGenerator::Base_MeshGenerator<dim>	Mesh_Info("grid",constants.constants_num.mesh_filename,
+														  constants.constants_num.mesh_type,
 							   							  constants.constants_num.problem_type,
-							   							  constants.constants_num.part_x,constants.constants_num.part_y,
+							   							  constants.constants_num.part_x,
+							   							  constants.constants_num.part_y,
 							   							  constants.constants_num.initial_refinement);
 
 		// we create a mesh for the reference solution
@@ -368,7 +370,7 @@ TEST(RunSystem,HandlesRunSystem)
 		// fe_solver_reference.run(Mesh_Info_Reference);
 
 		// finite element solver for a single system
-		FEM_Solver::Run_Problem_FE_Time_Stepping<dim> fe_solver("grid",
+		FEM_Solver::Run_Problem_Periodic<dim> fe_solver("grid",
 													constants.constants_num,
 													System,
 													&dummy,
@@ -382,7 +384,7 @@ TEST(RunSystem,HandlesRunSystem)
 		// 									Mesh_Info);
 
 
-		fe_solver.run(Mesh_Info);
+		fe_solver.run_time_step(Mesh_Info);
 
 
 
