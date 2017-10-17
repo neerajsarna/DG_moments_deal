@@ -92,6 +92,10 @@ namespace FEM_Solver
                 // order moment method
                 void allocate_fe_index_error_comparison(const unsigned int present_cycle);
 
+                // allocation of fe index based upon the distance from the wall
+                void allocate_fe_index_distance_wall();
+
+
                 // compute the norm of the deviation of the distribution function from the local Maxwellian
                 Vector<double> VelocitySpace_error_per_cell;
 
@@ -113,7 +117,7 @@ namespace FEM_Solver
 							const std::string &output_file_name,
 							const constant_numerics &constants,
 						  const std::vector<int> &nEqn,
-                          Triangulation<dim> &triangulation)
+              Triangulation<dim> &triangulation)
 	:
 	fe_dg(constants.p),
 	dof_handler(triangulation),
@@ -358,6 +362,7 @@ hp_fe_data<dim>::compute_distribution_deviation(const int ngp,
             
 }
 
+// given the reference solution, in the following routine we compute the error 
 template<int dim>
 void 
 hp_fe_data<dim>::compute_error_comparitive(const Vector<double> &solution,
@@ -404,6 +409,7 @@ hp_fe_data<dim>::compute_error_comparitive(const Vector<double> &solution,
       std::vector<Point<dim>> Quad_points(total_ngp);
       unsigned int counter = 0;
 
+      // the variable in which we would like to find the error
       unsigned int component = constants.variable_map[dim-1].find(constants.error_variable)->second;
 
 
@@ -425,21 +431,18 @@ hp_fe_data<dim>::compute_error_comparitive(const Vector<double> &solution,
                     Vector<double> solution_value(max_equations);
                     Vector<double> reference_value(max_equations);
 
+                    // value of the solution at the gauss points
                     VectorTools::point_value(this->dof_handler, solution, Quad_points[q],solution_value); 
+
+                    // value of the reference solution at the gauss points
                     VectorTools::point_value(dof_handler_reference,
                                             solution_reference, Quad_points[q],reference_value); 
 
 
                     const double error_value = fabs(solution_value(component)-reference_value(component));
 
-                    // value of the function multiplied by the jacobian and the weights
-                    //VelocitySpace_error_per_cell(counter) += pow(error_value,2) * Jacobians_interior[q];
                     VelocitySpace_error_per_cell(counter) = error_value;
                 }
-
-                // convert back into the L2 norm
-                //VelocitySpace_error_per_cell(counter) = sqrt(VelocitySpace_error_per_cell(counter));
-
                 fprintf(fp, "%f %f %f\n",cell->center()(0),cell->center()(1),
                                         VelocitySpace_error_per_cell(counter));
                 counter ++;
@@ -499,12 +502,23 @@ hp_fe_data<dim>::set_tolerance_error_comparison()
         // size is total number of systems + 1
         std::vector<double> tolerance(max_fe_index+2);
 
+        // fraction of cells which get fe_index = 0
+        const double frac = 0.9;
+        const double delta_error = max_error-min_error;
+
         tolerance[0] = min_error;
         tolerance[max_fe_index + 1] = max_error;
 
-        // equipartition the error while creating tolerance bands
-        for (unsigned int i = 1 ; i < max_fe_index + 1 ; i++)
-            tolerance[i] = tolerance[i - 1] + (max_error-min_error)/(max_fe_index+1);
+        if (max_fe_index == 1)
+          tolerance[1] = tolerance[0] + delta_error * frac;
+
+        Assert(max_fe_index <=1 ,ExcNotImplemented());
+
+
+        // // equipartition the error while creating tolerance bands
+        // for (unsigned int i = 1 ; i < max_fe_index + 1 ; i++)
+        //     tolerance[i] = tolerance[i - 1] + (max_error-min_error)/(max_fe_index+1);
+
 
         return(tolerance);
 }
@@ -563,6 +577,7 @@ hp_fe_data<dim>::allocate_fe_index_error_comparison(const unsigned int present_c
 
 
         int counter = 0;
+
         std::vector<int> fe_index_count(max_fe_index+1);
 
         if (present_cycle == 0)
@@ -575,22 +590,27 @@ hp_fe_data<dim>::allocate_fe_index_error_comparison(const unsigned int present_c
         else
         {
             const std::vector<double> tolerance = set_tolerance_error_comparison();
+            AssertDimension(tolerance.size(),max_fe_index+2);
 
-            AssertDimension(tolerance.size(),max_equations);
             for(; cell != endc ; cell++)
-             for (unsigned int i = 0 ; i < tolerance.size() - 1 ; i++)
-                if ( fabs(VelocitySpace_error_per_cell(counter) - tolerance[i]) >= 1e-16 &&
-                     fabs(VelocitySpace_error_per_cell(counter) - tolerance[i + 1]) <= 1e-16)
+            {
+              for (unsigned int i = 0 ; i < tolerance.size() - 1 ; i++)
+                // if the present error is greater than the tolerance[i] and smaller than tolerance[i+1], then 
+                // we need refinement
+                if ( VelocitySpace_error_per_cell(counter) - tolerance[i] >= 0 &&
+                     VelocitySpace_error_per_cell(counter) - tolerance[i + 1] <= 0)
                 {
-                    AssertIndexRange(i,max_fe_index);
+                    AssertIndexRange(i,max_fe_index+1);
                     cell->set_active_fe_index(i);
-                    fe_index_count[cell->active_fe_index()]++;      // keep a count of the number of systems in the domain
-                    counter ++;
+                    
+                    fe_index_count[cell->active_fe_index()]++;
+                    // keep a count of the number of systems in the domain
                 }
-
+                counter ++;
+            }
 
             
-
+            
         }
 
 
@@ -599,5 +619,6 @@ hp_fe_data<dim>::allocate_fe_index_error_comparison(const unsigned int present_c
         std::cout << "Fe Index: " << i << " Times: " << fe_index_count[i] << std::endl;
 
 }
+
 
 }

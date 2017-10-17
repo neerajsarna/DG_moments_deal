@@ -114,8 +114,7 @@ namespace FEM_Solver
 	system_info(equation_info[system_to_solve]),
 	ngp(constants.p + 1),
 	ngp_face(constants.p + 1)
-	{
-  	}
+	{}
 
 
 	template<int dim>
@@ -125,8 +124,7 @@ namespace FEM_Solver
       const QGauss<dim> quadrature(ngp);
       const QGauss<dim-1> face_quadrature(ngp_face);
 
-
-      const UpdateFlags update_flags               = update_values
+      const UpdateFlags update_flags  = update_values
       | update_gradients
       | update_q_points
       | update_JxW_values,
@@ -219,23 +217,25 @@ namespace FEM_Solver
            
               if (face_itr->at_boundary())
               { 
-             
-
                 // id of the boundary
               	const unsigned int b_id = face_itr->boundary_id();
 
               	const double xcord_face_center = face_itr->center()(0);
               	const double ycord_cell_center = cell->center()(1);
 
-              	if ( b_id == 100 || b_id == 101) 
+                // If we are sitting on a boundary which is periodic, 
+                // then we do not integrate on the boundary term
+                // rather we integrate on the face.
+              	if ( b_id == 20 || b_id == 21) 
               	{
               		neighbor = this->get_periodic_neighbor(xcord_face_center,ycord_cell_center);
               		neighbor->get_dof_indices(local_dof_indices_neighbor);
 
               		Assert(!neighbor->has_children(),
-              			ExcMessage("periodic boundary only to be used with zero level meshes"));
+              			     ExcMessage("periodic boundary only to be used with zero level meshes"));
+
               		Assert(fabs(neighbor->center()(1) - ycord_cell_center) < 1e-8,
-              			ExcCellCenter(ycord_cell_center,neighbor->center()(1)));
+              			     ExcCellCenter(ycord_cell_center,neighbor->center()(1)));
 
               		const unsigned int neighbor_face = this->get_periodic_neighbor_face(xcord_face_center
               																			,ycord_cell_center);
@@ -243,7 +243,7 @@ namespace FEM_Solver
               		fe_v_face_neighbor.reinit(neighbor,neighbor_face);
 
 
-                      // integrate the face between the cell and the periodic neighbor
+                  // integrate the face between the cell and the periodic neighbor
               		integrate_face_manuel(u1_v1,u1_v2,
               							  u2_v1,u2_v2,
               							  fe_v_face,
@@ -265,7 +265,7 @@ namespace FEM_Solver
               		}
               	else
               	{
-                integrate_boundary_manuel_kinetic(boundary_matrix, 
+                integrate_boundary_manuel_odd(boundary_matrix, 
                                               cell_rhs,
                                               fe_v_face, 
                                               Jacobian_face,
@@ -452,7 +452,7 @@ namespace FEM_Solver
 		Assert(system_info.system_data.B.matrix.rows() == system_info.system_data.Sigma.matrix.cols(),
 			ExcMessage("Incorrect dimension"));
 
-// we use a temporary matrix to determine whether inflow or outflow
+    // we use a temporary matrix to determine whether inflow or outflow.
 		Sparse_matrix B_temp;
 
 		Assert(b_id == 0 || b_id == 1,ExcMessage("The poisson problem cannot have any other boundary ids"));
@@ -604,8 +604,8 @@ namespace FEM_Solver
 
     //CAUTION: ASSUMPTION OF STRAIGHT EDGES IN THE INTERIOR
 		Tensor<1,dim> outward_normal = fe_v.normal_vector(0);
-		Eigen::MatrixXd Am = system_info.build_Aminus(outward_normal);
-		Eigen::MatrixXd Am_neighbor = system_info.build_Aminus(-outward_normal);
+		Eigen::MatrixXd Am = system_info.build_Aminus_kinetic(outward_normal);
+		Eigen::MatrixXd Am_neighbor = system_info.build_Aminus_kinetic(-outward_normal);
 
 
 		FullMatrix<double> Mass_u1_v1(dofs_per_component1,dofs_per_component1);

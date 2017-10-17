@@ -3,6 +3,8 @@ subsection Numerical Constants
 	set polynomial degree = 1
 	set mapping order = 2
 	set total h refinement cycles = 1
+	set refine_cycles_c = 2
+
 
 	# global = 0
 	# adaptive = 1
@@ -12,7 +14,7 @@ subsection Numerical Constants
 
 	# 0 for using meshworker
 	# 1 for manuel assembly
-	set assembly type = 0
+	set assembly type = 1
 end
 
 
@@ -97,7 +99,7 @@ subsection Mesh Info
 	set top boundary 	= 0.5
 	set bottom boundary = -0.5
 	set part_x = 1
-	set part_y = 100
+	set part_y = 200
 
 	# heat_conduction
 	# inflow_outflow
@@ -111,13 +113,13 @@ subsection Mesh Info
 end
 
 subsection Printing Options
-	set print_all = true
+	set print_all = false
 	set print_solution = true
 	set print_error = true
-	set print_exactsolution = false
+	set print_exactsolution = true
 	set print_convergence_table = true
 end
 
 subsection Output Directory Name
-	set Main Output Directory = poisson_heat_conduction_2D_Kn0p1
+	set Main Output Directory = poisson_heat_conduction_adaptive_2D_Kn0p1
 end

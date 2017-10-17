@@ -6,6 +6,7 @@ CMakeFiles/test.out.dir/main.cc.o: ../../Symmetrizer_Data/Tensorial_InvSymmetriz
 CMakeFiles/test.out.dir/main.cc.o: ../../Symmetrizer_Data/Tensorial_Symmetrizer.h
 CMakeFiles/test.out.dir/main.cc.o: ../../include_new_m_adaptive/Assembler.h
 CMakeFiles/test.out.dir/main.cc.o: ../../include_new_m_adaptive/Assembler_Periodic.h
+CMakeFiles/test.out.dir/main.cc.o: ../../include_new_m_adaptive/Assembler_Periodic_Adaptive.h
 CMakeFiles/test.out.dir/main.cc.o: ../../include_new_m_adaptive/Base_BCrhs.h
 CMakeFiles/test.out.dir/main.cc.o: ../../include_new_m_adaptive/Base_BoundaryHandler.h
 CMakeFiles/test.out.dir/main.cc.o: ../../include_new_m_adaptive/Base_Constants.h
@@ -30,6 +31,7 @@ CMakeFiles/test.out.dir/main.cc.o: ../../include_new_m_adaptive/MeshGenerator_Ri
 CMakeFiles/test.out.dir/main.cc.o: ../../include_new_m_adaptive/MeshGenerator_Square.h
 CMakeFiles/test.out.dir/main.cc.o: ../../include_new_m_adaptive/MeshGenerator_Square_CircularCavity.h
 CMakeFiles/test.out.dir/main.cc.o: ../../include_new_m_adaptive/Run_Problem.h
+CMakeFiles/test.out.dir/main.cc.o: ../../include_new_m_adaptive/Run_Problem_Periodic_Adaptive.h
 CMakeFiles/test.out.dir/main.cc.o: ../../include_new_m_adaptive/basic_data_structures.h
 CMakeFiles/test.out.dir/main.cc.o: ../../include_new_m_adaptive/include_deal.h
 CMakeFiles/test.out.dir/main.cc.o: ../../include_new_m_adaptive/include_files.h
@@ -39,7 +41,7 @@ CMakeFiles/test.out.dir/main.cc.o: ../../periodic_square/MeshGenerator_PeriodicS
 CMakeFiles/test.out.dir/main.cc.o: ../../ring/ExactSolution_SystemA.h
 CMakeFiles/test.out.dir/main.cc.o: ../../systems/BCrhs_systemA.h
 CMakeFiles/test.out.dir/main.cc.o: ../../systems/SystemA.h
-CMakeFiles/test.out.dir/main.cc.o: ../Test_Generic/Test_BCrhs.h
+CMakeFiles/test.out.dir/main.cc.o: ../Test_Generic/Test_Run.h
 CMakeFiles/test.out.dir/main.cc.o: ../Test_Generic/basic_routines.h
 CMakeFiles/test.out.dir/main.cc.o: /Applications/deal.II.app/Contents/Resources/include/deal.II/algorithms/any_data.h
 CMakeFiles/test.out.dir/main.cc.o: /Applications/deal.II.app/Contents/Resources/include/deal.II/algorithms/named_selection.h

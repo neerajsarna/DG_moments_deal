@@ -82,7 +82,9 @@ namespace FEM_Solver
 
 template<int dim>
 	void 
-	Run_Problem<dim>::allocate_vectors(DoFHandler<dim> &dof_handler,Vector<double> &solution,Vector<double> &system_rhs,
+	Run_Problem<dim>::allocate_vectors(DoFHandler<dim> &dof_handler,
+										Vector<double> &solution,
+										Vector<double> &system_rhs,
 										Vector<double> &residual)
 	{
 		solution.reinit(dof_handler.n_dofs());
@@ -140,7 +142,7 @@ template<int dim>
 	void 
 	Run_Problem_FE<dim>::run(MeshGenerator::Base_MeshGenerator<dim> &Mesh_Info)
 	{
-			//
+	
 	const unsigned int refine_cycles = this->constants.refine_cycles;
 
 	this->error_per_itr.resize(refine_cycles);
@@ -397,8 +399,6 @@ template<int dim>
 
 			this->error_per_itr.resize(refine_cycles_c * refine_cycles_h);
 
-			Assert(this->constants.problem_type != periodic , ExcMessage("Use different routine for periodic boudnary conditions"));
-
 			TimerOutput timer (std::cout, TimerOutput::summary,
                 	   TimerOutput::wall_times);
 
@@ -406,6 +406,8 @@ template<int dim>
 
 			// we only allow for one refinement cycle in the space dimension
 			AssertDimension(refine_cycles_h,1);
+
+			
 
 			// we first do h-refinement
 			for (int cycle_h = 0 ; cycle_h < refine_cycles_h ; cycle_h ++)
@@ -486,8 +488,6 @@ template<int dim>
 
 				}	
 				
-				// Grid refinement should be done in the end.
-				//this->hp_fe_data_structure.refinement_handling(cycle_h,refine_cycles_h);			
 			}
 	}
 
@@ -601,33 +601,6 @@ template<int dim>
 		unsigned int ID_theta;
 
 		value = 0;
-
-		// if (dim == 2)
-		// {
-		// 	ID_rho = 0;
-		// 	ID_vx = 1;
-		// 	ID_vy = 2;
-		// 	ID_theta = 3;			
-		// }
-
-		// if (dim == 1)
-		// {
-		// 	ID_rho = 0;
-		// 	ID_vx = 1;
-		// 	ID_theta = 2;			
-		// }
-
-
-		// value = 0;
-
-		// if (dim == 2)
-		// {
-		// // // rho of one of the walls
-		// // value(ID_rho) = -1.0 * x / 4.0 + 3.0 / 2.0;
-
-		// // // theta of the inflow
-		// // value(ID_theta) = -sqrt(3.0/2.0) * 1.0 ;			
-		// }
 
 	}
 
@@ -966,6 +939,9 @@ template<int dim>
 	Run_Problem_Periodic<dim>::run(MeshGenerator::Base_MeshGenerator<dim> &Mesh_Info)
 	{
 
+	std::cout << "Solving for " << this->nEqn << " Equations" << std::endl;
+	
+
 	this->error_per_itr.resize(this->constants.refine_cycles);
 
 	TimerOutput timer (std::cout, TimerOutput::summary,
@@ -981,7 +957,8 @@ template<int dim>
 
 		timer.enter_subsection("Develop Periodicity");
 		fflush(stdout);
-		// first we develop the periodic faces using internal functions of dealii
+
+		// First we develop the periodic faces using internal functions of dealii.
 		this->develop_periodic_faces(this->fe_data_structure.dof_handler);
 
 		// now we construct the required data structure
@@ -1009,9 +986,6 @@ template<int dim>
 		this->assemble_system_manuel();
 
 		timer.leave_subsection();
-
-		// this->matrix_opt.print_dealii_sparse(this->global_matrix,"global_matrix_odd");
-		// this->matrix_opt.print_dealii_vector(this->system_rhs,"rhs_odd");
         
 		// we initialize the object which will solve our system
 		// We do int the following way so as to keep the solver independent of all the other implementations.

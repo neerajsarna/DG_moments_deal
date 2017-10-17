@@ -135,6 +135,15 @@ namespace PostProc
 												const int nEqn);
 
 
+		void  print_solution_to_file_quad_points(
+    											const Triangulation<dim> &triangulation,
+    											const Vector<double> &solution,
+    											const Sparse_matrix &S_half_inv,
+    											const hp::MappingCollection<dim> &mapping,
+    											const hp::DoFHandler<dim> &dof_handler,
+    											const std::vector<int>  &nEqn);
+
+
 		void print_solution_to_file(const Triangulation<dim> &triangulation,
 									const Vector<double> &solution,
 									const Sparse_matrix &S_half_inv,
@@ -180,6 +189,17 @@ namespace PostProc
 						   const DoFHandler<dim> &dof_handler,
 						   const MappingQ<dim> &mapping,
 						   const int nEqn);
+
+		void print_options_quad_points(const Triangulation<dim> &triangulation,
+						   const Vector<double> &solution,
+						   const unsigned int present_cycle,
+						   const unsigned int refine_cycle,
+					       ConvergenceTable &convergence_table,
+						   const Sparse_matrix &S_half_inv,
+						   const hp::DoFHandler<dim> &dof_handler,
+						   const hp::MappingCollection<dim> &mapping,
+						   const std::vector<int> &nEqn);
+
 
 		void print_options(const Triangulation<dim> &triangulation,
 					  const Vector<double> &solution,
@@ -926,6 +946,77 @@ namespace PostProc
 }
 
 
+    template<int dim>
+    void 
+    Base_PostProc<dim>::
+    print_solution_to_file_quad_points(
+    					const Triangulation<dim> &triangulation,
+    					const Vector<double> &solution,
+    					const Sparse_matrix &S_half_inv,
+    					const hp::MappingCollection<dim> &mapping,
+    					const hp::DoFHandler<dim> &dof_handler,
+    					const std::vector<int>  &nEqn)
+    {
+    	typename Triangulation<dim>::active_cell_iterator cell = triangulation.begin_active(), endc = triangulation.end();
+    	Assert(class_initialized == true,ExcMessage("Please initialize the post proc class"));
+
+    	FILE *fp_solution;
+    	const int ngp = constants.p + 1;
+    	hp::QCollection<dim> quadrature;	
+    	QGauss<dim> quadrature_basic(ngp);
+
+    	for (unsigned long int i = 0 ; i < nEqn.size() ; i++)
+    		quadrature.push_back(quadrature_basic);
+
+    	UpdateFlags update_flags = update_q_points;
+
+    	hp::FEValues<dim>  hp_fe_v(mapping,dof_handler.get_fe()
+    								,quadrature, update_flags);
+
+    	const unsigned int total_ngp = quadrature_basic.size();
+
+    	fp_solution = fopen(output_file_names.file_for_num_solution.c_str(),"w+");
+
+    	AssertThrow(fp_solution != NULL,ExcMessage("file not open"));
+
+    	fprintf(fp_solution, "#%s\n","x y at the qudrature points defined inside each of the cells");
+    	const int max_equations = return_max_entry(nEqn);
+    	Vector<double> solution_value(max_equations);
+    	
+    	int variables_to_print = max_equations;
+
+
+    	Assert(variables_to_print<=max_equations,ExcMessage("to many variables to print"));
+	for (; cell != endc ; cell++)
+	{
+
+		hp_fe_v.reinit(cell);
+        const FEValues<dim> &fe_v = hp_fe_v.get_present_fe_values();        
+
+		for (unsigned int q = 0 ; q < total_ngp ; q++)
+		{
+			solution_value = 0 ;
+			Point<dim> gauss_point = fe_v.quadrature_point(q);
+
+			VectorTools::point_value(dof_handler, solution, gauss_point,solution_value);				
+
+			for (unsigned int space = 0 ; space < dim ; space ++)
+				fprintf(fp_solution, "%f ",gauss_point(space));
+
+		// we only print variables uptill heat flux
+			for (int i = 0 ; i < variables_to_print ; i++)
+				fprintf(fp_solution, "%f ",solution_value(i));
+
+			fprintf(fp_solution, "\n");
+		}
+
+	}
+
+
+	fclose(fp_solution);
+}
+
+
 
 
 	// same as above but can take a user defined input filename
@@ -1097,6 +1188,7 @@ print_exactsolution_to_file(const Triangulation<dim> &triangulation,
 
 	AssertThrow(fp_exact != NULL,ExcMessage("file not open"));
 
+	std::cout <<" Printing Exact Solution for " << nEqn << std::endl;
 	fprintf(fp_exact, "#%s\n","cell coordinates and the values of the exact solution ");
 
 	for (; cell != endc ; cell++)
@@ -1143,6 +1235,8 @@ print_exactsolution_to_file(const Triangulation<dim> &triangulation,
 	fprintf(fp_exact, "#%s\n","cell coordinates and the values of the exact solution ");
 
 	const int max_equations = return_max_entry(nEqn);
+
+	std::cout <<" Printing Exact Solution for " << max_equations << std::endl;
 
 	for (; cell != endc ; cell++)
 		for (unsigned int vertex = 0 ; vertex < GeometryInfo<dim>::vertices_per_cell ; vertex ++)
@@ -1292,6 +1386,64 @@ print_fe_index(const hp::DoFHandler<dim> &dof_handler)
 			print_convergence_table_to_file(convergence_table);
 
 	}
+
+   	template<int dim>
+	void 
+	Base_PostProc<dim>::
+	print_options_quad_points(const Triangulation<dim> &triangulation,
+		const Vector<double> &solution,
+		const unsigned int present_cycle,
+		const unsigned int total_cycles,
+		ConvergenceTable &convergence_table,
+		const Sparse_matrix &S_half_inv,
+		const hp::DoFHandler<dim> &dof_handler,
+		const hp::MappingCollection<dim> &mapping,
+		const std::vector<int> &nEqn)
+	{
+		Assert(class_initialized == true,ExcMessage("Please initialize the post proc class"));
+		// if we would like to print for all the refinement cycles
+		if (constants.print_all)
+		{
+			if (constants.print_solution)
+				print_solution_to_file_quad_points(triangulation,solution,
+												   S_half_inv,mapping,dof_handler,nEqn);
+
+			if(constants.print_error)
+				print_error_to_file(triangulation,solution,dof_handler,nEqn);
+
+			if(constants.print_exactsolution)
+				print_exactsolution_to_file(triangulation,S_half_inv,nEqn);
+
+
+			print_fe_index(dof_handler);
+
+		}
+
+		else
+		{
+   			// only print in the final cycle
+			if (present_cycle == total_cycles - 1)
+			{
+			if (constants.print_solution)
+				print_solution_to_file_quad_points(triangulation,solution,S_half_inv,mapping,dof_handler,nEqn);
+
+			if(constants.print_error)
+				print_error_to_file(triangulation,solution,dof_handler,nEqn);
+
+			if(constants.print_exactsolution)
+				print_exactsolution_to_file(triangulation,S_half_inv,nEqn);
+
+
+			print_fe_index(dof_handler);
+
+			}
+		}
+
+		if (constants.print_convergence_table)
+			print_convergence_table_to_file(convergence_table);
+
+	}
+
 
 
 	template<int dim>

@@ -303,7 +303,7 @@ TEST(DISABLED_RunSystemA,HandlesSystemA)
 // run without any restrictions
 TEST(RunSystem,HandlesRunSystem)
 {
-		const unsigned int dim = 1;
+		const unsigned int dim = 2;
 
 		std::string folder_name = "../system_matrices/";
 		Constants::Base_Constants constants(input_file);
@@ -312,14 +312,13 @@ TEST(RunSystem,HandlesRunSystem)
 		MeshGenerator::Base_MeshGenerator<dim>	Mesh_Info("grid",constants.constants_num.mesh_filename,constants.constants_num.mesh_type,
 							   							  constants.constants_num.problem_type,
 							   							  constants.constants_num.part_x,constants.constants_num.part_y,
-							   							  constants.constants_num.initial_refinement);
+							   							  constants.constants_num.initial_refinement);		
 
-		// we create a mesh for the reference solution
-		// MeshGenerator::Base_MeshGenerator<dim>	Mesh_Info_Reference("grid",constants.constants_num.mesh_filename,
-		// 															constants.constants_num.mesh_type,
-		// 					   							  			constants.constants_num.problem_type,
-		// 					   							  			10,10,
-		// 					   							  constants.constants_num.initial_refinement);		
+		MeshGenerator::Base_MeshGenerator<dim>	Mesh_Info_Reference("grid",constants.constants_num.mesh_filename,constants.constants_num.mesh_type,
+							   							  			constants.constants_num.problem_type,
+							   							  			1,100,
+							   							  			constants.constants_num.initial_refinement);	
+
 
 		std::cout << "Creating Systems....." << std::endl;
 	// 	// we construct a vector of all the system data being considered 
@@ -340,51 +339,41 @@ TEST(RunSystem,HandlesRunSystem)
 
 		std::cout << "Done creating systems....." << std::endl;
 
-		
-		// We initialize the exact solution with the system we wish to solve.
-		// Incase of hp this can be changed to the system with 	
-		// we change the system which we wish to solve
-		const int system_to_solve = constants.constants_sys.total_systems-1;
+		const int system_to_solve = 0;
+		const int reference_system = 1;
 
 		Assert((unsigned int)system_to_solve < System.size(),
 			ExcMessage("You have asked for a system which has not been loaded"));
 
 		ExactSolution::PoissonHeat<dim>  dummy(constants.constants_num,
-												System[system_to_solve].base_tensorinfo.S_half,
-												constants.constants_sys.nEqn[system_to_solve],
-												constants.constants_sys.Ntensors[system_to_solve]);
+												System[reference_system].base_tensorinfo.S_half,
+												constants.constants_sys.nEqn[reference_system],
+												constants.constants_sys.Ntensors[reference_system]);
 
 
-
-		// // // we first develop the reference solution, which sits on a coarse grid
-		// FEM_Solver::Develop_Reference<dim> fe_solver_reference("grid",
-		// 											constants.constants_num,
-		// 											System,
-		// 											&dummy,
-		// 											constants.constants_sys.nEqn,
-		// 											constants.constants_sys.nBC,
-		// 											system_to_solve,Mesh_Info_Reference.triangulation);		
-
-		// fe_solver_reference.run(Mesh_Info_Reference);
-
-		// finite element solver for a single system
-		FEM_Solver::Run_Problem_FE_Time_Stepping<dim> fe_solver("grid",
+		FEM_Solver::Run_Problem_Periodic<dim> fe_solver_reference("grid",
 													constants.constants_num,
 													System,
 													&dummy,
 													constants.constants_sys.nEqn,
 													constants.constants_sys.nBC,
-													system_to_solve,
+													reference_system,
+													Mesh_Info_Reference.triangulation);
+
+		fe_solver_reference.run(Mesh_Info_Reference);
+
+		// finite element solver for a single system
+		FEM_Solver::Run_Problem_hp_Periodic<dim> fe_solver("grid",
+													constants.constants_num,
+													System,
+													&dummy,
+													constants.constants_sys.nEqn,
+													constants.constants_sys.nBC,
 													Mesh_Info.triangulation);
 
-		// fe_solver.run_higher_order_reference(fe_solver_reference.fe_data_structure.dof_handler,
-		// 									fe_solver_reference.solution,
-		// 									Mesh_Info);
-
-
-		fe_solver.run(Mesh_Info);
-
-
+		fe_solver.run_higher_order_reference(fe_solver_reference.fe_data_structure.dof_handler,
+											 fe_solver_reference.solution,
+											 Mesh_Info);
 
 }
 

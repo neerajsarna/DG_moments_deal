@@ -23,7 +23,9 @@
 #include "Base_PeriodicityHandler.h"
 #include "Assembler.h"
 #include "Assembler_Periodic.h"
+#include "Assembler_Periodic_Adaptive.h"
 #include "Run_Problem.h"
+#include "Run_Problem_Periodic_Adaptive.h"
 
 
 

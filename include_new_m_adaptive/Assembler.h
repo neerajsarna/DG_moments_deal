@@ -771,7 +771,7 @@ namespace FEM_Solver
                         const std::vector<int> &nBC,
                         Triangulation<dim> &triangulation);
 
-     		hp_fe_data<dim> hp_fe_data_structure;
+     	hp_fe_data<dim> hp_fe_data_structure;
 			const std::vector<int> nEqn;
 			const std::vector<int> nBC;
 			const constant_numerics constants;
@@ -1392,8 +1392,8 @@ namespace FEM_Solver
     //CAUTION: ASSUMPTION OF STRAIGHT EDGES IN THE INTERIOR
 				Tensor<1,dim> outward_normal = fe_v.normal_vector(0);
 				const unsigned int max_fe_index = std::max(fe_index1,fe_index2);
-				Eigen::MatrixXd Am = this->system_info[max_fe_index].build_Aminus(outward_normal);
-				Eigen::MatrixXd Am_neighbor = this->system_info[max_fe_index].build_Aminus(-outward_normal);
+				Eigen::MatrixXd Am = this->system_info[max_fe_index].build_Aminus_kinetic(outward_normal);
+				Eigen::MatrixXd Am_neighbor = this->system_info[max_fe_index].build_Aminus_kinetic(-outward_normal);
 				const unsigned int nEqn_this = nEqn[fe_index1];
 				const unsigned int nEqn_neighbor = nEqn[fe_index2];
 

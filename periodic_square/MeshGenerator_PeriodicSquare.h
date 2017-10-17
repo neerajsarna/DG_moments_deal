@@ -20,11 +20,11 @@
                     // the periodic faces get the id 100 and 101
                     // right edge
                     if (x_cord == right_edge)
-                      cell->face(face)->set_boundary_id(100);
+                      cell->face(face)->set_boundary_id(20);
 
                     // left edge
                     if (x_cord == left_edge)
-                      cell->face(face)->set_boundary_id(101);
+                      cell->face(face)->set_boundary_id(21);
 
                     // This is the first wall
                     if (y_cord == left_edge)
