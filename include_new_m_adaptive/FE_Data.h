@@ -503,7 +503,7 @@ hp_fe_data<dim>::set_tolerance_error_comparison()
         std::vector<double> tolerance(max_fe_index+2);
 
         // fraction of cells which get fe_index = 0
-        const double frac = 0.9;
+        const double frac = 0.6;
         const double delta_error = max_error-min_error;
 
         tolerance[0] = min_error;
