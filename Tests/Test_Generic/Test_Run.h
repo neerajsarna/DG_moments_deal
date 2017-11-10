@@ -314,6 +314,7 @@ TEST(RunSystem,HandlesRunSystem)
 							   							  constants.constants_num.part_x,constants.constants_num.part_y,
 							   							  constants.constants_num.initial_refinement);		
 
+
 		MeshGenerator::Base_MeshGenerator<dim>	Mesh_Info_Reference("grid",constants.constants_num.mesh_filename,constants.constants_num.mesh_type,
 							   							  			constants.constants_num.problem_type,
 							   							  			1,100,
@@ -345,13 +346,13 @@ TEST(RunSystem,HandlesRunSystem)
 		Assert((unsigned int)system_to_solve < System.size(),
 			ExcMessage("You have asked for a system which has not been loaded"));
 
-		ExactSolution::PoissonHeat<dim>  dummy(constants.constants_num,
+		ExactSolution::ExactSolution_Dummy<dim>  dummy(constants.constants_num,
 												System[reference_system].base_tensorinfo.S_half,
 												constants.constants_sys.nEqn[reference_system],
 												constants.constants_sys.Ntensors[reference_system]);
 
 
-		FEM_Solver::Run_Problem_Periodic<dim> fe_solver_reference("grid",
+		FEM_Solver::Run_Problem_FE<dim> fe_solver_reference("grid",
 													constants.constants_num,
 													System,
 													&dummy,
@@ -362,8 +363,8 @@ TEST(RunSystem,HandlesRunSystem)
 
 		fe_solver_reference.run(Mesh_Info_Reference);
 
-		// finite element solver for a single system
-		FEM_Solver::Run_Problem_hp_Periodic<dim> fe_solver("grid",
+
+		FEM_Solver::Run_Problem_hp_FE<dim> fe_solver("grid",
 													constants.constants_num,
 													System,
 													&dummy,
@@ -374,6 +375,7 @@ TEST(RunSystem,HandlesRunSystem)
 		fe_solver.run_higher_order_reference(fe_solver_reference.fe_data_structure.dof_handler,
 											 fe_solver_reference.solution,
 											 Mesh_Info);
+
 
 }
 

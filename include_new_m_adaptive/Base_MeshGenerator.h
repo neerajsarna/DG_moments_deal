@@ -372,6 +372,7 @@ namespace MeshGenerator
 			case box_cylinder:
 			case NACA5012:
 			case box:
+			case complex_channel:
 			{
 				AssertThrow(total_cycles == 1,ExcMessage("Perform the Grid Refinement in Gmsh"));
 				break;
