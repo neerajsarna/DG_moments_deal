@@ -1191,17 +1191,23 @@ template<int dim>
 		Vector<double> new_solution2(this->solution.size());
 		residual_steady_state = 100;
 
-		const double initial_entropy = compute_entropy(Mesh_Info.triangulation.n_active_cells());
+		
 		std::cout << "Time stepping " << std::endl;
 		fflush(stdout);
+
+		FILE *fp ;
+		fp = fopen("Entropy_Dissipation","w+");
 
    	// counts the number of time steps
 		unsigned int counter = 0;
 
 
-		while (residual_steady_state.l2_norm() > 1e-7)
+		//while (residual_steady_state.l2_norm() > 1e-7)
+		while (counter <= 1000)
 		{
 			counter++;
+
+			const double initial_entropy = compute_entropy(Mesh_Info.triangulation.n_active_cells());
 
    		// update with the solution rhs
 			new_solution.equ(delta_t,this->system_rhs);
@@ -1227,14 +1233,17 @@ template<int dim>
 			
 
 
+
 			if (counter % 10 == 0)
 			{
 				const double current_entropy = compute_entropy(Mesh_Info.triangulation.n_active_cells());
+				const double rate_dissipation = (current_entropy-initial_entropy)/delta_t;
 
 				std::cout << "residual_steady_state " << residual_steady_state.l2_norm() << 
 							 " Solution Norm " << this->solution.l2_norm() <<
-							 "Rate of entropy dissipation" << (current_entropy-initial_entropy)/delta_t <<  std::endl;
+							 "Rate of entropy dissipation" << rate_dissipation <<  std::endl;
 
+				fprintf(fp, "%d \t %f\n",counter,rate_dissipation);
 			}
 
 		}

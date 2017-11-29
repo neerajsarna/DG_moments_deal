@@ -274,7 +274,7 @@ namespace FEM_Solver
               	else
               	{
 
-                integrate_boundary_manuel_char(boundary_matrix, 
+                integrate_boundary_manuel_kinetic(boundary_matrix, 
                                               cell_rhs,
                                               fe_v_face, 
                                               Jacobian_face,
