@@ -403,7 +403,7 @@ namespace Constants
 
 			prm.declare_entry("epsilon",
 				"0.00001",
-				Patterns::Double(0,1.0),
+				Patterns::Double(0,5.0),
 				"Coefficient for normal relaxational velocity");
 
 			prm.declare_entry("error_variable",
