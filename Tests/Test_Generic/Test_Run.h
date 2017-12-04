@@ -315,10 +315,11 @@ TEST(RunSystem,HandlesRunSystem)
 							   							  constants.constants_num.initial_refinement);		
 
 
-		MeshGenerator::Base_MeshGenerator<dim>	Mesh_Info_Reference("grid",constants.constants_num.mesh_filename,constants.constants_num.mesh_type,
-							   							  			constants.constants_num.problem_type,
-							   							  			1,100,
-							   							  			constants.constants_num.initial_refinement);	
+
+		// MeshGenerator::Base_MeshGenerator<dim>	Mesh_Info_Reference("grid",constants.constants_num.mesh_filename,constants.constants_num.mesh_type,
+		// 					   							  			constants.constants_num.problem_type,
+		// 					   							  			1,100,
+		// 					   							  			constants.constants_num.initial_refinement);	
 
 
 		std::cout << "Creating Systems....." << std::endl;
@@ -341,7 +342,7 @@ TEST(RunSystem,HandlesRunSystem)
 		std::cout << "Done creating systems....." << std::endl;
 
 		const int system_to_solve = 0;
-		const int reference_system = 1;
+		const int reference_system = 0;
 
 		Assert((unsigned int)system_to_solve < System.size(),
 			ExcMessage("You have asked for a system which has not been loaded"));
@@ -352,29 +353,28 @@ TEST(RunSystem,HandlesRunSystem)
 												constants.constants_sys.Ntensors[reference_system]);
 
 
-		FEM_Solver::Run_Problem_FE<dim> fe_solver_reference("grid",
+		// FEM_Solver::Run_Problem_FE<dim> fe_solver_reference("grid",
+		// 											constants.constants_num,
+		// 											System,
+		// 											&dummy,
+		// 											constants.constants_sys.nEqn,
+		// 											constants.constants_sys.nBC,
+		// 											reference_system,
+		// 											Mesh_Info_Reference.triangulation);
+
+		// fe_solver_reference.run(Mesh_Info_Reference);
+
+
+		FEM_Solver::Run_Problem_FE<dim> fe_solver("grid",
 													constants.constants_num,
 													System,
 													&dummy,
 													constants.constants_sys.nEqn,
 													constants.constants_sys.nBC,
-													reference_system,
-													Mesh_Info_Reference.triangulation);
-
-		fe_solver_reference.run(Mesh_Info_Reference);
-
-
-		FEM_Solver::Run_Problem_hp_FE<dim> fe_solver("grid",
-													constants.constants_num,
-													System,
-													&dummy,
-													constants.constants_sys.nEqn,
-													constants.constants_sys.nBC,
+													system_to_solve,
 													Mesh_Info.triangulation);
 
-		fe_solver.run_higher_order_reference(fe_solver_reference.fe_data_structure.dof_handler,
-											 fe_solver_reference.solution,
-											 Mesh_Info);
+		fe_solver.run(Mesh_Info);
 
 
 }

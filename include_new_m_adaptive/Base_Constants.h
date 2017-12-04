@@ -403,7 +403,7 @@ namespace Constants
 
 			prm.declare_entry("epsilon",
 				"0.00001",
-				Patterns::Double(0,0.0001),
+				Patterns::Double(0,1.0),
 				"Coefficient for normal relaxational velocity");
 
 			prm.declare_entry("error_variable",
@@ -576,6 +576,28 @@ namespace Constants
 				Patterns::Double(-100.0,100.0),
 				"tangential velocity");
 
+
+			// values for an inflow which has a prescribed inflow velocity
+			prm.declare_entry("theta103",
+				"0",
+				Patterns::Double(0,100.0),
+				"temperature");								  		
+
+			prm.declare_entry("vx103",
+				"0",
+				Patterns::Double(-100,100.0),
+				"normal velocity");
+
+			prm.declare_entry("vy103",
+				"0",
+				Patterns::Double(-100.0,100.0),
+				"tangential velocity");
+
+			prm.declare_entry("vz103",
+				"0",
+				Patterns::Double(-100.0,100.0),
+				"tangential velocity");
+
 			prm.declare_entry("Collision_Operator",
 											"0",
 										Patterns::Integer(0,1),
@@ -739,7 +761,7 @@ namespace Constants
 
 
 			// we check the total number of systems we are loading into our program
-			AssertThrow(constants_sys.total_systems == 2,
+			AssertThrow(constants_sys.total_systems == 1,
 						ExcMessage("Incorrect number of systems being loaded"));
 
 
@@ -1031,22 +1053,26 @@ namespace Constants
 		 	// temperature of the incoming distributions
 		 	constants_num.theta101 = prm.get_double("theta101");
 		 	constants_num.theta102 = prm.get_double("theta102");
+		 	constants_num.theta103 = prm.get_double("theta103");
+		 	
 
-		 	constants_num.vx0 =  prm.get_double("vx0");
-		 	constants_num.vx1  = prm.get_double("vx1");
-		 	constants_num.vx2  = prm.get_double("vx2");
-		 	constants_num.vx3  = prm.get_double("vx3");
-		 	constants_num.vx4 = prm.get_double("vx4");
+		 	constants_num.vx0  =  prm.get_double("vx0");
+		 	constants_num.vx1  =  prm.get_double("vx1");
+		 	constants_num.vx2  =  prm.get_double("vx2");
+		 	constants_num.vx3  =  prm.get_double("vx3");
+		 	constants_num.vx4  =  prm.get_double("vx4");
 
 		 	// normal velocity of the incoming distributions
 		 	constants_num.vx101 = prm.get_double("vx101");
 		 	constants_num.vx102 = prm.get_double("vx102");
+		 	constants_num.vx103 = prm.get_double("vx103");
+		 	
 
-		 	constants_num.vy0 =  prm.get_double("vy0");
-		 	constants_num.vy1  = prm.get_double("vy1");
-		 	constants_num.vy2  = prm.get_double("vy2");
-		 	constants_num.vy3  = prm.get_double("vy3");
-		 	constants_num.vy4  = prm.get_double("vy4");
+		 	constants_num.vy0  =  prm.get_double("vy0");
+		 	constants_num.vy1  =  prm.get_double("vy1");
+		 	constants_num.vy2  =  prm.get_double("vy2");
+		 	constants_num.vy3  =  prm.get_double("vy3");
+		 	constants_num.vy4  =  prm.get_double("vy4");
 
 		 	constants_num.vz0 =  prm.get_double("vz0");
 		 	constants_num.vz1  = prm.get_double("vz1");
@@ -1057,9 +1083,13 @@ namespace Constants
 		 	// tangential velocity of the incoming distribution
 		 	constants_num.vy101 = prm.get_double("vy101");
 		 	constants_num.vy102 = prm.get_double("vy102");
+		 	constants_num.vy103 = prm.get_double("vy103");
+		 	
 
 		 	constants_num.vz101 = prm.get_double("vz101");
 		 	constants_num.vz102 = prm.get_double("vz102");
+		 	constants_num.vz103 = prm.get_double("vz103");
+		 	
 
 		 	constants_num.coll_op = (Collision_Operator)prm.get_integer("Collision_Operator");
 

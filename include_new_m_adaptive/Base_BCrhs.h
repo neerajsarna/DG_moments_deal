@@ -16,10 +16,14 @@ namespace BCrhs
 						   Vector<double> &bc_rhs,
 						   const unsigned int b_id) = 0;
 
+
 		// prescribe the attributes of the wall. The projector matrix projects a vector into local coordinates
 		// the following function is a specialization for the 2D case
 		void assign_wall_properties(double &thetaW,double &vn,double &vt,double &vr,const FullMatrix<double> &proj_vector,
 									const unsigned int b_id);
+
+		void assign_inflow_prescribed_Vn(double &thetaW,double &vn,double &vt,double &vr,const FullMatrix<double> &proj_vector,
+										const unsigned int b_id);
 
 		void assign_wall_properties_kinetic(double &thetaW,double &vx,double &vy,const unsigned int b_id);
 
@@ -285,6 +289,7 @@ namespace BCrhs
 	}
 
 
+
 	// for the 3D case
 	template<>
 	void
@@ -367,6 +372,41 @@ namespace BCrhs
 		Assert(assigned_properties==true,ExcMessage("Wall properties not assigned, check the implementation"));
 
 	}
+
+
+	// for the 2D case
+	template<>
+	void
+	Base_BCrhs<2>
+	::assign_inflow_prescribed_Vn(double &thetaW,double &vn,double &vt,double &vr,
+							const FullMatrix<double> &proj_vector, const unsigned int b_id)
+	{
+
+		bool assigned_properties = false;
+		double vz_default = 0.0;
+
+		AssertDimension(proj_vector.n(),proj_vector.m());
+		AssertDimension(proj_vector.m(),2);
+
+		Assert(b_id == 103 ,ExcNotImplemented());
+
+		if (b_id == 103)
+		{
+			const Vector<double> wall_velocity = local_wall_velocity(constants.vx103,constants.vy103,
+																	vz_default,proj_vector);
+
+			thetaW = constants.theta103;
+			vn = wall_velocity(0);
+			vt = wall_velocity(1);	
+			assigned_properties = true;
+		}
+	
+
+		Assert(assigned_properties==true,ExcMessage("Wall properties not assigned, check the implementation"));
+
+	}
+
+
 
 	template<>
 	void 
@@ -582,9 +622,16 @@ namespace BCrhs
 		const int nBC;
 
 		virtual void BCrhs(const Tensor<1,dim,double> p,
-			const Tensor<1,dim,double> normal_vector,
-			Vector<double> &bc_rhs,
-			const unsigned int b_id);
+						   const Tensor<1,dim,double> normal_vector,
+						   Vector<double> &bc_rhs,
+						   const unsigned int b_id);
+
+
+		// same as the wall but we prescribe a particular velocity
+		void BCrhs_prescribed_inflow(const Tensor<1,dim,double> p,
+						   const Tensor<1,dim,double> normal_vector,
+						   Vector<double> &bc_rhs,
+						   const unsigned int b_id);
 	};
 
 	template<int dim>
@@ -734,6 +781,98 @@ namespace BCrhs
 
 	}
 
+	// specialization for the 1D case
+	template<>
+	void
+	BCrhs_wall<1>::BCrhs_prescribed_inflow(const Tensor<1,1,double> p,
+						  					const Tensor<1,1,double> normal_vector,
+										  Vector<double> &bc_rhs,
+										  const unsigned int b_id)
+	{
+		Assert( 1 == 0, ExcMessage("Should not have reached here."));
+	}
+
+
+	// specialization for the 2D case
+	template<>
+	void
+	BCrhs_wall<2>::BCrhs_prescribed_inflow(const Tensor<1,2,double> p,
+						  					const Tensor<1,2,double> normal_vector,
+										  Vector<double> &bc_rhs,
+										  const unsigned int b_id)
+	{
+		bc_rhs = 0;
+		double vr_default = 0;
+
+		// vector normal to the wall
+		const double nx = normal_vector[0];
+		const double ny = normal_vector[1];
+
+		Assert(p.norm() >=0 ,ExcMessage("Incorrect point"));
+		Assert(b_id == 103,ExcMessage("Incorrect boundary id"));
+				// we only compute the rhs in case of a non-specular wall
+	
+
+
+		// matrix which projects the wall velocties in 
+		// the cartesian coordinates to local coordinate
+		
+		FullMatrix<double> proj_vector;	// projector matrix for the local coordinate system
+		Vector<double> coeff_vn(5);	// coefficients infront of the normal velocity for G20 moment system
+
+		coeff_vn = 0;
+		coeff_vn(0) = 1.00000000000000;
+		coeff_vn(1) = 0.316227766016838;
+		coeff_vn(2) = -0.163299316185545;
+		coeff_vn(3) = 0.0816496580927726;
+		 
+
+		proj_vector.reinit(2,2);
+		proj_vector(0,0) = nx;
+		proj_vector(0,1) = ny;
+		proj_vector(1,0) = -ny;
+		proj_vector(1,1) = nx;
+
+		AssertDimension((int)bc_rhs.size(),5);
+
+		// temperature of the wall
+		double thetaW;
+
+		// normal velocity of the wall
+		double vn;
+
+		// tangential velocity of the wall
+		double vt;
+
+		// assign the properties when the inflow velocity is given
+		this->assign_inflow_prescribed_Vn(thetaW,vn,vt,vr_default,proj_vector,b_id);
+
+		const unsigned int ID_theta = this->constants.variable_map[1].find("theta")->second;
+		const unsigned int ID_vy = this->constants.variable_map[1].find("vy")->second;
+	
+		AssertDimension(ID_theta,3);
+		AssertDimension(ID_vy,2);
+
+		// the original boundary conditions are of the form B.U = g. In the present function, we are prescribing
+		// the vector g. The vector g can be defined with the help of the coefficients of B.
+			for (unsigned int m = 0 ; m < B.outerSize() ; m++)
+				for (Sparse_matrix::InnerIterator n(B,m); n ; ++n)
+				{
+ 			   	// first prescribe the wall velocity
+					if (n.col() == ID_theta && n.row() > 0)
+						bc_rhs(n.row()) += -sqrt(3.0/2.0) * thetaW * n.value();
+
+				// now prescribe the tangential velocity of the wall.
+				// One to One relation with velocity
+					if(n.col() == ID_vy && n.row() > 0)
+						bc_rhs(n.row()) += vt * n.value();
+				}
+
+		// the contribution fron the inflow velocity
+			for (unsigned int i = 0 ; i < bc_rhs.size() ; i++)			
+				bc_rhs(i) += vn * coeff_vn(i);
+
+	}
 
 
 	// specialization for the 2D case
@@ -866,6 +1005,7 @@ namespace BCrhs
 	Binflow(Binflow),
 	nBC(nBC)
 	{;}
+
 
 	// specialization for the 1D case
 	template<>

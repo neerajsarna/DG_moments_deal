@@ -855,7 +855,10 @@ namespace EquationGenerator
 			const bool fix_B = true;
 			const bool check_B = true;
 
-			BoundaryHandler::Base_BoundaryHandler_Char::fix_B_vx(constants.epsilon,fix_B,system_data.B.matrix);
+			std::cout << "value of epsilon " << constants.epsilon << std::endl;
+
+			BoundaryHandler::Base_BoundaryHandler_Char::fix_B_vx(constants.epsilon,
+																fix_B,system_data.B.matrix);
 
 				// check whether B has been fixed or not
 			if(check_B)

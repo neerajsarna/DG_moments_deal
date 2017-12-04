@@ -25,7 +25,8 @@ namespace FEM_Solver
 						  const int nEqn,
                           Triangulation<dim> &triangulation)
 	:
-	finite_element(FE_DGQ<dim>(constants.p),nEqn),
+	//finite_element(FE_DGQ<dim>(constants.p),nEqn),
+  finite_element(FE_DGQ<dim>(constants.p),nEqn),
 	dof_handler(triangulation),
 	mapping(constants.mapping_order)
 	{

@@ -132,6 +132,13 @@ struct tensor_data
 		double vx102;
 		double vy102;
 		double vz102;
+
+	
+		double rho103;
+		double theta103;
+		double vx103;
+		double vy103;
+		double vz103;
 	
 		// the type of mesh to be used
 		Mesh_type mesh_type;

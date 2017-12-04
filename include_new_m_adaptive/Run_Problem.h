@@ -519,6 +519,7 @@ template<int dim>
 
 			// in the following routine we check mass conservation
 			double mean_value(const unsigned int active_cells,const unsigned int comp);
+			double domain_entropy(const unsigned int active_cells,const unsigned int comp);
 			const double delta_t = 0.1;
 			void run(MeshGenerator::Base_MeshGenerator<dim> &Mesh_Info);
 			void compute_energy_bound();
@@ -588,6 +589,40 @@ template<int dim>
         return(density_per_cell.mean_value() * density_per_cell.size());
 	}
 
+	//returns the mean of the comp component of the solution
+	template<int dim>
+	double 
+	Run_Problem_FE_Time_Stepping<dim>::domain_entropy(const unsigned int active_cells,
+											const unsigned int comp)
+	{
+
+		AssertIndexRange(comp,(unsigned int)this->nEqn);
+		// we select the component corresponding to density
+		unsigned int component= comp;
+		
+
+		const unsigned int ngp = this->constants.p + 1;
+        // error per cell of the domain
+		Vector<double> density_per_cell(active_cells);      
+
+
+        ComponentSelectFunction<dim> weight(component,this->nEqn);       
+        // used to compute only the error in theta
+
+        // computation of L2 error
+        VectorTools::integrate_difference (this->fe_data_structure.mapping,this->fe_data_structure.dof_handler,
+        									this->solution,
+        								   ZeroFunction<dim>(this->nEqn),
+        									density_per_cell,
+        									QGauss<dim>(ngp),
+        									VectorTools::L2_norm,
+        									&weight); 
+
+        
+
+        return(density_per_cell.l2_norm());
+	}
+
 	template<int dim>
 	void
 	Run_Problem_FE_Time_Stepping<dim>::initial_conditions::vector_value(const Point<dim> &p,Vector<double> &value) const
@@ -653,8 +688,7 @@ template<int dim>
 							  initial_data,
 							 this->solution);
 
-   	// we compute the initial density
-   	const double initial_density = mean_value(Mesh_Info.triangulation.n_active_cells(),0);
+   
    	// deviation from the steady state value
    	Vector<double> residual_steady_state(this->solution.size());
    	Vector<double> new_solution(this->solution.size());
@@ -676,14 +710,11 @@ template<int dim>
 
 	double present_time = 0;
 
-	compute_energy_bound();
-
    	while (residual_steady_state.l2_norm() > 1e-8)
    	{
    		counter++;
 
-   		double initial_energy;
-   		double final_energy;
+   		const double initial_energy = domain_entropy(Mesh_Info.triangulation.n_active_cells(),0);
 
    		// forward euler step
    		// new_solution = delta_t * system_rhs
@@ -723,18 +754,18 @@ template<int dim>
 
    		present_time +=delta_t;
 
-   		if (counter % 100 == 0)
-   		{
-   			const double current_density = mean_value(Mesh_Info.triangulation.n_active_cells(),0);
+   		// if (counter % 10 == 0)
+   		// {
+   			const double current_energy = domain_entropy(Mesh_Info.triangulation.n_active_cells(),0);
 
    			std::cout << "Residual " << residual_steady_state.l2_norm() << 
    					" Solution Norm " << new_solution2.l2_norm() <<
-   					" Deviation in mass " << fabs(initial_density-current_density) <<  std::endl;
+   					" Entropy Change Rate " << (current_energy-initial_energy)/delta_t <<  std::endl;
 
    			// printf("energy growth rate: %e \n",(final_energy-initial_energy)/delta_t);
    			// fprintf(energy_growth, "%f %0.15f\n",present_time,(final_energy-initial_energy)/delta_t);
 
-   		}
+   		// }
 
    	}
 

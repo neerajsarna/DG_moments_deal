@@ -335,9 +335,10 @@ namespace MatrixOpt
 	{
 		Full_matrix X = compute_X(A);
 		VectorXd Lambda = compute_Lambda(A);
+		double damping = 1;
 
 
-		return(X * (Lambda.cwiseAbs() - Lambda).asDiagonal() * X.inverse());
+		return(X * (damping * Lambda.cwiseAbs() - Lambda).asDiagonal() * X.inverse());
 	}
 
 	// print the full matrix to a file

@@ -153,6 +153,8 @@ namespace FEM_Solver
   {
     case odd:
     {
+      std::cout<< "**************Using Odd boundary implementation****************" << std::endl;
+
       MeshWorker::loop<dim, dim, MeshWorker::DoFInfo<dim>, MeshWorker::IntegrationInfoBox<dim> >
                           (cell, endc,
                            dof_info, info_box,
@@ -344,16 +346,18 @@ namespace FEM_Solver
       integrate_inflow++;
       B_temp = system_info.system_data.Binflow.matrix;
     }
-    else
-    {
     // B matrix for specular reflection
-      if (b_id == 50)
+    if (b_id == 50)
         B_temp = system_info.system_data.B_specular.matrix;
 
-    // B matrix for full accmmodation
-      else
+    // if we manually need to prescribe a particular inflow velocity then 
+    // we simply use the boundary matrix from the wall
+    if (b_id == 103)
         B_temp = system_info.system_data.B.matrix;
-    }
+
+    // B matrix for full accmmodation
+    if (b_id == 0 || b_id == 1 || b_id == 2 || b_id == 3 || b_id == 4)
+        B_temp = system_info.system_data.B.matrix;
 
     for (unsigned int q = 0 ; q < fe_v.n_quadrature_points ; q++)
     {
@@ -367,7 +371,12 @@ namespace FEM_Solver
         system_info.bcrhs_inflow.BCrhs(fe_v.quadrature_point(q),fe_v.normal_vector(q),
           boundary_rhs_value,face_itr->boundary_id());
 
-      else
+      if(face_itr->boundary_id() == 103)
+        system_info.bcrhs_wall.BCrhs_prescribed_inflow(fe_v.quadrature_point(q),fe_v.normal_vector(q),
+          boundary_rhs_value,face_itr->boundary_id());
+
+      if(face_itr->boundary_id() == 0 || face_itr->boundary_id() == 1 || face_itr->boundary_id() == 2 ||
+        face_itr->boundary_id() == 3 || face_itr->boundary_id() == 4)
         system_info.bcrhs_wall.BCrhs(fe_v.quadrature_point(q),fe_v.normal_vector(q),
           boundary_rhs_value,face_itr->boundary_id());
 
