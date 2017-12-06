@@ -474,6 +474,8 @@ namespace EquationGenerator
 			// develop the B matrix
 			this->build_triplet(system_data.B.Row_Col_Value,basefile_system[dim]);
 			this->build_matrix_from_triplet(system_data.B.matrix,system_data.B.Row_Col_Value);
+			this->build_triplet(system_data.B.Row_Col_Value,basefile_system[dim]);
+			this->build_matrix_from_triplet(system_data.B_prescribedInflow.matrix,system_data.B.Row_Col_Value);
 
 
 			// develop the ID of the odd variables

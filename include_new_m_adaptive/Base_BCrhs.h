@@ -630,13 +630,15 @@ namespace BCrhs
 
 	template<int dim>
 	BCrhs_wall<dim>::BCrhs_wall(const constant_numerics &constants,
-								const int nBC,
-								const Sparse_matrix &B)
+									const int nBC,
+									const Sparse_matrix &B)
 	:
 	Base_BCrhs<dim>(constants),
 	B(B),
 	nBC(nBC)
 	{;}
+
+
 
 
 	// specialization for the 1D case
@@ -1513,6 +1515,19 @@ namespace BCrhs
 						   const unsigned int b_id);
 
 	};
+
+	// constructor
+	template<int dim>
+	BCrhs_prescribedInflow<dim>::BCrhs_prescribedInflow(const constant_numerics &constants,
+				   			   							const int nBC,
+										   			   const Sparse_matrix &B)
+	:
+	Base_BCrhs<dim>(constants),
+	B(B),
+	nBC(nBC)
+	{;}
+
+
 
 
 		// specialization for the 1D case
