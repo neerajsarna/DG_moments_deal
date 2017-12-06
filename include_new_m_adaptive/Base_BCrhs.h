@@ -626,12 +626,6 @@ namespace BCrhs
 						   Vector<double> &bc_rhs,
 						   const unsigned int b_id);
 
-
-		// same as the wall but we prescribe a particular velocity
-		void BCrhs_prescribed_inflow(const Tensor<1,dim,double> p,
-						   const Tensor<1,dim,double> normal_vector,
-						   Vector<double> &bc_rhs,
-						   const unsigned int b_id);
 	};
 
 	template<int dim>
@@ -778,99 +772,6 @@ namespace BCrhs
 		// now prescribe the normal velocity
 				bc_rhs(0) += vn;			
 		}
-
-	}
-
-	// specialization for the 1D case
-	template<>
-	void
-	BCrhs_wall<1>::BCrhs_prescribed_inflow(const Tensor<1,1,double> p,
-						  					const Tensor<1,1,double> normal_vector,
-										  Vector<double> &bc_rhs,
-										  const unsigned int b_id)
-	{
-		Assert( 1 == 0, ExcMessage("Should not have reached here."));
-	}
-
-
-	// specialization for the 2D case
-	template<>
-	void
-	BCrhs_wall<2>::BCrhs_prescribed_inflow(const Tensor<1,2,double> p,
-						  					const Tensor<1,2,double> normal_vector,
-										  Vector<double> &bc_rhs,
-										  const unsigned int b_id)
-	{
-		bc_rhs = 0;
-		double vr_default = 0;
-
-		// vector normal to the wall
-		const double nx = normal_vector[0];
-		const double ny = normal_vector[1];
-
-		Assert(p.norm() >=0 ,ExcMessage("Incorrect point"));
-		Assert(b_id == 103,ExcMessage("Incorrect boundary id"));
-				// we only compute the rhs in case of a non-specular wall
-	
-
-
-		// matrix which projects the wall velocties in 
-		// the cartesian coordinates to local coordinate
-		
-		FullMatrix<double> proj_vector;	// projector matrix for the local coordinate system
-		Vector<double> coeff_vn(5);	// coefficients infront of the normal velocity for G20 moment system
-
-		coeff_vn = 0;
-		coeff_vn(0) = 1.00000000000000;
-		coeff_vn(1) = 0.316227766016838;
-		coeff_vn(2) = -0.163299316185545;
-		coeff_vn(3) = 0.0816496580927726;
-		 
-
-		proj_vector.reinit(2,2);
-		proj_vector(0,0) = nx;
-		proj_vector(0,1) = ny;
-		proj_vector(1,0) = -ny;
-		proj_vector(1,1) = nx;
-
-		AssertDimension((int)bc_rhs.size(),5);
-
-		// temperature of the wall
-		double thetaW;
-
-		// normal velocity of the wall
-		double vn;
-
-		// tangential velocity of the wall
-		double vt;
-
-		// assign the properties when the inflow velocity is given
-		this->assign_inflow_prescribed_Vn(thetaW,vn,vt,vr_default,proj_vector,b_id);
-
-		const unsigned int ID_theta = this->constants.variable_map[1].find("theta")->second;
-		const unsigned int ID_vy = this->constants.variable_map[1].find("vy")->second;
-	
-		AssertDimension(ID_theta,3);
-		AssertDimension(ID_vy,2);
-
-		// the original boundary conditions are of the form B.U = g. In the present function, we are prescribing
-		// the vector g. The vector g can be defined with the help of the coefficients of B.
-			for (unsigned int m = 0 ; m < B.outerSize() ; m++)
-				for (Sparse_matrix::InnerIterator n(B,m); n ; ++n)
-				{
- 			   	// first prescribe the wall velocity
-					if (n.col() == ID_theta && n.row() > 0)
-						bc_rhs(n.row()) += -sqrt(3.0/2.0) * thetaW * n.value();
-
-				// now prescribe the tangential velocity of the wall.
-				// One to One relation with velocity
-					if(n.col() == ID_vy && n.row() > 0)
-						bc_rhs(n.row()) += vt * n.value();
-				}
-
-		// the contribution fron the inflow velocity
-			for (unsigned int i = 0 ; i < bc_rhs.size() ; i++)			
-				bc_rhs(i) += vn * coeff_vn(i);
 
 	}
 
@@ -1593,5 +1494,118 @@ namespace BCrhs
 		}
 
 
+	//Right hand side for a wall
+	template<int dim>
+	class
+	BCrhs_prescribedInflow:public Base_BCrhs<dim>
+	{
+	public:
+		BCrhs_prescribedInflow(const constant_numerics &constants,
+				   			   const int nBC,
+				   			   const Sparse_matrix &B);
+
+		Sparse_matrix B;
+		const int nBC;
+
+		virtual void BCrhs(const Tensor<1,dim,double> p,
+						   const Tensor<1,dim,double> normal_vector,
+						   Vector<double> &bc_rhs,
+						   const unsigned int b_id);
+
+	};
+
+
+		// specialization for the 1D case
+	template<>
+	void
+	BCrhs_prescribedInflow<1>::BCrhs(const Tensor<1,1,double> p,
+						  					const Tensor<1,1,double> normal_vector,
+										  Vector<double> &bc_rhs,
+										  const unsigned int b_id)
+	{
+		Assert( 1 == 0, ExcMessage("Should not have reached here."));
+	}
+
+
+	// specialization for the 2D case
+	template<>
+	void
+	BCrhs_prescribedInflow<2>::BCrhs(const Tensor<1,2,double> p,
+						  					const Tensor<1,2,double> normal_vector,
+										  Vector<double> &bc_rhs,
+										  const unsigned int b_id)
+	{
+		bc_rhs = 0;
+		double vr_default = 0;
+
+		// vector normal to the wall
+		const double nx = normal_vector[0];
+		const double ny = normal_vector[1];
+
+		Assert(p.norm() >=0 ,ExcMessage("Incorrect point"));
+		Assert(b_id == 103,ExcMessage("Incorrect boundary id"));
+				// we only compute the rhs in case of a non-specular wall
+	
+
+
+		// matrix which projects the wall velocties in 
+		// the cartesian coordinates to local coordinate
+		
+		FullMatrix<double> proj_vector;	// projector matrix for the local coordinate system
+		Vector<double> coeff_vn(5);	// coefficients infront of the normal velocity for G20 moment system
+
+		coeff_vn = 0;
+		coeff_vn(0) = 1.00000000000000;
+		coeff_vn(1) = 0.316227766016838;
+		coeff_vn(2) = -0.163299316185545;
+		coeff_vn(3) = 0.0816496580927726;
+		 
+
+		proj_vector.reinit(2,2);
+		proj_vector(0,0) = nx;
+		proj_vector(0,1) = ny;
+		proj_vector(1,0) = -ny;
+		proj_vector(1,1) = nx;
+
+		AssertDimension((int)bc_rhs.size(),5);
+
+		// temperature of the wall
+		double thetaW;
+
+		// normal velocity of the wall
+		double vn;
+
+		// tangential velocity of the wall
+		double vt;
+
+		// assign the properties when the inflow velocity is given
+		this->assign_inflow_prescribed_Vn(thetaW,vn,vt,vr_default,proj_vector,b_id);
+
+		const unsigned int ID_theta = this->constants.variable_map[1].find("theta")->second;
+		const unsigned int ID_vy = this->constants.variable_map[1].find("vy")->second;
+	
+		AssertDimension(ID_theta,3);
+		AssertDimension(ID_vy,2);
+
+		// the original boundary conditions are of the form B.U = g. In the present function, we are prescribing
+		// the vector g. The vector g can be defined with the help of the coefficients of B.
+			for (unsigned int m = 0 ; m < B.outerSize() ; m++)
+				for (Sparse_matrix::InnerIterator n(B,m); n ; ++n)
+				{
+ 			   	// first prescribe the wall velocity
+					if (n.col() == ID_theta && n.row() > 0)
+						bc_rhs(n.row()) += -sqrt(3.0/2.0) * thetaW * n.value();
+
+				// now prescribe the tangential velocity of the wall.
+				// One to One relation with velocity
+					if(n.col() == ID_vy && n.row() > 0)
+						bc_rhs(n.row()) += vt * n.value();
+				}
+
+		// the contribution fron the inflow velocity
+			for (unsigned int i = 0 ; i < bc_rhs.size() ; i++)			
+				bc_rhs(i) += vn * coeff_vn(i);
+
+	}
 
 }

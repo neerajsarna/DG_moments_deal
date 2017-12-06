@@ -303,7 +303,7 @@ TEST(DISABLED_RunSystemA,HandlesSystemA)
 // run without any restrictions
 TEST(RunSystem,HandlesRunSystem)
 {
-		const unsigned int dim = 2;
+		const unsigned int dim = 1;
 
 		std::string folder_name = "../system_matrices/";
 		Constants::Base_Constants constants(input_file);

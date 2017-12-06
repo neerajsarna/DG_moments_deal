@@ -406,6 +406,12 @@ namespace Constants
 				Patterns::Double(0,5.0),
 				"Coefficient for normal relaxational velocity");
 
+			prm.declare_entry("epsilon_inflow",
+				"0.00001",
+				Patterns::Double(0,5.0),
+				"Coefficient for normal relaxational velocity");
+
+
 			prm.declare_entry("error_variable",
 				"theta",
 				Patterns::DirectoryName(),
@@ -1036,6 +1042,7 @@ namespace Constants
 			constants_num.A2 = prm.get_double("A2");
 			constants_num.kappa  = prm.get_double("kappa");
 			constants_num.epsilon = prm.get_double("epsilon");
+			constants_num.epsilon_inflow = prm.get_double("epsilon_inflow");
 			constants_num.error_variable = prm.get("error_variable");
 			constants_num.force_variable = prm.get("force_variable");
 			constants_num.alpha = prm.get_double("alpha");

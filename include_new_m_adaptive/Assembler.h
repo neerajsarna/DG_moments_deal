@@ -351,9 +351,9 @@ namespace FEM_Solver
         B_temp = system_info.system_data.B_specular.matrix;
 
     // if we manually need to prescribe a particular inflow velocity then 
-    // we simply use the boundary matrix from the wall
+    // we simply use the boundary matrix from the wall but with a different scalling
     if (b_id == 103)
-        B_temp = system_info.system_data.B.matrix;
+        B_temp = system_info.system_data.B_prescribedInflow.matrix;
 
     // B matrix for full accmmodation
     if (b_id == 0 || b_id == 1 || b_id == 2 || b_id == 3 || b_id == 4)
@@ -372,7 +372,7 @@ namespace FEM_Solver
           boundary_rhs_value,face_itr->boundary_id());
 
       if(face_itr->boundary_id() == 103)
-        system_info.bcrhs_wall.BCrhs_prescribed_inflow(fe_v.quadrature_point(q),fe_v.normal_vector(q),
+        system_info.bcrhs_prescribedInflow.BCrhs(fe_v.quadrature_point(q),fe_v.normal_vector(q),
           boundary_rhs_value,face_itr->boundary_id());
 
       if(face_itr->boundary_id() == 0 || face_itr->boundary_id() == 1 || face_itr->boundary_id() == 2 ||

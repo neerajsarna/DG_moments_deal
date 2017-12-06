@@ -37,6 +37,10 @@ namespace EquationGenerator
 			// The matrix for the boundary, full accomodation
 				system_matrix B;
 
+
+			// The matrix for the prescribed inflow
+				system_matrix B_prescribedInflow;
+
 			// The matrix for the boundary conditions, specular reflection
 				system_matrix B_specular;
 
@@ -432,6 +436,7 @@ namespace EquationGenerator
 		system_data.Ax.matrix.resize(nEqn,nEqn);
 		system_data.P.matrix.resize(nEqn,nEqn);
 		system_data.B.matrix.resize(nBC,nEqn);
+		system_data.B_prescribedInflow.matrix.resize(nBC,nEqn);
 		system_data.Sigma.matrix.resize(nEqn,nBC);
 		system_data.Binflow.matrix.resize(nBC,nEqn);
 
@@ -482,8 +487,8 @@ namespace EquationGenerator
 			this->build_triplet(system_data.Binflow.Row_Col_Value,basefile_system[dim+3]);
 			this->build_matrix_from_triplet(system_data.Binflow.matrix,system_data.Binflow.Row_Col_Value);
 
-			this->build_triplet(system_data.rhoW.Row_Col_Value,basefile_system[dim+4]);
-			this->build_matrix_from_triplet(system_data.rhoW.matrix,system_data.rhoW.Row_Col_Value);
+			// this->build_triplet(system_data.rhoW.Row_Col_Value,basefile_system[dim+4]);
+			// this->build_matrix_from_triplet(system_data.rhoW.matrix,system_data.rhoW.Row_Col_Value);
 		
 		// we only need this if the dimension is not equal to 1. When dim ==1, the upwind flux itself corresponds to
 	    // a kinetic flux.
@@ -494,6 +499,7 @@ namespace EquationGenerator
 		}
 
 
+		system_data.B_prescribedInflow.matrix = system_data.B.matrix;
 			
 	}
 
@@ -857,9 +863,13 @@ namespace EquationGenerator
 
 			std::cout << "value of epsilon " << constants.epsilon << std::endl;
 
+			// we fix the wall boundary and the prescribed inflow boundary with different epsilons
 			BoundaryHandler::Base_BoundaryHandler_Char::fix_B_vx(constants.epsilon,
 																fix_B,system_data.B.matrix);
 
+			// the epsilon for the inflow
+			BoundaryHandler::Base_BoundaryHandler_Char::fix_B_vx(constants.epsilon_inflow,
+																fix_B,system_data.B_prescribedInflow.matrix);
 				// check whether B has been fixed or not
 			if(check_B)
 				for (unsigned int i = 0 ; i < system_data.B.matrix.cols() ; i++)

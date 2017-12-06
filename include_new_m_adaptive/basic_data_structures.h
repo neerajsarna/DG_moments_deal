@@ -78,6 +78,9 @@ struct tensor_data
 		// coefficient for normal relaxational velocity
 		double epsilon;
 
+		// coefficient for the regularisation of the inflow veloctiy
+		double epsilon_inflow;
+
 		// variable in which error has to be found
 		std::string error_variable;
 
