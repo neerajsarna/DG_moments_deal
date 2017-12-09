@@ -309,7 +309,8 @@ TEST(RunSystem,HandlesRunSystem)
 		Constants::Base_Constants constants(input_file);
 
 
-		MeshGenerator::Base_MeshGenerator<dim>	Mesh_Info("grid",constants.constants_num.mesh_filename,constants.constants_num.mesh_type,
+		MeshGenerator::Base_MeshGenerator<dim>	Mesh_Info("grid",constants.constants_num.mesh_filename,
+															constants.constants_num.mesh_type,
 							   							  constants.constants_num.problem_type,
 							   							  constants.constants_num.part_x,constants.constants_num.part_y,
 							   							  constants.constants_num.initial_refinement);		

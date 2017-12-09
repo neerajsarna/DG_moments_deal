@@ -1,14 +1,15 @@
 	// points on the circle
-char_len = 0.5;
+char_len = 0.3;
+char_len_edge = 1.0;
 Point(1) = {0.25, 0.0, 0, char_len};
 Point(2) = {0.0, 0.0, 0, char_len};
 Point(3) = {-0.25, 0.0, 0, char_len};
 
 //points on the square
-Point(4) = {-2.0, -0.5, 0, char_len};
-Point(5) = {2.0, -0.5, 0, char_len};
-Point(6) = {2.0, 0.5, 0, char_len};
-Point(7) = {-2.0, 0.5, 0, char_len};
+Point(4) = {-2.0, -0.5, 0, char_len_edge};
+Point(5) = {2.0, -0.5, 0, char_len_edge};
+Point(6) = {2.0, 0.5, 0, char_len_edge};
+Point(7) = {-2.0, 0.5, 0, char_len_edge};
 
 //circular loops
 Circle(1) = {1, 2, 3};
@@ -26,12 +27,18 @@ Line Loop(8) = {1, 2};
 
 Plane Surface(9) = {7, 8};
 
-
 Recombine Surface {9};
 
+// left face
 Physical Line(101) = {3};
-Physical Line(0) = {4};
+
+// right face
 Physical Line(102) = {5};
-Physical Line(1) = {6};
-Physical Line(2) = {1, 2};
+
+// bottom face and top face (specular walls)
+Physical Line(50) = {4,6};
+
+//circle
+Physical Line(0) = {1, 2};
+
 Physical Surface(15) = {9};
