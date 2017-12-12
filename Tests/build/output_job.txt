@@ -1,0 +1,231 @@
+Sender: LSF System <lsfadmin@linuxbsc009>
+Subject: Job 41144997[1]: <channelFlow[1-1]> in cluster <rcc> Exited
+
+Job <channelFlow[1-1]> was submitted from host <cluster-linux> by user <ns179556> in cluster <rcc> at Sun Dec 10 16:41:56 2017.
+Job was executed on host(s) <linuxbsc009>, in queue <normal>, as user <ns179556> in cluster <rcc> at Sun Dec 10 16:41:58 2017.
+</home/ns179556> was used as the home directory.
+</home/ns179556/DG_moments_dealii/Tests/build> was used as the working directory.
+Started at Sun Dec 10 16:41:58 2017.
+Terminated at Sun Dec 10 17:32:35 2017.
+Results reported at Sun Dec 10 17:32:35 2017.
+
+Your job looked like:
+
+------------------------------------------------------------
+# LSBATCH: User input
+#!/usr/bin/env zsh
+
+### Job name
+#BSUB -J "channelFlow[1-1]"
+
+#BSUB -o /home/ns179556/DG_moments_dealii/Tests/build/output_job.txt
+
+#BSUB -W 0:50
+
+#BSUB -M 200000
+
+echo LSB_JOBINDEX: $LSB_JOBINDEX
+module load MATH
+module switch intel/16.0 gcc/system-default
+module load openmpi/1.10.2
+
+cd /opt/intel/mkl/2017.0.098/mkl/bin/
+source ./mklvars.sh intel64 mod ilp64
+cd /home/ns179556/DG_moments_dealii/Tests/build
+
+case "$LSB_JOBINDEX" in
+	*)
+		./test.out 4 -p ../../Input_Files/2D_Systems/input_G120.in -p ../../Input_Files/Input_Channel_Cylinder/input_channel_cylinder_Kn0p1.in
+	;;
+
+esac
+
+
+------------------------------------------------------------
+
+TERM_RUNLIMIT: job killed after reaching LSF run time limit.
+Exited with exit code 140.
+
+Resource usage summary:
+
+    CPU time :                                   3138.47 sec.
+    Max Memory :                                 115633 MB
+    Average Memory :                             95161.41 MB
+    Total Requested Memory :                     200000.00 MB
+    Delta Memory :                               84367.00 MB
+    Max Swap :                                   -
+    Max Processes :                              5
+    Max Threads :                                13
+    Run time :                                   3037 sec.
+    Turnaround time :                            3039 sec.
+
+The output (if any) follows:
+
+perl: warning: Setting locale failed.
+perl: warning: Please check that your locale settings:
+	LANGUAGE = (unset),
+	LC_ALL = (unset),
+	LC_CTYPE = "UTF-8",
+	LANG = "en_US.UTF-8"
+    are supported and installed on your system.
+perl: warning: Falling back to the standard locale ("C").
+LSB_JOBINDEX: 1
+(OK) Loading MATH environment
+(OK) Unloading MATH environment
+(OK) Unloading openmpi 1.10.4
+(OK) Unloading Intel Suite 16.0.2.181
+(OK) Loading gcc system-default
+(OK) Loading openmpi 1.10.4 for gcc compiler
+(WW) The Open MPI's default binding is set to OFF, you can override this
+(OK) Loading MATH environment
++(0):ERROR:0: Unable to locate a modulefile for 'openmpi/1.10.2'
+Using ../../Input_Files/2D_Systems/input_G120.in and ../../Input_Files/Input_Channel_Cylinder/input_channel_cylinder_Kn0p1.in  as input file 
+[==========] Running 1 test from 1 test case.
+[----------] Global test environment set-up.
+[----------] 1 test from RunSystem
+[ RUN      ] RunSystem.HandlesRunSystem
+Reading Gmsh file from: ../../Meshes/Channel_Cylinder/square_circular_cavity.msh
+Creating Systems.....
+value of epsilon 1e-05
+Done creating systems.....
+****************Mesh Info*************
+ #dim 2, #Cells 2824, boundary indicators: 0(108times)50(160times)101(20times)102(20times), hanging nodes: False, vertices: 2978
+************************************
+Distributing dof 
+#Dofs 790720
+Assembling
+**************Using Odd boundary implementation****************
+Preparing data for pardiso 
+Symbolic Factorization
+
+Reordering completed ... Numerical Factorization
+User defined signal 2
+Sender: LSF System <lsfadmin@linuxbsc008>
+Subject: Job 41159215[1]: <channelFlow[1-1]> in cluster <rcc> Done
+
+Job <channelFlow[1-1]> was submitted from host <cluster-linux> by user <ns179556> in cluster <rcc> at Mon Dec 11 09:57:07 2017.
+Job was executed on host(s) <linuxbsc008>, in queue <normal>, as user <ns179556> in cluster <rcc> at Mon Dec 11 09:57:10 2017.
+</home/ns179556> was used as the home directory.
+</home/ns179556/DG_moments_dealii/Tests/build> was used as the working directory.
+Started at Mon Dec 11 09:57:10 2017.
+Terminated at Mon Dec 11 11:11:03 2017.
+Results reported at Mon Dec 11 11:11:03 2017.
+
+Your job looked like:
+
+------------------------------------------------------------
+# LSBATCH: User input
+#!/usr/bin/env zsh
+
+### Job name
+#BSUB -J "channelFlow[1-1]"
+
+#BSUB -o /home/ns179556/DG_moments_dealii/Tests/build/output_job.txt
+
+#BSUB -W 3:00
+
+#BSUB -M 200000
+
+echo LSB_JOBINDEX: $LSB_JOBINDEX
+module load MATH
+module switch intel/16.0 gcc/system-default
+module load openmpi/1.10.2
+
+cd /opt/intel/mkl/2017.0.098/mkl/bin/
+source ./mklvars.sh intel64 mod ilp64
+cd /home/ns179556/DG_moments_dealii/Tests/build
+
+case "$LSB_JOBINDEX" in
+	*)
+		./test.out 4 -p ../../Input_Files/2D_Systems/input_G120.in -p ../../Input_Files/Input_Channel_Cylinder/input_channel_cylinder_Kn0p1.in
+	;;
+
+esac
+
+
+------------------------------------------------------------
+
+Successfully completed.
+
+Resource usage summary:
+
+    CPU time :                                   4713.36 sec.
+    Max Memory :                                 126404 MB
+    Average Memory :                             99875.51 MB
+    Total Requested Memory :                     200000.00 MB
+    Delta Memory :                               73596.00 MB
+    Max Swap :                                   -
+    Max Processes :                              5
+    Max Threads :                                14
+    Run time :                                   4433 sec.
+    Turnaround time :                            4436 sec.
+
+The output (if any) follows:
+
+perl: warning: Setting locale failed.
+perl: warning: Please check that your locale settings:
+	LANGUAGE = (unset),
+	LC_ALL = (unset),
+	LC_CTYPE = "UTF-8",
+	LANG = "en_US.UTF-8"
+    are supported and installed on your system.
+perl: warning: Falling back to the standard locale ("C").
+LSB_JOBINDEX: 1
+(OK) Loading MATH environment
+(OK) Unloading MATH environment
+(OK) Unloading openmpi 1.10.4
+(OK) Unloading Intel Suite 16.0.2.181
+(OK) Loading gcc system-default
+(OK) Loading openmpi 1.10.4 for gcc compiler
+(WW) The Open MPI's default binding is set to OFF, you can override this
+(OK) Loading MATH environment
++(0):ERROR:0: Unable to locate a modulefile for 'openmpi/1.10.2'
+Using ../../Input_Files/2D_Systems/input_G120.in and ../../Input_Files/Input_Channel_Cylinder/input_channel_cylinder_Kn0p1.in  as input file 
+[==========] Running 1 test from 1 test case.
+[----------] Global test environment set-up.
+[----------] 1 test from RunSystem
+[ RUN      ] RunSystem.HandlesRunSystem
+Reading Gmsh file from: ../../Meshes/Channel_Cylinder/square_circular_cavity.msh
+Creating Systems.....
+value of epsilon 1e-05
+Done creating systems.....
+****************Mesh Info*************
+ #dim 2, #Cells 2824, boundary indicators: 0(108times)50(160times)101(20times)102(20times), hanging nodes: False, vertices: 2978
+************************************
+Distributing dof 
+#Dofs 790720
+Assembling
+**************Using Odd boundary implementation****************
+Preparing data for pardiso 
+Symbolic Factorization
+
+Reordering completed ... Numerical Factorization
+
+Factorization completed ... 
+Solving the system 
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<Error Details>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+L2_error: 3.075309e+00, Linf_error: 2.291078e+00, #DOF: 790720, #Cells 2824, #Residual 4.117907e-15  
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<Error Details>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+
++---------------------------------------------+------------+------------+
+| Total wallclock time elapsed since start    |  4.42e+03s |            |
+|                                             |            |            |
+| Section                         | no. calls |  wall time | % of total |
++---------------------------------+-----------+------------+------------+
+| Assembly                        |         1 |      67.1s |       1.5% |
+| Dof Distribution                |         1 |      60.4s |       1.4% |
+| Linear Solver                   |         1 |  4.12e+03s |        93% |
+| Post Processing                 |         1 |       173s |       3.9% |
++---------------------------------+-----------+------------+------------+
+
+[       OK ] RunSystem.HandlesRunSystem (4422550 ms)
+[----------] 1 test from RunSystem (4422552 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test case ran. (4422552 ms total)
+[  PASSED  ] 1 test.
+
+  YOU HAVE 2 DISABLED TESTS
+
+Results 0

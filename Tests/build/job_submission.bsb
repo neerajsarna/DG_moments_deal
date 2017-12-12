@@ -1,0 +1,27 @@
+#!/usr/bin/env zsh
+
+### Job name
+#BSUB -J "channelFlow[1-1]"
+
+#BSUB -o /home/ns179556/DG_moments_dealii/Tests/build/output_job.txt
+
+#BSUB -W 3:00
+
+#BSUB -M 200000
+
+echo LSB_JOBINDEX: $LSB_JOBINDEX
+module load MATH
+module switch intel/16.0 gcc/system-default
+module load openmpi/1.10.2
+
+cd /opt/intel/mkl/2017.0.098/mkl/bin/
+source ./mklvars.sh intel64 mod ilp64
+cd /home/ns179556/DG_moments_dealii/Tests/build
+
+case "$LSB_JOBINDEX" in
+	*)
+		./test.out 4 -p ../../Input_Files/2D_Systems/input_G120.in -p ../../Input_Files/Input_Channel_Cylinder/input_channel_cylinder_Kn0p1.in
+	;;
+
+esac
+

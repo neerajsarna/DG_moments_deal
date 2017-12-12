@@ -494,11 +494,11 @@ namespace EquationGenerator
 		
 		// we only need this if the dimension is not equal to 1. When dim ==1, the upwind flux itself corresponds to
 	    // a kinetic flux.
-		if(dim != 1)
+/*		if(dim != 1)
 		{
 			this->build_triplet(system_data.Amod_kinetic.Row_Col_Value,basefile_system[dim+6]);
 			this->build_matrix_from_triplet(system_data.Amod_kinetic.matrix,system_data.Amod_kinetic.Row_Col_Value);			
-		}
+		}*/
 
 
 		system_data.B_prescribedInflow.matrix = system_data.B.matrix;
