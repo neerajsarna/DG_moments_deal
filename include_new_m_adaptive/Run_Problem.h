@@ -696,12 +696,14 @@ template<int dim>
    		// update with the solution rhs
    		new_solution.equ(delta_t,this->system_rhs);
    		// update with the spatial derivative
-   		new_solution.add(-delta_t,Run_Problem<dim>::matrix_opt.Sparse_matrix_dot_Vector(this->global_matrix,this->solution));
+   		new_solution.add(-delta_t,
+   			Run_Problem<dim>::matrix_opt.Sparse_matrix_dot_Vector(this->global_matrix,this->solution));
    		// update with the previous solution
    		new_solution += this->solution;
 
    		// second update
    		// update with the previous solution
+   		// THIS is incorrect
    		new_solution2.equ(3.0/4.0,this->solution);
    		new_solution2.add(1.0/4.0,new_solution);
    		new_solution2.add(delta_t * 1.0/4.0,this->system_rhs);
