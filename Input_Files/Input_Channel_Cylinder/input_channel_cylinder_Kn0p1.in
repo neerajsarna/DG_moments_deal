@@ -3,6 +3,8 @@ subsection Numerical Constants
 	set polynomial degree = 1
 	set mapping order = 2
 	set total h refinement cycles = 1
+	set refine_cycles_c = 2
+	set fraction_refine = 0.1
 
 	# global = 0
 	# adaptive = 1
@@ -83,7 +85,7 @@ subsection Physical Constants
 end
 
 subsection Mesh Info
-	set mesh_filename = ../../Meshes/Channel_Cylinder/square_circular_cavity.msh
+	set mesh_filename = ../../Meshes/Channel_Cylinder/square_circular_cavity_diff_ratio
 
 	# ring
 	# square_domain 
@@ -114,13 +116,14 @@ subsection Mesh Info
 end
 
 subsection Printing Options
-	set print_all = false
+	set print_all = true
 	set print_solution = true
 	set print_error = false
 	set print_exactsolution = false
-	set print_convergence_table = true
+	set print_convergence_table = false
+	set print_fe_index = true
 end
 
 subsection Output Directory Name
-	set Main Output Directory = channel_cylinder_Kn0p1
+	set Main Output Directory = channel_cylinder_adaptive_Kn0p1
 end

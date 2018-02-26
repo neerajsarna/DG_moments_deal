@@ -1321,13 +1321,19 @@ print_fe_index(const hp::DoFHandler<dim> &dof_handler)
 
 	for (; cell != endc ; cell++)
 	{
-		for (unsigned int space = 0 ; space < dim ; space ++)
-				fprintf(fp_exact, "%f ",cell->center()[space]);
+		for (unsigned int vert = 0 ; vert < GeometryInfo<dim>::vertices_per_cell;vert++)
+		{
+			for (unsigned int space = 0 ; space < dim ; space ++)
+				fprintf(fp_exact, "%f ",cell->vertex(vert)[space]);
+
+				fprintf(fp_exact, "%d ",cell->active_fe_index());
+
+				fprintf(fp_exact, "\n");
+		}
+		
 
 	
-		fprintf(fp_exact, "%d ",cell->active_fe_index());
 
-		fprintf(fp_exact, "\n");
 
 	}
 

@@ -61,7 +61,7 @@ namespace FEM_Solver
                 // fe_index of the maximum moment system which has to be solved in the computation
                 const unsigned int max_fe_index;
                 const unsigned int max_equations;
-                const int fraction_refine;
+                const double fraction_refine;
 
 
                 void construct_block_structure(std::vector<int> &block_structure,const std::vector<int> &nEqn);
@@ -503,7 +503,9 @@ hp_fe_data<dim>::set_tolerance_error_comparison()
         std::vector<double> tolerance(max_fe_index+2);
 
         // fraction of cells which get fe_index = 0
-        const double frac = 0.6;
+        const double frac = fraction_refine;
+
+        // the maximum deviation in error
         const double delta_error = max_error-min_error;
 
         tolerance[0] = min_error;
@@ -519,6 +521,8 @@ hp_fe_data<dim>::set_tolerance_error_comparison()
         // for (unsigned int i = 1 ; i < max_fe_index + 1 ; i++)
         //     tolerance[i] = tolerance[i - 1] + (max_error-min_error)/(max_fe_index+1);
 
+        for (unsigned int i = 0 ; i < max_fe_index + 2 ; i++)
+          printf("id %d tolerance %f\n",i,tolerance[i]);
 
         return(tolerance);
 }
@@ -549,7 +553,9 @@ hp_fe_data<dim>::allocate_fe_index_distribution_deviation(const unsigned int pre
             for(; cell != endc ; cell++)
             {
 
+            // we do not touch the previously refined cells
             if (cell->active_fe_index()  == present_cycle - 1) // only increase the fe index if we are on a lower order moment theory
+                // refine if the error is higher
                 if ((VelocitySpace_error_per_cell(counter) - tolerance) >= 10e-100 )
                 {
                     cell->set_active_fe_index(present_cycle);   // increase the fe index if the residual is too high

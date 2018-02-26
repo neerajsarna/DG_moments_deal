@@ -308,6 +308,7 @@ TEST(RunSystem,HandlesRunSystem)
 		std::string folder_name = "../system_matrices/";
 		Constants::Base_Constants constants(input_file);
 
+		printf("refine_fraction %f\n",constants.constants_num.fraction_refine);
 
 		// Mesh Info of the actual mesh we are trying to solve on
 		MeshGenerator::Base_MeshGenerator<dim>	Mesh_Info("grid",constants.constants_num.mesh_filename,constants.constants_num.mesh_type,
@@ -316,9 +317,10 @@ TEST(RunSystem,HandlesRunSystem)
 							   							  constants.constants_num.initial_refinement);		
 
 		// the mesh on which we create the reference solution
-		MeshGenerator::Base_MeshGenerator<dim>	Mesh_Info_Reference("grid",constants.constants_num.mesh_filename,constants.constants_num.mesh_type,
+		MeshGenerator::Base_MeshGenerator<dim>	Mesh_Info_Reference("grid",constants.constants_num.mesh_filename,
+																    constants.constants_num.mesh_type,
 							   							  			constants.constants_num.problem_type,
-							   							  			1,100,
+							   							  			20,20,
 							   							  			constants.constants_num.initial_refinement);	
 
 
@@ -348,14 +350,14 @@ TEST(RunSystem,HandlesRunSystem)
 			ExcMessage("You have asked for a system which has not been loaded"));
 
 		// exact solution corresponding to the reference
-		ExactSolution::PoissonHeat<dim>  dummy(constants.constants_num,
-												System[reference_system].base_tensorinfo.S_half,
-												constants.constants_sys.nEqn[reference_system],
-												constants.constants_sys.Ntensors[reference_system]);
+		ExactSolution::ExactSolution_Dummy<dim>  dummy(constants.constants_num,
+																System[system_to_solve].base_tensorinfo.S_half,
+																constants.constants_sys.nEqn[reference_system],
+																constants.constants_sys.Ntensors[reference_system]);
 
 
 		// compute the reference solution
-		FEM_Solver::Run_Problem_Periodic<dim> fe_solver_reference("grid",
+		FEM_Solver::Run_Problem_FE<dim> fe_solver_reference("grid",
 													constants.constants_num,
 													System,
 													&dummy,
@@ -367,7 +369,7 @@ TEST(RunSystem,HandlesRunSystem)
 		fe_solver_reference.run(Mesh_Info_Reference);
 
 		// run the periodic problem with m-adaptivity
-		FEM_Solver::Run_Problem_hp_Periodic<dim> fe_solver("grid",
+		FEM_Solver::Run_Problem_hp_FE<dim> fe_solver("grid",
 													constants.constants_num,
 													System,
 													&dummy,

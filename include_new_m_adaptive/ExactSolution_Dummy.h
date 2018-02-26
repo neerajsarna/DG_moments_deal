@@ -8,7 +8,8 @@ namespace ExactSolution
 	ExactSolution_Dummy:public Base_ExactSolution<dim>
 	{
 		public:
-			ExactSolution_Dummy(const constant_numerics &constants,const Sparse_matrix &S_half,const int nEqn,const int nBC);
+			ExactSolution_Dummy(const constant_numerics &constants, 
+								const Sparse_matrix &S_half,const int nEqn,const int Ntensors);
 
 			virtual void vector_value(const Point<dim> &p,Vector<double> &value) const ;
 
@@ -23,9 +24,9 @@ namespace ExactSolution
 
 	template<int dim>
 	ExactSolution_Dummy<dim>::ExactSolution_Dummy(const constant_numerics &constants,const Sparse_matrix &S_half,
-												const int nEqn,const int nBC)
+												const int nEqn,const int Ntensors)
 	:
-	Base_ExactSolution<dim>(constants,S_half,nEqn,nBC)
+	Base_ExactSolution<dim>(constants,S_half,nEqn,Ntensors)
 	{
 	}
 

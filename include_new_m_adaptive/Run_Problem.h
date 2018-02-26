@@ -102,6 +102,7 @@ template<int dim>
 		residual.reinit(dof_handler.n_dofs());
 	}
 
+	// run a single system. 
 	template<int dim>
 	class
 	Run_Problem_FE:public Assembly_Manager_FE<dim>,
@@ -419,7 +420,7 @@ template<int dim>
 					// allocate the index for every cell
 					timer.enter_subsection("Dof Distribution");
 					std::cout << "Dof distirubtion" << std::endl;
-					this->hp_fe_data_structure.allocate_fe_index_distribution_deviation(cycle_c);
+					this->hp_fe_data_structure.allocate_fe_index_error_comparison(cycle_c);
 
 					// distribute the degrees of freedom for the different fe indices which have been distributed
 					this->distribute_dof_allocate_matrix(this->hp_fe_data_structure.dof_handler,
