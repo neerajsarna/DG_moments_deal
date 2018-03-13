@@ -3,7 +3,7 @@ clear all;
 
 for i = 4 : 15
  Ntensors = get_ntensors(i);
-filename = strcat("heat_conduction/Ax",num2str(Ntensors),".txt");
+filename = strcat("heat_conduction/AxOld",num2str(Ntensors),".txt");
 fileID = fopen(filename,"r");
 indices = dlmread(filename);
 
@@ -22,22 +22,29 @@ P0(1,1) = 0;
 
 [~,permutation]=sort(diag(D));
 
+num_inf = isinf(diag(D));
+num_inf = sum(num_inf(:)==1);
+
 D=D(permutation,permutation);V=V(:,permutation);
 
 % eigenvalues in pair
 pair = [];
-for num_pairs = 1 : length(diag(D))/2
-    pair = [num_pairs length(diag(D))-num_pairs+1 pair];
+for num_pairs = 1 : (length(diag(D))-num_inf)/2
+    pair = [num_pairs length(diag(D))-num_pairs-num_inf+1 pair];
 end
+
+% add the infinite eigenvalues
+pair = [pair length(diag(D))-num_inf+1:length(diag(D))];
+
 
 D=D(pair,pair);V=V(:,pair);
 
 disp(norm(P0*V-Ax*V*D));
 
-filename = strcat("heat_conduction/V",num2str(Ntensors),".txt");
+filename = strcat("heat_conduction/VOld",num2str(Ntensors),".txt");
 dlmwrite(filename,V,'precision',16,'delimiter','\t');
 
-filename = strcat("heat_conduction/D",num2str(Ntensors),".txt");
+filename = strcat("heat_conduction/DOld",num2str(Ntensors),".txt");
 dlmwrite(filename,diag(D),'precision',16,'delimiter','\t');
 end
 
