@@ -115,8 +115,7 @@ namespace PostProc
 									const std::vector<int> &nEqn);
 
 		void print_solution_to_file(const Triangulation<dim> &triangulation,
-									const Vector<double> &solution,
-									const Sparse_matrix &S_half_inv,
+									const Vector<double> &solution,									
 									const DoFHandler<dim> &dof_handler,
 									const int nEqn);
 
@@ -164,7 +163,6 @@ namespace PostProc
 								 const int nEqn);	
 
 		void print_exactsolution_to_file(const Triangulation<dim> &triangulation,
-										 const Sparse_matrix &S_half_inv,
 										 const int nEqn);
 
 
@@ -206,7 +204,7 @@ namespace PostProc
 					  const unsigned int present_cycle,
 					  const unsigned int total_cycles,
 					  ConvergenceTable &convergence_table,
-					 const Sparse_matrix &S_half_inv,
+					 
 					 const DoFHandler<dim> &dof_handler,
 						const int nEqn);
 
@@ -636,7 +634,8 @@ namespace PostProc
 		Assert(class_initialized == true,ExcMessage("Please initialize the post proc class"));
 
 
-		unsigned int component= constants.variable_map[dim-1].find(constants.error_variable)->second;
+		//unsigned int component= constants.variable_map[dim-1].find(constants.error_variable)->second;
+		unsigned int component = 3;
 		
 
 		const unsigned int ngp = constants.p + 1;
@@ -792,7 +791,7 @@ namespace PostProc
     print_solution_to_file(
     					const Triangulation<dim> &triangulation,
     					const Vector<double> &solution,
-    					const Sparse_matrix &S_half_inv,
+    					//const Sparse_matrix &S_half_inv,
     					const DoFHandler<dim> &dof_handler,
     					const int nEqn)
     {
@@ -820,8 +819,8 @@ namespace PostProc
 			solution_value = 0;
 			VectorTools::point_value(dof_handler, solution, cell->vertex(vertex),solution_value);	
 
-			// we now convert back to the conventional variables. That is the variables in unsymmetric system	
-			solution_value = matrix_opt.Sparse_matrix_dot_Vector(S_half_inv,solution_value);
+			// // we now convert back to the conventional variables. That is the variables in unsymmetric system	
+			// solution_value = matrix_opt.Sparse_matrix_dot_Vector(S_half_inv,solution_value);
 
 			for (unsigned int space = 0 ; space < dim ; space ++)
 				fprintf(fp_solution, "%f ",cell->vertex(vertex)(space));
@@ -1176,7 +1175,7 @@ template<int dim>
 void 
 Base_PostProc<dim>::
 print_exactsolution_to_file(const Triangulation<dim> &triangulation,
-							const Sparse_matrix &S_half_inv,
+							//const Sparse_matrix &S_half_inv,
 							const int nEqn)
 {
 	Assert(class_initialized == true,ExcMessage("Please initialize the post proc class"));
@@ -1200,7 +1199,7 @@ print_exactsolution_to_file(const Triangulation<dim> &triangulation,
 			base_exactsolution->vector_value(cell->vertex(vertex),exact_solution_value);
 
 		// we now convert back to the original variables
-			exact_solution_value = matrix_opt.Sparse_matrix_dot_Vector(S_half_inv,exact_solution_value);
+			//exact_solution_value = matrix_opt.Sparse_matrix_dot_Vector(S_half_inv,exact_solution_value);
 
 			for (unsigned int space = 0 ; space < dim ; space ++)
 				fprintf(fp_exact, "%f ",cell->vertex(vertex)[space]);
@@ -1454,7 +1453,6 @@ print_fe_index(const hp::DoFHandler<dim> &dof_handler)
 		const unsigned int present_cycle,
 		const unsigned int total_cycles,
 		ConvergenceTable &convergence_table,
-		const Sparse_matrix &S_half_inv,
 		const DoFHandler<dim> &dof_handler,
 		const int nEqn)
 	{
@@ -1464,13 +1462,15 @@ print_fe_index(const hp::DoFHandler<dim> &dof_handler)
 		{
 			if (constants.print_solution)
 				print_solution_to_file(triangulation,solution,
-										S_half_inv,dof_handler,nEqn);
+										dof_handler,nEqn);
 
 			if(constants.print_error)
 				print_error_to_file(triangulation,solution,dof_handler,nEqn);
 
 			if(constants.print_exactsolution)
-				print_exactsolution_to_file(triangulation,S_half_inv,nEqn);
+				print_exactsolution_to_file(triangulation,
+											
+											nEqn);
 
 		}
 
@@ -1480,13 +1480,15 @@ print_fe_index(const hp::DoFHandler<dim> &dof_handler)
 			if (present_cycle == total_cycles - 1)
 			{
 			if (constants.print_solution)
-				print_solution_to_file(triangulation,solution,S_half_inv,dof_handler,nEqn);
+				print_solution_to_file(triangulation,solution,
+										
+										dof_handler,nEqn);
 
 			if(constants.print_error)
 				print_error_to_file(triangulation,solution,dof_handler,nEqn);
 
 			if(constants.print_exactsolution)
-				print_exactsolution_to_file(triangulation,S_half_inv,nEqn);
+				print_exactsolution_to_file(triangulation,nEqn);
 
 			}
 		}

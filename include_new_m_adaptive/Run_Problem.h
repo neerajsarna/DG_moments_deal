@@ -154,7 +154,6 @@ template<int dim>
 	{
 		Mesh_Info.print_mesh_info();
 
-
 	
 		AssertDimension(this->error_per_itr.size(),refine_cycles);
 
@@ -178,7 +177,8 @@ template<int dim>
 		this->assemble_system_meshworker();
 		timer.leave_subsection();
 
-		
+	
+
 		// we initialize the object which will solve our system
 		// We do int the following way so as to keep the solver independent of all the other implementations.
 		// This makes the code highly reusable. So one can directly copy the following class and use it somewhere
@@ -224,7 +224,7 @@ template<int dim>
 		
 		postproc.print_options(Mesh_Info.triangulation,this->solution,cycle,refine_cycles,
 							  this->convergence_table,
-							this->system_info.base_tensorinfo.S_half_inv,
+							//this->system_info.base_tensorinfo.S_half_inv,
 								this->fe_data_structure.dof_handler,this->nEqn);		
 		
 		timer.leave_subsection();

@@ -641,8 +641,13 @@ namespace BCrhs
 		this->assign_wall_properties(thetaW,vn,vt_default,vr_default,proj_vector,b_id);
 
 		// we know the ID_theta in case of a 1D problem
-		const unsigned int ID_theta = 2;
+		//const unsigned int ID_theta = 2;
+		// we have a contribution from three different IDS
+		std::vector<int> ID_theta(3);
 		
+		ID_theta[0] = 3;
+		ID_theta[1] = 5;
+		ID_theta[2] = 6;
 	
 		// the original boundary conditions are of the form B.U = g. In the present function, we are prescribing
 		// the vector g. The vector g can be defined with the help of the coefficients of B.
@@ -650,13 +655,13 @@ namespace BCrhs
 				for (Sparse_matrix::InnerIterator n(B,m); n ; ++n)
 				{
  			   	// first prescribe the wall temperature
-					if (n.col() == ID_theta && n.row() > 0)
+					if (n.col() == ID_theta[0] || n.col() == ID_theta[1] || n.col() == ID_theta[2] && n.row() > 0)
 						bc_rhs(n.row()) += sqrt(1.0/2.0) * thetaW * n.value();
 
 				}
 
 		// now prescribe the normal velocity
-				bc_rhs(0) += vn;			
+				//bc_rhs(0) += vn;			
 		}
 
 	}

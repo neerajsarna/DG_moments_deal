@@ -92,20 +92,22 @@ namespace Develop_System
 		this->initialized_system = true;
 
 		// else
-		this->base_tensorinfo.reinit();
+		//this->base_tensorinfo.reinit();
 
 		//initialize the forcing term for this system
 		this->reinit_force();
 
-		// initialize the boundary matrices for this system
-		this->reinit_BoundaryMatrices();
+		// initialise the penalty matrices for this system
+		//this->reinit_BoundaryMatrices();
 
 		// we will always send Ax independent of symmetric or unsymmetric system
-		this->reinit_Aminus1D();
+		//this->reinit_Aminus1D();
+		//this->reinit_Amod1D();
 
-   		this->reinit_Xminus();
+   		//this->reinit_Xminus();
 
-   		this->symmetrize_system();
+   		// the monotone system is already symmetric
+   		//this->symmetrize_system();
 
    		this->force_factor = this->forcing_factor();
 

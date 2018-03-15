@@ -129,22 +129,22 @@ namespace Constants
 
 			prm_system_info.declare_entry("Ntensors0",
 				"2",
-				Patterns::Integer(2,100),
+				Patterns::Integer(2,500),
 				"number of tensors");
 
 			prm_system_info.declare_entry("system_id0",
 				"6",
-				Patterns::Integer(-100,100),
+				Patterns::Integer(-100,1500),
 				"system ID(distinguish between regularized and normal theories)");
 
 			prm_system_info.declare_entry("num_equations0",
 				"3",
-				Patterns::Integer(3,100),
+				Patterns::Integer(3,1500),
 				"total number of equations in system");
 
 			prm_system_info.declare_entry("nBC0",
 				"2",
-				Patterns::Integer(2,100),
+				Patterns::Integer(2,1500),
 				"total number of boundary conditions needed for the system");
 
 			prm_system_info.declare_entry("Ntensors1",
@@ -739,7 +739,7 @@ namespace Constants
 
 
 			// we check the total number of systems we are loading into our program
-			AssertThrow(constants_sys.total_systems == 2,
+			AssertThrow(constants_sys.total_systems == 1,
 						ExcMessage("Incorrect number of systems being loaded"));
 
 

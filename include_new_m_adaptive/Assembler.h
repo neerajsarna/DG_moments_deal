@@ -18,7 +18,7 @@ namespace FEM_Solver
         DeclException2 (ExcNoElementInSparsity, size_t, size_t,
                         << "Dof-1 " << arg1 << " Dof-2 " << arg2 << " Entry does not exist in sparsity pattern");
 
-		Assembly_Manager_FE(const std::string &output_file_name,
+  		Assembly_Manager_FE(const std::string &output_file_name,
 						            const constant_numerics &constants,
 						            std::vector<Develop_System::System<dim>> &equation_info,
                         const std::vector<int> &nEqn,
@@ -117,9 +117,7 @@ namespace FEM_Solver
   //AssertDimension(nEqn.size(),1);
 
   // first we will assemble the right hand side 
-  Threads::Task<> rhs_task = Threads::new_task (&Assembly_Manager_FE<dim>::assemble_rhs,
-                                                *this);
-
+  Threads::Task<> rhs_task = Threads::new_task (&Assembly_Manager_FE<dim>::assemble_rhs,*this);
 
   MeshWorker::IntegrationInfoBox<dim> info_box;
 
@@ -299,7 +297,7 @@ namespace FEM_Solver
       Mass_grad = this->Compute_Mass_shape_grad(fe_v, indices_per_cell, Jacobians_interior);
       Mass = this->Compute_Mass_shape_value(fe_v, indices_per_cell, Jacobians_interior);
 
-        // this is for initializing the matrix, it is necessary since we have not put cell_matrix to zero
+    // this is for initializing the matrix, it is necessary since we have not put cell_matrix to zero
       cell_matrix = this->matrix_opt.compute_A_outer_B(system_info.system_data.P.matrix,Mass);
 
       for (int space = 0 ;space < dim ; space ++ )
@@ -314,6 +312,7 @@ namespace FEM_Solver
   ::integrate_boundary_term_odd(DoFInfo &dinfo,
     CellInfo &info)
   {
+
 
     const FEValuesBase<dim> &fe_v = info.fe_values();
     typename Triangulation<dim>::face_iterator face_itr= dinfo.face;
@@ -333,58 +332,70 @@ namespace FEM_Solver
     boundary_rhs_value.reinit(nBC);
     const unsigned int b_id = face_itr->boundary_id();
 
+    Assert(b_id == 0 || b_id == 1,ExcMessage("incorrect boundary ID"));
     Assert(system_info.system_data.B.matrix.rows() == system_info.system_data.Sigma.matrix.cols(),
             ExcMessage("Incorrect dimension"));
 
 // we use a temporary matrix to determine whether inflow or outflow
     Sparse_matrix B_temp;
 
-    if(b_id == 101 || b_id == 102)
-    {
-      integrate_inflow++;
-      B_temp = system_info.system_data.Binflow.matrix;
-    }
-    else
-    {
-    // B matrix for specular reflection
-      if (b_id == 50)
-        B_temp = system_info.system_data.B_specular.matrix;
+    // if(b_id == 101 || b_id == 102)
+    // {
+    //   integrate_inflow++;
+    //   B_temp = system_info.system_data.Binflow.matrix;
+    // }
+    // else
+    // {
+    // // B matrix for specular reflection
+    //   if (b_id == 50)
+    //     B_temp = system_info.system_data.B_specular.matrix;
 
-    // B matrix for full accmmodation
-      else
-        B_temp = system_info.system_data.B.matrix;
-    }
+    // // B matrix for full accmmodation
+    //   else
+    //     B_temp = system_info.system_data.B.matrix;
+    // }
+
+    B_temp = system_info.system_data.B.matrix;
+
+    Assert(B_temp.rows() !=0 && B_temp.rows() !=0 ,ExcNotInitialized());
 
     for (unsigned int q = 0 ; q < fe_v.n_quadrature_points ; q++)
     {
       const double jacobian_value = Jacobian_face[q];
-
+      const Tensor<1,dim> normal_vector = fe_v.normal_vector(q);
       boundary_rhs_value = 0;                 
 
   // check for inflow or outflow
   // Incase of inflow provide the inflow rhs
-      if(face_itr->boundary_id() == 101 || face_itr->boundary_id() == 102)
-        system_info.bcrhs_inflow.BCrhs(fe_v.quadrature_point(q),fe_v.normal_vector(q),
-          boundary_rhs_value,face_itr->boundary_id());
+      // if(face_itr->boundary_id() == 101 || face_itr->boundary_id() == 102)
+      //   system_info.bcrhs_inflow.BCrhs(fe_v.quadrature_point(q),normal_vector,
+      //     boundary_rhs_value,face_itr->boundary_id());
 
-      else
-        system_info.bcrhs_wall.BCrhs(fe_v.quadrature_point(q),fe_v.normal_vector(q),
-          boundary_rhs_value,face_itr->boundary_id());
-
-
-      Sparse_matrix Projector = system_info.build_Projector(fe_v.normal_vector(q));
+      // else
+        system_info.bcrhs_wall.BCrhs(fe_v.quadrature_point(q),normal_vector,
+                                     boundary_rhs_value,face_itr->boundary_id());
 
 
+
+      Sparse_matrix Projector = system_info.build_Proj_Hermite(normal_vector);
+
+
+      Assert(Projector.rows() !=0 && Projector.rows() !=0 ,ExcNotInitialized());
+      Assert(system_info.system_data.Sigma.matrix.rows() !=0 && system_info.system_data.Sigma.matrix.rows() !=0 ,ExcNotInitialized());
 
   // Simga(as given in PDF) * B * Projector
   // Sigma in the PDF = Projector.transpose * Sigma(In the code)
-      Full_matrix Sigma_B_P =       Projector.transpose()
-      * system_info.system_data.Sigma.matrix 
-      * B_temp
-      * Projector;
 
-      Full_matrix Sigma = Projector.transpose()
-      * system_info.system_data.Sigma.matrix ;
+
+      Full_matrix Sigma = Projector *
+                          system_info.system_data.Sigma.matrix ;
+
+      Full_matrix Sigma_B_P =  Sigma
+                              * B_temp
+                              * Projector;
+
+
+
 
       for (unsigned int i = 0 ; i < dofs_per_cell ; i ++)
       {
@@ -764,12 +775,12 @@ namespace FEM_Solver
         DeclException2 (ExcNoElementInSparsity, size_t, size_t,
                         << "Dof-1 " << arg1 << " Dof-2 " << arg2 << " Entry does not exist in sparsity pattern");
 
-		Assembly_Manager_hp_FE(const std::string &output_file_name,
-						const constant_numerics &constants,
-						std::vector<Develop_System::System<dim>> &equation_info,
-                        const std::vector<int> &nEqn,
-                        const std::vector<int> &nBC,
-                        Triangulation<dim> &triangulation);
+		    Assembly_Manager_hp_FE(const std::string &output_file_name,
+				                  		const constant_numerics &constants,
+						                  std::vector<Develop_System::System<dim>> &equation_info,
+                              const std::vector<int> &nEqn,
+                              const std::vector<int> &nBC,
+                              Triangulation<dim> &triangulation);
 
      	hp_fe_data<dim> hp_fe_data_structure;
 			const std::vector<int> nEqn;

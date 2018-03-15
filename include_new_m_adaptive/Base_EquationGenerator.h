@@ -34,6 +34,9 @@ namespace EquationGenerator
 			// The Jacobian in the x-direction
 				system_matrix Ax;
 
+			// modulus of the flux matrix
+				system_matrix Amod1;
+
 			// The matrix for the boundary, full accomodation
 				system_matrix B;
 
@@ -128,6 +131,7 @@ namespace EquationGenerator
 			// build the projector corresponding to a particular normal vector
 			Sparse_matrix build_Projector(const Tensor<1,dim> &normal_vector);
 			Sparse_matrix build_InvProjector(const Tensor<1,dim> &normal_vector);
+			Sparse_matrix build_Proj_Hermite(const Tensor<1,dim> &normal_vector);
 
 
 			// The following function already knows the Aminus_1D game
@@ -136,10 +140,13 @@ namespace EquationGenerator
 			// build the Aminus matrix using a kinetic flux
 			Full_matrix build_Aminus_kinetic(const Tensor<1,dim,double> normal_vector);
 
-			Full_matrix build_An(const Tensor<1,dim,double> normal_vector);
+			Sparse_matrix build_An(const Tensor<1,dim,double> normal_vector);
 
 			// Matrices for the flux
 			Full_matrix Aminus_1D;
+
+			// mod of the flux matrix
+			Full_matrix Amod_1D;
 
 			//convert a matrix to a symmetric matrix
 			void create_symmetric_matrix(Sparse_matrix &matrix,Sparse_matrix &S_half,
@@ -149,6 +156,9 @@ namespace EquationGenerator
 
 			// reinit the Aminus_1D matrix
 			void reinit_Aminus1D();
+
+			// reinit the Amod_1D matrix
+			void reinit_Amod1D();
 
 			void reinit_Xminus();
 
@@ -182,8 +192,9 @@ namespace EquationGenerator
 	Ntensors(Ntensors),
 	force1(constants,nEqn),
 	force2(constants,nEqn),
-	force3(constants,nEqn),
-	base_tensorinfo(nEqn,Ntensors)
+	force3(constants,nEqn)
+	// we give some default values 
+	,base_tensorinfo(6,6)
 	{
 		// the maximum number of matrices in the system
 		// 3 flux matrices (Ax,Ay and Az)
@@ -193,7 +204,7 @@ namespace EquationGenerator
 		const int max_matrices = dim + 7;
 
 		// ending for the name of different matrices
-		std::string name_ending = + "_" + std::to_string(dim)+"D_";
+		std::string name_ending = + "_" + std::to_string(2)+"D_";
 
 		// the base file names, to be updated with the equation number later on
 		basefile.resize(max_matrices);
@@ -219,30 +230,34 @@ namespace EquationGenerator
 
 		entry = dim + 3;
 		Assert(entry < max_matrices,ExcNotInitialized());
-		basefile[entry] = "Binflow" + name_ending;
+		basefile[entry] = "Amod1" + name_ending;
 
-		entry = dim + 4;
-		basefile[entry] = "rhoW" + name_ending;
+		// entry = dim + 3;
+		// Assert(entry < max_matrices,ExcNotInitialized());
+		// basefile[entry] = "Binflow" + name_ending;
 
-		entry = dim + 5;
-		basefile[entry] = "rhoInflow" + name_ending;
+		// entry = dim + 4;
+		// basefile[entry] = "rhoW" + name_ending;
 
-		entry = dim + 6;
-		basefile[entry] = "kineticAmod" + name_ending;
+		// entry = dim + 5;
+		// basefile[entry] = "rhoInflow" + name_ending;
+
+		// entry = dim + 6;
+		// basefile[entry] = "kineticAmod" + name_ending;
 
 
 		// we can check the number of equations and the number of boundary conditions for the 1D case
-		if (dim == 1)
-		{
-					// now we check the number of boundary conditions 
-		// if we have even number of variables in the system
-		if (nEqn %2 == 0)
-			Assert(nBC == (nEqn / 2),ExcMessage("Incorrect number of boundary conditions"));
+		// if (dim == 1)
+		// {
+		// 			// now we check the number of boundary conditions 
+		// // if we have even number of variables in the system
+		// if (nEqn %2 == 0)
+		// 	Assert(nBC == (nEqn / 2),ExcMessage("Incorrect number of boundary conditions"));
 
-		// if we have odd number of variables in the system
-		if (nEqn %2 != 0)
-			Assert(nBC == (nEqn - 1)  / 2,ExcMessage("Incorrect number of boundary conditions"));	
-		}
+		// // if we have odd number of variables in the system
+		// if (nEqn %2 != 0)
+		// 	Assert(nBC == (nEqn - 1)  / 2,ExcMessage("Incorrect number of boundary conditions"));	
+		// }
 	}
 
 
@@ -433,17 +448,19 @@ namespace EquationGenerator
 		system_data.P.matrix.resize(nEqn,nEqn);
 		system_data.B.matrix.resize(nBC,nEqn);
 		system_data.Sigma.matrix.resize(nEqn,nBC);
-		system_data.Binflow.matrix.resize(nBC,nEqn);
+		system_data.Amod1.matrix.resize(nEqn,nEqn);
+		//system_data.Binflow.matrix.resize(nBC,nEqn);
 
-		system_data.rhoW.matrix.resize(nEqn,nEqn);
-		system_data.rhoInflow.matrix.resize(nEqn,nEqn);
-		system_data.Amod_kinetic.matrix.resize(nEqn,nEqn);
+		// system_data.rhoW.matrix.resize(nEqn,nEqn);
+		// system_data.rhoInflow.matrix.resize(nEqn,nEqn);
+		// system_data.Amod_kinetic.matrix.resize(nEqn,nEqn);
 
 		// now we loop over all the names in the basefile vector
 		// by default at the system information is expected to be stored in a folder
 		// labeled system_matrices
+		// We keep the truncated one here else we can also change it.
 		for (unsigned int i = 0 ; i < this->basefile.size(); i++)
-			basefile_system[i] = folder_name+this->basefile[i] + std::to_string(nEqn) + ".txt";
+			basefile_system[i] = folder_name+this->basefile[i] + std::to_string(nEqn) + "Trun.txt";
 
 		bool print_fancy = false;		
 
@@ -456,6 +473,7 @@ namespace EquationGenerator
 		// since the number of jacobians = number of space dimensions, so that's what we do here
 		for (unsigned int i = 0 ; i < dim ; i ++)
 		{
+			
 			// develop the triplet
 			this->build_triplet(system_data.A[i].Row_Col_Value,basefile_system[i]);
 
@@ -467,31 +485,36 @@ namespace EquationGenerator
 			system_data.Ax = system_data.A[0];
 
 			// develop the B matrix
+			
+
 			this->build_triplet(system_data.B.Row_Col_Value,basefile_system[dim]);
 			this->build_matrix_from_triplet(system_data.B.matrix,system_data.B.Row_Col_Value);
-
 
 			// develop the ID of the odd variables
 			this->build_Vector(system_data.odd_ID,basefile_system[dim + 1]);
 
 
 			// develop the Sigma matrix
+			
 			this->build_triplet(system_data.Sigma.Row_Col_Value,basefile_system[dim+2]);
 			this->build_matrix_from_triplet(system_data.Sigma.matrix,system_data.Sigma.Row_Col_Value);
 
-			this->build_triplet(system_data.Binflow.Row_Col_Value,basefile_system[dim+3]);
-			this->build_matrix_from_triplet(system_data.Binflow.matrix,system_data.Binflow.Row_Col_Value);
+			this->build_triplet(system_data.Amod1.Row_Col_Value,basefile_system[dim+3]);
+			this->build_matrix_from_triplet(system_data.Amod1.matrix,system_data.Amod1.Row_Col_Value);
 
-			this->build_triplet(system_data.rhoW.Row_Col_Value,basefile_system[dim+4]);
-			this->build_matrix_from_triplet(system_data.rhoW.matrix,system_data.rhoW.Row_Col_Value);
+			// this->build_triplet(system_data.Binflow.Row_Col_Value,basefile_system[dim+3]);
+			// this->build_matrix_from_triplet(system_data.Binflow.matrix,system_data.Binflow.Row_Col_Value);
+
+			// this->build_triplet(system_data.rhoW.Row_Col_Value,basefile_system[dim+4]);
+			// this->build_matrix_from_triplet(system_data.rhoW.matrix,system_data.rhoW.Row_Col_Value);
 		
 		// we only need this if the dimension is not equal to 1. When dim ==1, the upwind flux itself corresponds to
 	    // a kinetic flux.
-		if(dim != 1)
-		{
-			this->build_triplet(system_data.Amod_kinetic.Row_Col_Value,basefile_system[dim+6]);
-			this->build_matrix_from_triplet(system_data.Amod_kinetic.matrix,system_data.Amod_kinetic.Row_Col_Value);			
-		}
+		// if(dim != 1)
+		// {
+		// 	this->build_triplet(system_data.Amod_kinetic.Row_Col_Value,basefile_system[dim+6]);
+		// 	this->build_matrix_from_triplet(system_data.Amod_kinetic.matrix,system_data.Amod_kinetic.Row_Col_Value);			
+		// }
 
 
 			
@@ -504,6 +527,7 @@ namespace EquationGenerator
 	::build_Projector(const Tensor<1,dim> &normal_vector)
 	{
 
+		Assert(1==0,ExcMessage("Should not have reached"));
 
 		Assert(base_tensorinfo.varIdx.rows() != 0 || base_tensorinfo.varIdx.cols() !=0 ,
 				ExcMessage("Base tensor info not initialized"));
@@ -522,6 +546,7 @@ namespace EquationGenerator
 	{
 
 
+		Assert(1==0,ExcMessage("Should not have reached"));
 		Assert(base_tensorinfo.varIdx.rows() != 0 || base_tensorinfo.varIdx.cols() !=0 ,
 				ExcMessage("Base tensor info not initialized"));
 
@@ -535,15 +560,17 @@ namespace EquationGenerator
 	build_Aminus(const Tensor<1,dim,double> normal_vector)
 	{
 
-		Assert(this->Aminus_1D.rows() != 0 || this->Aminus_1D.cols() != 0,
-			  ExcMessage("Aminus_1D has not been built yet"));
+		return(system_data.Amod1.matrix-build_An(normal_vector));
 
-		Assert(base_tensorinfo.varIdx.rows() != 0 || base_tensorinfo.varIdx.cols() !=0 ,
-				ExcMessage("Base tensor info not initialized"));
+		// Assert(this->Aminus_1D.rows() != 0 || this->Aminus_1D.cols() != 0,
+		// 	  ExcMessage("Aminus_1D has not been built yet"));
 
-		return(base_tensorinfo.reinit_Invglobal(normal_vector) 
-			   	* this->Aminus_1D 
-			   	* base_tensorinfo.reinit_global(normal_vector));
+		// Assert(base_tensorinfo.varIdx.rows() != 0 || base_tensorinfo.varIdx.cols() !=0 ,
+		// 		ExcMessage("Base tensor info not initialized"));
+
+		// return(base_tensorinfo.reinit_Invglobal(normal_vector) 
+		// 	   	* this->Aminus_1D 
+		// 	   	* base_tensorinfo.reinit_global(normal_vector));
 
 	}
 
@@ -571,14 +598,30 @@ namespace EquationGenerator
 	}
 
 	// the following matrix returns the flux in a particular direction
+	// template<int dim>
+	// Full_matrix
+	// Base_EquationGenerator<dim>::
+	// build_An(const Tensor<1,dim,double> normal_vector)
+	// {
+	// 	return(base_tensorinfo.reinit_Invglobal(normal_vector) 
+	// 		   	* system_data.Ax.matrix
+	// 		   	* base_tensorinfo.reinit_global(normal_vector));
+	// }
+
 	template<int dim>
-	Full_matrix
+	Sparse_matrix
 	Base_EquationGenerator<dim>::
 	build_An(const Tensor<1,dim,double> normal_vector)
 	{
-		return(base_tensorinfo.reinit_Invglobal(normal_vector) 
-			   	* system_data.Ax.matrix
-			   	* base_tensorinfo.reinit_global(normal_vector));
+		const double nx = normal_vector[0];
+
+		//Assert(1 == 0 , ExcMessage("Should not have reached here"));
+		
+		return(system_data.Ax.matrix * nx);
+
+		// return(base_tensorinfo.reinit_Invglobal(normal_vector) 
+		// 	   	* system_data.Ax.matrix
+		// 	   	* base_tensorinfo.reinit_global(normal_vector));
 	}
 
 	// Convert a matrix to a symmetric matrix. The following function returns 
@@ -604,6 +647,14 @@ namespace EquationGenerator
 	::reinit_Aminus1D()
 	{
 		Aminus_1D = matrixopt.compute_Aminus(system_data.Ax.matrix);
+	}
+
+	template<int dim>
+	void 
+	Base_EquationGenerator<dim>
+	::reinit_Amod1D()
+	{
+		Amod_1D = matrixopt.compute_Amod(system_data.Ax.matrix);
 	}
 
 	template<int dim>
@@ -636,12 +687,13 @@ namespace EquationGenerator
 	{
 		const unsigned int var_force = constants.variable_map[dim-1].find(constants.force_variable)->second;
 
-		Assert(base_tensorinfo.S_half.rows() != 0 || base_tensorinfo.S_half.cols() != 0,ExcNotInitialized());
-		const double force_factor = base_tensorinfo.S_half.coeffRef(var_force,var_force);
+		return(1);
+		// Assert(base_tensorinfo.S_half.rows() != 0 || base_tensorinfo.S_half.cols() != 0,ExcNotInitialized());
+		// const double force_factor = base_tensorinfo.S_half.coeffRef(var_force,var_force);
 
-		base_tensorinfo.S_half.makeCompressed();
+		// base_tensorinfo.S_half.makeCompressed();
 
-		return(force_factor);
+		//return(force_factor);
 	}
 
 
@@ -767,48 +819,61 @@ namespace EquationGenerator
 
 
 		// the total number of conserved variables
-		const unsigned int num_conserved = dim + 2;
+		// const unsigned int num_conserved = dim + 2;
 
-		// system A
-		if (nEqn == 6 && dim == 2)
-		{
-			for (int i = 1 ; i < nEqn ; i ++)
-				system_data.P.matrix.coeffRef(i,i) = 1/constants.tau;
+		// // system A
+		// if (nEqn == 6 && dim == 2)
+		// {
+		// 	for (int i = 1 ; i < nEqn ; i ++)
+		// 		system_data.P.matrix.coeffRef(i,i) = 1/constants.tau;
 
 
-		}
-		else
-		{
-			switch(constants.coll_op)
-			{
-				case BGK:
-				{
-					for (int i =  num_conserved; i < nEqn ; i++)
-						system_data.P.matrix.coeffRef(i,i) = 1/constants.tau;					
+		// }
+		// else
+		// {
+		// 	switch(constants.coll_op)
+		// 	{
+		// 		case BGK:
+		// 		{
+		// 			for (int i =  num_conserved; i < nEqn ; i++)
+		// 				system_data.P.matrix.coeffRef(i,i) = 1/constants.tau;					
 
-					break;
-				}
-				case Boltzmann_MM:
-				{
-					Assert(dim != 1,ExcMessage("Not implemented for 1D systems"));
-					std::string file_for_P = folder_name + "MM_P"+"_"+std::to_string(dim) + "D_"
-											+std::to_string(nEqn)+".txt";
-					this->build_triplet(system_data.P.Row_Col_Value,file_for_P);
+		// 			break;
+		// 		}
+		// 		case Boltzmann_MM:
+		// 		{
+		// 			Assert(dim != 1,ExcMessage("Not implemented for 1D systems"));
+		// 			std::string file_for_P = folder_name + "MM_P"+"_"+std::to_string(dim) + "D_"
+		// 									+std::to_string(nEqn)+".txt";
+		// 			this->build_triplet(system_data.P.Row_Col_Value,file_for_P);
+
+		// 			// develop the matrix 
+		// 			this->build_matrix_from_triplet(system_data.P.matrix,system_data.P.Row_Col_Value);
+
+		// 			// need to scale the production terms as per the Knudsen number
+		// 			system_data.P.matrix /= constants.tau;
+		// 			break;
+		// 		}
+		// 		default:
+		// 		{
+		// 			Assert(1 == 0,ExcMessage("Should not have reached here"));
+		// 			break;
+		// 		}
+		// 	}			
+		// }
+
+		//Assert(dim == 1,ExcMessage("Not implemented for 1D systems"));
+
+		std::string file_for_P = folder_name + "BGK_P_"+std::to_string(2) + "D_"
+									+std::to_string(nEqn)+"Trun.txt";
+
+		this->build_triplet(system_data.P.Row_Col_Value,file_for_P);
 
 					// develop the matrix 
-					this->build_matrix_from_triplet(system_data.P.matrix,system_data.P.Row_Col_Value);
+		this->build_matrix_from_triplet(system_data.P.matrix,system_data.P.Row_Col_Value);
 
 					// need to scale the production terms as per the Knudsen number
-					system_data.P.matrix /= constants.tau;
-					break;
-				}
-				default:
-				{
-					Assert(1 == 0,ExcMessage("Should not have reached here"));
-					break;
-				}
-			}			
-		}
+		system_data.P.matrix /= constants.tau;
 
 
 
@@ -842,36 +907,36 @@ namespace EquationGenerator
 		reinit_P(folder_name);	
 
 		// we now develop the rhoInflow matrix, which has nothin but zeros on the diagonal
-		reinit_rhoInflow();
+		//reinit_rhoInflow();
 
 		//don't fix the boundary conditions for the A system
-		if (nEqn == 6 && dim ==2)
-		{
-				// do nothing
-		}
-		else
-		{
+		// if (nEqn == 6 && dim ==2)
+		// {
+		// 		// do nothing
+		// }
+		// else
+		// {
 
-			const bool fix_B = true;
-			const bool check_B = true;
+		// 	const bool fix_B = true;
+		// 	const bool check_B = true;
 
-			BoundaryHandler::Base_BoundaryHandler_Char::fix_B_vx(constants.epsilon,fix_B,system_data.B.matrix);
+		// 	BoundaryHandler::Base_BoundaryHandler_Char::fix_B_vx(constants.epsilon,fix_B,system_data.B.matrix);
 
-				// check whether B has been fixed or not
-			if(check_B)
-				for (unsigned int i = 0 ; i < system_data.B.matrix.cols() ; i++)
-					// in both the cases, 1D, 2D or 3D the index for vx does not changed and remains at one
-					if(i != constants.variable_map[dim-1].find("vx")->second)	
-						Assert(fabs(system_data.B.matrix.coeffRef(0,i)) < 1e-3,
-								ExcMessage("relaxational normal velocity not accommodated in B"));						
+		// 		// check whether B has been fixed or not
+		// 	if(check_B)
+		// 		for (unsigned int i = 0 ; i < system_data.B.matrix.cols() ; i++)
+		// 			// in both the cases, 1D, 2D or 3D the index for vx does not changed and remains at one
+		// 			if(i != constants.variable_map[dim-1].find("vx")->second)	
+		// 				Assert(fabs(system_data.B.matrix.coeffRef(0,i)) < 1e-3,
+		// 						ExcMessage("relaxational normal velocity not accommodated in B"));						
 				
-		}
+		// }
 
 
 		// 
 
 		// now we can initialize the boundary matrix for specular reflection
-		reinit_Bspecular();
+		//reinit_Bspecular();
 
 
 
@@ -923,6 +988,37 @@ namespace EquationGenerator
 		system_data.B_specular.matrix.makeCompressed();
 
 	}
+
+	template<int dim>
+	Sparse_matrix
+	Base_EquationGenerator<dim>
+	::build_Proj_Hermite(const Tensor<1,dim> &normal_vector)
+	{
+		Sparse_matrix global_Projector;
+		global_Projector.resize(nEqn,nEqn);
+		const double nx = normal_vector[0];
+		int counter = 0;
+
+		for (int i = 0 ; i < nEqn ; i++)
+		{
+			// sign of normal if odd variable
+			if (counter < system_data.odd_ID.rows())
+				if ((unsigned)i == system_data.odd_ID(counter,0))
+				{
+					global_Projector.coeffRef(i,i) = nx;	
+					counter ++;
+				}
+			
+			// do nothing if even variable
+			else
+				global_Projector.coeffRef(i,i) = 1;	
+
+		}
+
+		return(global_Projector);
+
+	}
+
 	
 
 }

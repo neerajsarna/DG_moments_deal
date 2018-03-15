@@ -314,7 +314,7 @@ namespace MatrixOpt
 		Full_matrix vecs = compute_X(A);
 		VectorXd vals = compute_Lambda(A);
 		Full_matrix Amod;
-		Amod = vecs*vals.cwiseAbs().asDiagonal()*vecs.inverse();
+		Amod = vecs*vals.cwiseAbs().asDiagonal()*vecs.transpose();
 
 		return(Amod);
 	}
