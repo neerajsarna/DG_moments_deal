@@ -519,7 +519,7 @@ template<int dim>
 
 			// in the following routine we check mass conservation
 			double mean_value(const unsigned int active_cells,const unsigned int comp);
-			const double delta_t = 0.1;
+			
 			void run(MeshGenerator::Base_MeshGenerator<dim> &Mesh_Info);
 			void compute_energy_bound();
 
@@ -592,13 +592,7 @@ template<int dim>
 	void
 	Run_Problem_FE_Time_Stepping<dim>::initial_conditions::vector_value(const Point<dim> &p,Vector<double> &value) const
 	{
-		const double x = p(0);
-
-		// zero initial conditions to all the variables
-		unsigned int ID_rho;
-		unsigned int ID_vx;
-		unsigned int ID_vy;
-		unsigned int ID_theta;
+		
 
 		value = 0;
 
@@ -612,6 +606,9 @@ template<int dim>
 	// the total number of refinement cycles 
 	const unsigned int refine_cycles = this->constants.refine_cycles;
 
+
+	const double CFL = 0.3;
+	const double delta_t = CFL * GridTools::maximal_cell_diameter(Mesh_Info.triangulation);
 	// does not support grid refinement right now
 	AssertDimension(refine_cycles,1);
 
@@ -658,7 +655,7 @@ template<int dim>
    	// deviation from the steady state value
    	Vector<double> residual_steady_state(this->solution.size());
    	Vector<double> new_solution(this->solution.size());
-   	Vector<double> new_solution2(this->solution.size());
+   
    	residual_steady_state = 100;
 
    	std::cout << "Time stepping " << std::endl;
@@ -671,12 +668,12 @@ template<int dim>
 
 	postproc.reinit(this->fe_data_structure.dof_handler);
 
-	FILE *energy_growth;
-	energy_growth = fopen("energy_growth","w+");
+	// FILE *energy_growth;
+	// energy_growth = fopen("energy_growth","w+");
 
 	double present_time = 0;
 
-	compute_energy_bound();
+//	compute_energy_bound();
 
    	while (residual_steady_state.l2_norm() > 1e-8)
    	{
@@ -685,27 +682,21 @@ template<int dim>
    		double initial_energy;
    		double final_energy;
 
-   		// forward euler step
-   		// new_solution = delta_t * system_rhs
-   		// if (counter%100 == 0 )
-   		// 	initial_energy = postproc.compute_energy(this->solution,
-   		// 											 Mesh_Info.triangulation.n_active_cells(),
-					// 								 this->fe_data_structure.mapping, 
-					// 								 this->fe_data_structure.dof_handler,this->nEqn);
 
    		// update with the solution rhs
-   		new_solution.equ(delta_t,this->system_rhs);
+   		new_solution.equ(delta_t/2,this->system_rhs);
+
    		// update with the spatial derivative
-   		new_solution.add(-delta_t,Run_Problem<dim>::matrix_opt.Sparse_matrix_dot_Vector(this->global_matrix,this->solution));
+   		new_solution.add(-delta_t/2,Run_Problem<dim>::matrix_opt.Sparse_matrix_dot_Vector(this->global_matrix,this->solution));
+
    		// update with the previous solution
    		new_solution += this->solution;
 
+		
    		// second update
    		// update with the previous solution
-   		new_solution2.equ(3.0/4.0,this->solution);
-   		new_solution2.add(1.0/4.0,new_solution);
-   		new_solution2.add(delta_t * 1.0/4.0,this->system_rhs);
-   		new_solution2.add(-delta_t * 1.0/4,Run_Problem<dim>::matrix_opt.Sparse_matrix_dot_Vector(this->global_matrix,new_solution));
+   		this->solution.add(-delta_t,Run_Problem<dim>::matrix_opt.Sparse_matrix_dot_Vector(this->global_matrix,new_solution),
+   							delta_t,this->system_rhs);
    
 
    		// if (counter %100 == 0)
@@ -715,21 +706,17 @@ template<int dim>
 					// 										this->fe_data_structure.dof_handler,
 					// 										this->nEqn);
 
-   		residual_steady_state = Run_Problem<dim>::matrix_opt.Sparse_matrix_dot_Vector(this->global_matrix,new_solution2);
+   		residual_steady_state = Run_Problem<dim>::matrix_opt.Sparse_matrix_dot_Vector(this->global_matrix,this->solution);
    		residual_steady_state -= this->system_rhs;
-
-   		// update the old solution
-   		this->solution = new_solution2;
 
    		present_time +=delta_t;
 
-   		if (counter % 100 == 0)
+
+   		if (counter % 10 == 0)
    		{
    			const double current_density = mean_value(Mesh_Info.triangulation.n_active_cells(),0);
 
-   			std::cout << "Residual " << residual_steady_state.l2_norm() << 
-   					" Solution Norm " << new_solution2.l2_norm() <<
-   					" Deviation in mass " << fabs(initial_density-current_density) <<  std::endl;
+   			std::cout << "Residual " << residual_steady_state.l2_norm();
 
    			// printf("energy growth rate: %e \n",(final_energy-initial_energy)/delta_t);
    			// fprintf(energy_growth, "%f %0.15f\n",present_time,(final_energy-initial_energy)/delta_t);
@@ -752,12 +739,9 @@ template<int dim>
 										this->nEqn);
 
 		postproc.print_options(Mesh_Info.triangulation,this->solution,0,1,
-							  this->convergence_table,
-							this->system_info.base_tensorinfo.S_half_inv,
+							  	this->convergence_table,
 								this->fe_data_structure.dof_handler,this->nEqn);		
 
-
-		fclose(energy_growth);
 
 	}
 

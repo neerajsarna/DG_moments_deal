@@ -364,7 +364,7 @@ TEST(RunSystem,HandlesRunSystem)
 		// fe_solver_reference.run(Mesh_Info_Reference);
 
 
-		FEM_Solver::Run_Problem_FE<dim> fe_solver("grid",
+		FEM_Solver::Run_Problem_FE_Time_Stepping<dim> fe_solver("grid",
 													constants.constants_num,
 													System,
 													&dummy,

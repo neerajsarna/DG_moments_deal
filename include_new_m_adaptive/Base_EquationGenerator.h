@@ -484,18 +484,16 @@ namespace EquationGenerator
 			// we store the unsymmetrized flux matrix for numerical flux generation
 			system_data.Ax = system_data.A[0];
 
-			// develop the B matrix
 			
-
 			this->build_triplet(system_data.B.Row_Col_Value,basefile_system[dim]);
 			this->build_matrix_from_triplet(system_data.B.matrix,system_data.B.Row_Col_Value);
 
+	
 			// develop the ID of the odd variables
 			this->build_Vector(system_data.odd_ID,basefile_system[dim + 1]);
 
 
 			// develop the Sigma matrix
-			
 			this->build_triplet(system_data.Sigma.Row_Col_Value,basefile_system[dim+2]);
 			this->build_matrix_from_triplet(system_data.Sigma.matrix,system_data.Sigma.Row_Col_Value);
 
