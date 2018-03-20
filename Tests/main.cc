@@ -1,17 +1,17 @@
 #include "gtest/gtest.h"
 
 #include "include_deal.h"
-#include "EigenSetup.h"
-#include "basic_data_structures.h"
-#include "parse_command_line.h"
+//#include "EigenSetup.h"
+//#include "basic_data_structures.h"
+//#include "parse_command_line.h"
 #include "mkl.h"
-#include "basic_routines.h"
+//#include "basic_routines.h"
 
 // The input file containing the computational parameters
 // One file for the computational parameters and the other for the details regarding the system
-std::vector<std::string> input_file;
+//std::vector<std::string> input_file;
 
-#include "include_files.h"
+//#include "include_files.h"
 //#include "SystemA.h"
 
 // certain generic tests which have to be performed independent of the system
@@ -24,7 +24,8 @@ std::vector<std::string> input_file;
 //#include "Test_Solver_m_adaptive.h"
 //#include "Test_Assembly.h"
 //#include "Test_Assembly_MAdaptive.h"
-#include "Test_Run.h"
+//#include "Test_Run.h"
+#include "Test_MemoryAllocation.h"
 //#include "Test_ResidualCompution.h"
 //#include "Test_Projection.h"
 
@@ -50,13 +51,13 @@ std::vector<std::string> input_file;
 int main(int argc,char **argv)
 {
 	const unsigned int num_threads = atoi(argv[1]);
-	input_file.resize(2);
+	//input_file.resize(2);
 
 	dealii::Utilities::MPI::MPI_InitFinalize mpi_initialization(argc,argv, num_threads);
 
-	parse_command_line commmand_line_parser(argc,argv);
-	/*store the filename read from the command line*/
-	commmand_line_parser.read_input_filename(input_file);
+	// parse_command_line commmand_line_parser(argc,argv);
+	// store the filename read from the command line
+	// commmand_line_parser.read_input_filename(input_file);
 
 	::testing::InitGoogleTest(&argc, argv);
 	const unsigned int result = RUN_ALL_TESTS();
